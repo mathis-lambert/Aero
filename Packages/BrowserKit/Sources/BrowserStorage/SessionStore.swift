@@ -6,7 +6,8 @@ public actor SessionStore {
     public enum Failure: Error { case unsupportedVersion }
 
     private struct Document: Codable {
-        var version = 1
+        static let currentVersion = 1
+        var version = currentVersion
         let session: BrowserSession
     }
 
@@ -39,7 +40,7 @@ public actor SessionStore {
         let data = try Data(contentsOf: file)
         // Read the version before decoding the current schema. Unknown data stays untouched.
         struct Header: Decodable { let version: Int }
-        guard try JSONDecoder().decode(Header.self, from: data).version == 1 else {
+        guard try JSONDecoder().decode(Header.self, from: data).version == Document.currentVersion else {
             throw Failure.unsupportedVersion
         }
         let document = try JSONDecoder().decode(Document.self, from: data)
