@@ -11,6 +11,8 @@ public final class WebPageRegistry {
         let page: BrowserPage
         var lastActive: ContinuousClock.Instant
         var lastExemption: ContinuousClock.Instant?
+        /// Set for popups: the page whose `window.opener` they may still use.
+        var openerTabID: UUID?
     }
 
     static let signposter = OSSignposter(subsystem: Diagnostics.subsystem, category: Diagnostics.Category.pageLifecycle)
@@ -19,8 +21,7 @@ public final class WebPageRegistry {
         get { policy.settings }
         set { policy.settings = newValue; refreshHibernationSchedule() }
     }
-    /// Pin state stays owned by the session; the registry only reads it when planning.
-    public var isPinned: @MainActor (UUID) -> Bool = { _ in false }
+    public weak var delegate: WebPageRegistryDelegate?
 
     var livePages: [UUID: LivePage] = [:]
     var activeTabID: UUID?
@@ -31,11 +32,12 @@ public final class WebPageRegistry {
     private var pressureMonitor: MemoryPressureMonitor?
     private let ephemeral: Bool
 
-    public init(
-        ephemeral: Bool = false,
-        hibernation: HibernationSettings = .default,
-        liveBackgroundPageLimit: Int = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
-    ) {
+    public convenience init(ephemeral: Bool = false, hibernation: HibernationSettings = .default) {
+        let limit = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
+        self.init(ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
+    }
+
+    package init(ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
         self.ephemeral = ephemeral
         policy = HibernationPolicy(settings: hibernation, liveBackgroundPageLimit: liveBackgroundPageLimit)
         pressureMonitor = MemoryPressureMonitor { [weak self] pressure in
@@ -53,19 +55,20 @@ public final class WebPageRegistry {
         return store
     }
 
-    public func isLoaded(_ tabID: UUID) -> Bool { livePages[tabID] != nil }
+    func isLoaded(_ tabID: UUID) -> Bool { livePages[tabID] != nil }
 
     /// Makes the tab's page visible, creating or restoring it when needed.
-    public func activate(
-        _ tab: BrowserTab,
-        profileID: UUID,
-        onMetadata: @escaping @MainActor (URL, String) -> Void,
-        onOpen: @escaping @MainActor (URL) -> Void
-    ) -> BrowserPage {
+    public func activate(_ tab: BrowserTab, profileID: UUID) -> BrowserPage {
         markPreviousActiveAsIdle()
         activeTabID = tab.id
-        let page = livePages[tab.id]?.page ?? makePage(for: tab, profileID: profileID, onMetadata: onMetadata, onOpen: onOpen)
-        livePages[tab.id] = LivePage(page: page, lastActive: .now)
+        let page: BrowserPage
+        if let live = livePages[tab.id] {
+            page = live.page
+            livePages[tab.id]?.lastActive = .now
+        } else {
+            page = makePage(for: tab, profileID: profileID)
+            livePages[tab.id] = LivePage(page: page, lastActive: .now)
+        }
         refreshHibernationSchedule()
         return page
     }
@@ -89,13 +92,9 @@ public final class WebPageRegistry {
         Self.signposter.emitEvent(Diagnostics.Signpost.pageHibernated)
     }
 
-    private func makePage(
-        for tab: BrowserTab,
-        profileID: UUID,
-        onMetadata: @escaping @MainActor (URL, String) -> Void,
-        onOpen: @escaping @MainActor (URL) -> Void
-    ) -> BrowserPage {
-        let page = BrowserPage(store: dataStore(for: profileID), onMetadata: onMetadata, onOpen: onOpen)
+    private func makePage(for tab: BrowserTab, profileID: UUID) -> BrowserPage {
+        let page = BrowserPage(configuration: BrowserPage.configuration(store: dataStore(for: profileID)))
+        connect(page, to: tab.id)
         if let state = hibernatedStates.removeValue(forKey: tab.id) {
             page.restore(state, url: tab.url)
             Self.signposter.emitEvent(Diagnostics.Signpost.pageRestored)
@@ -104,6 +103,35 @@ public final class WebPageRegistry {
             Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
         }
         return page
+    }
+
+    private func connect(_ page: BrowserPage, to tabID: UUID) {
+        page.onMetadata = { [weak self] url, title in self?.delegate?.page(tabID, didUpdateURL: url, title: title) }
+        page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
+        page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
+        page.onClose = { [weak self] in
+            guard let opener = self?.livePages[tabID]?.openerTabID else { return }
+            self?.delegate?.pageDidRequestClose(tabID, openerTabID: opener)
+        }
+    }
+
+    /// The popup must use WebKit's configuration unchanged: it carries the opener's data store,
+    /// process and user scripts, and keeps `window.opener` connected. WebKit then loads the
+    /// popup's request into the returned view itself.
+    private func openPopup(from openerTabID: UUID, configuration: WKWebViewConfiguration, url: URL?) -> WKWebView? {
+        guard livePages[openerTabID] != nil, let tab = delegate?.page(openerTabID, requestsPopupTabFor: url) else { return nil }
+        let popup = BrowserPage(configuration: configuration)
+        connect(popup, to: tab.id)
+        livePages[tab.id] = LivePage(page: popup, lastActive: .now, openerTabID: openerTabID)
+        Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
+        delegate?.pageDidOpenPopup(tab.id)
+        return popup.webView
+    }
+
+    /// Unloading either side of a popup relationship would break `window.opener`.
+    func hasPopupRelationship(_ tabID: UUID) -> Bool {
+        if let opener = livePages[tabID]?.openerTabID, livePages[opener] != nil { return true }
+        return livePages.values.contains { $0.openerTabID == tabID }
     }
 
     private func markPreviousActiveAsIdle() {

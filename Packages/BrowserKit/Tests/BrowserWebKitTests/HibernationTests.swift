@@ -19,7 +19,7 @@ private func makeTab() throws -> BrowserTab {
 
 @MainActor @discardableResult
 private func activate(_ tab: BrowserTab, in registry: WebPageRegistry) -> BrowserPage {
-    registry.activate(tab, profileID: UUID(), onMetadata: { _, _ in }, onOpen: { _ in })
+    registry.activate(tab, profileID: UUID())
 }
 
 @MainActor
@@ -50,7 +50,8 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     settings.keepsPinnedTabsLoaded = true
     let registry = makeRegistry(settings)
     let pinned = try makeTab()
-    registry.isPinned = { $0 == pinned.id }
+    let delegate = PinnedTabs(pinned: [pinned.id])
+    registry.delegate = delegate
     activate(pinned, in: registry)
     registry.deactivate()
     await registry.hibernateDuePages()
@@ -70,4 +71,16 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
         globalThis.auroEditedFields.add(field);
         """, contentWorld: PageScripts.world)
     #expect(await page.hibernationBlocker() == .unsavedInput)
+}
+
+@MainActor
+private final class PinnedTabs: WebPageRegistryDelegate {
+    let pinned: Set<UUID>
+    init(pinned: Set<UUID>) { self.pinned = pinned }
+    func isPinned(_ tabID: UUID) -> Bool { pinned.contains(tabID) }
+    func page(_ tabID: UUID, didUpdateURL url: URL, title: String) {}
+    func page(_ tabID: UUID, didDeclareIcons links: [FaviconLink], at url: URL) {}
+    func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab? { nil }
+    func pageDidOpenPopup(_ tabID: UUID) {}
+    func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID) {}
 }

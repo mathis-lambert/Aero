@@ -29,7 +29,7 @@ extension WebPageRegistry {
 
     func hibernationPlan() -> HibernationPlan {
         let candidates = livePages.map { tabID, live in
-            HibernationCandidate(tabID: tabID, isActive: tabID == activeTabID, isPinned: isPinned(tabID),
+            HibernationCandidate(tabID: tabID, isActive: tabID == activeTabID, isPinned: delegate?.isPinned(tabID) == true,
                                  lastActive: live.lastActive, lastExemption: live.lastExemption)
         }
         return policy.plan(for: candidates, now: .now)
@@ -40,6 +40,10 @@ extension WebPageRegistry {
     func hibernate(_ tabIDs: [UUID]) async {
         for tabID in tabIDs {
             guard !Task.isCancelled, let page = livePages[tabID]?.page else { continue }
+            if hasPopupRelationship(tabID) {
+                livePages[tabID]?.lastExemption = .now
+                continue
+            }
             let interval = Self.signposter.beginInterval(Diagnostics.Signpost.hibernationCheck)
             let blocker = await page.hibernationBlocker()
             Self.signposter.endInterval(Diagnostics.Signpost.hibernationCheck, interval)
