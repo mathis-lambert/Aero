@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Opener fixture</title>
+</head>
+<body>
+<button id="open" onclick="window.open('/popup.html', 'auro-popup')">Open popup</button>
+<p id="status">Waiting for popup</p>
+<script>
+window.addEventListener("message", (event) => {
+    if (event.origin === location.origin && event.data === "popup-ready") {
+        document.getElementById("status").textContent = "Opener received message";
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keys fixture</title>
+<style>html, body { margin: 0; height: 100%; }</style>
+</head>
+<body>
+<p id="status">No shortcut yet</p>
+<script>
+// Claims every Command shortcut, like an aggressive web application.
+document.addEventListener("keydown", (event) => {
+    if (!event.metaKey) return;
+    event.preventDefault();
+    document.getElementById("status").textContent = "Page handled ⌘" + event.key.toUpperCase();
+}, true);
+</script>
+</body>
+</html>

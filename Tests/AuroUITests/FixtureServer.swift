@@ -1,0 +1,79 @@
+import Foundation
+@preconcurrency import Network
+
+/// Serves the files in `Fixtures` over HTTP on the loopback interface while a test runs.
+final class FixtureServer: Sendable {
+    enum Failure: Error { case notReady }
+
+    private static let readyTimeout = DispatchTimeInterval.seconds(5)
+    private static let maximumRequestLength = 64 * 1024
+    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png"]
+
+    let port: UInt16
+    private let listener: NWListener
+    private let queue = DispatchQueue(label: "dev.auro.uitests.fixtures")
+
+    init() throws {
+        let parameters = NWParameters.tcp
+        parameters.requiredLocalEndpoint = .hostPort(host: .ipv4(.loopback), port: .any)
+        listener = try NWListener(using: parameters)
+        let ready = DispatchSemaphore(value: 0)
+        listener.stateUpdateHandler = { state in
+            if case .ready = state { ready.signal() }
+        }
+        listener.newConnectionHandler = { [queue] connection in
+            connection.start(queue: queue)
+            Self.respond(on: connection)
+        }
+        listener.start(queue: queue)
+        guard ready.wait(timeout: .now() + Self.readyTimeout) == .success, let port = listener.port?.rawValue else {
+            listener.cancel()
+            throw Failure.notReady
+        }
+        self.port = port
+    }
+
+    deinit { listener.cancel() }
+
+    func stop() { listener.cancel() }
+
+    /// Uses `localhost` so app-side requests fall under App Transport Security's local networking exception.
+    func url(_ fixture: String) -> URL {
+        var components = URLComponents()
+        components.scheme = "http"
+        components.host = "localhost"
+        components.port = Int(port)
+        components.path = "/" + fixture
+        guard let url = components.url else { preconditionFailure("Invalid fixture name \(fixture)") }
+        return url
+    }
+
+    private static func respond(on connection: NWConnection) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: maximumRequestLength) { data, _, _, _ in
+            let request = data.map { String(decoding: $0, as: UTF8.self) } ?? ""
+            let path = request.split(separator: " ").dropFirst().first.map(String.init) ?? "/"
+            let name = String(path.split(separator: "?").first ?? "").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            let response: Data
+            if let file = fixtureURL(named: name), let body = try? Data(contentsOf: file) {
+                let type = contentTypes[file.pathExtension] ?? "application/octet-stream"
+                response = header(status: "200 OK", type: type, length: body.count) + body
+            } else {
+                response = header(status: "404 Not Found", type: "text/plain", length: 0)
+            }
+            connection.send(content: response, completion: .contentProcessed { _ in connection.cancel() })
+        }
+    }
+
+    private static func fixtureURL(named name: String) -> URL? {
+        guard !name.isEmpty, !name.contains("/") else { return nil }
+        let bundle = Bundle(for: BundleToken.self)
+        return bundle.url(forResource: name, withExtension: nil, subdirectory: "Fixtures")
+            ?? bundle.url(forResource: name, withExtension: nil)
+    }
+
+    private static func header(status: String, type: String, length: Int) -> Data {
+        Data("HTTP/1.1 \(status)\r\nContent-Type: \(type)\r\nContent-Length: \(length)\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n".utf8)
+    }
+
+    private final class BundleToken {}
+}

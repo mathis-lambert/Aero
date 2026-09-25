@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Popup fixture</title>
+</head>
+<body>
+<p>Popup fixture</p>
+<button onclick="window.close()">Close popup</button>
+<script>window.opener?.postMessage("popup-ready", location.origin);</script>
+</body>
+</html>
