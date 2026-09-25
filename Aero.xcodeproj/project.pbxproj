@@ -1,41 +1,360 @@
 // !$*UTF8*$!
-{ archiveVersion = 1; classes = {}; objectVersion = 77; objects = {
-5DB0711C456FD5D72DF2498C /* AppFolder */ = { isa = PBXFileSystemSynchronizedRootGroup; path = App; sourceTree = "<group>"; };
-6F99D0E977B61988ED22843D /* UITestFolder */ = { isa = PBXFileSystemSynchronizedRootGroup; path = Tests/AeroUITests; sourceTree = "<group>"; };
-754164850F38C1ECDAF6B8ED /* Configuration */ = { isa = PBXFileSystemSynchronizedRootGroup; path = Configuration; sourceTree = "<group>"; };
-C2B6AF95E5FB6AF04547C8EA /* AppProduct */ = { isa = PBXFileReference; explicitFileType = wrapper.application; path = Aero.app; sourceTree = BUILT_PRODUCTS_DIR; };
-77EB3AD38D803EC3C3DF9309 /* TestProduct */ = { isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AeroUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-379FFAE098E1FE30EF2E6AF6 /* DebugConfig */ = { isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Debug.xcconfig; sourceTree = "<group>"; };
-77ED3959B0A4E0420C48D19C /* ReleaseConfig */ = { isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Release.xcconfig; sourceTree = "<group>"; };
-0A999012FFB87B3EDAC99ADB /* Packages */ = { isa = PBXFileReference; lastKnownFileType = folder; path = Packages; sourceTree = "<group>"; };
-68A4194227BE4AB74BC3D323 /* Docs */ = { isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
-FE0A091FDBFB3E9C31B7A1BD /* Products */ = { isa = PBXGroup; children = (C2B6AF95E5FB6AF04547C8EA, 77EB3AD38D803EC3C3DF9309); name = Products; sourceTree = "<group>"; };
-2EB2D8158FC6EF9EB19CB439 /* MainGroup */ = { isa = PBXGroup; children = (5DB0711C456FD5D72DF2498C, 0A999012FFB87B3EDAC99ADB, 6F99D0E977B61988ED22843D, 754164850F38C1ECDAF6B8ED, 379FFAE098E1FE30EF2E6AF6, 77ED3959B0A4E0420C48D19C, 68A4194227BE4AB74BC3D323, FE0A091FDBFB3E9C31B7A1BD); sourceTree = "<group>"; };
-AE20C115207FF2DD10A0AA8E /* BrowserKit */ = { isa = XCLocalSwiftPackageReference; relativePath = Packages/BrowserKit; };
-69764682C66036DC0CE36654 /* BrowserCore */ = { isa = XCSwiftPackageProductDependency; package = AE20C115207FF2DD10A0AA8E; productName = BrowserCore; };
-31D0AFBA808695A6E73F502A /* BrowserCoreBuild */ = { isa = PBXBuildFile; productRef = 69764682C66036DC0CE36654; };
-351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */ = { isa = XCSwiftPackageProductDependency; package = AE20C115207FF2DD10A0AA8E; productName = BrowserStorage; };
-CDB05B415DF02AEE4458D54F /* BrowserStorageBuild */ = { isa = PBXBuildFile; productRef = 351F5C6BAE464B2FBED0D8E0; };
-B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */ = { isa = XCSwiftPackageProductDependency; package = AE20C115207FF2DD10A0AA8E; productName = BrowserWebKit; };
-D28CCF4409F96F1D4979BFB8 /* BrowserWebKitBuild */ = { isa = PBXBuildFile; productRef = B0D44CFDC92407AEB22CB7FC; };
-6805EC6AFDAFDBE18E2FF355 /* AppSources */ = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-87AA925F24AC656A8AAB80A9 /* TestSources */ = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-2AC7AB26953A78AD46B49603 /* AppResources */ = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-2FD82F28117CA43F2CCC2350 /* TestResources */ = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-0F91A57B11B30F1A7980649D /* AppFrameworks */ = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (31D0AFBA808695A6E73F502A, CDB05B415DF02AEE4458D54F, D28CCF4409F96F1D4979BFB8); runOnlyForDeploymentPostprocessing = 0; };
-D6C04E321AC1AC815067AD02 /* TestFrameworks */ = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-BFD315016DE16320F7E2120C /* ProjectDebug */ = { isa = XCBuildConfiguration;  buildSettings = { SDKROOT = macosx; MACOSX_DEPLOYMENT_TARGET = 27.0; ARCHS = arm64; SWIFT_VERSION = 6.0; CLANG_ENABLE_MODULES = YES; ENABLE_TESTABILITY = YES; DEBUG_INFORMATION_FORMAT = dwarf; }; name = Debug; };
-1D8C0C6B1D22EA8C7669B263 /* ProjectRelease */ = { isa = XCBuildConfiguration;  buildSettings = { SDKROOT = macosx; MACOSX_DEPLOYMENT_TARGET = 27.0; ARCHS = arm64; SWIFT_VERSION = 6.0; CLANG_ENABLE_MODULES = YES; }; name = Release; };
-5D7731714D3E69D68AA8D7ED /* ProjectConfigs */ = { isa = XCConfigurationList; buildConfigurations = (BFD315016DE16320F7E2120C, 1D8C0C6B1D22EA8C7669B263); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-3A77CD648711364E9A877D62 /* AppDebug */ = { isa = XCBuildConfiguration; baseConfigurationReference = 379FFAE098E1FE30EF2E6AF6; buildSettings = { ENABLE_TESTABILITY = YES; SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO; }; name = Debug; };
-066776A1C212750E8BE506A2 /* AppRelease */ = { isa = XCBuildConfiguration; baseConfigurationReference = 77ED3959B0A4E0420C48D19C; buildSettings = { ENABLE_TESTABILITY = YES; SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO; }; name = Release; };
-B5E4F9F7C53A9A6AF99DBCE3 /* AppConfigs */ = { isa = XCConfigurationList; buildConfigurations = (3A77CD648711364E9A877D62, 066776A1C212750E8BE506A2); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-7BD7682982285BB9BBB9EA6A /* TestDebug */ = { isa = XCBuildConfiguration;  buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests; GENERATE_INFOPLIST_FILE = YES; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Manual; TEST_TARGET_NAME = Aero; CODE_SIGN_ENTITLEMENTS = Configuration/AeroUITests.entitlements; SWIFT_VERSION = 6.0; SWIFT_STRICT_CONCURRENCY = complete; }; name = Debug; };
-EE6A2E9A9B1D3B003A794EA3 /* TestRelease */ = { isa = XCBuildConfiguration;  buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests; GENERATE_INFOPLIST_FILE = YES; CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Manual; TEST_TARGET_NAME = Aero; CODE_SIGN_ENTITLEMENTS = Configuration/AeroUITests.entitlements; SWIFT_VERSION = 6.0; SWIFT_STRICT_CONCURRENCY = complete; }; name = Release; };
-A5E93B15A02AA3025AC88070 /* TestConfigs */ = { isa = XCConfigurationList; buildConfigurations = (7BD7682982285BB9BBB9EA6A, EE6A2E9A9B1D3B003A794EA3); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-858D0932EEACC1122B4B1EF1 /* TestProxy */ = { isa = PBXContainerItemProxy; containerPortal = F6F4DA8D93E88A08220E03B7; proxyType = 1; remoteGlobalIDString = D3225F53B4406649474BC956; remoteInfo = Aero; };
-8BC62B80562684797FDF3D7A /* TestDependency */ = { isa = PBXTargetDependency; target = D3225F53B4406649474BC956; targetProxy = 858D0932EEACC1122B4B1EF1; };
-D3225F53B4406649474BC956 /* Aero */ = { isa = PBXNativeTarget; buildConfigurationList = B5E4F9F7C53A9A6AF99DBCE3; buildPhases = (6805EC6AFDAFDBE18E2FF355, 0F91A57B11B30F1A7980649D, 2AC7AB26953A78AD46B49603); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (5DB0711C456FD5D72DF2498C); name = Aero; packageProductDependencies = (69764682C66036DC0CE36654, 351F5C6BAE464B2FBED0D8E0, B0D44CFDC92407AEB22CB7FC); productName = Aero; productReference = C2B6AF95E5FB6AF04547C8EA; productType = "com.apple.product-type.application"; };
-7C1CFF113F420C27BE3F870D /* AeroUITests */ = { isa = PBXNativeTarget; buildConfigurationList = A5E93B15A02AA3025AC88070; buildPhases = (87AA925F24AC656A8AAB80A9, D6C04E321AC1AC815067AD02, 2FD82F28117CA43F2CCC2350); buildRules = (); dependencies = (8BC62B80562684797FDF3D7A); fileSystemSynchronizedGroups = (6F99D0E977B61988ED22843D); name = AeroUITests; productName = AeroUITests; productReference = 77EB3AD38D803EC3C3DF9309; productType = "com.apple.product-type.bundle.ui-testing"; };
-F6F4DA8D93E88A08220E03B7 /* Project */ = { isa = PBXProject; attributes = { BuildIndependentTargetsInParallel = YES; LastUpgradeCheck = 2700; TargetAttributes = { D3225F53B4406649474BC956 = { CreatedOnToolsVersion = 27.0; }; 7C1CFF113F420C27BE3F870D = { CreatedOnToolsVersion = 27.0; TestTargetID = D3225F53B4406649474BC956; }; }; }; buildConfigurationList = 5D7731714D3E69D68AA8D7ED; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, fr, Base); mainGroup = 2EB2D8158FC6EF9EB19CB439; minimizedProjectReferenceProxies = 1; packageReferences = (AE20C115207FF2DD10A0AA8E); preferredProjectObjectVersion = 77; productRefGroup = FE0A091FDBFB3E9C31B7A1BD; projectDirPath = ""; projectRoot = ""; targets = (D3225F53B4406649474BC956, 7C1CFF113F420C27BE3F870D); };
-}; rootObject = F6F4DA8D93E88A08220E03B7; }
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 69764682C66036DC0CE36654 /* BrowserCore */; };
+		CDB05B415DF02AEE4458D54F /* BrowserStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */; };
+		D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		858D0932EEACC1122B4B1EF1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F6F4DA8D93E88A08220E03B7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D3225F53B4406649474BC956;
+			remoteInfo = Aero;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0A999012FFB87B3EDAC99ADB /* Packages */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Packages; sourceTree = "<group>"; };
+		379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Debug.xcconfig; sourceTree = "<group>"; };
+		68A4194227BE4AB74BC3D323 /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
+		77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AeroUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Release.xcconfig; sourceTree = "<group>"; };
+		C2B6AF95E5FB6AF04547C8EA /* Aero.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Aero.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5DB0711C456FD5D72DF2498C /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
+		6F99D0E977B61988ED22843D /* Tests/AeroUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Tests/AeroUITests;
+			sourceTree = "<group>";
+		};
+		754164850F38C1ECDAF6B8ED /* Configuration */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0F91A57B11B30F1A7980649D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */,
+				CDB05B415DF02AEE4458D54F /* BrowserStorage in Frameworks */,
+				D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6C04E321AC1AC815067AD02 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2EB2D8158FC6EF9EB19CB439 = {
+			isa = PBXGroup;
+			children = (
+				5DB0711C456FD5D72DF2498C /* App */,
+				0A999012FFB87B3EDAC99ADB /* Packages */,
+				6F99D0E977B61988ED22843D /* Tests/AeroUITests */,
+				754164850F38C1ECDAF6B8ED /* Configuration */,
+				379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */,
+				77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */,
+				68A4194227BE4AB74BC3D323 /* docs */,
+				FE0A091FDBFB3E9C31B7A1BD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FE0A091FDBFB3E9C31B7A1BD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C2B6AF95E5FB6AF04547C8EA /* Aero.app */,
+				77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7C1CFF113F420C27BE3F870D /* AeroUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A5E93B15A02AA3025AC88070 /* Build configuration list for PBXNativeTarget "AeroUITests" */;
+			buildPhases = (
+				87AA925F24AC656A8AAB80A9 /* Sources */,
+				D6C04E321AC1AC815067AD02 /* Frameworks */,
+				2FD82F28117CA43F2CCC2350 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8BC62B80562684797FDF3D7A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6F99D0E977B61988ED22843D /* Tests/AeroUITests */,
+			);
+			name = AeroUITests;
+			productName = AeroUITests;
+			productReference = 77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		D3225F53B4406649474BC956 /* Aero */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5E4F9F7C53A9A6AF99DBCE3 /* Build configuration list for PBXNativeTarget "Aero" */;
+			buildPhases = (
+				6805EC6AFDAFDBE18E2FF355 /* Sources */,
+				0F91A57B11B30F1A7980649D /* Frameworks */,
+				2AC7AB26953A78AD46B49603 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5DB0711C456FD5D72DF2498C /* App */,
+			);
+			name = Aero;
+			packageProductDependencies = (
+				69764682C66036DC0CE36654 /* BrowserCore */,
+				351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */,
+				B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */,
+			);
+			productName = Aero;
+			productReference = C2B6AF95E5FB6AF04547C8EA /* Aero.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F6F4DA8D93E88A08220E03B7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					7C1CFF113F420C27BE3F870D = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = D3225F53B4406649474BC956;
+					};
+					D3225F53B4406649474BC956 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = 5D7731714D3E69D68AA8D7ED /* Build configuration list for PBXProject "Aero" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				fr,
+				Base,
+			);
+			mainGroup = 2EB2D8158FC6EF9EB19CB439;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FE0A091FDBFB3E9C31B7A1BD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D3225F53B4406649474BC956 /* Aero */,
+				7C1CFF113F420C27BE3F870D /* AeroUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2AC7AB26953A78AD46B49603 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FD82F28117CA43F2CCC2350 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6805EC6AFDAFDBE18E2FF355 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		87AA925F24AC656A8AAB80A9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8BC62B80562684797FDF3D7A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D3225F53B4406649474BC956 /* Aero */;
+			targetProxy = 858D0932EEACC1122B4B1EF1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		066776A1C212750E8BE506A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO;
+			};
+			name = Release;
+		};
+		1D8C0C6B1D22EA8C7669B263 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		3A77CD648711364E9A877D62 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO;
+			};
+			name = Debug;
+		};
+		7BD7682982285BB9BBB9EA6A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/AeroUITests.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = Aero;
+			};
+			name = Debug;
+		};
+		BFD315016DE16320F7E2120C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		EE6A2E9A9B1D3B003A794EA3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/AeroUITests.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = Aero;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5D7731714D3E69D68AA8D7ED /* Build configuration list for PBXProject "Aero" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFD315016DE16320F7E2120C /* Debug */,
+				1D8C0C6B1D22EA8C7669B263 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A5E93B15A02AA3025AC88070 /* Build configuration list for PBXNativeTarget "AeroUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7BD7682982285BB9BBB9EA6A /* Debug */,
+				EE6A2E9A9B1D3B003A794EA3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B5E4F9F7C53A9A6AF99DBCE3 /* Build configuration list for PBXNativeTarget "Aero" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3A77CD648711364E9A877D62 /* Debug */,
+				066776A1C212750E8BE506A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BrowserKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
+			productName = BrowserStorage;
+		};
+		69764682C66036DC0CE36654 /* BrowserCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
+			productName = BrowserCore;
+		};
+		B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
+			productName = BrowserWebKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F6F4DA8D93E88A08220E03B7 /* Project object */;
+}
