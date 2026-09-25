@@ -9,7 +9,7 @@ private let loadTimeout = Duration.seconds(10)
 
 @MainActor
 private func makeRegistry(_ settings: HibernationSettings = immediate) -> WebPageRegistry {
-    WebPageRegistry(ephemeral: true, hibernation: settings, liveBackgroundPageLimit: 10)
+    WebPageRegistry(downloads: makeTestDownloads(), ephemeral: true, hibernation: settings, liveBackgroundPageLimit: 10)
 }
 
 @MainActor
@@ -79,6 +79,7 @@ private final class PinnedTabs: WebPageRegistryDelegate {
     init(pinned: Set<UUID>) { self.pinned = pinned }
     func isPinned(_ tabID: UUID) -> Bool { pinned.contains(tabID) }
     func page(_ tabID: UUID, didUpdateURL url: URL, title: String) {}
+    func page(_ tabID: UUID, didVisit url: URL) {}
     func page(_ tabID: UUID, didDeclareIcons links: [FaviconLink], at url: URL) {}
     func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab? { nil }
     func pageDidOpenPopup(_ tabID: UUID) {}

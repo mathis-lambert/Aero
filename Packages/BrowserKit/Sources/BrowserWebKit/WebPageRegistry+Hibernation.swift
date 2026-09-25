@@ -40,7 +40,7 @@ extension WebPageRegistry {
     func hibernate(_ tabIDs: [UUID]) async {
         for tabID in tabIDs {
             guard !Task.isCancelled, let page = livePages[tabID]?.page else { continue }
-            if hasPopupRelationship(tabID) {
+            if hasPopupRelationship(tabID) || downloads.isDownloading(from: tabID) {
                 livePages[tabID]?.lastExemption = .now
                 continue
             }

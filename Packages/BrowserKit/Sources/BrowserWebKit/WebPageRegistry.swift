@@ -22,6 +22,7 @@ public final class WebPageRegistry {
         set { policy.settings = newValue; refreshHibernationSchedule() }
     }
     public weak var delegate: WebPageRegistryDelegate?
+    public let downloads: DownloadCoordinator
 
     var livePages: [UUID: LivePage] = [:]
     var activeTabID: UUID?
@@ -32,12 +33,13 @@ public final class WebPageRegistry {
     private var pressureMonitor: MemoryPressureMonitor?
     private let ephemeral: Bool
 
-    public convenience init(ephemeral: Bool = false, hibernation: HibernationSettings = .default) {
+    public convenience init(downloads: DownloadCoordinator, ephemeral: Bool = false, hibernation: HibernationSettings = .default) {
         let limit = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
-        self.init(ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
+        self.init(downloads: downloads, ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
     }
 
-    package init(ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
+    package init(downloads: DownloadCoordinator, ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
+        self.downloads = downloads
         self.ephemeral = ephemeral
         policy = HibernationPolicy(settings: hibernation, liveBackgroundPageLimit: liveBackgroundPageLimit)
         pressureMonitor = MemoryPressureMonitor { [weak self] pressure in
@@ -107,6 +109,8 @@ public final class WebPageRegistry {
 
     private func connect(_ page: BrowserPage, to tabID: UUID) {
         page.onMetadata = { [weak self] url, title in self?.delegate?.page(tabID, didUpdateURL: url, title: title) }
+        page.onVisit = { [weak self] url in self?.delegate?.page(tabID, didVisit: url) }
+        page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
         page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
         page.onClose = { [weak self] in

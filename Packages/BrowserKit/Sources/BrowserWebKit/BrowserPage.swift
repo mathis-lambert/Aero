@@ -6,6 +6,10 @@ import WebKit
 @MainActor @Observable
 public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     static let firstFrameTimeout = Duration.milliseconds(1500)
+    /// WebKit reports a navigation that became a download with this domain and code; the current
+    /// page stays as it was.
+    private static let webKitErrorDomain = "WebKitErrorDomain"
+    private static let frameLoadInterruptedByPolicyChange = 102
 
     public let webView: WKWebView
     public private(set) var isLoading = false
@@ -20,11 +24,15 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     /// Set by the registry, which owns the tab identity behind each event.
     @ObservationIgnored var onMetadata: ((URL, String) -> Void)?
+    @ObservationIgnored var onVisit: ((URL) -> Void)?
+    @ObservationIgnored var onDownload: ((WKDownload) -> Void)?
     @ObservationIgnored var onIcons: (([FaviconLink], URL) -> Void)?
     @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
     @ObservationIgnored var onClose: (() -> Void)?
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []
     @ObservationIgnored private var requestedURL: URL?
+    /// The address of the last recorded visit; reloads and restores of it add no visit.
+    @ObservationIgnored private var visitedURL: URL?
     @ObservationIgnored private var firstFrameTimeout: Task<Void, Never>?
 
     static func configuration(store: WKWebsiteDataStore) -> WKWebViewConfiguration {
@@ -67,6 +75,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     func restore(_ interactionState: Any, url: URL) {
         failure = nil
         requestedURL = url
+        visitedURL = url
         webView.interactionState = interactionState
     }
 
@@ -79,8 +88,28 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public func goBack() { failure = nil; webView.goBack() }
     public func goForward() { failure = nil; webView.goForward() }
 
+    /// Selects and scrolls to the next match, wrapping around; returns whether one exists.
+    public func find(_ text: String, backwards: Bool = false) async -> Bool {
+        let configuration = WKFindConfiguration()
+        configuration.backwards = backwards
+        configuration.caseSensitive = false
+        configuration.wraps = true
+        return (try? await webView.find(text, configuration: configuration))?.matchFound == true
+    }
+
+    /// The page's selected text, bounded, to prefill searches.
+    public func selectedText() async -> String? {
+        let result = try? await webView.callAsyncJavaScript(PageScripts.selectedText, contentWorld: PageScripts.world)
+        guard let text = result as? String, !text.isEmpty else { return nil }
+        return text
+    }
+
+    public func focus() { webView.window?.makeFirstResponder(webView) }
+
     func dispose() {
         onMetadata = nil
+        onVisit = nil
+        onDownload = nil
         onIcons = nil
         onPopup = nil
         onClose = nil
@@ -97,7 +126,16 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         progress = webView.estimatedProgress
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
-        if let url = webView.url, NavigationInput.isWebURL(url) { onMetadata?(url, webView.title ?? "") }
+        guard let url = webView.url, NavigationInput.isWebURL(url) else { return }
+        // An address change outside a load is a same-document navigation (`pushState`).
+        if !webView.isLoading { recordVisit(url) }
+        onMetadata?(url, webView.title ?? "")
+    }
+
+    private func recordVisit(_ url: URL) {
+        guard url != visitedURL else { return }
+        visitedURL = url
+        onVisit?(url)
     }
 
     private func fail(_ failure: PageFailure) {
@@ -148,7 +186,10 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         refresh()
     }
 
-    public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { awaitFirstFrame() }
+    public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        awaitFirstFrame()
+        if let url = webView.url, NavigationInput.isWebURL(url) { recordVisit(url) }
+    }
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         refresh()
@@ -156,13 +197,20 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error) {
-        if (error as NSError).code != NSURLErrorCancelled { fail(.loadFailed) }
+        if Self.isFailure(error) { fail(.loadFailed) }
         refresh()
     }
 
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
-        if (error as NSError).code != NSURLErrorCancelled { fail(.loadFailed) }
+        if Self.isFailure(error) { fail(.loadFailed) }
         refresh()
+    }
+
+    /// Cancelled loads and navigations that became downloads are not failures of the page.
+    private static func isFailure(_ error: any Error) -> Bool {
+        let error = error as NSError
+        if error.domain == NSURLErrorDomain, error.code == NSURLErrorCancelled { return false }
+        return !(error.domain == webKitErrorDomain && error.code == frameLoadInterruptedByPolicyChange)
     }
 
     public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
@@ -172,16 +220,35 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         guard let url = navigationAction.request.url else { return .cancel }
+        if navigationAction.shouldPerformDownload { return .download }
         // Frame-local blob/about documents are legitimate; never launch external schemes implicitly.
         if NavigationInput.isWebURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
         if navigationAction.targetFrame?.isMainFrame != false { fail(.unsupportedNavigation) }
         return .cancel
     }
 
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse) async -> WKNavigationResponsePolicy {
+        let disposition = (navigationResponse.response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Disposition")
+        let isAttachment = disposition?.lowercased().hasPrefix("attachment") == true
+        return isAttachment || !navigationResponse.canShowMIMEType ? .download : .allow
+    }
+
+    public func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+        onDownload?(download)
+    }
+
+    public func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+        onDownload?(download)
+    }
+
     // MARK: - WKUIDelegate
 
+    /// Popups may start blank (`about:blank`, then written by script) but never at another scheme,
+    /// so a website cannot open a browser page such as `auro://history`.
     public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        onPopup?(configuration, navigationAction.request.url)
+        let url = navigationAction.request.url
+        if let url, !url.absoluteString.isEmpty, !NavigationInput.isWebURL(url), url.scheme != "about" { return nil }
+        return onPopup?(configuration, url)
     }
 
     public func webViewDidClose(_ webView: WKWebView) { onClose?() }

@@ -31,6 +31,12 @@ enum PageScripts {
         return true;
         """
 
+    static let maximumSelectionLength = 256
+
+    static let selectedText = """
+        return getSelection().toString().trim().slice(0, \(maximumSelectionLength));
+        """
+
     static let maximumIconLinks = 32
 
     /// Function body listing link declarations; `href` is already resolved against the document base.

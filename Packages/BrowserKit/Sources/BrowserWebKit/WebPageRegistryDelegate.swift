@@ -7,6 +7,8 @@ import Foundation
 public protocol WebPageRegistryDelegate: AnyObject {
     func isPinned(_ tabID: UUID) -> Bool
     func page(_ tabID: UUID, didUpdateURL url: URL, title: String)
+    /// The page committed a new address; reloads and hibernation restores are not reported.
+    func page(_ tabID: UUID, didVisit url: URL)
     func page(_ tabID: UUID, didDeclareIcons links: [FaviconLink], at url: URL)
     /// Creates the record for a popup in the opener's space, or returns `nil` to block it.
     func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab?
