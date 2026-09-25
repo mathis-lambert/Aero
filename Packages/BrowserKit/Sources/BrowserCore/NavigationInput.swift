@@ -32,8 +32,3 @@ public enum NavigationInput {
         return url
     }
 }
-
-public enum BrowserCommand: String, CaseIterable, Identifiable, Sendable {
-    case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles
-    public var id: Self { self }
-}
