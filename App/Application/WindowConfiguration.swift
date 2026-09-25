@@ -46,10 +46,10 @@ struct WindowConfiguration: NSViewRepresentable {
             window.isMovableByWindowBackground = false
 
             if usesBrowserChrome {
-                // An empty native toolbar would cover the sidebar and page content.
+                // An empty native toolbar would cover the sidebar and page content. Full screen rebuilds
+                // the titlebar, which shows its buttons again.
                 window.toolbar = nil
-                for name in [NSWindow.didResizeNotification, NSWindow.didBecomeKeyNotification,
-                             NSWindow.didEnterFullScreenNotification, NSWindow.didExitFullScreenNotification] {
+                for name in [NSWindow.didEnterFullScreenNotification, NSWindow.didExitFullScreenNotification] {
                     NotificationCenter.default.addObserver(self, selector: #selector(updateWindowControls), name: name, object: window)
                 }
             }

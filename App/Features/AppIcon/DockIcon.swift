@@ -17,15 +17,9 @@ enum DockIcon {
         NSApp.applicationIconImage = variant.flatMap(image(for:))
     }
 
-    /// The artwork alone, for previews in Settings.
-    static func artwork(for variant: AppIconVariant) -> NSImage? {
-        guard let url = Bundle.main.url(forResource: variant.resourceName, withExtension: "svg") else { return nil }
-        return NSImage(contentsOf: url)
-    }
-
     /// The artwork masked and shadowed like a system icon, so it sits with the other Dock icons.
     private static func image(for variant: AppIconVariant) -> NSImage? {
-        guard let artwork = artwork(for: variant) else { return nil }
+        guard let url = variant.artworkURL, let artwork = NSImage(contentsOf: url) else { return nil }
         let inset = (canvas - body) / 2
         let frame = NSRect(x: inset, y: inset, width: body, height: body)
         return NSImage(size: NSSize(width: canvas, height: canvas), flipped: false) { _ in

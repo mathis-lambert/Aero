@@ -39,9 +39,11 @@ enum PageScripts {
 
     static let maximumIconLinks = 32
 
-    /// Function body listing link declarations; `href` is already resolved against the document base.
+    /// Function body listing icon declarations; `href` is already resolved against the document base.
+    /// Only icon relations are selected, so stylesheets and preloads never crowd icons out of the limit.
     static let declaredIcons = """
-        return Array.from(document.querySelectorAll("link[rel][href]"), (link) => ({
+        const icons = 'link[href][rel~="icon" i], link[href][rel~="apple-touch-icon" i], link[href][rel~="apple-touch-icon-precomposed" i]';
+        return Array.from(document.querySelectorAll(icons), (link) => ({
             rel: link.rel, href: link.href, sizes: link.getAttribute("sizes"), type: link.type
         })).slice(0, \(maximumIconLinks));
         """

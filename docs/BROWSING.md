@@ -4,7 +4,7 @@ Each section states the behavior, its owner, the ways it can fail, and how it is
 
 ## Favicons
 
-Pages declare icons with `<link rel="icon">` and `apple-touch-icon`. After the main frame finishes loading, `BrowserPage` reads those declarations from an isolated content world and reports candidates, plus the origin's `/favicon.ico`. The app ranks them, downloads the best one, downsamples it to a small PNG, and caches it in memory and on disk per profile and host. Restored tabs show the cached icon without loading their page. The site initial or a globe symbol remains the fallback.
+Pages declare icons with `<link rel="icon">` and `apple-touch-icon`. After the main frame finishes loading, `BrowserPage` reads those declarations from an isolated content world and reports candidates, plus the origin's `/favicon.ico`. The app ranks them, downloads the best one, downsamples it to a small PNG, and caches it on disk per profile and host. Memory keeps the 256 most recently shown icons; each is observed on its own, so a new icon redraws only the rows that show it. Restored tabs show the cached icon without loading their page. The site initial or a globe symbol remains the fallback.
 
 Failure modes:
 
@@ -15,8 +15,9 @@ Failure modes:
 5. Icons leak across profiles, or fetching sends the profile's cookies.
 6. Every page load refetches the icon.
 7. The disk cache is unbounded, or its files are named from unsanitized hosts.
+8. Other link declarations (feeds, stylesheets, preloads) placed first crowd the icons out of the bounded query.
 
-Verification: E2E `testFaviconAppearsAndPersistsAcrossRelaunch` (fixture icon shown in the tab row, still shown after relaunch without loading the page). Isolated tests cover candidate ranking and parsing (2), which the E2E fixture cannot exercise exhaustively.
+Verification: E2E `testFaviconAppearsAndPersistsAcrossRelaunch` (fixture icon, declared after 33 feed links, shown in the tab row, still shown after relaunch without loading the page; 8). Isolated tests cover candidate ranking and parsing (2), which the E2E fixture cannot exercise exhaustively.
 
 ## First-frame reveal
 

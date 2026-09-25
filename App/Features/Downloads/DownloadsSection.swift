@@ -49,9 +49,7 @@ private struct DownloadRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(nsImage: NSWorkspace.shared.icon(for: UTType(filenameExtension: (download.filename as NSString).pathExtension) ?? .data))
-                .resizable()
-                .frame(width: BrowserDesign.downloadIconSize, height: BrowserDesign.downloadIconSize)
+            FileIcon(filename: download.filename)
                 .opacity(download.state == .downloading ? 0.6 : 1)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
@@ -97,5 +95,16 @@ private struct DownloadRow: View {
             IconButton(symbol: "arrow.clockwise", label: "Retry download", size: BrowserDesign.navigationButtonSize) { downloads.retry(download) }
                 .accessibilityIdentifier("downloads.retry")
         }
+    }
+}
+
+/// Its own view, so progress updates of the row do not ask the system for the icon again.
+private struct FileIcon: View {
+    let filename: String
+
+    var body: some View {
+        Image(nsImage: NSWorkspace.shared.icon(for: UTType(filenameExtension: (filename as NSString).pathExtension) ?? .data))
+            .resizable()
+            .frame(width: BrowserDesign.downloadIconSize, height: BrowserDesign.downloadIconSize)
     }
 }

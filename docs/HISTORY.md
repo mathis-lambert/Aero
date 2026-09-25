@@ -5,9 +5,9 @@ The failure modes below were written before the implementation.
 ## Behavior
 
 - A visit is recorded when a page commits a new document or changes its address in place (`pushState`), unless the address equals the page's previous one: reloads, redirects before commit and hibernation restores add nothing. Selecting a tab restored after a relaunch loads it, which counts as a visit.
-- Titles arrive after the visit and update the entry.
+- Titles arrive after the visit and update the entry. They are written together after a short delay, or before the History page reads, so a page that keeps changing its title writes once per delay with its latest title.
 - History belongs to a profile. Every query is scoped to one profile.
-- History is a browser page shown in a tab (`aero://history`), like Chromium's history page. ⌘Y selects the space's History tab, or opens one. The page lists pages by their most recent visit, grouped by day, newest first. Search matches words in titles and addresses, ignoring case and diacritics ("ete" finds "Été"), with prefix matching. Return or double-click opens the entry in the same tab; the context menu opens it in a new tab; Delete removes it. Clear History removes the last hour, today, today and yesterday, or everything, for the current profile.
+- History is a browser page shown in a tab (`aero://history`), like Chromium's history page. ⌘Y selects the space's History tab, or opens one. The page lists pages by their most recent visit, grouped by day, newest first. Search matches words in titles and addresses, ignoring case and diacritics ("ete" finds "Été"), with prefix matching. Return or double-click opens the entry in the same tab; the context menu opens it in a new tab; Delete removes it. Clear History removes the last hour, today, today and yesterday, or everything, for the current profile. The page reads history when it appears, when the search changes and after clearing; visits made meanwhile in other tabs appear the next time it is shown.
 - Visits older than a year are pruned when the store opens.
 
 ## Storage

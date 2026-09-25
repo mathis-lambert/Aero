@@ -54,13 +54,15 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         #if DEBUG
         webView.isInspectable = true
         #endif
+        // WKWebView posts these on the main thread; applying them directly avoids a task per progress tick.
+        let refresh: @Sendable (WKWebView, Any) -> Void = { [weak self] _, _ in MainActor.assumeIsolated { self?.refresh() } }
         observations = [
-            webView.observe(\.estimatedProgress) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
-            webView.observe(\.isLoading) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
-            webView.observe(\.canGoBack) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
-            webView.observe(\.canGoForward) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
-            webView.observe(\.title) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
-            webView.observe(\.url) { [weak self] _, _ in Task { @MainActor in self?.refresh() } }
+            webView.observe(\.estimatedProgress, changeHandler: refresh),
+            webView.observe(\.isLoading, changeHandler: refresh),
+            webView.observe(\.canGoBack, changeHandler: refresh),
+            webView.observe(\.canGoForward, changeHandler: refresh),
+            webView.observe(\.title, changeHandler: refresh),
+            webView.observe(\.url, changeHandler: refresh)
         ]
     }
 
@@ -153,9 +155,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             do { try await Task.sleep(for: Self.firstFrameTimeout) } catch { return }
             self?.revealFirstFrame()
         }
-        Task { [weak self, webView] in
-            // Either outcome reveals the page: a script failure must not leave it hidden.
-            _ = try? await webView.callAsyncJavaScript(PageScripts.nextFrame, contentWorld: PageScripts.world)
+        // Either outcome reveals the page: a script failure must not leave it hidden. The handler holds
+        // no reference to the view, so a page closed before painting is released with its pending script.
+        webView.callAsyncJavaScript(PageScripts.nextFrame, in: nil, in: PageScripts.world) { [weak self] _ in
             self?.revealFirstFrame()
         }
     }

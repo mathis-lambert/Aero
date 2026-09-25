@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 /// Downloads and downsamples site icons away from the main actor.
 /// Requests carry no cookies or cache, so icon fetching never reveals a profile's identity.
 struct FaviconFetcher: Sendable {
-    static let maximumDownloadBytes = 512 * 1024
+    private static let maximumDownloadBytes = 512 * 1024
     private static let requestTimeout: TimeInterval = 10
     private static let resourceTimeout: TimeInterval = 15
     private static let successStatus = 200
@@ -33,17 +33,15 @@ struct FaviconFetcher: Sendable {
         return nil
     }
 
+    /// Streams to a temporary file: collecting bytes one at a time costs about 6 µs each, seconds for a
+    /// large icon. The resource timeout bounds the transfer; the size is checked once it completes.
     private func download(_ url: URL) async -> Data? {
         do {
-            let (bytes, response) = try await session.bytes(from: url)
+            let (file, response) = try await session.download(from: url)
+            defer { try? FileManager.default.removeItem(at: file) }
             guard (response as? HTTPURLResponse)?.statusCode == Self.successStatus,
-                  response.expectedContentLength <= Int64(Self.maximumDownloadBytes) else { return nil }
-            var data = Data()
-            for try await byte in bytes {
-                data.append(byte)
-                if data.count > Self.maximumDownloadBytes { return nil }
-            }
-            return data
+                  try file.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? .max <= Self.maximumDownloadBytes else { return nil }
+            return try Data(contentsOf: file)
         } catch {
             // Icons are best effort: an unreachable icon only keeps the fallback.
             return nil

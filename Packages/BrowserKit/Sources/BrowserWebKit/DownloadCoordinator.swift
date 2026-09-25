@@ -69,8 +69,9 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
     private func attach(_ download: WKDownload, to record: BrowserDownload) {
         record.download = download
         download.delegate = self
+        // WebKit updates download progress on the main thread, for every packet received.
         record.progressObservation = download.progress.observe(\.fractionCompleted) { [weak record] progress, _ in
-            Task { @MainActor in record?.updateProgress(progress) }
+            MainActor.assumeIsolated { record?.updateProgress(progress) }
         }
     }
 

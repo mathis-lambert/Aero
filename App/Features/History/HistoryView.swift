@@ -4,7 +4,7 @@ import SwiftUI
 
 /// The History page, shown in a tab (`aero://history`).
 struct HistoryView: View {
-    /// Waits for a pause in typing, and coalesces refreshes while pages load.
+    /// Waits for a pause in typing.
     private static let reloadDelay = Duration.milliseconds(150)
     private static let contentWidth: CGFloat = 760
     private static let searchHeight: CGFloat = 44
@@ -24,7 +24,6 @@ struct HistoryView: View {
     private struct LoadKey: Hashable {
         let profileID: UUID?
         let query: String
-        let revision: Int
     }
 
     private var profileID: UUID? { browser.window.selectedProfileID }
@@ -48,7 +47,7 @@ struct HistoryView: View {
         .sheet(isPresented: $confirmingClear) {
             ClearHistorySheet(profileName: browser.profile?.name ?? "", clear: clear)
         }
-        .task(id: LoadKey(profileID: profileID, query: query, revision: browser.history.revision)) {
+        .task(id: LoadKey(profileID: profileID, query: query)) {
             do { try await Task.sleep(for: Self.reloadDelay) } catch { return }
             await load(appending: false)
         }
@@ -183,5 +182,6 @@ struct HistoryView: View {
     private func clear(_ range: HistoryClearRange) {
         guard let profileID else { return }
         browser.history.clear(profileID: profileID, since: range.start())
+        Task { await load(appending: false) }
     }
 }

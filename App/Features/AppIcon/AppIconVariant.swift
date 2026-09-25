@@ -2,7 +2,7 @@ import SwiftUI
 
 /// An alternate app icon from `App/Resources/AppIcons`. The stable `id` is what preferences store.
 /// The A on paper and on night is the system icon itself (Automatic), so it is not an alternate.
-struct AppIconVariant: Hashable, Identifiable {
+struct AppIconVariant: Hashable, Identifiable, Sendable {
     enum Mark: String, CaseIterable { case a, plume }
     enum Palette: String, CaseIterable {
         case light, dark, blue, bw, wb, lavender, sun, terracotta, olive, dawn, aurora
@@ -16,7 +16,7 @@ struct AppIconVariant: Hashable, Identifiable {
     }.filter { !($0.mark == .a && [.light, .dark].contains($0.palette)) }
 
     var id: String { "\(mark.rawValue)-\(palette.rawValue)" }
-    var resourceName: String { "aero-\(id)" }
+    var artworkURL: URL? { Bundle.main.url(forResource: "aero-\(id)", withExtension: "svg") }
 
     /// Returns `nil` for an unknown identifier, such as one saved by a build that had other variants.
     init?(id: String) {

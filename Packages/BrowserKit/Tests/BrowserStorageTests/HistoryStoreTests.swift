@@ -130,6 +130,6 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     let page = try url("https://example.com")
     try await store.recordVisit(to: page, title: nil, profileID: profile)
     try await store.clear(profileID: profile, since: nil)
-    try await store.updateTitle("Late", for: page, profileID: profile)
+    try await store.updateTitles([page: "Late"], profileID: profile)
     #expect(try await store.entries(profileID: profile).isEmpty)
 }

@@ -31,9 +31,8 @@ public actor HistoryStore {
         let page: [SQLiteDatabase.Value] = [.text(profileID.uuidString), .text(address)]
         try database.transaction {
             try database.run("""
-                INSERT INTO pages (profile_id, url, title, visit_count, last_visit) VALUES (?, ?, ?, 1, ?)
+                INSERT INTO pages (profile_id, url, title, last_visit) VALUES (?, ?, ?, ?)
                 ON CONFLICT (profile_id, url) DO UPDATE SET
-                    visit_count = visit_count + 1,
                     last_visit = max(last_visit, excluded.last_visit),
                     title = CASE WHEN excluded.title = '' THEN title ELSE excluded.title END
                 """, page + [.text(Self.bounded(title)), .real(date.timeIntervalSinceReferenceDate)])
@@ -42,11 +41,16 @@ public actor HistoryStore {
         }
     }
 
-    /// Only updates an existing entry, so a late title cannot bring back a cleared page.
-    public func updateTitle(_ title: String, for url: URL, profileID: UUID) throws {
-        guard let address = Self.address(url), !title.isEmpty else { return }
-        try open().run("UPDATE pages SET title = ? WHERE profile_id = ? AND url = ?",
-                       [.text(Self.bounded(title)), .text(profileID.uuidString), .text(address)])
+    /// Only updates existing entries, so a late title cannot bring back a cleared page.
+    public func updateTitles(_ titles: [URL: String], profileID: UUID) throws {
+        let database = try open()
+        try database.transaction {
+            for (url, title) in titles {
+                guard let address = Self.address(url), !title.isEmpty else { continue }
+                try database.run("UPDATE pages SET title = ? WHERE profile_id = ? AND url = ?",
+                                 [.text(Self.bounded(title)), .text(profileID.uuidString), .text(address)])
+            }
+        }
     }
 
     /// Most recent first. `query` matches word prefixes in titles and addresses; FTS syntax in it
@@ -55,7 +59,7 @@ public actor HistoryStore {
         let database = try open()
         let before: SQLiteDatabase.Value = before.map { .real($0.timeIntervalSinceReferenceDate) } ?? .null
         let bindings: [SQLiteDatabase.Value] = [.text(profileID.uuidString), before, .integer(Int64(limit))]
-        let columns = "pages.id, pages.url, pages.title, pages.last_visit, pages.visit_count"
+        let columns = "pages.id, pages.url, pages.title, pages.last_visit"
         let filter = "pages.profile_id = ?1 AND (?2 IS NULL OR pages.last_visit < ?2)"
         if let match = Self.matchExpression(query) {
             return try database.query("""
@@ -91,9 +95,7 @@ public actor HistoryStore {
             try database.run("DELETE FROM pages WHERE profile_id = ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id)",
                              [profile])
             try database.run("""
-                UPDATE pages SET
-                    last_visit = (SELECT max(visited_at) FROM visits WHERE page_id = pages.id),
-                    visit_count = (SELECT count(*) FROM visits WHERE page_id = pages.id)
+                UPDATE pages SET last_visit = (SELECT max(visited_at) FROM visits WHERE page_id = pages.id)
                 WHERE profile_id = ? AND last_visit >= ?
                 """, [profile, since])
         }
@@ -142,7 +144,6 @@ public actor HistoryStore {
                     profile_id TEXT NOT NULL,
                     url TEXT NOT NULL,
                     title TEXT NOT NULL DEFAULT '',
-                    visit_count INTEGER NOT NULL DEFAULT 0,
                     last_visit REAL NOT NULL,
                     UNIQUE (profile_id, url)
                 );
@@ -194,6 +195,6 @@ public actor HistoryStore {
     private static func entry(_ row: SQLiteDatabase.Row) -> HistoryEntry? {
         guard let url = URL(string: row.text(1)) else { return nil }
         return HistoryEntry(id: row.integer(0), url: url, title: row.text(2),
-                            lastVisit: Date(timeIntervalSinceReferenceDate: row.real(3)), visitCount: Int(row.integer(4)))
+                            lastVisit: Date(timeIntervalSinceReferenceDate: row.real(3)))
     }
 }

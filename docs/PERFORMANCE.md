@@ -23,7 +23,7 @@ Known limits: only the main frame is inspected for unsent text; downloads and po
 
 ## Session writes
 
-`SessionStore.scheduleSave` coalesces a burst of changes into at most one atomic write per second, always with the latest snapshot. Termination calls `save` directly, which supersedes any pending write.
+`SessionStore.scheduleSave` coalesces a burst of changes into at most one atomic write per second, always with the latest snapshot. Termination calls `save` directly, which supersedes any pending write. A title change alone schedules no write: it is saved with the next change or at termination, so a page that animates its title (a timer, an unread count) never rewrites the session. History coalesces titles the same way (`docs/HISTORY.md`).
 
 ## Measuring
 

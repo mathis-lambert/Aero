@@ -9,7 +9,7 @@ struct FaviconView<Placeholder: View>: View {
 
     var body: some View {
         Group {
-            if let key, let image = cache.images[key] {
+            if let key, let image = cache.favicon(for: key).image {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
@@ -21,8 +21,5 @@ struct FaviconView<Placeholder: View>: View {
             }
         }
         .accessibilityHidden(true)
-        .task(id: key) {
-            if let key { await cache.load(key) }
-        }
     }
 }

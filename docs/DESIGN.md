@@ -42,7 +42,7 @@ Promote values to shared tokens when they form a repeated visual rule. Keep one-
 
 ### Choosing an icon
 
-Settings › Appearance offers the app icon: **Automatic** (the system icon, papier in light and nuit in dark) or one of the twenty alternates in `App/Resources/AppIcons`; the A on paper and on night is the system icon itself, so it is not repeated as an alternate. The choice replaces the Dock icon at launch and immediately when changed, drawn on the macOS icon grid (an 824 pt rounded square on a 1024 pt canvas). macOS does not let a sandboxed app change its Finder or Launchpad icon, so those keep the system icon; the setting says so.
+Settings › Appearance offers the app icon: **Automatic** (the system icon, papier in light and nuit in dark) or one of the twenty alternates in `App/Resources/AppIcons`; the A on paper and on night is the system icon itself, so it is not repeated as an alternate. The choice replaces the Dock icon once the session has loaded at launch, and immediately when changed, drawn on the macOS icon grid (an 824 pt rounded square on a 1024 pt canvas). macOS does not let a sandboxed app change its Finder or Launchpad icon, so those keep the system icon; the setting says so. The picker renders its thumbnails away from the main actor while it is shown and keeps none afterwards.
 
 Failure modes:
 

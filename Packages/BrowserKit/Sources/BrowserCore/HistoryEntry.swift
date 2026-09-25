@@ -6,13 +6,11 @@ public struct HistoryEntry: Identifiable, Equatable, Sendable {
     public let url: URL
     public let title: String
     public let lastVisit: Date
-    public let visitCount: Int
 
-    public init(id: Int64, url: URL, title: String, lastVisit: Date, visitCount: Int) {
+    public init(id: Int64, url: URL, title: String, lastVisit: Date) {
         self.id = id
         self.url = url
         self.title = title
         self.lastVisit = lastVisit
-        self.visitCount = visitCount
     }
 }

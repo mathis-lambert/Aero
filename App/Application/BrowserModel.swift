@@ -73,8 +73,6 @@ final class BrowserModel {
 
     func start() async {
         guard !isReady, !loadFailed else { return }
-        // The application exists once the first window starts, so the Dock icon is not overwritten afterwards.
-        DockIcon.apply(preferences.appIcon)
         do {
             if let saved = try await store.load() { session = saved }
             window.selectedProfileID = session.profiles.first?.id
@@ -85,6 +83,9 @@ final class BrowserModel {
             errorMessage = String(localized: "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.")
             endLaunchInterval()
         }
+        // After the session, so drawing it never delays the first tabs. The application exists once the
+        // first window starts, so the icon is not overwritten afterwards.
+        if let icon = preferences.appIcon { DockIcon.apply(icon) }
     }
 
     private func endLaunchInterval() {
@@ -182,14 +183,15 @@ final class BrowserModel {
         return tab
     }
 
-    /// Late metadata for a closed tab is ignored.
+    /// Late metadata for a closed tab is ignored. A title alone is saved with the next change or on
+    /// quit, so a page that animates its title does not rewrite the session.
     func updateTab(_ id: UUID, url: URL, title: String) {
         guard let existing = session.tabs.first(where: { $0.id == id }), existing.url != url || existing.title != title else { return }
         session.updateTab(id: id, url: url, title: title)
-        if !title.isEmpty, title != existing.title || url != existing.url, let profileID = profileID(of: existing) {
+        if !title.isEmpty, let profileID = profileID(of: existing) {
             history.updateTitle(title, for: url, profileID: profileID)
         }
-        persist()
+        if existing.url != url { persist() }
     }
 
     /// Drops never move a tab into another space.
