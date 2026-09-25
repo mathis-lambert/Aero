@@ -137,6 +137,7 @@ struct SettingsView: View {
                     .accessibilityAddTraits(browser.session.appearance == option ? .isSelected : [])
                 }
             }
+            SettingsCard { AppIconPicker(browser: browser) }
             SettingsCard {
                 HStack(spacing: 14) {
                     Image(systemName: "circle.lefthalf.filled").foregroundStyle(.secondary)

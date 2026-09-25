@@ -38,7 +38,21 @@ Promote values to shared tokens when they form a repeated visual rule. Keep one-
 
 ## App icon
 
-`App/Resources/AppIcon.icon` is an Icon Composer document with one flat layer (no glass): a Gilda Display capital A filled with the brand's dithered wind, `aero-blue` dots on `paper` in light and `#8a93ff` on night in dark. The system supplies the mask and highlights. Regenerate the layers with `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> App/Resources/AppIcon.icon/Assets`; `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> docs/brand/icons --set` rewrites the alternate set in `docs/brand/icons`: the A and the feather in eleven palettes (the brand grounds, black on white, white on black, five colours and two duotones) (font from Google Fonts, SIL Open Font License; not stored here). The brand direction, including the feather variant, lives in the Aero design system and `docs/IDENTITY.md`.
+`App/Resources/AppIcon.icon` is an Icon Composer document with one flat layer (no glass): a Gilda Display capital A filled with the brand's dithered wind, `aero-blue` dots on `paper` in light and `#8a93ff` on night in dark. The system supplies the mask and highlights. Regenerate every icon with `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>` (font from Google Fonts, SIL Open Font License; not stored here): it writes the two system layers and the twenty alternates in `App/Resources/AppIcons` (the A in nine palettes, the feather in eleven) in one pass. The brand direction, including the feather variant, lives in the Aero design system and `docs/IDENTITY.md`.
+
+### Choosing an icon
+
+Settings › Appearance offers the app icon: **Automatic** (the system icon, papier in light and nuit in dark) or one of the twenty alternates in `App/Resources/AppIcons`; the A on paper and on night is the system icon itself, so it is not repeated as an alternate. The choice replaces the Dock icon at launch and immediately when changed, drawn on the macOS icon grid (an 824 pt rounded square on a 1024 pt canvas). macOS does not let a sandboxed app change its Finder or Launchpad icon, so those keep the system icon; the setting says so.
+
+Failure modes:
+
+1. The saved choice names a variant that no longer exists: fall back to Automatic without crashing.
+2. A bundled icon file is missing or unreadable: keep the system icon.
+3. Choosing Automatic leaves the previous variant in the Dock.
+4. The choice is lost after relaunch, or applied before the application is ready and then overwritten.
+5. Test runs change the icon stored for real use.
+
+Verification: E2E `testAppIconChoicePersistsAcrossLaunches` (select a variant, relaunch, still selected; Automatic restores the default selection). Tests namespace preferences, so a test choice never reaches real settings (5). The Dock image itself is not asserted by UI tests.
 
 ## Settings
 

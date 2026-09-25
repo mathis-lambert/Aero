@@ -17,6 +17,23 @@
         }
       }
     },
+    "%@, %@": {
+      "comment": "App icon variant: mark, then palette, such as “Feather, Sun”.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
     "Accent color": {
       "localizations": {
         "en": {
@@ -65,6 +82,22 @@
         }
       }
     },
+    "App icon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App icon"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icône de l’app"
+          }
+        }
+      }
+    },
     "Appearance": {
       "localizations": {
         "en": {
@@ -81,6 +114,38 @@
         }
       }
     },
+    "Aurora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurora"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurore"
+          }
+        }
+      }
+    },
+    "Automatic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatique"
+          }
+        }
+      }
+    },
     "Back": {
       "localizations": {
         "en": {
@@ -93,6 +158,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Précédent"
+          }
+        }
+      }
+    },
+    "Black on white": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Black on white"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noir sur blanc"
+          }
+        }
+      }
+    },
+    "Blue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blue"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bleu"
           }
         }
       }
@@ -385,6 +482,22 @@
         }
       }
     },
+    "Dawn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dawn"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aube"
+          }
+        }
+      }
+    },
     "Delete": {
       "localizations": {
         "en": {
@@ -509,6 +622,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Échec"
+          }
+        }
+      }
+    },
+    "Feather": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feather"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plume"
           }
         }
       }
@@ -817,6 +946,38 @@
         }
       }
     },
+    "Lavender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lavender"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lavande"
+          }
+        }
+      }
+    },
+    "Letter A": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letter A"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lettre A"
+          }
+        }
+      }
+    },
     "Light": {
       "localizations": {
         "en": {
@@ -961,6 +1122,22 @@
         }
       }
     },
+    "Night": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Night"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuit"
+          }
+        }
+      }
+    },
     "No history": {
       "localizations": {
         "en": {
@@ -1041,6 +1218,22 @@
         }
       }
     },
+    "Olive": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olive"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olive"
+          }
+        }
+      }
+    },
     "Open": {
       "localizations": {
         "en": {
@@ -1117,6 +1310,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les pages que vous consultez apparaissent ici."
+          }
+        }
+      }
+    },
+    "Paper": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paper"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Papier"
           }
         }
       }
@@ -1473,6 +1682,22 @@
         }
       }
     },
+    "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affichée dans le Dock pendant qu’Aero est ouvert. Le Finder et le Launchpad gardent l’icône par défaut."
+          }
+        }
+      }
+    },
     "Sleep after": {
       "localizations": {
         "en": {
@@ -1533,6 +1758,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Arrêter le chargement"
+          }
+        }
+      }
+    },
+    "Sun": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sun"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soleil"
           }
         }
       }
@@ -1837,6 +2078,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les pages consultées sont retirées de l’historique de ce profil. Les onglets, les données des sites et les connexions sont conservés."
+          }
+        }
+      }
+    },
+    "White on black": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "White on black"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blanc sur noir"
           }
         }
       }

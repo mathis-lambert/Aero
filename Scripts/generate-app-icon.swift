@@ -1,11 +1,10 @@
 #!/usr/bin/env swift
-// Generates Aero's dithered icons: the app icon layers and the alternate icon set.
+// Generates every Aero icon in one pass, so the system icon and the alternates cannot drift apart:
+//   App/Resources/AppIcon.icon/Assets  aero-a-light.svg and aero-a-dark.svg, the system icon layers
+//   App/Resources/AppIcons             aero-<mark>-<palette>.svg, the alternates offered in Settings
 //
-//   swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> App/Resources/AppIcon.icon/Assets
-//       Writes aero-a-light.svg and aero-a-dark.svg, the app icon layers.
-//   swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> <directory> --set
-//       Writes aero-<mark>-<palette>.svg for every mark (a, plume) and palette below.
-//   --boost <n> thickens the A's hairlines (default 1.0) so its bar and serifs survive the dither.
+//   swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> [--boost n]
+//   --boost thickens the A's hairlines (default 1.0) so its bar and serifs survive the dither.
 //
 // The capital A comes from Gilda Display, the brand serif (SIL Open Font License 1.1,
 // https://github.com/google/fonts/tree/main/ofl/gildadisplay); the font itself is not stored in the repository.
@@ -32,7 +31,7 @@ struct Palette {
 }
 let inkSplit = 0.6
 
-/// light and dark are the app icon; the rest are alternates.
+/// light and dark of the A are the system icon; every other mark and palette pair is an alternate.
 let palettes: [Palette] = [
     Palette(name: "light", ground: "#f6f7fb", ink: "#2230f5", motif: .mistral),
     Palette(name: "dark", ground: "#0b0d18", ink: "#8a93ff"),
@@ -55,17 +54,16 @@ let tuning: [Mark: Tuning] = [
 
 // MARK: - Arguments
 
-var positional: [String] = [], writeSet = false, boost = 1.0
+var positional: [String] = [], boost = 1.0
 var iterator = CommandLine.arguments.dropFirst().makeIterator()
 while let argument = iterator.next() {
-    switch argument {
-    case "--set": writeSet = true
-    case "--boost": boost = iterator.next().flatMap(Double.init) ?? boost
-    default: positional.append(argument)
-    }
+    if argument == "--boost" { boost = iterator.next().flatMap(Double.init) ?? boost } else { positional.append(argument) }
 }
-guard positional.count == 2 else { fatalError("Usage: generate-app-icon.swift <font.ttf> <output directory> [--set] [--boost n]") }
-let fontURL = URL(fileURLWithPath: positional[0]), outputURL = URL(fileURLWithPath: positional[1], isDirectory: true)
+guard positional.count == 1 else { fatalError("Usage: generate-app-icon.swift <GildaDisplay-Regular.ttf> [--boost n]") }
+let fontURL = URL(fileURLWithPath: positional[0])
+let resources = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("App/Resources")
+let systemIconURL = resources.appendingPathComponent("AppIcon.icon/Assets", isDirectory: true)
+let alternatesURL = resources.appendingPathComponent("AppIcons", isDirectory: true)
 
 // MARK: - Grayscale layers in a y-down 100-unit box
 
@@ -200,17 +198,18 @@ func svg(_ dots: [Dot], _ palette: Palette) -> String {
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(side)\" height=\"\(side)\" viewBox=\"0 0 \(side) \(side)\">\(body)</svg>\n"
 }
 
-try FileManager.default.createDirectory(at: outputURL, withIntermediateDirectories: true)
-let marks: [Mark] = writeSet ? Mark.allCases : [.a]
-let chosen = writeSet ? palettes : palettes.filter { ["light", "dark"].contains($0.name) }
+let systemPalettes: Set = ["light", "dark"]
 var written = 0
-for mark in marks {
+for url in [systemIconURL, alternatesURL] { try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true) }
+for mark in Mark.allCases {
     var byMotif: [Motif: [Dot]] = [:]
-    for palette in chosen {
+    for palette in palettes {
         let marked = byMotif[palette.motif] ?? dots(for: mark, motif: palette.motif)
         byMotif[palette.motif] = marked
-        try svg(marked, palette).write(to: outputURL.appendingPathComponent("aero-\(mark.rawValue)-\(palette.name).svg"), atomically: true, encoding: .utf8)
+        let isSystemIcon = mark == .a && systemPalettes.contains(palette.name)
+        let file = (isSystemIcon ? systemIconURL : alternatesURL).appendingPathComponent("aero-\(mark.rawValue)-\(palette.name).svg")
+        try svg(marked, palette).write(to: file, atomically: true, encoding: .utf8)
         written += 1
     }
 }
-print("\(written) icons written to \(outputURL.path)")
+print("\(written) icons written: 2 in \(systemIconURL.path), \(written - 2) in \(alternatesURL.path)")

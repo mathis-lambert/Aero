@@ -73,6 +73,8 @@ final class BrowserModel {
 
     func start() async {
         guard !isReady, !loadFailed else { return }
+        // The application exists once the first window starts, so the Dock icon is not overwritten afterwards.
+        DockIcon.apply(preferences.appIcon)
         do {
             if let saved = try await store.load() { session = saved }
             window.selectedProfileID = session.profiles.first?.id
@@ -235,6 +237,11 @@ final class BrowserModel {
         session.togglePin(id: id)
         pages.refreshHibernationSchedule()
         persist()
+    }
+
+    func setAppIcon(_ variant: AppIconVariant?) {
+        preferences.appIcon = variant
+        DockIcon.apply(variant)
     }
 
     func setHibernation(_ settings: HibernationSettings) {

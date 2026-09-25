@@ -32,6 +32,7 @@ final class BrowserPreferences {
         static let hibernationEnabled = "browser.hibernation.enabled"
         static let hibernationIdleMinutes = "browser.hibernation.idleMinutes"
         static let hibernationKeepsPinned = "browser.hibernation.keepsPinnedTabsLoaded"
+        static let appIcon = "browser.appIcon"
     }
 
     private let defaults: UserDefaults
@@ -39,6 +40,10 @@ final class BrowserPreferences {
     private(set) var language: BrowserLanguage
     var hibernation: HibernationSettings {
         didSet { storeHibernation() }
+    }
+    /// `nil` is Automatic: the bundle icon, which follows the appearance.
+    var appIcon: AppIconVariant? {
+        didSet { defaults.set(appIcon?.id, forKey: Key.appIcon) }
     }
     var needsLanguageRestart: Bool { language != launchLanguage }
 
@@ -50,6 +55,7 @@ final class BrowserPreferences {
         self.language = language
         launchLanguage = language
         hibernation = Self.loadHibernation(from: defaults)
+        appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconVariant.init(id:))
     }
 
     func setLanguage(_ language: BrowserLanguage) {
