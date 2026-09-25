@@ -12,7 +12,7 @@ A smooth interference field of diagonal waves, rendered with ordered (Bayer) dit
 | --- | --- | --- |
 | Website, launch material, onboarding (future) | Strong | Full-bleed, may animate |
 | New Tab page | Possible | A faint static field behind the input; must not compete with the search field or reduce contrast |
-| App icon | Weak | Dithering breaks down at 16–32 px and fights the Liquid Glass layers; keep the current icon |
+| App icon | Adopted | A dithered Gilda Display capital A, the same serif as the wordmark (see `DESIGN.md`); the texture is fine enough to read as tone at 16–32 px |
 | Chrome (sidebar, tab rows, settings) | No | Texture behind text hurts legibility; keep system surfaces |
 
 ## Implementation notes
@@ -23,4 +23,4 @@ A smooth interference field of diagonal waves, rendered with ordered (Bayer) dit
 
 ## Open questions
 
-Blue or gray as the default tone; whether the profile accent color can tint the field; a typeface pairing for brand surfaces. Earlier exploration: Provence palette, Fraunces and Instrument Sans for brand material, SF Pro in the app.
+Blue or gray as the default tone; whether the profile accent color can tint the field. The brand serif is Gilda Display, for the wordmark, the app icon and display titles; body text uses Instrument Sans, the app keeps SF Pro.

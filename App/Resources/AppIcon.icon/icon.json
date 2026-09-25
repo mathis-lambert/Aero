@@ -12,35 +12,22 @@
     {
       "layers" : [
         {
-          "glass" : true,
+          "glass" : false,
           "image-name-specializations" : [
             {
-              "value" : "hub-light.svg"
+              "value" : "aero-a-light.svg"
             },
             {
               "appearance" : "dark",
-              "value" : "hub-dark.svg"
+              "value" : "aero-a-dark.svg"
             }
           ],
-          "name" : "Hub"
-        },
-        {
-          "glass" : true,
-          "image-name-specializations" : [
-            {
-              "value" : "blades-light.svg"
-            },
-            {
-              "appearance" : "dark",
-              "value" : "blades-dark.svg"
-            }
-          ],
-          "name" : "Blades"
+          "name" : "Dithered A"
         }
       ],
       "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+        "kind" : "none",
+        "opacity" : 0
       },
       "translucency" : {
         "enabled" : false,
