@@ -20,7 +20,6 @@ struct SettingsCard<Content: View>: View {
     }
 }
 
-/// Separates the rows of a card.
 struct SettingsDivider: View {
     var body: some View {
         Hairline().padding(.vertical, SettingsLayout.rowSpacing)

@@ -1,7 +1,5 @@
 # Control bar
 
-The failure modes below were written before the implementation.
-
 ## Behavior
 
 One component, `ControlBarView` (`App/Features/ControlBar`), is the browser's only address, search and command field. It appears in two places with the same behavior:
@@ -27,11 +25,11 @@ Suggestion requests go through an ephemeral session without cookies, cache or cr
 
 ## New Tab page
 
-Each time the page appears, at launch or for a new tab, a gust rises from below its bottom edge. It travels fast (2,000 points per second), so little separates the wind from the bar, but what it does to each point unfolds in its own time. A soft, undithered light in the profile's accent rises with it from the bottom of the page and throws itself on the control bar, shrinking as it closes in, then fades as the bar lights up. As the gust passes the crescent, the dots grow in with a slight pop (0.75 s), swell a little, and the air gently pushes the texture away and lets it settle in one slow swing (about 0.7 s). When the light reaches the bar, a band of light crosses it from bottom to top, quick to start and unhurried to finish (0.9 s), and the bar barely stirs; then a fine ring and a faint halo remain. The gust, the light and the bar share one clock.
+Each time the page appears, a gust rises from below its bottom edge (`WindArc`, `Wind.metal`). A soft light in the profile's accent travels with it to the control bar; as the gust passes the crescent of dithered dots, they grow in and the texture swings once and settles; when the light reaches the bar, a band crosses it from bottom to top and leaves a fine ring and halo. The gust, the light and the bar share one clock, so the impact lands on the bar at any window size. The timings are the constants at the top of `Wind.metal`, `WindArc` and `ControlBarGlow`.
 
-The wind is the design system's mistral field drawn as "trame" dots in the profile's accent: on the dark canvas the dots take the accent's luminous version and the densest glow toward white; on the light canvas the sparse dots are paler and the densest carry the full tint. The crescent is thickest at its crest and tapers toward the ends, which dissolve before the page's sides; dots never touch, so the texture stays fine. A Metal shader (`Wind.metal`) draws every dot on the GPU, antialiased, and skips the pixels no gust can reach; the app only advances the time. The field drifts briskly along the wind, its gusts reshaping as they travel, and the crescent's line sways and breathes while someone is there, at 30 frames per second. It rests 20 seconds after the page appears or the pointer last moved over it, and resumes from the same shapes on the next movement. It never drifts while the window is inactive, with Reduce Motion (the page then appears whole, without the gust) or in Low Power Mode, so a New Tab page left open costs nothing.
+The dots are the design system's mistral field in the profile's accent (`light(in:)`), drawn antialiased on the GPU; the app only advances the time. The wind drifts at 30 frames per second while someone is there and rests 20 s after the page appears or the pointer last moved, resuming from the same shapes. It never drifts while the window is inactive, with Reduce Motion (the page then appears whole) or in Low Power Mode.
 
-Measured on the Release build (Apple silicon, window in front, the pointer still): drifting uses about 0.57 s of CPU per 10 s in the app process; resting and background use none (0.00–0.01 s per 20 s). The compiled shader adds 12 KB to the bundle. Building needs Xcode's Metal Toolchain component (`xcodebuild -downloadComponent MetalToolchain`); it is a build tool only.
+Measured on the Release build (Apple silicon, pointer still): drifting costs about 0.2–0.8 s of CPU per 10 s; resting and background cost nothing. The compiled shader adds 12 KB. Building needs Xcode's Metal Toolchain component.
 
 ## Failure modes
 

@@ -1,11 +1,9 @@
 import SwiftUI
 
-/// The dithered wind rising as a crescent along the bottom of the New Tab page (`Wind.metal`), in the
-/// profile's accent. The GPU draws everything; the app only advances the time. Each time the page
-/// appears a gust rises from below it, carrying a soft light to `target`, the control bar, and blowing
-/// the dots in; then the wind drifts while someone is there. It settles `restDelay` after the last
-/// `activity`, and holds still while the window is inactive, with Reduce Motion or in Low Power Mode,
-/// so an unattended page costs nothing.
+/// The New Tab page's wind (`Wind.metal`): the GPU draws everything, the app only advances the time.
+/// A gust carries its light to `target`, the control bar; the wind then drifts until `restDelay` after
+/// the last `activity`, and holds still while the window is inactive, with Reduce Motion or in Low
+/// Power Mode.
 struct WindArc: View {
     /// The drift is slow: 30 frames per second look as smooth as the display's rate, for less work.
     private static let frameInterval: TimeInterval = 1.0 / 30
@@ -23,9 +21,8 @@ struct WindArc: View {
     let ink: Color
     /// The color the densest dots move toward.
     let core: Color
-    /// The light the gust carries.
     let light: Color
-    /// The page's size, which times the gust.
+    /// Times the gust.
     let size: CGSize
     let target: CGPoint
     /// Changes when the person moves the pointer over the page.

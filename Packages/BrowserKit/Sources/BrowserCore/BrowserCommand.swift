@@ -10,7 +10,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
         case pageFirst
     }
 
-    /// Mirrors Safari: tab, navigation and history shortcuts are reserved; the palette and find
+    /// Mirrors Safari: tab, navigation and history shortcuts are reserved; the control bar and find
     /// use shortcuts web applications and editors commonly claim.
     public var keyRouting: KeyRouting {
         switch self {

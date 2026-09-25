@@ -69,7 +69,6 @@ struct BrowserPalette: Equatable {
 }
 
 extension EnvironmentValues {
-    /// The chrome's colors in the current appearance.
     var palette: BrowserPalette { BrowserPalette(scheme: colorScheme) }
 }
 
@@ -113,7 +112,6 @@ private struct BrowserAnimation<Value: Equatable>: ViewModifier {
     }
 }
 
-/// A one-point divider in the chrome's line color.
 struct Hairline: View {
     enum Axis { case horizontal, vertical }
     var axis = Axis.horizontal
@@ -138,8 +136,7 @@ extension ProfileColor {
         case .graphite: Color(red: 0.43, green: 0.46, blue: 0.47)
         }
     }
-    /// A brighter, more saturated version for light effects on the dark canvas (the control bar's
-    /// light, the New Tab wind), where the muted tint would turn dull.
+    /// Brighter than the tint, which turns dull as a light on the dark canvas.
     var luminous: Color {
         switch self {
         case .terracotta: Color(red: 1, green: 0.48, blue: 0.32)

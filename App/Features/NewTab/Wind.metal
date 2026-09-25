@@ -1,9 +1,5 @@
-// The dithered wind of the New Tab page: the mistral field of the design system's DitherField (and
-// of Scripts/generate-app-icon.swift), drawn as "trame" dots whose radius grows with darkness, in a
-// crescent near the bottom edge. When the page appears, a gust rises from below it: a soft light
-// travels up and throws itself on the control bar, and as the gust passes the crescent, the dots grow
-// in while the air pushes them and lets them settle. Then the field drifts along the wind and the
-// crescent sways.
+// The New Tab page's wind: the mistral field of Scripts/generate-app-icon.swift drawn as dots whose
+// radius grows with darkness, in a crescent near the bottom edge, with the gust and its light.
 #include <metal_stdlib>
 #include <SwiftUI/SwiftUI.h>
 using namespace metal;

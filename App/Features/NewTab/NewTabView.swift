@@ -1,10 +1,7 @@
 import BrowserCore
 import SwiftUI
 
-/// The empty surface of a new tab: the control bar above a crescent of dithered wind, both in the
-/// profile's accent. Each time the page appears a gust rises from below, blows the wind in and carries a
-/// light to the bar, which lights up as it arrives; then only the wind drifts, while someone is there.
-/// See docs/CONTROL_BAR.md › New Tab page.
+/// The control bar above the dithered wind. See docs/CONTROL_BAR.md › New Tab page.
 struct NewTabView: View {
     /// The bar's top edge, as a share of the page height: a little above the middle.
     private static let barPosition: CGFloat = 0.4

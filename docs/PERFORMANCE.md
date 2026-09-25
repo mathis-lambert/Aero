@@ -19,7 +19,9 @@ Before unloading, `BrowserPage.hibernationBlocker()` keeps a page awake when it 
 
 Scheduling uses one owned task that sleeps until the next deadline, with a 1 min tolerance so the system can coalesce wakeups. It never polls. Activation, settings, pin changes and memory pressure events reschedule it.
 
-Known limits: only the main frame is inspected for unsent text; downloads and popups opened by another tab are not implemented yet, so they are not exemptions; `interactionState` is not persisted across launches.
+A page with an active download, or in a popup relationship with a loaded page, also stays awake.
+
+Limits: only the main frame is inspected for unsent text, and `interactionState` is not kept across launches.
 
 ## Session writes
 

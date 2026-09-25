@@ -67,7 +67,6 @@ final class BrowserPreferences {
     var searchEngine: SearchEngine {
         didSet { defaults.set(searchEngine.rawValue, forKey: Key.searchEngine) }
     }
-    /// Whether the control bar asks the search engine for suggestions as you type.
     var searchSuggestions: Bool {
         didSet { defaults.set(searchSuggestions, forKey: Key.searchSuggestions) }
     }

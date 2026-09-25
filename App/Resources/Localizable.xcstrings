@@ -277,18 +277,18 @@
         }
       }
     },
-    "Choose a profile name between 1 and %d characters." : {
+    "Choose a profile name between 1 and %lld characters." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose a profile name between 1 and %d characters."
+            "value" : "Choose a profile name between 1 and %lld characters."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez un nom de profil de 1 à %d caractères."
+            "value" : "Choisissez un nom de profil de 1 à %lld caractères."
           }
         }
       }

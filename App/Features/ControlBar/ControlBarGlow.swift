@@ -1,10 +1,8 @@
 import SwiftUI
 
 extension View {
-    /// The control bar's light in the profile's accent. `delay` after the bar appears, a band of light
-    /// crosses it from bottom to top, like a wave passing through, and the bar gives a small kick; the
-    /// light then settles into a fine ring and a faint halo and stays still, so nothing animates while
-    /// idle. With Reduce Motion the bar appears in its final state.
+    /// `delay` after the bar appears, a band of light crosses it from bottom to top, then settles into a
+    /// still ring and halo. With Reduce Motion the bar appears settled.
     func controlBarGlow(accent: Color, cornerRadius: CGFloat, delay: TimeInterval) -> some View {
         modifier(ControlBarGlow(accent: accent, cornerRadius: cornerRadius, delay: delay))
     }

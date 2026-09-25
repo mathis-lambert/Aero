@@ -1,20 +1,8 @@
 import XCTest
 
+/// Profiles, localization, the sidebar and window controls, and Settings.
 @MainActor
-final class BrowserUITests: XCTestCase {
-    private var app: XCUIApplication!
-
-    override func setUp() async throws {
-        await MainActor.run {
-            continueAfterFailure = false
-            app = TestApplication.make()
-            app.launch()
-            XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
-        }
-    }
-
-    override func tearDown() async throws { await MainActor.run { app.terminate() } }
-
+final class BrowserUITests: BrowserE2ETestCase {
     func testCreateRenameAndRestoreProfile() {
         openProfiles()
         app.buttons["profiles.add"].click()
@@ -32,7 +20,7 @@ final class BrowserUITests: XCTestCase {
         app.typeKey("q", modifierFlags: .command)
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
         app.launch()
-        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
         openProfiles()
         XCTAssertTrue(app.buttons["profiles.row.Studio"].exists)
     }
@@ -47,14 +35,14 @@ final class BrowserUITests: XCTestCase {
         app.terminate()
         app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
         app.launch()
-        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
         XCTAssertTrue(app.buttons["sidebar.newTab"].label.contains("Nouvel onglet"))
-        XCTAssertEqual(app.textFields["controlBar.input"].placeholderValue, "Rechercher ou saisir une adresse")
+        XCTAssertEqual(controlBarInput.placeholderValue, "Rechercher ou saisir une adresse")
     }
 
     func testNewTabKeyboardFocus() {
         app.typeKey("t", modifierFlags: .command)
-        let input = app.textFields["controlBar.input"]
+        let input = controlBarInput
         input.typeText("example.com")
         XCTAssertEqual(input.value as? String, "example.com")
     }
@@ -84,18 +72,16 @@ final class BrowserUITests: XCTestCase {
             XCTAssertGreaterThan(address.frame.minY, navigation[2].frame.maxY)
             XCTAssertGreaterThan(profile.frame.minY, address.frame.maxY)
             XCTAssertFalse(window.buttons[XCUIIdentifierCloseWindow].exists, "The titlebar's own buttons stay hidden")
-            XCTAssertFalse(app.buttons["page.showSidebar"].exists)
         }
 
         verifyVisibleLayout()
         app.typeKey("s", modifierFlags: [.command, .shift])
-        XCTAssertFalse(app.buttons["page.showSidebar"].exists)
         XCTAssertFalse(sidebarToggle.exists)
         XCTAssertFalse(address.exists)
         for light in lights { XCTAssertFalse(light.exists) }
-        app.textFields["controlBar.input"].typeText("https://example.com\n")
-        XCTAssertTrue(app.webViews.firstMatch.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["page.showSidebar"].exists)
+        controlBarInput.typeText(server.url("solid.html").absoluteString + "\n")
+        XCTAssertTrue(app.webViews.staticTexts["Solid fixture"].waitForExistence(timeout: Self.pageTimeout))
+        XCTAssertFalse(sidebarToggle.exists, "A loaded page adds no control while the sidebar is hidden")
         app.typeKey("s", modifierFlags: [.command, .shift])
         verifyVisibleLayout()
 
@@ -142,7 +128,7 @@ final class BrowserUITests: XCTestCase {
         app.terminate()
         app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
         app.launch()
-        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         XCTAssertTrue(app.staticTexts["Réglages"].waitForExistence(timeout: 3))
         attachScreenshot("settings-general-french")
@@ -163,9 +149,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertFalse(idleLimit.isEnabled)
         XCTAssertFalse(app.checkBoxes["settings.hibernation.keepsPinned"].isEnabled)
 
-        app.terminate()
-        app.launch()
-        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        relaunch()
         app.typeKey(",", modifierFlags: .command)
         app.buttons["settings.tabs"].click()
         XCTAssertTrue(idleLimit.waitForExistence(timeout: 3))
@@ -176,12 +160,5 @@ final class BrowserUITests: XCTestCase {
         app.menuBars.menuBarItems["Navigate"].click()
         app.menuItems["Manage profiles"].click()
         XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3))
-    }
-
-    private func attachScreenshot(_ name: String) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 }

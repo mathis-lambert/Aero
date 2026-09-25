@@ -1,7 +1,5 @@
 # History
 
-The failure modes below were written before the implementation.
-
 ## Behavior
 
 - A visit is recorded when a page commits a new document or changes its address in place (`pushState`), unless the address equals the page's previous one: reloads, redirects before commit and hibernation restores add nothing. Selecting a tab restored after a relaunch loads it, which counts as a visit.

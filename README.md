@@ -1,79 +1,48 @@
 # Aero
 
-A native macOS browser foundation built with SwiftUI, AppKit and WebKit. Apple Silicon only; macOS 27.0 or newer. No external runtime dependencies.
-
-## Toolchain
-
-- Xcode 27.0 (27A266a), Apple Swift 6.4; Swift 6 language mode.
-- Open `Aero.xcodeproj`, select the shared `Aero` scheme and run on My Mac.
-- Development builds are ad-hoc signed and use a separate bundle identifier and data location. Release distribution and notarization are not configured.
+A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. Apple Silicon, macOS 27.0 or newer, no external runtime dependencies.
 
 ## Build and test
 
+Xcode 27.0 (27A266a) with its Metal Toolchain component (`xcodebuild -downloadComponent MetalToolchain`), Swift 6.4.
+
 ```sh
-xcodebuild -project Aero.xcodeproj -scheme Aero \
-  -configuration Debug -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath /tmp/aero-derived build
+xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Debug \
+  -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived build
 
 swift test --package-path Packages/BrowserKit
 
-xcodebuild -project Aero.xcodeproj -scheme Aero \
-  -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath /tmp/aero-derived test
+Scripts/run-e2e.sh [AeroUITests/<TestClass>…]
 ```
 
-UI tests require a logged-in macOS GUI session and permission to control the test application. Tests use isolated session directories and ephemeral website stores.
+UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`), ephemeral website stores and local fixtures. Debug and Release builds keep separate data (`Application Support/Aero Development` and `Aero`).
 
-## Included
+## Features
 
-- Native browser shell with navigation in the sidebar, a full-height website frame, light/dark/system appearance and profile accents.
-- Create, rename and switch profiles, each with its own persistent WebKit website store and tabs.
-- One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K): the chosen engine's suggestions (DuckDuckGo, Google, Bing or Brave Search), open tabs, history and every command with its shortcut. The New Tab page shows the brand's dithered wind, drawn on the GPU and resting when unattended. See `docs/CONTROL_BAR.md`.
-- Navigation, pinned tabs, close/reopen, and recent-tab switching.
-- Versioned, atomic session persistence with coalesced writes. Restored tabs load only when selected.
-- Tab hibernation: idle or over-budget background tabs release their web process and restore their history when selected; tabs with media, capture, full screen or unsent text stay awake. Configurable in Settings › Tabs. See `docs/PERFORMANCE.md`.
-- Site favicons in tab rows and pinned tiles, cached per profile so restored tabs show them without loading.
-- Real popups (`window.open`, OAuth): they open as tabs connected to their opener and close themselves with `window.close()`.
-- Pages fade in after their first rendered frame instead of flashing white; the selected tab highlight slides between rows.
-- Page-aware shortcuts: web applications may use ⌘K and ⇧⌘S; tab and navigation shortcuts always stay with the browser. See `docs/BROWSING.md`.
-- History per profile in a native browser tab (`aero://history`, ⌘Y): diacritic-insensitive search, grouped by day, delete and clear by period; stored in SQLite with a full-text index. See `docs/HISTORY.md`.
-- Find in page (⌘F, ⌘G, ⇧⌘G) with a compact floating bar.
-- Downloads with a sidebar section, progress, cancel, retry, Show in Finder, quarantine and a Dock badge.
-- Drag tabs to reorder them, onto the pinned grid to pin them, and back to unpin them.
-- English and French UI through String Catalogs; language selection in categorized Settings (applied on next launch).
+- Profiles, each with its own website store, tabs and history.
+- One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K), with the chosen engine's suggestions (`docs/CONTROL_BAR.md`).
+- Pinned tabs, drag to reorder and pin, reopen closed tabs, recent-tab switching (⌃Tab).
+- Session restoration without loading pages, and tab hibernation (`docs/PERFORMANCE.md`).
+- History in a browser tab (`aero://history`, ⌘Y) with full-text search (`docs/HISTORY.md`).
+- Find in page, downloads, popups, favicons (`docs/BROWSING.md`).
+- Light, dark and system appearance, alternate app icons, English and French.
 
-The shell currently uses one main window and one space per profile. The data model distinguishes profiles and spaces so additional spaces do not require changing the identity model.
+Not implemented yet: onboarding, import, extensions, credential integration, separate popup windows, editable shortcuts and profile deletion.
 
 ## Shortcuts
 
 | Shortcut | Action |
 | --- | --- |
-| ⌘T | New tab and focus its control bar |
-| ⌘K | Control bar: search, open in a new tab, or run a command |
+| ⌘T | New tab |
+| ⌘K | Control bar, results in a new tab; lists every command |
 | ⌘L | Control bar on the current address |
 | ⌘W / ⇧⌘T | Close / reopen tab |
-| ⌃Tab / ⌃⇧Tab | Recent-tab cycle; release Control to commit |
-| ⌘[ / ⌘] | Back / forward |
-| ⌘R | Reload |
+| ⌃Tab / ⌃⇧Tab | Recent tabs; release Control to choose |
+| ⌘[ / ⌘] / ⌘R | Back / forward / reload |
 | ⇧⌘S | Toggle sidebar |
 | ⌘F / ⌘G / ⇧⌘G | Find in page / next / previous |
 | ⌘Y | History |
-| ⌘, | Settings |
 
-⌘K, ⇧⌘S, ⌘F, ⌘G and ⇧⌘G go to a focused web page first and reach the browser when the page does not use them. The other shortcuts above are reserved for the browser.
+⌘K, ⇧⌘S, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
 
-## Boundaries
-
-`App` owns presentation and coordinates the three local `BrowserKit` targets:
-
-- `BrowserCore`: records and rules, without UI or WebKit imports.
-- `BrowserWebKit`: live page ownership and website stores.
-- `BrowserStorage`: versioned browser records and atomic persistence.
-
-See `AGENTS.md` for contributor conventions, `docs/DESIGN.md` for appearance guidelines, `docs/BROWSING.md` for browsing behaviors and `docs/IDENTITY.md` for the brand exploration.
-
-## Current limits
-
-This is a browser foundation, not yet a replacement for a daily browser. Onboarding, import, AI, extension support, credential integration, separate popup windows, SVG favicons, user-editable shortcuts, and profile deletion are not implemented. No Ultra HD, DRM, battery, or 120 fps performance claim has been validated.
-
-Session load failures leave the original file untouched and block editing rather than replacing it with an empty session. In the sandbox container, development data lives under `Application Support/Aero Development`; release data uses `Aero`. The `AERO_TEST_DATA` environment variable supplies a test namespace (its last path component), stored inside the app's temporary directory, and switches website stores to ephemeral mode.
+Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`.

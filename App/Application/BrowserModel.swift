@@ -67,7 +67,6 @@ final class BrowserModel {
     }
 
     var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
-    /// The selected profile's color, which tints the whole window.
     var accent: ProfileColor { profile?.color ?? .terracotta }
     var space: BrowserSpace? { session.spaces.first { $0.profileID == window.selectedProfileID } }
     var tabs: [BrowserTab] { session.tabs.filter { $0.spaceID == space?.id } }
@@ -266,7 +265,7 @@ final class BrowserModel {
             persist()
             return true
         } catch {
-            errorMessage = String(format: String(localized: "Choose a profile name between 1 and %d characters."), BrowserProfile.maximumNameLength)
+            errorMessage = String(localized: "Choose a profile name between 1 and \(BrowserProfile.maximumNameLength) characters.")
             return false
         }
     }

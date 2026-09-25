@@ -1,6 +1,6 @@
 import XCTest
 
-/// The theme and app icon choices in Settings › General. See docs/DESIGN.md › Choosing an icon.
+/// The theme and app icon choices in Settings › General. See docs/DESIGN.md › App icon.
 @MainActor
 final class AppearanceE2ETests: BrowserE2ETestCase {
     private static let variant = "settings.appIcon.a-sun"
