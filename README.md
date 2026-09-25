@@ -35,6 +35,10 @@ UI tests require a logged-in macOS GUI session and permission to control the tes
 - Real popups (`window.open`, OAuth): they open as tabs connected to their opener and close themselves with `window.close()`.
 - Pages fade in after their first rendered frame instead of flashing white; the selected tab highlight slides between rows.
 - Page-aware shortcuts: web applications may use ⌘K and ⇧⌘S; tab and navigation shortcuts always stay with the browser. See `docs/BROWSING.md`.
+- History per profile in a native browser tab (`auro://history`, ⌘Y): diacritic-insensitive search, grouped by day, delete and clear by period; stored in SQLite with a full-text index. See `docs/HISTORY.md`.
+- Find in page (⌘F, ⌘G, ⇧⌘G) with a compact floating bar.
+- Downloads with a sidebar section, progress, cancel, retry, Show in Finder, quarantine and a Dock badge.
+- Drag tabs to reorder them, onto the pinned grid to pin them, and back to unpin them.
 - English and French UI through String Catalogs; language selection in categorized Settings (applied on next launch).
 
 The shell currently uses one main window and one space per profile. The data model distinguishes profiles and spaces so additional spaces do not require changing the identity model.
@@ -51,9 +55,11 @@ The shell currently uses one main window and one space per profile. The data mod
 | ⌘[ / ⌘] | Back / forward |
 | ⌘R | Reload |
 | ⇧⌘S | Toggle sidebar |
+| ⌘F / ⌘G / ⇧⌘G | Find in page / next / previous |
+| ⌘Y | History |
 | ⌘, | Settings |
 
-⌘K and ⇧⌘S go to a focused web page first and reach the browser when the page does not use them. The other shortcuts above are reserved for the browser.
+⌘K, ⇧⌘S, ⌘F, ⌘G and ⇧⌘G go to a focused web page first and reach the browser when the page does not use them. The other shortcuts above are reserved for the browser.
 
 ## Boundaries
 
@@ -67,6 +73,6 @@ See `AGENTS.md` for contributor conventions, `docs/DESIGN.md` for appearance gui
 
 ## Current limits
 
-This is a browser foundation, not yet a replacement for a daily browser. Onboarding, import, AI, extension support, downloads, credential integration, separate popup windows, SVG favicons, user-editable shortcuts, and profile deletion are not implemented. No Ultra HD, DRM, battery, or 120 fps performance claim has been validated.
+This is a browser foundation, not yet a replacement for a daily browser. Onboarding, import, AI, extension support, credential integration, separate popup windows, SVG favicons, user-editable shortcuts, and profile deletion are not implemented. No Ultra HD, DRM, battery, or 120 fps performance claim has been validated.
 
 Session load failures leave the original file untouched and block editing rather than replacing it with an empty session. In the sandbox container, development data lives under `Application Support/Auro Development`; release data uses `Auro`. The `AURO_TEST_DATA` environment variable supplies a test namespace (its last path component), stored inside the app's temporary directory, and switches website stores to ephemeral mode.

@@ -30,6 +30,9 @@ Promote values to shared tokens when they form a repeated visual rule. Keep one-
 - Let the website fill the rounded page surface from its top edge. Keep window controls, sidebar toggle, back, forward, and reload aligned on the sidebar's first row; place the current address on its second row.
 - Create standard AppKit window buttons in the sidebar header using its public API, with native close, minimize, fullscreen and Option-click zoom actions; do not add a native toolbar over the content or move private titlebar views. The sidebar has a fixed mode and a hidden mode: hovering at the left window edge temporarily reveals it over the page. Give this floating panel a 12 pt outer margin, 8 pt radius, subtle border and shadow, and a short spring entrance/exit. Its hover area includes the margin so moving into it never closes the panel. The keyboard shortcut switches the fixed mode. No button overlays the page while the sidebar is hidden.
 - The sidebar contains pinned pages, the profile switcher, a New Tab action, and the tab list. Pinned pages use a compact grid. Rows and pinned tiles show the site favicon; the site initial or a globe symbol stands in until one is known.
+- A Downloads section appears at the bottom of the sidebar only while the session has downloads.
+- The find bar floats over the top trailing corner of the page; a miss is shown with text, a red border and a short shake (no shake with Reduce Motion).
+- Dragging a tab shows an insertion line above the drop target; an empty pinned grid opens into a dashed tile while a tab hovers it.
 - Do not fill empty sidebar space with instructions, counters, branding, or a settings gear. Settings are available through the standard application menu and Command-comma.
 - Maintain the rounded page frame and small outer insets. The sidebar toggle remains available in both layouts.
 
