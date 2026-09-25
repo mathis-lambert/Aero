@@ -11,7 +11,7 @@ struct AppIconPicker: View {
     /// Rendered away from the main actor while the page is shown: each artwork holds about a thousand shapes.
     @State private var thumbnails: [AppIconVariant: CGImage] = [:]
     @Environment(\.displayScale) private var displayScale
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     private var selection: AppIconVariant? { browser.preferences.appIcon }
 
@@ -44,7 +44,7 @@ struct AppIconPicker: View {
                 if let image {
                     image.resizable().interpolation(.high).aspectRatio(contentMode: .fit)
                 } else {
-                    BrowserPalette(scheme: scheme).raised
+                    palette.raised
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: Self.tileSize * BrowserDesign.faviconCornerRatio))

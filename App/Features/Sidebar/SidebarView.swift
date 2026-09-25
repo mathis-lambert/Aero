@@ -6,7 +6,7 @@ struct SidebarView: View {
     @Namespace private var selection
     @State private var targetedTabID: UUID?
     @State private var endTargeted = false
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -24,7 +24,7 @@ struct SidebarView: View {
                     if let page = browser.internalPage {
                         Text(verbatim: page.title).lineLimit(1)
                     } else if let tab = browser.selectedTab {
-                        Text(verbatim: tab.url.host ?? tab.url.absoluteString)
+                        Text(verbatim: tab.url.siteName)
                             .lineLimit(1).truncationMode(.middle)
                     } else {
                         Text("Search or enter an address")
@@ -36,7 +36,7 @@ struct SidebarView: View {
                 .font(BrowserDesign.Typography.chrome)
                 .padding(.horizontal, 12)
                 .frame(height: 36)
-                .background(BrowserPalette(scheme: scheme).fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                 .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
             }
             .buttonStyle(.plain)

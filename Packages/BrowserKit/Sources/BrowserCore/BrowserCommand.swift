@@ -1,7 +1,6 @@
-public enum BrowserCommand: String, CaseIterable, Identifiable, Sendable {
+public enum BrowserCommand: String, CaseIterable, Sendable {
     case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles
     case showHistory, findInPage, findNext, findPrevious
-    public var id: Self { self }
 
     /// Who receives the command's shortcut while a web page has keyboard focus.
     public enum KeyRouting: Sendable {

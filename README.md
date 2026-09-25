@@ -26,11 +26,12 @@ UI tests require a logged-in macOS GUI session and permission to control the tes
 
 ## Included
 
-- Native browser shell with navigation in the sidebar, a full-height website frame, minimal new-tab page, light/dark/system appearance and profile accents.
+- Native browser shell with navigation in the sidebar, a full-height website frame, light/dark/system appearance and profile accents.
 - Create, rename and switch profiles, each with its own persistent WebKit website store and tabs.
-- Address/search command bar, navigation, pinned tabs, close/reopen, and recent-tab switching.
+- One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K): the chosen engine's suggestions (DuckDuckGo, Google, Bing or Brave Search), open tabs, history and every command with its shortcut. The New Tab page shows the brand's dithered wind, drawn on the GPU and resting when unattended. See `docs/CONTROL_BAR.md`.
+- Navigation, pinned tabs, close/reopen, and recent-tab switching.
 - Versioned, atomic session persistence with coalesced writes. Restored tabs load only when selected.
-- Tab hibernation: idle or over-budget background tabs release their web process and restore their history when selected; tabs with media, capture, full screen or unsent text stay awake. Configurable in Settings › Performance. See `docs/PERFORMANCE.md`.
+- Tab hibernation: idle or over-budget background tabs release their web process and restore their history when selected; tabs with media, capture, full screen or unsent text stay awake. Configurable in Settings › Tabs. See `docs/PERFORMANCE.md`.
 - Site favicons in tab rows and pinned tiles, cached per profile so restored tabs show them without loading.
 - Real popups (`window.open`, OAuth): they open as tabs connected to their opener and close themselves with `window.close()`.
 - Pages fade in after their first rendered frame instead of flashing white; the selected tab highlight slides between rows.
@@ -47,9 +48,9 @@ The shell currently uses one main window and one space per profile. The data mod
 
 | Shortcut | Action |
 | --- | --- |
-| ⌘T | New tab and focus search |
-| ⌘K | Command palette |
-| ⌘L | Edit the active address |
+| ⌘T | New tab and focus its control bar |
+| ⌘K | Control bar: search, open in a new tab, or run a command |
+| ⌘L | Control bar on the current address |
 | ⌘W / ⇧⌘T | Close / reopen tab |
 | ⌃Tab / ⌃⇧Tab | Recent-tab cycle; release Control to commit |
 | ⌘[ / ⌘] | Back / forward |

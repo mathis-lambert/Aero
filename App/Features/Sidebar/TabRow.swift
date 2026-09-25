@@ -5,11 +5,11 @@ import SwiftUI
 struct SelectionHighlight: View {
     static let id = "sidebar.selection"
     let namespace: Namespace.ID
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
         RoundedRectangle(cornerRadius: BrowserDesign.Radius.control)
-            .fill(BrowserPalette(scheme: scheme).raised)
+            .fill(palette.raised)
             .matchedGeometryEffect(id: Self.id, in: namespace)
     }
 }
@@ -31,14 +31,14 @@ struct TabRow<Icon: View>: View {
     let close: () -> Void
     @ViewBuilder let icon: Icon
     @State private var hovered = false
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
         HStack(spacing: 0) {
             Button(action: select) {
                 HStack(spacing: BrowserDesign.rowInset) {
                     icon.frame(width: BrowserDesign.rowIconWidth)
-                    Text(verbatim: tab.sidebarTitle)
+                    Text(verbatim: tab.displayTitle)
                         .lineLimit(1).truncationMode(.tail)
                     Spacer(minLength: 0)
                 }
@@ -58,7 +58,7 @@ struct TabRow<Icon: View>: View {
         }
         .background {
             if selected { SelectionHighlight(namespace: selection) }
-            else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(hovered ? BrowserPalette(scheme: scheme).hover : .clear) }
+            else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(hovered ? palette.hover : .clear) }
         }
         .onHover { hovered = $0 }
         .accessibilityElement(children: .contain)
@@ -77,10 +77,5 @@ struct TabContextMenu: View {
 }
 
 extension BrowserTab {
-    var sidebarTitle: String {
-        if let page = InternalPage(url: url) { return page.title }
-        return title.isEmpty ? url.host ?? url.absoluteString : title
-    }
-
     var dragItem: TabDragItem { TabDragItem(tabID: id, url: url) }
 }

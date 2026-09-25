@@ -48,21 +48,21 @@ final class BrowsingE2ETests: BrowserE2ETestCase {
         app.webViews.firstMatch.click()
         app.typeKey("k", modifierFlags: .command)
         XCTAssertTrue(app.webViews.staticTexts["Page handled ⌘K"].waitForExistence(timeout: Self.renderTimeout))
-        XCTAssertFalse(app.textFields["command.input"].exists, "The browser does not steal a shortcut the page handled")
+        XCTAssertFalse(app.textFields["controlBar.input"].exists, "The browser does not steal a shortcut the page handled")
     }
 
     func testPageShortcutsDoNotOverrideReservedCommands() {
         open("solid.html", expecting: "Solid fixture")
         app.webViews.firstMatch.click()
         app.typeKey("k", modifierFlags: .command)
-        XCTAssertTrue(app.textFields["command.input"].waitForExistence(timeout: Self.renderTimeout),
+        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: Self.renderTimeout),
                       "A page-first shortcut the page ignores reaches the browser")
         app.typeKey(.escape, modifierFlags: [])
 
         open("keys.html", expecting: "No shortcut yet")
         app.webViews.firstMatch.click()
         app.typeKey("t", modifierFlags: .command)
-        XCTAssertTrue(newTabInput.waitForExistence(timeout: Self.renderTimeout), "⌘T stays with the browser")
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: Self.renderTimeout), "⌘T stays with the browser")
         XCTAssertEqual(tabRows.count, 2)
     }
 

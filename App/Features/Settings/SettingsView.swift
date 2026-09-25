@@ -1,4 +1,5 @@
 import AppKit
+import BrowserCore
 import SwiftUI
 
 private enum SettingsSection: String, CaseIterable, Identifiable {
@@ -36,9 +37,7 @@ struct SettingsView: View {
     @Environment(\.dismissWindow) private var dismissWindow
     @State private var section: SettingsSection = .general
     @State private var managingProfiles = false
-    @Environment(\.colorScheme) private var scheme
-
-    private var palette: BrowserPalette { BrowserPalette(scheme: scheme) }
+    @Environment(\.palette) private var palette
 
     var body: some View {
         HStack(spacing: 0) {
@@ -72,7 +71,7 @@ struct SettingsView: View {
         .foregroundStyle(palette.ink)
         .frame(minWidth: 760, idealWidth: 780, minHeight: 500, idealHeight: 540)
         .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.window))
-        .paletteShadow()
+        .panelShadow()
         .padding(Self.shadowMargin)
         .background(SettingsWindowSurface())
         .sheet(isPresented: $managingProfiles) { ProfilesView(browser: browser) }
@@ -149,7 +148,30 @@ struct SettingsView: View {
                 }
             }
 
+            SettingsCard { search }
+
             SettingsCard { AppIconPicker(browser: browser) }
+        }
+    }
+
+    private var search: some View {
+        let preferences = Bindable(browser.preferences)
+        return VStack(spacing: 0) {
+            SettingsRow("Search engine", caption: "Where searches from the control bar go.") {
+                Picker("Search engine", selection: preferences.searchEngine) {
+                    ForEach(SearchEngine.allCases) { engine in Text(verbatim: engine.name).tag(engine) }
+                }
+                .labelsHidden()
+                .frame(width: SettingsLayout.pickerWidth)
+                .accessibilityIdentifier("settings.searchEngine")
+            }
+            SettingsDivider()
+            SettingsRow("Search suggestions", caption: "Shows the engine's suggestions as you type. Addresses are never sent.") {
+                Toggle("Search suggestions", isOn: preferences.searchSuggestions)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .accessibilityIdentifier("settings.searchSuggestions")
+            }
         }
     }
 

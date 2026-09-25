@@ -9,7 +9,7 @@ struct FindBar: View {
     let find: FindInPage
     let page: BrowserPage
     @FocusState private var focused: Bool
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
         HStack(spacing: 6) {
@@ -42,8 +42,8 @@ struct FindBar: View {
         .padding(.leading, 12)
         .padding(.trailing, 4)
         .frame(width: Self.width, height: BrowserDesign.controlHeight + 8)
-        .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
-                        border: find.hasNoMatches ? BrowserPalette(scheme: scheme).miss : BrowserPalette(scheme: scheme).line,
+        .browserSurface(fill: palette.raised,
+                        border: find.hasNoMatches ? palette.miss : palette.line,
                         radius: BrowserDesign.Radius.card)
         .floatShadow()
         .shake(trigger: find.missCount)

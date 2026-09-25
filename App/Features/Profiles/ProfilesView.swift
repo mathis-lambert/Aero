@@ -9,7 +9,7 @@ struct ProfilesView: View {
     @State private var color: ProfileColor = .terracotta
     @State private var creating = false
     @FocusState private var nameFocused: Bool
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     private var valid: Bool {
         let value = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -40,7 +40,7 @@ struct ProfilesView: View {
                                 }
                             }
                             .padding(10)
-                            .background(editingID == profile.id ? BrowserPalette(scheme: scheme).fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                            .background(editingID == profile.id ? palette.fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)

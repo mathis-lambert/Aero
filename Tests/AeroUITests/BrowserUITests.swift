@@ -9,35 +9,11 @@ final class BrowserUITests: XCTestCase {
             continueAfterFailure = false
             app = TestApplication.make()
             app.launch()
-            XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+            XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
         }
     }
 
     override func tearDown() async throws { await MainActor.run { app.terminate() } }
-
-    func testCommandBarKeyboardAndEscape() {
-        app.typeKey("k", modifierFlags: .command)
-        let input = app.textFields["command.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 3))
-        input.typeText("example.com")
-        XCTAssertEqual(input.value as? String, "example.com")
-        app.typeKey(.escape, modifierFlags: [])
-        XCTAssertFalse(input.exists)
-        XCTAssertTrue(app.textFields["newTab.input"].exists)
-    }
-
-    /// The palette searches the whole command catalog, not a fixed selection.
-    func testCommandPaletteRunsAnyCatalogCommand() {
-        app.typeKey("k", modifierFlags: .command)
-        let input = app.textFields["command.input"]
-        XCTAssertTrue(input.waitForExistence(timeout: 3))
-        input.typeText("history")
-        app.typeKey(.downArrow, modifierFlags: [])
-        app.typeKey(.return, modifierFlags: [])
-        let historyTab = app.buttons.matching(identifier: "sidebar.tab").matching(NSPredicate(format: "label == %@", "History")).firstMatch
-        XCTAssertTrue(historyTab.waitForExistence(timeout: 3), "The first command after the search opens History")
-        XCTAssertFalse(input.exists)
-    }
 
     func testCreateRenameAndRestoreProfile() {
         openProfiles()
@@ -56,7 +32,7 @@ final class BrowserUITests: XCTestCase {
         app.typeKey("q", modifierFlags: .command)
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
         app.launch()
-        XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
         openProfiles()
         XCTAssertTrue(app.buttons["profiles.row.Studio"].exists)
     }
@@ -71,14 +47,14 @@ final class BrowserUITests: XCTestCase {
         app.terminate()
         app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
         app.launch()
-        XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
         XCTAssertTrue(app.buttons["sidebar.newTab"].label.contains("Nouvel onglet"))
-        XCTAssertEqual(app.textFields["newTab.input"].placeholderValue, "Rechercher ou saisir une adresse")
+        XCTAssertEqual(app.textFields["controlBar.input"].placeholderValue, "Rechercher ou saisir une adresse")
     }
 
     func testNewTabKeyboardFocus() {
         app.typeKey("t", modifierFlags: .command)
-        let input = app.textFields["newTab.input"]
+        let input = app.textFields["controlBar.input"]
         input.typeText("example.com")
         XCTAssertEqual(input.value as? String, "example.com")
     }
@@ -117,7 +93,7 @@ final class BrowserUITests: XCTestCase {
         XCTAssertFalse(sidebarToggle.exists)
         XCTAssertFalse(address.exists)
         for light in lights { XCTAssertFalse(light.exists) }
-        app.textFields["newTab.input"].typeText("https://example.com\n")
+        app.textFields["controlBar.input"].typeText("https://example.com\n")
         XCTAssertTrue(app.webViews.firstMatch.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["page.showSidebar"].exists)
         app.typeKey("s", modifierFlags: [.command, .shift])
@@ -166,7 +142,7 @@ final class BrowserUITests: XCTestCase {
         app.terminate()
         app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
         app.launch()
-        XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         XCTAssertTrue(app.staticTexts["Réglages"].waitForExistence(timeout: 3))
         attachScreenshot("settings-general-french")
@@ -189,7 +165,7 @@ final class BrowserUITests: XCTestCase {
 
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(app.textFields["controlBar.input"].waitForExistence(timeout: TestApplication.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
         app.buttons["settings.tabs"].click()
         XCTAssertTrue(idleLimit.waitForExistence(timeout: 3))

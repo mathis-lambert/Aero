@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Search fixture</title>
+<script>
+// The title names the engine and the query, so tests can tell where a search went.
+const parameters = new URLSearchParams(location.search);
+document.title = `${parameters.get("engine")}: ${parameters.get("q")}`;
+</script>
+</head>
+<body><p>Search fixture</p></body>
+</html>

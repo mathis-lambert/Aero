@@ -3,25 +3,14 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-/// Downloads and downsamples site icons away from the main actor.
-/// Requests carry no cookies or cache, so icon fetching never reveals a profile's identity.
+/// Downloads and downsamples site icons away from the main actor, through the anonymous session.
 struct FaviconFetcher: Sendable {
     private static let maximumDownloadBytes = 512 * 1024
     private static let requestTimeout: TimeInterval = 10
     private static let resourceTimeout: TimeInterval = 15
     private static let successStatus = 200
 
-    private let session: URLSession
-
-    init() {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.httpCookieStorage = nil
-        configuration.httpShouldSetCookies = false
-        configuration.urlCache = nil
-        configuration.timeoutIntervalForRequest = Self.requestTimeout
-        configuration.timeoutIntervalForResource = Self.resourceTimeout
-        session = URLSession(configuration: configuration)
-    }
+    private let session = URLSession.anonymous(requestTimeout: requestTimeout, resourceTimeout: resourceTimeout)
 
     /// Returns a PNG of the first candidate that decodes, at most `targetPixelSize` on its longest side.
     @concurrent

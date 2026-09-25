@@ -30,7 +30,7 @@ final class KeyboardRouter {
             return false
         }
         if event.keyCode == tabKeyCode, modifiers.contains(.control), !modifiers.contains(.command), !modifiers.contains(.option),
-           browser.window.commandBar == nil, !browser.window.profilesPresented {
+           browser.window.controlBar == nil, !browser.window.profilesPresented {
             browser.cycleTab(backwards: modifiers.contains(.shift))
             return true
         }

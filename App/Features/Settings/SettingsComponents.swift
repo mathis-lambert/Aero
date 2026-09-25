@@ -9,11 +9,10 @@ enum SettingsLayout {
 }
 
 struct SettingsCard<Content: View>: View {
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
     @ViewBuilder let content: Content
 
     var body: some View {
-        let palette = BrowserPalette(scheme: scheme)
         content
             .padding(SettingsLayout.cardPadding)
             .frame(maxWidth: .infinity, alignment: .leading)

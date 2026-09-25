@@ -7,9 +7,10 @@ final class BrowserWindowState {
     var selectedProfileID: UUID?
     var selectedTabID: UUID?
     var sidebarPinned = true
-    var commandBar: CommandBarRequest?
+    /// The control bar over the selected tab; the New Tab page shows its own.
+    var controlBar: ControlBarPresentation?
     var profilesPresented = false
-    /// Changes when the new tab page or a browser page should focus its search field.
+    /// Changes when the New Tab page or a browser page should focus its search field.
     var inputFocusRequest = UUID()
     let find = FindInPage()
 }

@@ -56,7 +56,7 @@ Failure modes:
 2. The browser steals a page-first shortcut the page handles.
 3. The browser never receives a page-first shortcut the page ignores.
 4. Text entry, IME composition, or accented input is intercepted.
-5. Behavior differs between the menu, the shortcut and the command palette.
+5. Behavior differs between the menu, the shortcut and the control bar.
 
 Verification: E2E `testPageShortcutsDoNotOverrideReservedCommands` and `testPageHandlesPageFirstShortcuts` with a fixture page that calls `preventDefault()` on every Command key.
 

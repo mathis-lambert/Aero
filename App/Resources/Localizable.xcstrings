@@ -597,22 +597,6 @@
         }
       }
     },
-    "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saisissez une adresse web ou une recherche. Seules les adresses HTTP et HTTPS sont prises en charge."
-          }
-        }
-      }
-    },
     "Failed" : {
       "localizations" : {
         "en" : {
@@ -1029,22 +1013,6 @@
         }
       }
     },
-    "Navigate with ↑ ↓" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigate with ↑ ↓"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Naviguer avec ↑ ↓"
-          }
-        }
-      }
-    },
     "New profile" : {
       "localizations" : {
         "en" : {
@@ -1249,22 +1217,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir une adresse"
-          }
-        }
-      }
-    },
-    "Open with ↵" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open with ↵"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir avec ↵"
           }
         }
       }
@@ -1493,6 +1445,22 @@
         }
       }
     },
+    "Search engine" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search engine"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moteur de recherche"
+          }
+        }
+      }
+    },
     "Search history" : {
       "localizations" : {
         "en" : {
@@ -1521,6 +1489,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rechercher ou saisir une adresse"
+          }
+        }
+      }
+    },
+    "Search suggestions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search suggestions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions de recherche"
+          }
+        }
+      }
+    },
+    "Search with %@" : {
+      "comment" : "Control bar row: the search engine’s name, such as “Search with DuckDuckGo”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search with %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher avec %@"
           }
         }
       }
@@ -1653,6 +1654,22 @@
         }
       }
     },
+    "Shows the engine's suggestions as you type. Addresses are never sent." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the engine's suggestions as you type. Addresses are never sent."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche les suggestions du moteur pendant la saisie. Les adresses ne sont jamais envoyées."
+          }
+        }
+      }
+    },
     "Sleep after" : {
       "localizations" : {
         "en" : {
@@ -1745,6 +1762,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Changer de profil"
+          }
+        }
+      }
+    },
+    "Switch to tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch to tab"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aller à l’onglet"
           }
         }
       }
@@ -1985,6 +2018,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les pages consultées sont retirées de l’historique de ce profil. Les onglets, les données des sites et les connexions sont conservés."
+          }
+        }
+      }
+    },
+    "Where searches from the control bar go." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where searches from the control bar go."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Où vont les recherches de la barre de contrôle."
           }
         }
       }

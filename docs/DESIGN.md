@@ -2,9 +2,9 @@
 
 ## Direction
 
-The browser is a compact, neutral workspace. Keep the page as the main surface, with a narrow sidebar and a rounded content frame. The brand (the Gilda Display serif and the dithered wind, `docs/IDENTITY.md`) lives on the app icon and brand surfaces: the chrome and the New Tab page carry no wordmark, logo, serif, illustration or marketing copy.
+The browser is a compact, neutral workspace. Keep the page as the main surface, with a narrow sidebar and a rounded content frame. The brand (the Gilda Display serif and the dithered wind, `docs/IDENTITY.md`) lives on the app icon and brand surfaces: the chrome carries no wordmark, logo, serif, illustration or marketing copy. The New Tab page carries the one exception: the brand's dithered wind, in the profile's accent, as a crescent along its bottom edge (`docs/CONTROL_BAR.md`).
 
-The chrome's tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserDesign` (radii, typography, sizes, motion), `BrowserPalette` (colors and fills), the shadow and animation modifiers, `Hairline`, `IconButton`, `ShortcutLabel` and `ProfileBadge`. Features use them instead of literals. There is no external UI or icon dependency.
+The chrome's tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserDesign` (radii, typography, sizes, motion), `BrowserPalette` (colors and fills, read by views as `@Environment(\.palette)`), the shadow and animation modifiers, `Hairline`, `IconButton`, `ShortcutLabel` and `ProfileBadge`. Features use them instead of literals. There is no external UI or icon dependency.
 
 ## Foundations
 
@@ -13,23 +13,23 @@ The chrome's tokens and shared components live in `App/Design/BrowserDesign.swif
 | Surfaces | `sidebar` (window ground), `canvas` (page frame, Settings list), `raised` (selection, cards, fields); all opaque |
 | Fills | `hover`, `fill` and `pressed`: ink at 4, 6 and 10%, over any surface |
 | Lines | `line` (ink at 11% light, 15% dark) is the only divider and border; drawn with `Hairline` |
-| Accent | Selected per profile; use sparingly for identity and selection |
-| Typography | System face only: 13 pt chrome, 12 pt medium labels, 11 pt captions and monospaced keycaps, 22 pt semibold page titles, 17 pt large search fields, 9 pt row glyphs |
-| Spacing | 4, 8, 12, 16, 24, 32, 48 pt; rows use a 10 pt inset and icon gap, large search fields a 14 pt glyph gap |
+| Accent | Selected per profile; use sparingly for identity and selection. Each accent has a `luminous` version for light effects on the dark canvas; `light(in:)` picks it or the tint for the control bar's light and the New Tab wind |
+| Typography | System face only: 13 pt chrome, 12 pt medium labels, 11 pt captions and monospaced keycaps, 22 pt semibold page titles, 15 pt control bar field, 9 pt row glyphs |
+| Spacing | 4, 8, 12, 16, 24, 32, 48 pt; rows and the control bar use a 10 pt inset and icon gap |
 | Corners | 20 pt window and Settings window; 14 pt page inside a 6 pt inset; 8 pt floating sidebar inside a 12 pt inset; 12 pt cards and search fields; 8 pt controls; 4 pt keycaps |
-| Shadows | `floatShadow` for the revealed sidebar and the find bar; `paletteShadow` for the command palette, the New Tab field and the Settings window. No others |
+| Shadows | `floatShadow` for the revealed sidebar and the find bar; `panelShadow` for the control bar and the Settings window. No others |
 | Signal | `miss` (orange-red) for errors and the find bar's no-match border, always with text |
 | Sidebar | 224 pt; window controls and navigation share a 52 pt header |
 | Page frame | Full-height website with a 6 pt outer inset; no top bar |
 | Navigation rows | 32–34 pt; selection visible without relying on color alone |
-| Icons | SF Symbols from 9 pt row glyphs to 18 pt field glyphs; localized accessibility names |
+| Icons | SF Symbols from 9 pt row glyphs to 18 pt pinned-tile placeholders; localized accessibility names |
 
 Promote values to shared tokens when they form a repeated visual rule. Keep one-off layout values local. Do not wrap every native control in a design-system abstraction.
 
 ## Browser layout
 
-- New Tab is the default empty surface. It contains a centered address/search field and a submit action. No separate Home destination, hero text, date, wordmark, or suggested-site list.
-- Command-T selects the new-tab surface and focuses its input. Command-L edits the current URL, or focuses the input when no web page is active. Command-K opens the command palette.
+- New Tab is the default empty surface: the control bar above the brand's wind (`docs/CONTROL_BAR.md`). No separate Home destination, hero text, date, wordmark, or suggested-site list.
+- Command-T selects the new-tab surface and focuses its control bar. Over a tab, Command-L opens the control bar on the current address and Command-K opens it empty; on the New Tab page both focus its own bar.
 - Let the website fill the rounded page surface from its top edge. Keep window controls, sidebar toggle, back, forward, and reload aligned on the sidebar's first row; place the current address on its second row.
 - Create standard AppKit window buttons in the sidebar header using its public API, with native close, minimize, fullscreen and Option-click zoom actions; do not add a native toolbar over the content or move private titlebar views. The sidebar has a fixed mode and a hidden mode: hovering at the left window edge temporarily reveals it over the page. Give this floating panel a 12 pt outer margin, 8 pt radius, subtle border and shadow, and a short spring entrance/exit. Its hover area includes the margin so moving into it never closes the panel. The keyboard shortcut switches the fixed mode. No button overlays the page while the sidebar is hidden.
 - The sidebar contains pinned pages, the profile switcher, a New Tab action, and the tab list. Pinned pages use a compact grid. Rows and pinned tiles show the site favicon; the site initial or a globe symbol stands in until one is known.
@@ -67,9 +67,9 @@ Group related options in `raised` cards with a `line` border; the category list 
 
 - Selected tabs and settings categories use the raised surface. Hover and press use the `hover` and `pressed` fills.
 - Profile identity includes its name as well as color.
-- The command palette offers every available command of the central catalog, filtered by title as you type, after the typed address or search. It supports arrows, Return, and Escape. Menus and shortcuts invoke the same command handlers, scoped to the focused browser scene.
+- The control bar is the only address, search and command field (`docs/CONTROL_BAR.md`). Menus, shortcuts and the bar invoke the same command handlers, scoped to the focused browser scene.
 - Show one thin loading indicator and a clear recovery action on navigation failure.
-- Use the shared 0.28-second spring for shell transitions, through `browserAnimation(value:)`, which drops it with Reduce Motion. Nothing animates while idle.
+- Use the shared 0.28-second spring for shell transitions, through `browserAnimation(value:)`, which drops it with Reduce Motion. Nothing animates while idle: the New Tab wind rests 20 seconds after the last activity.
 - Keep WebKit pages stable while SwiftUI changes. Visual transitions must not reload websites.
 - Prefer semantic controls and real keyboard focus. Opaque surfaces inherently accommodate reduced transparency. Check contrast, VoiceOver, and long labels when changing components.
 

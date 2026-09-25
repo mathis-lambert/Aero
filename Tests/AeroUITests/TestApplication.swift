@@ -4,6 +4,8 @@ import XCTest
 @MainActor
 enum TestApplication {
     static let testDataKey = "AERO_TEST_DATA"
+    /// Points every search engine at the fixture server; honored only with `AERO_TEST_DATA`.
+    static let searchEndpointKey = "AERO_TEST_SEARCH"
     static let launchTimeout: TimeInterval = 10
 
     static func make(language: String = "en", locale: String = "en_US") -> XCUIApplication {

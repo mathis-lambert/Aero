@@ -86,13 +86,16 @@ extension BrowserModel {
         guard isEnabled(command) else { return }
         switch command {
         case .newTab:
-            window.commandBar = nil
+            window.controlBar = nil
             selectTab(nil)
             window.inputFocusRequest = UUID()
+        // The New Tab page's own bar takes both shortcuts, so a second bar never opens over it.
         case .openLocation:
-            if let selectedTab { window.commandBar = CommandBarRequest(replacing: true, initialText: selectedTab.url.absoluteString) }
+            if let selectedTab { window.controlBar = ControlBarPresentation(target: .currentTab, initialText: selectedTab.url.absoluteString) }
             else { window.inputFocusRequest = UUID() }
-        case .commandPalette: window.commandBar = CommandBarRequest(replacing: false, initialText: "")
+        case .commandPalette:
+            if selectedTab != nil { window.controlBar = ControlBarPresentation(target: .newTab, initialText: "") }
+            else { window.inputFocusRequest = UUID() }
         case .back: currentPage?.goBack()
         case .forward: currentPage?.goForward()
         case .reload: currentPage?.reload()

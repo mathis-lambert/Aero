@@ -96,7 +96,7 @@ docs/                   # Project documentation and specifications
 ## Commands and keyboard interaction
 
 - Maintain a central command catalog with stable IDs, localized presentation, default shortcuts, and contextual availability.
-- Menus, buttons, the command palette, and keyboard shortcuts must invoke the same action implementation.
+- Menus, buttons, the control bar, and keyboard shortcuts must invoke the same action implementation.
 - Route actions to the active window, pane, and focus context. Keep the dispatcher thin; feature owners implement behavior.
 - Use native menus and the responder chain for standard editing commands. Restrict custom key interception to interactions that need it, such as an MRU tab switcher.
 - Do not intercept ordinary text entry, IME composition, or page shortcuts indiscriminately.
@@ -133,7 +133,7 @@ docs/                   # Project documentation and specifications
 - Keep an isolated test only when it catches a concrete bug that the E2E suite misses. Do not add tests that merely mirror implementation, check trivial values, or duplicate E2E coverage. Use Swift Testing for justified isolated tests and XCTest/XCUITest for E2E tests.
 - Prioritize profile isolation, tab lifecycle, session recovery, migrations, command routing, and prevention of user-data loss.
 - Run the smallest relevant checks, plus the application build when changing shared APIs or integration. Report exactly what ran and what remains unverified.
-- The application is `Aero.xcodeproj`, with a shared `Aero` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a), Apple Swift 6.4, Swift 6 language mode, macOS 27.0+, and arm64.
+- The application is `Aero.xcodeproj`, with a shared `Aero` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a) with its Metal Toolchain component (`xcodebuild -downloadComponent MetalToolchain`; build-time only), Apple Swift 6.4, Swift 6 language mode, macOS 27.0+, and arm64.
 - Build: `xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived build`.
 - Package tests: `swift test --package-path Packages/BrowserKit`. Live WebKit tests need access to macOS WebKit services. In a restricted execution environment, use writable compiler caches and disclose any environment-related limits.
 - UI tests: use the build command above with `test` in place of `build` and `-resultBundlePath /tmp/aero-e2e-<run-id>.xcresult` with a unique run ID. They require a logged-in GUI session. Tests use `AERO_TEST_DATA` to namespace temporary data inside the app sandbox and make website stores ephemeral.

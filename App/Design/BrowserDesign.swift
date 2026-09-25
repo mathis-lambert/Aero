@@ -23,9 +23,8 @@ enum BrowserDesign {
         /// Small close and disclosure glyphs inside rows.
         static let glyph = Font.system(size: 9, weight: .semibold)
         static let title = Font.system(size: 22, weight: .semibold)
-        /// Large search fields: New Tab, the command palette and History.
-        static let field = Font.system(size: 17)
-        static let fieldIcon = Font.system(size: 18)
+        /// The control bar's field and its icon.
+        static let field = Font.system(size: 15)
     }
 
     static let sidebarWidth: CGFloat = 224
@@ -39,13 +38,9 @@ enum BrowserDesign {
     static let rowIconWidth: CGFloat = 18
     /// Horizontal inset of sidebar and list rows, and the gap between their icon and label.
     static let rowInset: CGFloat = 10
-    /// Gap between the search glyph and the text of large search fields.
-    static let fieldSpacing: CGFloat = 14
     static let pageInset: CGFloat = 6
     /// Margin of panels floating over the page: the revealed sidebar and the find bar.
     static let floatingInset: CGFloat = 12
-    /// Width of centered panels: the command palette and the New Tab field.
-    static let paletteWidth: CGFloat = 600
     static let tabIconSize: CGFloat = 16
     static let pinnedIconSize: CGFloat = 22
     static let downloadIconSize: CGFloat = 24
@@ -55,7 +50,7 @@ enum BrowserDesign {
     static let pageReveal = Animation.easeOut(duration: 0.18)
 }
 
-struct BrowserPalette {
+struct BrowserPalette: Equatable {
     let scheme: ColorScheme
     var sidebar: Color { scheme == .dark ? Color(white: 0.13) : Color(white: 0.93) }
     var canvas: Color { scheme == .dark ? Color(white: 0.085) : Color(white: 0.975) }
@@ -71,6 +66,11 @@ struct BrowserPalette {
     var pressed: Color { ink.opacity(0.10) }
     /// Errors and the find bar's no-match border; always paired with text.
     var miss: Color { scheme == .dark ? Color(red: 1, green: 0.54, blue: 0.36) : Color(red: 0.76, green: 0.25, blue: 0.05) }
+}
+
+extension EnvironmentValues {
+    /// The chrome's colors in the current appearance.
+    var palette: BrowserPalette { BrowserPalette(scheme: colorScheme) }
 }
 
 extension View {
@@ -97,8 +97,8 @@ extension View {
         shadow(color: .black.opacity(0.2), radius: 20, x: 5, y: 4)
     }
 
-    /// Centered panels: the command palette, the New Tab field and the Settings window.
-    func paletteShadow() -> some View {
+    /// Centered panels: the control bar and the Settings window.
+    func panelShadow() -> some View {
         shadow(color: .black.opacity(0.16), radius: 32, y: 16)
     }
 }
@@ -117,10 +117,10 @@ private struct BrowserAnimation<Value: Equatable>: ViewModifier {
 struct Hairline: View {
     enum Axis { case horizontal, vertical }
     var axis = Axis.horizontal
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
-        let line = Rectangle().fill(BrowserPalette(scheme: scheme).line)
+        let line = Rectangle().fill(palette.line)
         switch axis {
         case .horizontal: line.frame(height: 1)
         case .vertical: line.frame(width: 1)
@@ -138,6 +138,21 @@ extension ProfileColor {
         case .graphite: Color(red: 0.43, green: 0.46, blue: 0.47)
         }
     }
+    /// A brighter, more saturated version for light effects on the dark canvas (the control bar's
+    /// light, the New Tab wind), where the muted tint would turn dull.
+    var luminous: Color {
+        switch self {
+        case .terracotta: Color(red: 1, green: 0.48, blue: 0.32)
+        case .moss: Color(red: 0.45, green: 0.82, blue: 0.56)
+        case .ocean: Color(red: 0.38, green: 0.66, blue: 1)
+        case .plum: Color(red: 0.82, green: 0.5, blue: 0.9)
+        case .graphite: Color(red: 0.68, green: 0.73, blue: 0.76)
+        }
+    }
+
+    /// The accent of light effects: luminous on the dark canvas, the tint on the light one.
+    func light(in scheme: ColorScheme) -> Color { scheme == .dark ? luminous : tint }
+
     var label: LocalizedStringKey {
         switch self {
         case .terracotta: "Terracotta"
@@ -170,11 +185,11 @@ struct IconButton: View {
 
 struct QuietButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? BrowserPalette(scheme: scheme).pressed : .clear,
+            .background(configuration.isPressed ? palette.pressed : .clear,
                         in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
             .opacity(isEnabled ? 1 : 0.3)
     }
@@ -182,7 +197,7 @@ struct QuietButtonStyle: ButtonStyle {
 
 struct ShortcutLabel: View {
     let text: String
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
         Text(verbatim: text)
@@ -190,7 +205,7 @@ struct ShortcutLabel: View {
             .foregroundStyle(.secondary)
             .padding(.horizontal, 5)
             .padding(.vertical, 3)
-            .background(BrowserPalette(scheme: scheme).line, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.xs))
+            .background(palette.line, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.xs))
             .accessibilityHidden(true)
     }
 }

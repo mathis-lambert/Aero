@@ -42,10 +42,11 @@ final class BrowserHistory {
     }
 
     /// Waits for earlier writes, titles included, so the result shows them.
-    func entries(profileID: UUID, matching query: String, before date: Date? = nil) async throws -> [HistoryEntry] {
+    func entries(profileID: UUID, matching query: String, before date: Date? = nil,
+                 limit: Int = HistoryStore.pageSize) async throws -> [HistoryEntry] {
         writePendingTitles()
         await lastWrite?.value
-        return try await store.entries(profileID: profileID, matching: query, before: date)
+        return try await store.entries(profileID: profileID, matching: query, before: date, limit: limit)
     }
 
     private func writePendingTitles() {

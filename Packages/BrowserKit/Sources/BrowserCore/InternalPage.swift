@@ -2,7 +2,7 @@ import Foundation
 
 /// A browser page drawn natively in a tab, addressed as `aero://<page>`.
 /// Websites can never navigate to these addresses; only the browser opens them.
-public enum InternalPage: String, CaseIterable, Sendable {
+public enum InternalPage: String, Sendable {
     case history
 
     public static let scheme = "aero"

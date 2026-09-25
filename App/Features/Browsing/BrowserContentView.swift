@@ -4,7 +4,7 @@ import WebKit
 
 struct BrowserContentView: View {
     let page: BrowserPage
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -27,7 +27,7 @@ struct BrowserContentView: View {
                     Button("Try again") { page.reload() }.buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(BrowserPalette(scheme: scheme).canvas)
+                .background(palette.canvas)
             }
         }
     }

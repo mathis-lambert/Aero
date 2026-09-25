@@ -8,13 +8,14 @@ struct PinnedTabsGrid: View {
     private static let spacing: CGFloat = 8
     private static let tileHeight: CGFloat = 48
     private static let emptyZoneHeight: CGFloat = 8
-    /// The site initial stands in for a missing favicon, at the size of the placeholder symbols.
-    private static let initialFont = Font.system(size: 18, weight: .medium, design: .rounded)
+    /// The site initial, or a browser page's symbol, stands in for a missing favicon.
+    private static let placeholderSize: CGFloat = 18
+    private static let initialFont = Font.system(size: placeholderSize, weight: .medium, design: .rounded)
 
     let browser: BrowserModel
     @State private var targetedTabID: UUID?
     @State private var emptyZoneTargeted = false
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     private var pinned: [BrowserTab] { browser.tabs.filter(\.isPinned) }
 
@@ -43,21 +44,21 @@ struct PinnedTabsGrid: View {
         return Button { browser.selectTab(tab.id) } label: {
             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize) {
                 if let page = InternalPage(url: tab.url) {
-                    Image(systemName: page.symbol).font(BrowserDesign.Typography.fieldIcon).foregroundStyle(.secondary)
+                    Image(systemName: page.symbol).font(.system(size: Self.placeholderSize)).foregroundStyle(.secondary)
                 } else {
                     Text(verbatim: initial(tab)).font(Self.initialFont)
                 }
             }
             .frame(maxWidth: .infinity)
             .frame(height: Self.tileHeight)
-            .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
-                            border: targetedTabID == tab.id || selected ? Color.accentColor : BrowserPalette(scheme: scheme).line,
+            .browserSurface(fill: palette.raised,
+                            border: targetedTabID == tab.id || selected ? Color.accentColor : palette.line,
                             radius: BrowserDesign.Radius.card)
             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
         }
         .buttonStyle(.plain)
-        .help(tab.sidebarTitle)
-        .accessibilityLabel(tab.sidebarTitle)
+        .help(tab.displayTitle)
+        .accessibilityLabel(tab.displayTitle)
         .accessibilityIdentifier("sidebar.pinned")
         .accessibilityAddTraits(selected ? .isSelected : [])
         .contextMenu { TabContextMenu(tab: tab, browser: browser) }

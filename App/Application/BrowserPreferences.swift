@@ -49,6 +49,8 @@ final class BrowserPreferences {
         static let testSuitePrefix = "app.getaero.browser.tests."
         static let language = "browser.language"
         static let appearance = "browser.appearance"
+        static let searchEngine = "browser.searchEngine"
+        static let searchSuggestions = "browser.searchSuggestions"
         static let appleLanguages = "AppleLanguages"
         static let hibernationEnabled = "browser.hibernation.enabled"
         static let hibernationIdleMinutes = "browser.hibernation.idleMinutes"
@@ -61,6 +63,13 @@ final class BrowserPreferences {
     private(set) var language: BrowserLanguage
     var appearance: BrowserAppearance {
         didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) }
+    }
+    var searchEngine: SearchEngine {
+        didSet { defaults.set(searchEngine.rawValue, forKey: Key.searchEngine) }
+    }
+    /// Whether the control bar asks the search engine for suggestions as you type.
+    var searchSuggestions: Bool {
+        didSet { defaults.set(searchSuggestions, forKey: Key.searchSuggestions) }
     }
     var hibernation: HibernationSettings {
         didSet { storeHibernation() }
@@ -79,6 +88,8 @@ final class BrowserPreferences {
         self.language = language
         launchLanguage = language
         appearance = defaults.string(forKey: Key.appearance).flatMap(BrowserAppearance.init(rawValue:)) ?? .system
+        searchEngine = defaults.string(forKey: Key.searchEngine).flatMap(SearchEngine.init(rawValue:)) ?? .default
+        searchSuggestions = defaults.object(forKey: Key.searchSuggestions) as? Bool ?? true
         hibernation = Self.loadHibernation(from: defaults)
         appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconVariant.init(id:))
     }

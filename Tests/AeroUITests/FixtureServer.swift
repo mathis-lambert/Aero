@@ -1,5 +1,6 @@
 import Foundation
 @preconcurrency import Network
+import Synchronization
 
 /// Serves the files in `Fixtures` over HTTP on the loopback interface while a test runs.
 final class FixtureServer: Sendable {
@@ -7,12 +8,13 @@ final class FixtureServer: Sendable {
 
     private static let readyTimeout = DispatchTimeInterval.seconds(5)
     private static let maximumRequestLength = 64 * 1024
-    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png", "csv": "text/csv"]
+    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png", "csv": "text/csv", "json": "application/json"]
     /// Served as attachments, so the browser downloads them instead of displaying them.
     private static let attachmentExtensions: Set = ["csv"]
 
     let port: UInt16
     private let listener: NWListener
+    private let log = RequestLog()
     private let queue = DispatchQueue(label: "app.getaero.browser.uitests.fixtures")
 
     init() throws {
@@ -23,9 +25,9 @@ final class FixtureServer: Sendable {
         listener.stateUpdateHandler = { state in
             if case .ready = state { ready.signal() }
         }
-        listener.newConnectionHandler = { [queue] connection in
+        listener.newConnectionHandler = { [queue, log] connection in
             connection.start(queue: queue)
-            Self.respond(on: connection)
+            Self.respond(on: connection, log: log)
         }
         listener.start(queue: queue)
         guard ready.wait(timeout: .now() + Self.readyTimeout) == .success, let port = listener.port?.rawValue else {
@@ -39,6 +41,14 @@ final class FixtureServer: Sendable {
 
     func stop() { listener.cancel() }
 
+    /// The requests received so far for `fixture`, with their query.
+    func requests(for fixture: String) -> [URLComponents] {
+        log.paths.compactMap(URLComponents.init(string:)).filter { $0.path == "/" + fixture }
+    }
+
+    /// Where the app's search engines point in test runs (`AERO_TEST_SEARCH`).
+    var searchEndpoint: URL { url("") }
+
     /// Uses `localhost` so app-side requests fall under App Transport Security's local networking exception.
     func url(_ fixture: String) -> URL {
         var components = URLComponents()
@@ -50,10 +60,11 @@ final class FixtureServer: Sendable {
         return url
     }
 
-    private static func respond(on connection: NWConnection) {
+    private static func respond(on connection: NWConnection, log: RequestLog) {
         connection.receive(minimumIncompleteLength: 1, maximumLength: maximumRequestLength) { data, _, _, _ in
             let request = data.map { String(decoding: $0, as: UTF8.self) } ?? ""
             let path = request.split(separator: " ").dropFirst().first.map(String.init) ?? "/"
+            log.record(path)
             let name = String(path.split(separator: "?").first ?? "").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             let response: Data
             if let file = fixtureURL(named: name), let body = try? Data(contentsOf: file) {
@@ -80,4 +91,11 @@ final class FixtureServer: Sendable {
     }
 
     private final class BundleToken {}
+
+    /// Paths with their query, in the order they arrived.
+    private final class RequestLog: Sendable {
+        private let storage = Mutex<[String]>([])
+        var paths: [String] { storage.withLock { $0 } }
+        func record(_ path: String) { storage.withLock { $0.append(path) } }
+    }
 }

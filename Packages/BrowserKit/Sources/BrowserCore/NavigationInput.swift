@@ -1,8 +1,6 @@
 import Foundation
 
 public enum NavigationInput {
-    public enum Failure: Error { case empty, unsupportedScheme, invalidAddress }
-
     public static func isWebURL(_ url: URL) -> Bool {
         ["http", "https"].contains(url.scheme?.lowercased() ?? "") && !(url.host ?? "").isEmpty
     }
@@ -12,28 +10,25 @@ public enum NavigationInput {
         isWebURL(url) || InternalPage(url: url) != nil
     }
 
-    public static func resolve(_ input: String) throws -> URL {
-        let value = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty else { throw Failure.empty }
-        let hasWhitespace = value.contains(where: \.isWhitespace)
-        if !hasWhitespace {
-            if value.contains("://") || value.lowercased().hasPrefix("javascript:") || value.lowercased().hasPrefix("data:") {
-                guard let url = URL(string: value), isTabURL(url) else { throw Failure.unsupportedScheme }
-                return url
-            }
-            let isLocal = value == "localhost" || value.hasPrefix("localhost:") || value.hasPrefix("localhost/") || value.hasPrefix("127.0.0.1") || value.hasPrefix("[::1]")
-            if isLocal || value.contains(".") {
-                guard let url = URL(string: (isLocal ? "http://" : "https://") + value), isWebURL(url) else {
-                    throw Failure.invalidAddress
-                }
-                return url
-            }
+    /// Text naming an address rather than words to search: a scheme, a dot or localhost. The
+    /// control bar never sends such text to a search engine for suggestions.
+    public static func looksLikeAddress(_ text: String) -> Bool {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty, !value.contains(where: \.isWhitespace) else { return false }
+        return value.contains(":") || value.contains(".") || value.lowercased().hasPrefix("localhost")
+    }
+
+    /// The address `text` names, or `nil` when it should be searched instead, including text naming
+    /// something a tab cannot open, such as `javascript:` or `file:`.
+    public static func address(from text: String) -> URL? {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty, !value.contains(where: \.isWhitespace) else { return nil }
+        let lowered = value.lowercased()
+        if value.contains("://") || lowered.hasPrefix("javascript:") || lowered.hasPrefix("data:") {
+            return URL(string: value).flatMap { isTabURL($0) ? $0 : nil }
         }
-        var search = URLComponents()
-        search.scheme = "https"
-        search.host = "duckduckgo.com"
-        search.queryItems = [URLQueryItem(name: "q", value: value)]
-        guard let url = search.url else { throw Failure.invalidAddress }
-        return url
+        let isLocal = lowered == "localhost" || ["localhost:", "localhost/", "127.0.0.1", "[::1]"].contains { lowered.hasPrefix($0) }
+        guard isLocal || value.contains(".") else { return nil }
+        return URL(string: (isLocal ? "http://" : "https://") + value).flatMap { isWebURL($0) ? $0 : nil }
     }
 }

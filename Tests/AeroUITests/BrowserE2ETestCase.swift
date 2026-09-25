@@ -14,8 +14,9 @@ class BrowserE2ETestCase: XCTestCase {
         continueAfterFailure = false
         server = try FixtureServer()
         app = TestApplication.make()
+        app.launchEnvironment[TestApplication.searchEndpointKey] = server.searchEndpoint.absoluteString
         app.launch()
-        XCTAssertTrue(newTabInput.waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }
 
     override func tearDown() async throws {
@@ -23,7 +24,7 @@ class BrowserE2ETestCase: XCTestCase {
         server.stop()
     }
 
-    var newTabInput: XCUIElement { app.textFields["newTab.input"] }
+    var controlBarInput: XCUIElement { app.textFields["controlBar.input"] }
     var tabRows: XCUIElementQuery { app.buttons.matching(identifier: "sidebar.tab") }
 
     /// Labels of the elements with `identifier`, in reading order, from one snapshot of `root`, so a
@@ -41,15 +42,15 @@ class BrowserE2ETestCase: XCTestCase {
 
     func open(_ fixture: String, expecting text: String) {
         app.typeKey("t", modifierFlags: .command)
-        XCTAssertTrue(newTabInput.waitForExistence(timeout: Self.renderTimeout))
-        newTabInput.typeText(server.url(fixture).absoluteString + "\n")
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: Self.renderTimeout))
+        controlBarInput.typeText(server.url(fixture).absoluteString + "\n")
         XCTAssertTrue(app.webViews.staticTexts[text].waitForExistence(timeout: Self.pageTimeout), "\(fixture) loaded")
     }
 
     func relaunch() {
         app.terminate()
         app.launch()
-        XCTAssertTrue(newTabInput.waitForExistence(timeout: TestApplication.launchTimeout))
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }
 
     func poll(timeout: TimeInterval = renderTimeout, _ condition: () -> Bool) -> Bool {

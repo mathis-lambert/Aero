@@ -17,7 +17,7 @@ struct HistoryView: View {
     @State private var selection: Set<HistoryEntry.ID> = []
     @State private var confirmingClear = false
     @FocusState private var focus: Focus?
-    @Environment(\.colorScheme) private var scheme
+    @Environment(\.palette) private var palette
 
     private enum Focus { case search, list }
 
@@ -82,8 +82,8 @@ struct HistoryView: View {
         }
         .padding(.horizontal, 14)
         .frame(height: Self.searchHeight)
-        .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
-                        border: BrowserPalette(scheme: scheme).line,
+        .browserSurface(fill: palette.raised,
+                        border: palette.line,
                         radius: BrowserDesign.Radius.card)
     }
 
@@ -103,7 +103,7 @@ struct HistoryView: View {
                             .font(BrowserDesign.Typography.label).foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 4)
-                            .background(BrowserPalette(scheme: scheme).canvas)
+                            .background(palette.canvas)
                     }
                 }
             }

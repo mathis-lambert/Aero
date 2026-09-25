@@ -20,6 +20,7 @@ final class BrowserModel {
     let preferences: BrowserPreferences
     let favicons: FaviconCache
     let history: BrowserHistory
+    let suggestionFetcher = SuggestionFetcher()
     var currentPage: BrowserPage?
 
     @ObservationIgnored let pages: WebPageRegistry
@@ -31,6 +32,8 @@ final class BrowserModel {
     @ObservationIgnored private var cycleTabs: [UUID] = []
     @ObservationIgnored private var cycleIndex = 0
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
+    /// Test runs only: the fixture server that stands in for every search engine.
+    @ObservationIgnored private let searchTestEndpoint: URL?
 
     init() {
         launchInterval = Self.signposter.beginInterval(Diagnostics.Signpost.launch)
@@ -38,6 +41,7 @@ final class BrowserModel {
         let testing = environment["AERO_TEST_DATA"]
             .map { URL(fileURLWithPath: $0).lastPathComponent }
         preferences = BrowserPreferences(testNamespace: testing)
+        searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
         let folder: URL
         if let testing {
             // Resolve inside this application's sandbox, not the UI test runner's container.
@@ -63,11 +67,14 @@ final class BrowserModel {
     }
 
     var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
+    /// The selected profile's color, which tints the whole window.
+    var accent: ProfileColor { profile?.color ?? .terracotta }
     var space: BrowserSpace? { session.spaces.first { $0.profileID == window.selectedProfileID } }
     var tabs: [BrowserTab] { session.tabs.filter { $0.spaceID == space?.id } }
     var selectedTab: BrowserTab? { tabs.first { $0.id == window.selectedTabID } }
     var canReopen: Bool { closedTabs.contains { $0.spaceID == space?.id } }
     var downloads: DownloadCoordinator { pages.downloads }
+    var webSearch: WebSearch { WebSearch(engine: preferences.searchEngine, testEndpoint: searchTestEndpoint) }
     /// The browser page shown instead of a website, if the selected tab holds one.
     var internalPage: InternalPage? { selectedTab.flatMap { InternalPage(url: $0.url) } }
 
@@ -129,7 +136,7 @@ final class BrowserModel {
         guard session.profiles.contains(where: { $0.id == id }) else { return }
         if let profileID = window.selectedProfileID { lastSelection[profileID] = window.selectedTabID }
         window.selectedProfileID = id
-        window.commandBar = nil
+        window.controlBar = nil
         selectTab(lastSelection[id])
     }
 
@@ -201,13 +208,11 @@ final class BrowserModel {
         persist()
     }
 
-    func submit(_ input: String, replacing: Bool) {
-        do {
-            let url = try NavigationInput.resolve(input)
-            if replacing, let id = window.selectedTabID { navigate(id, to: url) }
-            else { open(url) }
-            window.commandBar = nil
-        } catch { errorMessage = String(localized: "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened.") }
+    /// Opens what the control bar chose, then closes the bar over the tab.
+    func load(_ url: URL, in target: ControlBarTarget) {
+        if target == .currentTab, let id = window.selectedTabID { navigate(id, to: url) }
+        else { open(url) }
+        window.controlBar = nil
     }
 
     /// Popups closed by their page are not offered by Reopen Closed Tab.
@@ -283,10 +288,4 @@ final class BrowserModel {
         cycleTabs = []
         if let id = window.selectedTabID { recentTabs.removeAll { $0 == id }; recentTabs.insert(id, at: 0) }
     }
-}
-
-struct CommandBarRequest: Identifiable {
-    let id = UUID()
-    let replacing: Bool
-    let initialText: String
 }
