@@ -14,6 +14,10 @@ extension BrowserCommand {
         case .reopenTab: String(localized: "Reopen closed tab")
         case .toggleSidebar: String(localized: "Toggle sidebar")
         case .profiles: String(localized: "Manage profiles")
+        case .showHistory: String(localized: "Show all history")
+        case .findInPage: String(localized: "Find…")
+        case .findNext: String(localized: "Find next")
+        case .findPrevious: String(localized: "Find previous")
         }
     }
 
@@ -29,6 +33,10 @@ extension BrowserCommand {
         case .reopenTab: "arrow.uturn.backward"
         case .toggleSidebar: "sidebar.left"
         case .profiles: "person.crop.circle"
+        case .showHistory: "clock"
+        case .findInPage: "text.magnifyingglass"
+        case .findNext: "chevron.down"
+        case .findPrevious: "chevron.up"
         }
     }
 
@@ -44,6 +52,10 @@ extension BrowserCommand {
         case .reopenTab: (KeyboardShortcut("t", modifiers: [.command, .shift]), "⇧ ⌘ T")
         case .toggleSidebar: (KeyboardShortcut("s", modifiers: [.command, .shift]), "⇧ ⌘ S")
         case .profiles: nil
+        case .showHistory: (KeyboardShortcut("y"), "⌘ Y")
+        case .findInPage: (KeyboardShortcut("f"), "⌘ F")
+        case .findNext: (KeyboardShortcut("g"), "⌘ G")
+        case .findPrevious: (KeyboardShortcut("g", modifiers: [.command, .shift]), "⇧ ⌘ G")
         }
     }
 
@@ -57,7 +69,9 @@ extension BrowserModel {
         switch command {
         case .back: return currentPage?.canGoBack == true
         case .forward: return currentPage?.canGoForward == true
-        case .reload, .closeTab: return selectedTab != nil
+        case .reload: return currentPage != nil
+        case .closeTab: return selectedTab != nil
+        case .findInPage, .findNext, .findPrevious: return currentPage != nil
         case .reopenTab: return canReopen
         default: return true
         }
@@ -69,10 +83,10 @@ extension BrowserModel {
         case .newTab:
             window.commandBar = nil
             selectTab(nil)
-            window.newTabFocusID = UUID()
+            window.inputFocusRequest = UUID()
         case .openLocation:
             if let selectedTab { window.commandBar = CommandBarRequest(replacing: true, initialText: selectedTab.url.absoluteString) }
-            else { window.newTabFocusID = UUID() }
+            else { window.inputFocusRequest = UUID() }
         case .commandPalette: window.commandBar = CommandBarRequest(replacing: false, initialText: "")
         case .back: currentPage?.goBack()
         case .forward: currentPage?.goForward()
@@ -81,6 +95,18 @@ extension BrowserModel {
         case .reopenTab: reopenTab()
         case .toggleSidebar: window.sidebarPinned.toggle()
         case .profiles: window.profilesPresented = true
+        case .showHistory: show(.history)
+        case .findInPage, .findNext, .findPrevious: find(command)
+        }
+    }
+
+    /// Next and previous open the bar first when there is nothing to search for yet.
+    private func find(_ command: BrowserCommand) {
+        guard let page = currentPage else { return }
+        let find = window.find
+        Task {
+            if command == .findInPage || find.query.isEmpty { await find.present(on: page) }
+            else { await find.search(on: page, backwards: command == .findPrevious) }
         }
     }
 }
@@ -95,6 +121,17 @@ struct BrowserMenuCommands: Commands {
             Divider()
             command(.closeTab)
             command(.reopenTab)
+        }
+        CommandGroup(after: .pasteboard) {
+            Divider()
+            Menu("Find") {
+                command(.findInPage)
+                command(.findNext)
+                command(.findPrevious)
+            }
+        }
+        CommandMenu("History") {
+            command(.showHistory)
         }
         CommandMenu("Navigate") {
             command(.back)

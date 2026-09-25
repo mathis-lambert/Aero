@@ -19,6 +19,7 @@ final class BrowserModel {
     let window = BrowserWindowState()
     let preferences: BrowserPreferences
     let favicons: FaviconCache
+    let history: BrowserHistory
     var currentPage: BrowserPage?
 
     @ObservationIgnored let pages: WebPageRegistry
@@ -53,7 +54,11 @@ final class BrowserModel {
         }
         store = SessionStore(directory: folder)
         favicons = FaviconCache(store: FaviconStore(directory: folder.appendingPathComponent("Favicons", isDirectory: true)))
-        pages = WebPageRegistry(ephemeral: testing != nil, hibernation: preferences.hibernation)
+        history = BrowserHistory(store: HistoryStore(file: folder.appendingPathComponent("History.sqlite")))
+        // Test runs must never write into the user's Downloads folder.
+        let downloadsFolder = testing == nil ? URL.downloadsDirectory : folder.appendingPathComponent("Downloads", isDirectory: true)
+        let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
+        pages = WebPageRegistry(downloads: downloads, ephemeral: testing != nil, hibernation: preferences.hibernation)
         pages.delegate = self
     }
 
@@ -62,6 +67,9 @@ final class BrowserModel {
     var tabs: [BrowserTab] { session.tabs.filter { $0.spaceID == space?.id } }
     var selectedTab: BrowserTab? { tabs.first { $0.id == window.selectedTabID } }
     var canReopen: Bool { closedTabs.contains { $0.spaceID == space?.id } }
+    var downloads: DownloadCoordinator { pages.downloads }
+    /// The browser page shown instead of a website, if the selected tab holds one.
+    var internalPage: InternalPage? { selectedTab.flatMap { InternalPage(url: $0.url) } }
 
     func start() async {
         guard !isReady, !loadFailed else { return }
@@ -83,10 +91,13 @@ final class BrowserModel {
         self.launchInterval = nil
     }
 
+    func profileID(of tab: BrowserTab) -> UUID? {
+        session.spaces.first { $0.id == tab.spaceID }?.profileID
+    }
+
     /// Icons follow the tab's profile; `url` defaults to the tab's saved address.
     func faviconKey(for tab: BrowserTab, at url: URL? = nil) -> FaviconKey? {
-        guard let space = session.spaces.first(where: { $0.id == tab.spaceID }) else { return nil }
-        return FaviconKey(profileID: space.profileID, url: url ?? tab.url)
+        profileID(of: tab).flatMap { FaviconKey(profileID: $0, url: url ?? tab.url) }
     }
 
     private func persist() {
@@ -121,14 +132,21 @@ final class BrowserModel {
 
     func selectTab(_ id: UUID?, recordRecent: Bool = true) {
         guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = window.selectedProfileID else {
+            window.find.dismiss()
             window.selectedTabID = nil
             currentPage = nil
             pages.deactivate()
             return
         }
+        if window.selectedTabID != id { window.find.dismiss() }
         window.selectedTabID = id
         if recordRecent { recentTabs.removeAll { $0 == id }; recentTabs.insert(id, at: 0) }
-        currentPage = pages.activate(tab, profileID: profileID)
+        if InternalPage(url: tab.url) != nil {
+            currentPage = nil
+            pages.deactivate()
+        } else {
+            currentPage = pages.activate(tab, profileID: profileID)
+        }
     }
 
     func open(_ url: URL) {
@@ -136,9 +154,28 @@ final class BrowserModel {
         selectTab(tab.id)
     }
 
+    /// Selects the space's tab for `page`, or opens one, so a browser page is never duplicated.
+    func show(_ page: InternalPage) {
+        if let existing = tabs.first(where: { InternalPage(url: $0.url) == page }) { selectTab(existing.id) }
+        else { open(page.url) }
+        window.inputFocusRequest = UUID()
+    }
+
+    /// Loads `url` in an existing tab. Moving to a browser page releases the tab's website;
+    /// moving back to a website creates its page on selection.
+    func navigate(_ id: UUID, to url: URL) {
+        guard let tab = tabs.first(where: { $0.id == id }), NavigationInput.isTabURL(url) else { return }
+        session.updateTab(id: id, url: url, title: "")
+        if InternalPage(url: url) != nil { pages.close(tabID: id) }
+        else if InternalPage(url: tab.url) == nil, window.selectedTabID == id { currentPage?.load(url) }
+        persist()
+        selectTab(id)
+    }
+
     /// Adds a tab record without selecting it.
+    @discardableResult
     func addTab(_ url: URL, in spaceID: UUID) -> BrowserTab? {
-        guard NavigationInput.isWebURL(url), let tab = session.open(url, in: spaceID) else { return nil }
+        guard NavigationInput.isTabURL(url), let tab = session.open(url, in: spaceID) else { return nil }
         persist()
         return tab
     }
@@ -147,17 +184,24 @@ final class BrowserModel {
     func updateTab(_ id: UUID, url: URL, title: String) {
         guard let existing = session.tabs.first(where: { $0.id == id }), existing.url != url || existing.title != title else { return }
         session.updateTab(id: id, url: url, title: title)
+        if !title.isEmpty, title != existing.title || url != existing.url, let profileID = profileID(of: existing) {
+            history.updateTitle(title, for: url, profileID: profileID)
+        }
+        persist()
+    }
+
+    /// Drops never move a tab into another space.
+    func moveTab(_ id: UUID, before targetID: UUID?, pinned: Bool) {
+        guard tabs.contains(where: { $0.id == id }), session.moveTab(id: id, before: targetID, pinned: pinned) else { return }
+        pages.refreshHibernationSchedule()
         persist()
     }
 
     func submit(_ input: String, replacing: Bool) {
         do {
             let url = try NavigationInput.resolve(input)
-            if replacing, let id = window.selectedTabID, let currentPage {
-                session.updateTab(id: id, url: url, title: "")
-                currentPage.load(url)
-                persist()
-            } else { open(url) }
+            if replacing, let id = window.selectedTabID { navigate(id, to: url) }
+            else { open(url) }
             window.commandBar = nil
         } catch { errorMessage = String(localized: "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened.") }
     }

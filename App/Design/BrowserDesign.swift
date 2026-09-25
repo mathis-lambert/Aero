@@ -26,7 +26,9 @@ enum BrowserDesign {
     /// Leading symbol or favicon column in sidebar rows.
     static let rowIconWidth: CGFloat = 18
     static let tabIconSize: CGFloat = 16
+    static let tabRowHeight: CGFloat = 34
     static let pinnedIconSize: CGFloat = 22
+    static let downloadIconSize: CGFloat = 24
     static let faviconCornerRatio: CGFloat = 0.22
 }
 

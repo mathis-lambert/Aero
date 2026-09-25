@@ -4,6 +4,8 @@ import SwiftUI
 struct SidebarView: View {
     let browser: BrowserModel
     @Namespace private var selection
+    @State private var targetedTabID: UUID?
+    @State private var endTargeted = false
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -17,10 +19,12 @@ struct SidebarView: View {
 
             Button { browser.perform(.openLocation) } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: browser.selectedTab == nil ? "magnifyingglass" : "globe")
+                    Image(systemName: browser.internalPage?.symbol ?? (browser.selectedTab == nil ? "magnifyingglass" : "globe"))
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
-                    if let tab = browser.selectedTab {
+                    if let page = browser.internalPage {
+                        Text(verbatim: page.title).lineLimit(1)
+                    } else if let tab = browser.selectedTab {
                         Text(verbatim: tab.url.host ?? tab.url.absoluteString)
                             .lineLimit(1).truncationMode(.middle)
                     } else {
@@ -45,29 +49,7 @@ struct SidebarView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
-                    if !pinned.isEmpty {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
-                            ForEach(pinned) { tab in
-                                Button { browser.selectTab(tab.id) } label: {
-                                    FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize) {
-                                        Text(verbatim: siteInitial(tab))
-                                            .font(.system(size: 18, weight: .medium, design: .rounded))
-                                    }
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 48)
-                                        .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
-                                                        border: BrowserPalette(scheme: scheme).line,
-                                                        radius: BrowserDesign.Radius.card)
-                                        .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
-                                }
-                                .buttonStyle(.plain)
-                                .help(tab.sidebarTitle)
-                                .accessibilityLabel(tab.sidebarTitle)
-                                .contextMenu { tabActions(tab) }
-                            }
-                        }
-                        .padding(.bottom, 12)
-                    }
+                    PinnedTabsGrid(browser: browser)
 
                     ProfileSwitcher(browser: browser)
                         .padding(.bottom, 6)
@@ -96,30 +78,59 @@ struct SidebarView: View {
                             Spacer()
                         }
                         .padding(.horizontal, 10)
-                        .frame(height: 34)
+                        .frame(height: BrowserDesign.tabRowHeight)
                         .background { SelectionHighlight(namespace: selection) }
                         .accessibilityAddTraits(.isSelected)
                     }
-                    ForEach(browser.tabs.filter { !$0.isPinned }) { tab in
+                    ForEach(unpinned) { tab in
                         TabRow(tab: tab, selected: browser.window.selectedTabID == tab.id, selection: selection,
                                select: { browser.selectTab(tab.id) }, close: { browser.closeTab(tab.id) }) {
                             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
-                                Image(systemName: "globe").font(.system(size: 13)).foregroundStyle(.secondary)
+                                Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe")
+                                    .font(.system(size: 13)).foregroundStyle(.secondary)
                             }
                         }
-                        .contextMenu { tabActions(tab) }
+                        .contextMenu { TabContextMenu(tab: tab, browser: browser) }
+                        .draggable(tab.dragItem)
+                        .dropDestination(for: TabDragItem.self) { items, _ in
+                            drop(items, before: tab.id)
+                        } isTargeted: { targetedTabID = $0 ? tab.id : (targetedTabID == tab.id ? nil : targetedTabID) }
+                        .overlay(alignment: .top) { if targetedTabID == tab.id { DropIndicator() } }
                     }
+                    // The rest of the list accepts drops at the end.
+                    Color.clear
+                        .frame(height: BrowserDesign.tabRowHeight)
+                        .contentShape(Rectangle())
+                        .dropDestination(for: TabDragItem.self) { items, _ in
+                            drop(items, before: nil)
+                        } isTargeted: { endTargeted = $0 }
+                        .overlay(alignment: .top) { if endTargeted { DropIndicator() } }
+                        .accessibilityHidden(true)
                 }
                 .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.selectedTabID)
+                .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.tabs.map(\.id))
+                .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.tabs.map(\.isPinned))
                 .padding(.horizontal, 10)
                 .padding(.top, 12)
             }
             .scrollIndicators(.hidden)
+
+            if !browser.downloads.downloads.isEmpty {
+                DownloadsSection(downloads: browser.downloads)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.downloads.downloads.isEmpty)
         .disabled(!browser.isReady)
     }
 
-    private var pinned: [BrowserTab] { browser.tabs.filter(\.isPinned) }
+    private var unpinned: [BrowserTab] { browser.tabs.filter { !$0.isPinned } }
+
+    private func drop(_ items: [TabDragItem], before targetID: UUID?) -> Bool {
+        guard let item = items.first else { return false }
+        browser.moveTab(item.tabID, before: targetID, pinned: false)
+        return true
+    }
 
     private var navigation: some View {
         HStack(spacing: 0) {
@@ -138,76 +149,5 @@ struct SidebarView: View {
             .disabled(browser.currentPage == nil)
             .accessibilityIdentifier("sidebar.reload")
         }
-    }
-
-    private func siteInitial(_ tab: BrowserTab) -> String {
-        let name = tab.url.host?.replacingOccurrences(of: "www.", with: "") ?? tab.title
-        return String(name.prefix(1)).uppercased()
-    }
-
-    @ViewBuilder private func tabActions(_ tab: BrowserTab) -> some View {
-        Button(tab.isPinned ? "Unpin tab" : "Pin tab", systemImage: tab.isPinned ? "pin.slash" : "pin") { browser.togglePin(tab.id) }
-        Button("Close tab", systemImage: "xmark") { browser.closeTab(tab.id) }
-    }
-}
-
-/// One shape shared by the selected row, so selection slides between rows instead of blinking.
-private struct SelectionHighlight: View {
-    static let id = "sidebar.selection"
-    let namespace: Namespace.ID
-    @Environment(\.colorScheme) private var scheme
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: BrowserDesign.Radius.control)
-            .fill(BrowserPalette(scheme: scheme).raised)
-            .matchedGeometryEffect(id: Self.id, in: namespace)
-    }
-}
-
-private struct TabRow<Icon: View>: View {
-    let tab: BrowserTab
-    let selected: Bool
-    let selection: Namespace.ID
-    let select: () -> Void
-    let close: () -> Void
-    @ViewBuilder let icon: Icon
-    @State private var hovered = false
-
-    var body: some View {
-        HStack(spacing: 0) {
-            Button(action: select) {
-                HStack(spacing: 10) {
-                    icon.frame(width: BrowserDesign.rowIconWidth)
-                    Text(verbatim: tab.sidebarTitle)
-                        .lineLimit(1).truncationMode(.tail)
-                    Spacer(minLength: 0)
-                }
-                .padding(.leading, 10)
-                .frame(height: 34)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("sidebar.tab")
-            Button(action: close) {
-                Image(systemName: "xmark").font(.system(size: 9, weight: .semibold))
-                    .frame(width: 26, height: 30).contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .opacity(hovered || selected ? 1 : 0)
-            .accessibilityLabel("Close tab")
-        }
-        .background {
-            if selected { SelectionHighlight(namespace: selection) }
-            else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(.primary.opacity(hovered ? 0.04 : 0)) }
-        }
-        .onHover { hovered = $0 }
-        .accessibilityElement(children: .contain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
-    }
-}
-
-private extension BrowserTab {
-    var sidebarTitle: String {
-        title.isEmpty ? url.host ?? url.absoluteString : title
     }
 }

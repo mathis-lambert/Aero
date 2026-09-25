@@ -12,6 +12,11 @@ extension BrowserModel: WebPageRegistryDelegate {
         updateTab(tabID, url: url, title: title)
     }
 
+    func page(_ tabID: UUID, didVisit url: URL) {
+        guard let tab = session.tabs.first(where: { $0.id == tabID }), let profileID = profileID(of: tab) else { return }
+        history.recordVisit(to: url, profileID: profileID)
+    }
+
     func page(_ tabID: UUID, didDeclareIcons links: [FaviconLink], at url: URL) {
         guard let tab = session.tabs.first(where: { $0.id == tabID }),
               let key = faviconKey(for: tab, at: url) else { return }

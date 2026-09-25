@@ -2,6 +2,8 @@ import BrowserCore
 import SwiftUI
 
 struct BrowserWindowView: View {
+    static let windowID = "browser"
+
     let browser: BrowserModel
     @State private var sidebarRevealed = false
     @Environment(\.colorScheme) private var scheme
@@ -25,8 +27,17 @@ struct BrowserWindowView: View {
                         if browser.loadFailed {
                             ContentUnavailableView("Session unavailable", systemImage: "externaldrive.badge.exclamationmark", description: Text("Your saved data has been kept unchanged."))
                         } else { ProgressView().controlSize(.small) }
+                    } else if let internalPage = browser.internalPage {
+                        InternalPageView(page: internalPage, browser: browser)
                     } else if let page = browser.currentPage {
                         BrowserContentView(page: page)
+                            .overlay(alignment: .topTrailing) {
+                                if browser.window.find.isPresented {
+                                    FindBar(find: browser.window.find, page: page)
+                                        .padding(BrowserDesign.floatingSidebarInset)
+                                        .transition(.move(edge: .top).combined(with: .opacity))
+                                }
+                            }
                     } else {
                         NewTabView(browser: browser)
                             .id(browser.window.selectedProfileID)
@@ -86,6 +97,8 @@ struct BrowserWindowView: View {
         .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.sidebarPinned)
         .animation(reduceMotion ? nil : BrowserDesign.motion, value: sidebarRevealed)
         .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.commandBar != nil)
+        .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.find.isPresented)
+        .downloadsDockBadge(activeCount: browser.downloads.activeCount)
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
         .onChange(of: browser.window.commandBar != nil) { _, presented in if presented { sidebarRevealed = false } }
         .background(WindowConfiguration(identifier: WindowConfiguration.mainWindowIdentifier, usesBrowserChrome: true))

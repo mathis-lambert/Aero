@@ -42,7 +42,7 @@ struct NewTabView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .defaultFocus($focused, true)
-        .task(id: browser.window.newTabFocusID) {
+        .task(id: browser.window.inputFocusRequest) {
             await Task.yield()
             focused = true
         }

@@ -7,7 +7,7 @@ struct AuroApp: App {
     @State private var browser = BrowserModel()
 
     var body: some Scene {
-        Window("Auro", id: "browser") {
+        Window("Auro", id: BrowserWindowView.windowID) {
             BrowserWindowView(browser: browser)
                 .task {
                     delegate.browser = browser
