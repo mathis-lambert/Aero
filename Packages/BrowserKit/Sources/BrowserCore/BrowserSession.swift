@@ -100,6 +100,19 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         tabs[index].isPinned.toggle()
     }
 
+    /// Moves a tab before another tab of its space, or to the end, and sets its pin state.
+    /// Tabs never change space this way.
+    @discardableResult
+    public mutating func moveTab(id: UUID, before targetID: UUID?, pinned: Bool) -> Bool {
+        guard id != targetID, let index = tabs.firstIndex(where: { $0.id == id }) else { return false }
+        if let targetID, tabs.first(where: { $0.id == targetID })?.spaceID != tabs[index].spaceID { return false }
+        var tab = tabs.remove(at: index)
+        tab.isPinned = pinned
+        let destination = targetID.flatMap { target in tabs.firstIndex { $0.id == target } } ?? tabs.endIndex
+        tabs.insert(tab, at: destination)
+        return true
+    }
+
     @discardableResult
     public mutating func close(id: UUID) -> BrowserTab? {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return nil }
@@ -121,7 +134,7 @@ public struct BrowserSession: Codable, Equatable, Sendable {
               profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name }),
               profiles.allSatisfy({ profile in spaces.contains { $0.profileID == profile.id } }),
               spaces.allSatisfy({ profileIDs.contains($0.profileID) }),
-              tabs.allSatisfy({ spaceIDs.contains($0.spaceID) && NavigationInput.isWebURL($0.url) })
+              tabs.allSatisfy({ spaceIDs.contains($0.spaceID) && NavigationInput.isTabURL($0.url) })
         else { throw SessionError.inconsistentData }
     }
 

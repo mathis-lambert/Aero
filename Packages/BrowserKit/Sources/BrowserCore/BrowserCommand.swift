@@ -1,5 +1,6 @@
 public enum BrowserCommand: String, CaseIterable, Identifiable, Sendable {
     case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles
+    case showHistory, findInPage, findNext, findPrevious
     public var id: Self { self }
 
     /// Who receives the command's shortcut while a web page has keyboard focus.
@@ -10,12 +11,12 @@ public enum BrowserCommand: String, CaseIterable, Identifiable, Sendable {
         case pageFirst
     }
 
-    /// Mirrors Safari: tab and navigation shortcuts are reserved; the command palette uses a
-    /// shortcut web applications commonly claim.
+    /// Mirrors Safari: tab, navigation and history shortcuts are reserved; the palette and find
+    /// use shortcuts web applications and editors commonly claim.
     public var keyRouting: KeyRouting {
         switch self {
-        case .newTab, .openLocation, .back, .forward, .reload, .closeTab, .reopenTab: .reserved
-        case .commandPalette, .toggleSidebar, .profiles: .pageFirst
+        case .newTab, .openLocation, .back, .forward, .reload, .closeTab, .reopenTab, .showHistory: .reserved
+        case .commandPalette, .toggleSidebar, .profiles, .findInPage, .findNext, .findPrevious: .pageFirst
         }
     }
 }
