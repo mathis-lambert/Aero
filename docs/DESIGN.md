@@ -38,7 +38,7 @@ Promote values to shared tokens when they form a repeated visual rule. Keep one-
 
 ## App icon
 
-`App/Resources/AppIcon.icon` is an Icon Composer document with one flat layer (no glass): a Gilda Display capital A filled with the brand's dithered wind, `aero-blue` dots on `paper` in light and `#8a93ff` on night in dark. The system supplies the mask and highlights. Regenerate the layers with `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> App/Resources/AppIcon.icon/Assets`; add `--set <directory>` instead of the Assets path to write the alternate set (the A and the feather in eleven palettes, including black-and-white and duotones) (font from Google Fonts, SIL Open Font License; not stored here). The brand direction, including the feather variant, lives in the Aero design system and `docs/IDENTITY.md`.
+`App/Resources/AppIcon.icon` is an Icon Composer document with one flat layer (no glass): a Gilda Display capital A filled with the brand's dithered wind, `aero-blue` dots on `paper` in light and `#8a93ff` on night in dark. The system supplies the mask and highlights. Regenerate the layers with `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> App/Resources/AppIcon.icon/Assets`; `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> docs/brand/icons --set` rewrites the alternate set in `docs/brand/icons`: the A and the feather in eleven palettes (the brand grounds, black on white, white on black, five colours and two duotones) (font from Google Fonts, SIL Open Font License; not stored here). The brand direction, including the feather variant, lives in the Aero design system and `docs/IDENTITY.md`.
 
 ## Settings
 
