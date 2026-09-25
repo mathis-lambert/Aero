@@ -80,7 +80,7 @@ Verification: E2E `testFindInPageSelectsMatchesAndReportsMisses` (a fixture page
 
 ## Downloads
 
-Links WebKit cannot display, `download` attributes and `Content-Disposition: attachment` responses become downloads. Files go to the Downloads folder (a test folder under `AURO_TEST_DATA`) with a sanitized, unique name (`report 2.csv` rather than overwriting). Downloaded files are quarantined by the system and record their source address, as in Finder's "Where from". The sidebar shows a Downloads section only while there are downloads this session: file icon, name, progress with locale-formatted sizes, and actions to cancel, retry, show in Finder or clear. The Dock icon shows the number of active downloads. A page with an active download does not hibernate; closing its tab does not stop it.
+Links WebKit cannot display, `download` attributes and `Content-Disposition: attachment` responses become downloads. Files go to the Downloads folder (a test folder under `AERO_TEST_DATA`) with a sanitized, unique name (`report 2.csv` rather than overwriting). Downloaded files are quarantined by the system and record their source address, as in Finder's "Where from". The sidebar shows a Downloads section only while there are downloads this session: file icon, name, progress with locale-formatted sizes, and actions to cancel, retry, show in Finder or clear. The Dock icon shows the number of active downloads. A page with an active download does not hibernate; closing its tab does not stop it.
 
 Failure modes:
 
@@ -118,4 +118,4 @@ Verification: E2E `testTabsReorderAndPinByDragging`.
 
 ## Running the E2E suite
 
-`Scripts/run-e2e.sh [test-identifier…]` runs the UI tests into `/tmp/auro-e2e-<run-id>.xcresult` and writes a `manifest.txt` next to it with the command, revision, working-tree status, Xcode and macOS versions. Fixtures are served by an in-process HTTP server in the test runner (`FixtureServer`) on `localhost`, from `Tests/AuroUITests/Fixtures`.
+`Scripts/run-e2e.sh [test-identifier…]` runs the UI tests into `/tmp/aero-e2e-<run-id>.xcresult` and writes a `manifest.txt` next to it with the command, revision, working-tree status, Xcode and macOS versions. Fixtures are served by an in-process HTTP server in the test runner (`FixtureServer`) on `localhost`, from `Tests/AeroUITests/Fixtures`.

@@ -61,7 +61,7 @@ final class HistoryE2ETests: BrowserE2ETestCase {
     func testWebsitesCannotOpenInternalPages() {
         open("internal-link.html", expecting: "Open history")
         app.webViews.links["Open history"].click()
-        XCTAssertFalse(search.waitForExistence(timeout: 2), "A page cannot navigate to auro://history")
+        XCTAssertFalse(search.waitForExistence(timeout: 2), "A page cannot navigate to aero://history")
         XCTAssertFalse(labels(of: "sidebar.tab").contains(Self.historyTitle))
     }
 

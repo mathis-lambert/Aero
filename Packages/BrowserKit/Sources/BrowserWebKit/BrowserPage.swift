@@ -244,7 +244,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     // MARK: - WKUIDelegate
 
     /// Popups may start blank (`about:blank`, then written by script) but never at another scheme,
-    /// so a website cannot open a browser page such as `auro://history`.
+    /// so a website cannot open a browser page such as `aero://history`.
     public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
         let url = navigationAction.request.url
         if let url, !url.absoluteString.isEmpty, !NavigationInput.isWebURL(url), url.scheme != "about" { return nil }

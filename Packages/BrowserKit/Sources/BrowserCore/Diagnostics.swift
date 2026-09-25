@@ -1,6 +1,6 @@
 /// Shared names for signposts, visible in Instruments under the Points of Interest and os_signpost tracks.
 public enum Diagnostics {
-    public static let subsystem = "dev.auro"
+    public static let subsystem = "app.getaero.browser"
 
     public enum Category {
         public static let launch = "Launch"

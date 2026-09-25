@@ -4,7 +4,7 @@ Status: candidate direction, not implemented. The browser chrome stays neutral (
 
 ## Direction
 
-A smooth interference field of diagonal waves, rendered with ordered (Bayer) dithering into two tones: saturated blue (about `#2230F5`) or neutral gray, and white. The dot pattern evokes wind moving across a surface, which matches the name (Auro: wind in Provençal) better than a literal illustration. It is monochrome and flat, so it works in light and dark appearances by swapping the two tones.
+A smooth interference field of diagonal waves, rendered with ordered (Bayer) dithering into two tones: saturated blue (about `#2230F5`) or neutral gray, and white. The dot pattern evokes wind moving across a surface, which suits the name (Aero, air in motion) better than a literal illustration. It is monochrome and flat, so it works in light and dark appearances by swapping the two tones.
 
 ## Where it could appear
 

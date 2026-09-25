@@ -1,25 +1,25 @@
-# Auro
+# Aero
 
 A native macOS browser foundation built with SwiftUI, AppKit and WebKit. Apple Silicon only; macOS 27.0 or newer. No external runtime dependencies.
 
 ## Toolchain
 
 - Xcode 27.0 (27A266a), Apple Swift 6.4; Swift 6 language mode.
-- Open `Auro.xcodeproj`, select the shared `Auro` scheme and run on My Mac.
+- Open `Aero.xcodeproj`, select the shared `Aero` scheme and run on My Mac.
 - Development builds are ad-hoc signed and use a separate bundle identifier and data location. Release distribution and notarization are not configured.
 
 ## Build and test
 
 ```sh
-xcodebuild -project Auro.xcodeproj -scheme Auro \
+xcodebuild -project Aero.xcodeproj -scheme Aero \
   -configuration Debug -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath /tmp/auro-derived build
+  -derivedDataPath /tmp/aero-derived build
 
 swift test --package-path Packages/BrowserKit
 
-xcodebuild -project Auro.xcodeproj -scheme Auro \
+xcodebuild -project Aero.xcodeproj -scheme Aero \
   -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath /tmp/auro-derived test
+  -derivedDataPath /tmp/aero-derived test
 ```
 
 UI tests require a logged-in macOS GUI session and permission to control the test application. Tests use isolated session directories and ephemeral website stores.
@@ -35,7 +35,7 @@ UI tests require a logged-in macOS GUI session and permission to control the tes
 - Real popups (`window.open`, OAuth): they open as tabs connected to their opener and close themselves with `window.close()`.
 - Pages fade in after their first rendered frame instead of flashing white; the selected tab highlight slides between rows.
 - Page-aware shortcuts: web applications may use ⌘K and ⇧⌘S; tab and navigation shortcuts always stay with the browser. See `docs/BROWSING.md`.
-- History per profile in a native browser tab (`auro://history`, ⌘Y): diacritic-insensitive search, grouped by day, delete and clear by period; stored in SQLite with a full-text index. See `docs/HISTORY.md`.
+- History per profile in a native browser tab (`aero://history`, ⌘Y): diacritic-insensitive search, grouped by day, delete and clear by period; stored in SQLite with a full-text index. See `docs/HISTORY.md`.
 - Find in page (⌘F, ⌘G, ⇧⌘G) with a compact floating bar.
 - Downloads with a sidebar section, progress, cancel, retry, Show in Finder, quarantine and a Dock badge.
 - Drag tabs to reorder them, onto the pinned grid to pin them, and back to unpin them.
@@ -75,4 +75,4 @@ See `AGENTS.md` for contributor conventions, `docs/DESIGN.md` for appearance gui
 
 This is a browser foundation, not yet a replacement for a daily browser. Onboarding, import, AI, extension support, credential integration, separate popup windows, SVG favicons, user-editable shortcuts, and profile deletion are not implemented. No Ultra HD, DRM, battery, or 120 fps performance claim has been validated.
 
-Session load failures leave the original file untouched and block editing rather than replacing it with an empty session. In the sandbox container, development data lives under `Application Support/Auro Development`; release data uses `Auro`. The `AURO_TEST_DATA` environment variable supplies a test namespace (its last path component), stored inside the app's temporary directory, and switches website stores to ephemeral mode.
+Session load failures leave the original file untouched and block editing rather than replacing it with an empty session. In the sandbox container, development data lives under `Application Support/Aero Development`; release data uses `Aero`. The `AERO_TEST_DATA` environment variable supplies a test namespace (its last path component), stored inside the app's temporary directory, and switches website stores to ephemeral mode.

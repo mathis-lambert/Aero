@@ -2,7 +2,7 @@ import BrowserCore
 import BrowserStorage
 import SwiftUI
 
-/// The History page, shown in a tab (`auro://history`).
+/// The History page, shown in a tab (`aero://history`).
 struct HistoryView: View {
     /// Waits for a pause in typing, and coalesces refreshes while pages load.
     private static let reloadDelay = Duration.milliseconds(150)

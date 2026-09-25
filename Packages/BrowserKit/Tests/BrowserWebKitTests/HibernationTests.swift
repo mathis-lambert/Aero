@@ -68,7 +68,7 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     _ = try await page.webView.callAsyncJavaScript("""
         const field = document.querySelector("textarea");
         field.value = "Draft";
-        globalThis.auroEditedFields.add(field);
+        globalThis.aeroEditedFields.add(field);
         """, contentWorld: PageScripts.world)
     #expect(await page.hibernationBlocker() == .unsavedInput)
 }

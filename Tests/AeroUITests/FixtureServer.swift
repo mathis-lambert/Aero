@@ -13,7 +13,7 @@ final class FixtureServer: Sendable {
 
     let port: UInt16
     private let listener: NWListener
-    private let queue = DispatchQueue(label: "dev.auro.uitests.fixtures")
+    private let queue = DispatchQueue(label: "app.getaero.browser.uitests.fixtures")
 
     init() throws {
         let parameters = NWParameters.tcp

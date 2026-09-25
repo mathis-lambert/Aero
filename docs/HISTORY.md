@@ -7,7 +7,7 @@ The failure modes below were written before the implementation.
 - A visit is recorded when a page commits a new document or changes its address in place (`pushState`), unless the address equals the page's previous one: reloads, redirects before commit and hibernation restores add nothing. Selecting a tab restored after a relaunch loads it, which counts as a visit.
 - Titles arrive after the visit and update the entry.
 - History belongs to a profile. Every query is scoped to one profile.
-- History is a browser page shown in a tab (`auro://history`), like Chromium's history page. ⌘Y selects the space's History tab, or opens one. The page lists pages by their most recent visit, grouped by day, newest first. Search matches words in titles and addresses, ignoring case and diacritics ("ete" finds "Été"), with prefix matching. Return or double-click opens the entry in the same tab; the context menu opens it in a new tab; Delete removes it. Clear History removes the last hour, today, today and yesterday, or everything, for the current profile.
+- History is a browser page shown in a tab (`aero://history`), like Chromium's history page. ⌘Y selects the space's History tab, or opens one. The page lists pages by their most recent visit, grouped by day, newest first. Search matches words in titles and addresses, ignoring case and diacritics ("ete" finds "Été"), with prefix matching. Return or double-click opens the entry in the same tab; the context menu opens it in a new tab; Delete removes it. Clear History removes the last hour, today, today and yesterday, or everything, for the current profile.
 - Visits older than a year are pruned when the store opens.
 
 ## Storage
@@ -30,11 +30,11 @@ The store opens lazily on first use, so launching the browser never waits for it
 
 ## Internal pages
 
-Browser pages use the `auro` scheme and are drawn natively in the page surface: no `WKWebView` and no web process is created for them. They are ordinary tab records, so they are restored after a relaunch, reordered, pinned and closed like other tabs. Typing `auro://history` in the address field opens the page.
+Browser pages use the `aero` scheme and are drawn natively in the page surface: no `WKWebView` and no web process is created for them. They are ordinary tab records, so they are restored after a relaunch, reordered, pinned and closed like other tabs. Typing `aero://history` in the address field opens the page.
 
 Failure modes:
 
-10. A website navigates to, links to or opens an `auro://` page.
+10. A website navigates to, links to or opens an `aero://` page.
 11. An internal tab creates a web view or a web process, or is hibernated.
 12. Web page commands (reload, back, forward, find) act while an internal page is shown.
 13. ⌘Y opens a second History tab in the same space.

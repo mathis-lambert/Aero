@@ -1,11 +1,11 @@
 import Foundation
 
-/// A browser page drawn natively in a tab, addressed as `auro://<page>`.
+/// A browser page drawn natively in a tab, addressed as `aero://<page>`.
 /// Websites can never navigate to these addresses; only the browser opens them.
 public enum InternalPage: String, CaseIterable, Sendable {
     case history
 
-    public static let scheme = "auro"
+    public static let scheme = "aero"
 
     public init?(url: URL) {
         guard url.scheme?.lowercased() == Self.scheme, let host = url.host?.lowercased(), let page = Self(rawValue: host) else { return nil }
