@@ -33,6 +33,10 @@ Promote values to shared tokens when they form a repeated visual rule. Keep one-
 - Do not fill empty sidebar space with instructions, counters, branding, or a settings gear. Settings are available through the standard application menu and Command-comma.
 - Maintain the rounded page frame and small outer insets. The sidebar toggle remains available in both layouts.
 
+## App icon
+
+`App/Resources/AppIcon.icon` is an Icon Composer document: black blades and a hub as Liquid Glass layers over the system light background, inverted over the system dark background. The system supplies the mask, highlights, shadows and tinted/clear styles, so the layers carry no color or baked effects. Edit it in Xcode's Icon Composer editor.
+
 ## Settings
 
 Use a dedicated settings window with a left category list and right detail pane. Current categories are General, Appearance, Performance, Profiles, and Keyboard Shortcuts. Display only working options; do not add placeholder account, sync, privacy, or extension pages.

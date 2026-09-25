@@ -1,0 +1,54 @@
+{
+  "fill-specializations" : [
+    {
+      "value" : "system-light"
+    },
+    {
+      "appearance" : "dark",
+      "value" : "system-dark"
+    }
+  ],
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name-specializations" : [
+            {
+              "value" : "hub-light.svg"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "hub-dark.svg"
+            }
+          ],
+          "name" : "Hub"
+        },
+        {
+          "glass" : true,
+          "image-name-specializations" : [
+            {
+              "value" : "blades-light.svg"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "blades-dark.svg"
+            }
+          ],
+          "name" : "Blades"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}
