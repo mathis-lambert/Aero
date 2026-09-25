@@ -65,12 +65,56 @@ The selection background is one shared shape that slides between rows with the s
 
 Verification: screenshots attached to the E2E run; selection state is asserted through accessibility traits.
 
+## Find in page
+
+⌘F opens a compact find bar over the top trailing corner of the page, prefilled with the page's selection or the previous search. Matches are searched as you type (case-insensitive, wrapping), Return and ⌘G go to the next match, ⇧Return and ⇧⌘G to the previous one. A search without a match is shown on the field. Escape or the close button dismisses the bar and returns focus to the page, which keeps the current match selected. Switching tabs closes the bar. ⌘F, ⌘G and ⇧⌘G are page-first, so web editors keep their own find.
+
+Failure modes:
+
+1. Typing triggers a search per keystroke and floods WebKit, or results arrive for an older query.
+2. The bar stays open over a different tab, or searches the wrong page.
+3. Focus is lost after dismissal, so typing goes nowhere.
+4. A missing match is not visible, or is shown only by color.
+
+Verification: E2E `testFindInPageSelectsMatchesAndReportsMisses` (a fixture page reports its selection).
+
+## Downloads
+
+Links WebKit cannot display, `download` attributes and `Content-Disposition: attachment` responses become downloads. Files go to the Downloads folder (a test folder under `AURO_TEST_DATA`) with a sanitized, unique name (`report 2.csv` rather than overwriting). Downloaded files are quarantined by the system and record their source address, as in Finder's "Where from". The sidebar shows a Downloads section only while there are downloads this session: file icon, name, progress with locale-formatted sizes, and actions to cancel, retry, show in Finder or clear. The Dock icon shows the number of active downloads. A page with an active download does not hibernate; closing its tab does not stop it.
+
+Failure modes:
+
+1. A suggested file name escapes the folder (`../`, `/`), hides itself (leading dot), is empty or too long.
+2. An existing file is overwritten.
+3. Progress updates redraw the sidebar for every received packet.
+4. A failed download leaves no way to retry, or a cancelled one keeps its partial file.
+5. Test runs write into the user's Downloads folder.
+6. Hibernation or tab closing interrupts a download.
+
+Verification: E2E `testDownloadCompletesAndCanBeCleared`. Isolated tests cover file naming (1–2), which the fixture server cannot exercise exhaustively.
+
+## Reordering and pinning tabs
+
+Tabs can be dragged within the list, onto the pinned grid to pin them, and out of it to unpin them. A drop line shows the insertion point; the list animates into place. Dragging a tab to another app exports its address.
+
+Failure modes:
+
+1. A drop inserts at the wrong position or loses the tab.
+2. A tab moves into another space.
+3. Dropping text or files from other apps is taken for a tab.
+
+Verification: E2E `testTabsReorderAndPinByDragging`.
+
 ## Known limits
 
 - SVG icons are skipped (ImageIO cannot decode them); plain-HTTP icons are blocked by App Transport Security except on `localhost` and local network hosts.
 - Popups open as tabs, not as separate sized windows; `windowFeatures` are ignored.
 - Only the main frame is checked for its first rendered frame.
 - The selection slide is verified visually through screenshots, not by an assertion on the animation.
+
+- Find in page reports whether a match exists, not how many (WebKit's public API does not count matches).
+- The downloads list is kept for the session only; downloads do not resume after a relaunch.
+- History does not record intermediate redirects; selecting a tab restored after a relaunch counts as a visit.
 
 ## Running the E2E suite
 
