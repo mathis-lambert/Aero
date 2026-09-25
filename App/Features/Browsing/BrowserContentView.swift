@@ -4,10 +4,14 @@ import WebKit
 
 struct BrowserContentView: View {
     let page: BrowserPage
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack(alignment: .top) {
+            // The page surface shows through until the document has painted, instead of a white flash.
             WebPageHost(page: page)
+                .opacity(page.hasRenderedFirstFrame ? 1 : 0)
+                .animation(reduceMotion ? nil : BrowserDesign.pageReveal, value: page.hasRenderedFirstFrame)
             if page.isLoading {
                 ProgressView(value: page.progress)
                     .progressViewStyle(.linear)

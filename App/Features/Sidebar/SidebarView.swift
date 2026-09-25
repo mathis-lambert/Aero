@@ -3,7 +3,9 @@ import SwiftUI
 
 struct SidebarView: View {
     let browser: BrowserModel
+    @Namespace private var selection
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -47,8 +49,10 @@ struct SidebarView: View {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                             ForEach(pinned) { tab in
                                 Button { browser.selectTab(tab.id) } label: {
-                                    Text(verbatim: siteInitial(tab))
-                                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                                    FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize) {
+                                        Text(verbatim: siteInitial(tab))
+                                            .font(.system(size: 18, weight: .medium, design: .rounded))
+                                    }
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 48)
                                         .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
@@ -73,7 +77,7 @@ struct SidebarView: View {
 
                     Button { browser.perform(.newTab) } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "plus").frame(width: 18)
+                            Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
                             Text("New tab")
                             Spacer()
                         }
@@ -87,21 +91,26 @@ struct SidebarView: View {
 
                     if browser.window.selectedTabID == nil {
                         HStack(spacing: 10) {
-                            Image(systemName: "magnifyingglass").font(.system(size: 12)).frame(width: 18)
+                            Image(systemName: "magnifyingglass").font(.system(size: 12)).frame(width: BrowserDesign.rowIconWidth)
                             Text("New tab")
                             Spacer()
                         }
                         .padding(.horizontal, 10)
                         .frame(height: 34)
-                        .background(BrowserPalette(scheme: scheme).raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                        .background { SelectionHighlight(namespace: selection) }
                         .accessibilityAddTraits(.isSelected)
                     }
                     ForEach(browser.tabs.filter { !$0.isPinned }) { tab in
-                        TabRow(tab: tab, selected: browser.window.selectedTabID == tab.id,
-                               select: { browser.selectTab(tab.id) }, close: { browser.closeTab(tab.id) })
-                            .contextMenu { tabActions(tab) }
+                        TabRow(tab: tab, selected: browser.window.selectedTabID == tab.id, selection: selection,
+                               select: { browser.selectTab(tab.id) }, close: { browser.closeTab(tab.id) }) {
+                            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
+                                Image(systemName: "globe").font(.system(size: 13)).foregroundStyle(.secondary)
+                            }
+                        }
+                        .contextMenu { tabActions(tab) }
                     }
                 }
+                .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.selectedTabID)
                 .padding(.horizontal, 10)
                 .padding(.top, 12)
             }
@@ -142,20 +151,33 @@ struct SidebarView: View {
     }
 }
 
-private struct TabRow: View {
+/// One shape shared by the selected row, so selection slides between rows instead of blinking.
+private struct SelectionHighlight: View {
+    static let id = "sidebar.selection"
+    let namespace: Namespace.ID
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: BrowserDesign.Radius.control)
+            .fill(BrowserPalette(scheme: scheme).raised)
+            .matchedGeometryEffect(id: Self.id, in: namespace)
+    }
+}
+
+private struct TabRow<Icon: View>: View {
     let tab: BrowserTab
     let selected: Bool
+    let selection: Namespace.ID
     let select: () -> Void
     let close: () -> Void
+    @ViewBuilder let icon: Icon
     @State private var hovered = false
-    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(spacing: 0) {
             Button(action: select) {
                 HStack(spacing: 10) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 13)).foregroundStyle(.secondary).frame(width: 18)
+                    icon.frame(width: BrowserDesign.rowIconWidth)
                     Text(verbatim: tab.sidebarTitle)
                         .lineLimit(1).truncationMode(.tail)
                     Spacer(minLength: 0)
@@ -165,6 +187,7 @@ private struct TabRow: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("sidebar.tab")
             Button(action: close) {
                 Image(systemName: "xmark").font(.system(size: 9, weight: .semibold))
                     .frame(width: 26, height: 30).contentShape(Rectangle())
@@ -173,7 +196,10 @@ private struct TabRow: View {
             .opacity(hovered || selected ? 1 : 0)
             .accessibilityLabel("Close tab")
         }
-        .background(selected ? BrowserPalette(scheme: scheme).raised : .primary.opacity(hovered ? 0.04 : 0), in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+        .background {
+            if selected { SelectionHighlight(namespace: selection) }
+            else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(.primary.opacity(hovered ? 0.04 : 0)) }
+        }
         .onHover { hovered = $0 }
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(selected ? .isSelected : [])

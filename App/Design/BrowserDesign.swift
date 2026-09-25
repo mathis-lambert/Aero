@@ -21,6 +21,13 @@ enum BrowserDesign {
     static let floatingSidebarInset: CGFloat = 12
     static let sidebarHeaderHeight: CGFloat = 52
     static let motion = Animation.spring(duration: 0.28, bounce: 0.08)
+    /// Fades a page in once it has rendered; short so navigation never feels delayed.
+    static let pageReveal = Animation.easeOut(duration: 0.18)
+    /// Leading symbol or favicon column in sidebar rows.
+    static let rowIconWidth: CGFloat = 18
+    static let tabIconSize: CGFloat = 16
+    static let pinnedIconSize: CGFloat = 22
+    static let faviconCornerRatio: CGFloat = 0.22
 }
 
 extension View {

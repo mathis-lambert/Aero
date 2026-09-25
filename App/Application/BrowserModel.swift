@@ -18,6 +18,7 @@ final class BrowserModel {
     var errorMessage: String?
     let window = BrowserWindowState()
     let preferences: BrowserPreferences
+    let favicons: FaviconCache
     var currentPage: BrowserPage?
 
     @ObservationIgnored let pages: WebPageRegistry
@@ -51,8 +52,9 @@ final class BrowserModel {
             #endif
         }
         store = SessionStore(directory: folder)
+        favicons = FaviconCache(store: FaviconStore(directory: folder.appendingPathComponent("Favicons", isDirectory: true)))
         pages = WebPageRegistry(ephemeral: testing != nil, hibernation: preferences.hibernation)
-        pages.isPinned = { [weak self] id in self?.session.tabs.first { $0.id == id }?.isPinned == true }
+        pages.delegate = self
     }
 
     var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
@@ -79,6 +81,12 @@ final class BrowserModel {
         guard let launchInterval else { return }
         Self.signposter.endInterval(Diagnostics.Signpost.launch, launchInterval)
         self.launchInterval = nil
+    }
+
+    /// Icons follow the tab's profile; `url` defaults to the tab's saved address.
+    func faviconKey(for tab: BrowserTab, at url: URL? = nil) -> FaviconKey? {
+        guard let space = session.spaces.first(where: { $0.id == tab.spaceID }) else { return nil }
+        return FaviconKey(profileID: space.profileID, url: url ?? tab.url)
     }
 
     private func persist() {
@@ -120,21 +128,25 @@ final class BrowserModel {
         }
         window.selectedTabID = id
         if recordRecent { recentTabs.removeAll { $0 == id }; recentTabs.insert(id, at: 0) }
-        currentPage = pages.activate(tab, profileID: profileID) { [weak self] url, title in
-            guard let self, let existing = self.session.tabs.first(where: { $0.id == id }),
-                  existing.url != url || existing.title != title else { return }
-            self.session.updateTab(id: id, url: url, title: title)
-            self.persist()
-        } onOpen: { [weak self] url in
-            // Popups inherit the originating profile/space, even after switching profiles.
-            self?.open(url, in: tab.spaceID)
-        }
+        currentPage = pages.activate(tab, profileID: profileID)
     }
 
-    func open(_ url: URL, in destination: UUID? = nil) {
-        guard NavigationInput.isWebURL(url), let spaceID = destination ?? space?.id,
-              let tab = session.open(url, in: spaceID) else { return }
-        if spaceID == space?.id { selectTab(tab.id) }
+    func open(_ url: URL) {
+        guard let spaceID = space?.id, let tab = addTab(url, in: spaceID) else { return }
+        selectTab(tab.id)
+    }
+
+    /// Adds a tab record without selecting it.
+    func addTab(_ url: URL, in spaceID: UUID) -> BrowserTab? {
+        guard NavigationInput.isWebURL(url), let tab = session.open(url, in: spaceID) else { return nil }
+        persist()
+        return tab
+    }
+
+    /// Late metadata for a closed tab is ignored.
+    func updateTab(_ id: UUID, url: URL, title: String) {
+        guard let existing = session.tabs.first(where: { $0.id == id }), existing.url != url || existing.title != title else { return }
+        session.updateTab(id: id, url: url, title: title)
         persist()
     }
 
@@ -150,12 +162,15 @@ final class BrowserModel {
         } catch { errorMessage = String(localized: "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened.") }
     }
 
-    func closeTab(_ id: UUID) {
+    /// Popups closed by their page are not offered by Reopen Closed Tab.
+    func closeTab(_ id: UUID, rememberForReopen: Bool = true) {
         let oldTabs = tabs
         guard let tab = session.close(id: id) else { return }
         pages.close(tabID: id)
-        closedTabs.append(tab)
-        if closedTabs.count > Self.maximumClosedTabs { closedTabs.removeFirst() }
+        if rememberForReopen {
+            closedTabs.append(tab)
+            if closedTabs.count > Self.maximumClosedTabs { closedTabs.removeFirst() }
+        }
         recentTabs.removeAll { $0 == id }
         if window.selectedTabID == id {
             let index = oldTabs.firstIndex(where: { $0.id == id }) ?? 0

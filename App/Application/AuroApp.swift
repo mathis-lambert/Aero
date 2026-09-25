@@ -30,33 +30,15 @@ struct AuroApp: App {
 @MainActor
 final class BrowserAppDelegate: NSObject, NSApplicationDelegate {
     weak var browser: BrowserModel?
-    private var keyboardMonitor: Any?
+    private var keyboardRouter: KeyboardRouter?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [weak self] event in
-            guard let browser = self?.browser,
-                  NSApp.keyWindow?.identifier?.rawValue == WindowConfiguration.mainWindowIdentifier else { return event }
-            if event.type == .flagsChanged, !event.modifierFlags.contains(.control) {
-                browser.commitTabCycle()
-            }
-            let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-            if event.type == .keyDown, event.keyCode == 48,
-               modifiers.contains(.control), !modifiers.contains(.command), !modifiers.contains(.option),
-               browser.window.commandBar == nil, !browser.window.profilesPresented {
-                browser.cycleTab(backwards: modifiers.contains(.shift))
-                return nil
-            }
-            return event
-        }
+        keyboardRouter = KeyboardRouter { [weak self] in self?.browser }
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let browser else { return .terminateNow }
         Task { sender.reply(toApplicationShouldTerminate: await browser.flush()) }
         return .terminateLater
-    }
-
-    func applicationWillTerminate(_ notification: Notification) {
-        if let keyboardMonitor { NSEvent.removeMonitor(keyboardMonitor) }
     }
 }
