@@ -31,6 +31,10 @@ UI tests require a logged-in macOS GUI session and permission to control the tes
 - Address/search command bar, navigation, pinned tabs, close/reopen, and recent-tab switching.
 - Versioned, atomic session persistence with coalesced writes. Restored tabs load only when selected.
 - Tab hibernation: idle or over-budget background tabs release their web process and restore their history when selected; tabs with media, capture, full screen or unsent text stay awake. Configurable in Settings › Performance. See `docs/PERFORMANCE.md`.
+- Site favicons in tab rows and pinned tiles, cached per profile so restored tabs show them without loading.
+- Real popups (`window.open`, OAuth): they open as tabs connected to their opener and close themselves with `window.close()`.
+- Pages fade in after their first rendered frame instead of flashing white; the selected tab highlight slides between rows.
+- Page-aware shortcuts: web applications may use ⌘K and ⇧⌘S; tab and navigation shortcuts always stay with the browser. See `docs/BROWSING.md`.
 - English and French UI through String Catalogs; language selection in categorized Settings (applied on next launch).
 
 The shell currently uses one main window and one space per profile. The data model distinguishes profiles and spaces so additional spaces do not require changing the identity model.
@@ -49,6 +53,8 @@ The shell currently uses one main window and one space per profile. The data mod
 | ⇧⌘S | Toggle sidebar |
 | ⌘, | Settings |
 
+⌘K and ⇧⌘S go to a focused web page first and reach the browser when the page does not use them. The other shortcuts above are reserved for the browser.
+
 ## Boundaries
 
 `App` owns presentation and coordinates the three local `BrowserKit` targets:
@@ -57,10 +63,10 @@ The shell currently uses one main window and one space per profile. The data mod
 - `BrowserWebKit`: live page ownership and website stores.
 - `BrowserStorage`: versioned browser records and atomic persistence.
 
-See `AGENTS.md` for contributor conventions and `docs/DESIGN.md` for appearance guidelines.
+See `AGENTS.md` for contributor conventions, `docs/DESIGN.md` for appearance guidelines, `docs/BROWSING.md` for browsing behaviors and `docs/IDENTITY.md` for the brand exploration.
 
 ## Current limits
 
-This is a browser foundation, not yet a replacement for a daily browser. Onboarding, import, AI, extension support, downloads, credential integration, full popup/authentication flows, user-editable shortcuts, and profile deletion are not implemented. No Ultra HD, DRM, battery, or 120 fps performance claim has been validated.
+This is a browser foundation, not yet a replacement for a daily browser. Onboarding, import, AI, extension support, downloads, credential integration, separate popup windows, SVG favicons, user-editable shortcuts, and profile deletion are not implemented. No Ultra HD, DRM, battery, or 120 fps performance claim has been validated.
 
 Session load failures leave the original file untouched and block editing rather than replacing it with an empty session. In the sandbox container, development data lives under `Application Support/Auro Development`; release data uses `Auro`. The `AURO_TEST_DATA` environment variable supplies a test namespace (its last path component), stored inside the app's temporary directory, and switches website stores to ephemeral mode.
