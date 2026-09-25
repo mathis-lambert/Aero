@@ -7,7 +7,9 @@ final class FixtureServer: Sendable {
 
     private static let readyTimeout = DispatchTimeInterval.seconds(5)
     private static let maximumRequestLength = 64 * 1024
-    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png"]
+    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png", "csv": "text/csv"]
+    /// Served as attachments, so the browser downloads them instead of displaying them.
+    private static let attachmentExtensions: Set = ["csv"]
 
     let port: UInt16
     private let listener: NWListener
@@ -56,9 +58,10 @@ final class FixtureServer: Sendable {
             let response: Data
             if let file = fixtureURL(named: name), let body = try? Data(contentsOf: file) {
                 let type = contentTypes[file.pathExtension] ?? "application/octet-stream"
-                response = header(status: "200 OK", type: type, length: body.count) + body
+                let disposition = attachmentExtensions.contains(file.pathExtension) ? file.lastPathComponent : nil
+                response = header(status: "200 OK", type: type, length: body.count, attachment: disposition) + body
             } else {
-                response = header(status: "404 Not Found", type: "text/plain", length: 0)
+                response = header(status: "404 Not Found", type: "text/plain", length: 0, attachment: nil)
             }
             connection.send(content: response, completion: .contentProcessed { _ in connection.cancel() })
         }
@@ -71,8 +74,9 @@ final class FixtureServer: Sendable {
             ?? bundle.url(forResource: name, withExtension: nil)
     }
 
-    private static func header(status: String, type: String, length: Int) -> Data {
-        Data("HTTP/1.1 \(status)\r\nContent-Type: \(type)\r\nContent-Length: \(length)\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n".utf8)
+    private static func header(status: String, type: String, length: Int, attachment: String?) -> Data {
+        let disposition = attachment.map { "Content-Disposition: attachment; filename=\"\($0)\"\r\n" } ?? ""
+        return Data("HTTP/1.1 \(status)\r\nContent-Type: \(type)\r\nContent-Length: \(length)\r\n\(disposition)Cache-Control: no-store\r\nConnection: close\r\n\r\n".utf8)
     }
 
     private final class BundleToken {}

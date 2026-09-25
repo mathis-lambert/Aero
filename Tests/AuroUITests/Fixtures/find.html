@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Find fixture</title></head>
+<body>
+<p>A haystack with one needle here and another needle there.</p>
+<p id="status">Nothing selected</p>
+<script>
+document.addEventListener("selectionchange", () => {
+    const text = getSelection().toString();
+    if (text) document.getElementById("status").textContent = "Selected " + text;
+});
+</script>
+</body>
+</html>
