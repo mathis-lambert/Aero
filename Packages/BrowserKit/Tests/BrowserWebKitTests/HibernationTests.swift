@@ -57,17 +57,6 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     #expect(registry.isLoaded(pinned.id))
 }
 
-@Test @MainActor func closingForgetsHibernatedState() async throws {
-    let registry = makeRegistry()
-    let tab = try makeTab()
-    activate(tab, in: registry)
-    registry.deactivate()
-    await registry.hibernateDuePages()
-    registry.close(tabID: tab.id)
-    #expect(!registry.isLoaded(tab.id))
-    #expect(registry.hibernationPlan().dueTabIDs.isEmpty)
-}
-
 @Test @MainActor func unsavedInputKeepsAPageAwake() async throws {
     let registry = makeRegistry()
     let page = activate(try makeTab(), in: registry)

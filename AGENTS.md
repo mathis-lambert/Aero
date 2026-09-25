@@ -121,17 +121,20 @@ docs/                   # Project documentation and specifications
 2. Put feature UI and presentation behavior together. Add only the core rules, WebKit integration, or storage changes the feature needs.
 3. Register user actions in the command system and provide localized, accessible presentation.
 4. Define relevant cancellation, failure, restoration, and migration behavior. Avoid stale events and duplicate side effects.
-5. Add focused behavioral tests and inspect affected native interactions. Measure performance when the change affects page lifetime, rendering, caches, or background work.
+5. Verify complex behavior with E2E tests under the testing policy below and inspect affected native interactions. Measure performance when the change affects page lifetime, rendering, caches, or background work.
 
 ## Validation and project status
 
-- Use Swift Testing for core/module behavior and XCTest/XCUITest where application or UI integration requires them. Test outcomes and invariants, not private implementation details.
+- Never write unit tests after you write code.
+- Highly prefer E2E tests as the sole testing mechanism. Use them to verify complex features work. At the end of E2E tests, produce a verifiable and repeatable artifact: retain the `.xcresult` bundle with relevant screenshots or attachments, and record the exact command, revision, environment, and fixture setup needed to reproduce it.
+- If you must test a system in isolation, first write down all the ways it could fail, then write the code. Before implementation, document the failure modes and write the isolated tests that exercise them.
+- Keep an isolated test only when it catches a concrete bug that the E2E suite misses. Do not add tests that merely mirror implementation, check trivial values, or duplicate E2E coverage. Use Swift Testing for justified isolated tests and XCTest/XCUITest for E2E tests.
 - Prioritize profile isolation, tab lifecycle, session recovery, migrations, command routing, and prevention of user-data loss.
 - Run the smallest relevant checks, plus the application build when changing shared APIs or integration. Report exactly what ran and what remains unverified.
 - The application is `Auro.xcodeproj`, with a shared `Auro` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a), Apple Swift 6.4, Swift 6 language mode, macOS 27.0+, and arm64.
 - Build: `xcodebuild -project Auro.xcodeproj -scheme Auro -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/auro-derived build`.
 - Package tests: `swift test --package-path Packages/BrowserKit`. Live WebKit tests need access to macOS WebKit services. In a restricted execution environment, use writable compiler caches and disclose any environment-related limits.
-- UI tests: use the build command above with `test` in place of `build`. They require a logged-in GUI session. Tests use `AURO_TEST_DATA` to namespace temporary data inside the app sandbox and make website stores ephemeral.
+- UI tests: use the build command above with `test` in place of `build` and `-resultBundlePath /tmp/auro-e2e-<run-id>.xcresult` with a unique run ID. They require a logged-in GUI session. Tests use `AURO_TEST_DATA` to namespace temporary data inside the app sandbox and make website stores ephemeral.
 - Performance: tab hibernation, signposts, the launch test and `Scripts/measure-memory.swift` are described in `docs/PERFORMANCE.md`.
 - Current scope: one main window, one space per profile, English/French catalogs, atomic versioned JSON session storage, and a native light/dark/system appearance. Debug and release bundle IDs/data locations are separate. Onboarding, import, and AI are outside this batch.
 - Extension scope, distribution/update channel, and future multi-window behavior remain open. Session JSON is the current implementation, not a commitment to use JSON for a future large browsing history.
