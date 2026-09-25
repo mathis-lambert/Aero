@@ -16,6 +16,6 @@ public struct HibernationSettings: Equatable, Sendable {
     }
 }
 
-public enum MemoryPressure: Sendable {
+package enum MemoryPressure: Sendable {
     case normal, warning, critical
 }

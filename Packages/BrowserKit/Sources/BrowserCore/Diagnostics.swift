@@ -4,17 +4,17 @@ public enum Diagnostics {
 
     public enum Category {
         public static let launch = "Launch"
-        public static let pageLifecycle = "PageLifecycle"
-        public static let storage = "Storage"
+        package static let pageLifecycle = "PageLifecycle"
+        package static let storage = "Storage"
     }
 
     public enum Signpost {
         public static let launch: StaticString = "Launch"
-        public static let sessionLoad: StaticString = "SessionLoad"
-        public static let sessionWrite: StaticString = "SessionWrite"
-        public static let pageCreated: StaticString = "PageCreated"
-        public static let pageRestored: StaticString = "PageRestored"
-        public static let pageHibernated: StaticString = "PageHibernated"
-        public static let hibernationCheck: StaticString = "HibernationCheck"
+        package static let sessionLoad: StaticString = "SessionLoad"
+        package static let sessionWrite: StaticString = "SessionWrite"
+        package static let pageCreated: StaticString = "PageCreated"
+        package static let pageRestored: StaticString = "PageRestored"
+        package static let pageHibernated: StaticString = "PageHibernated"
+        package static let hibernationCheck: StaticString = "HibernationCheck"
     }
 }

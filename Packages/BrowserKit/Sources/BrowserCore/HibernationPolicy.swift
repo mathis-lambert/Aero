@@ -1,13 +1,13 @@
 import Foundation
 
-public struct HibernationCandidate: Sendable {
-    public let tabID: UUID
-    public let isActive: Bool
-    public let isPinned: Bool
-    public let lastActive: ContinuousClock.Instant
-    public let lastExemption: ContinuousClock.Instant?
+package struct HibernationCandidate: Sendable {
+    package let tabID: UUID
+    package let isActive: Bool
+    package let isPinned: Bool
+    package let lastActive: ContinuousClock.Instant
+    package let lastExemption: ContinuousClock.Instant?
 
-    public init(tabID: UUID, isActive: Bool, isPinned: Bool, lastActive: ContinuousClock.Instant, lastExemption: ContinuousClock.Instant?) {
+    package init(tabID: UUID, isActive: Bool, isPinned: Bool, lastActive: ContinuousClock.Instant, lastExemption: ContinuousClock.Instant?) {
         self.tabID = tabID
         self.isActive = isActive
         self.isPinned = isPinned
@@ -16,32 +16,32 @@ public struct HibernationCandidate: Sendable {
     }
 }
 
-public struct HibernationPlan: Equatable, Sendable {
+package struct HibernationPlan: Equatable, Sendable {
     /// Least recently used first.
-    public let dueTabIDs: [UUID]
-    public let nextEvaluation: ContinuousClock.Instant?
+    package let dueTabIDs: [UUID]
+    package let nextEvaluation: ContinuousClock.Instant?
 }
 
 /// Decides which live pages to unload: idle pages, the oldest pages beyond the memory budget,
 /// and every eligible page under critical memory pressure.
-public struct HibernationPolicy: Sendable {
-    public static let pressuredIdleLimit = HibernationSettings.minute * 5
-    public static let exemptionRecheckInterval = HibernationSettings.minute * 5
-    public static let schedulingTolerance = HibernationSettings.minute
+package struct HibernationPolicy: Sendable {
+    package static let pressuredIdleLimit = HibernationSettings.minute * 5
+    package static let exemptionRecheckInterval = HibernationSettings.minute * 5
+    package static let schedulingTolerance = HibernationSettings.minute
     private static let bytesPerLiveBackgroundPage: UInt64 = 2 << 30
     private static let liveBackgroundPageRange = 2...24
 
-    public var settings: HibernationSettings
-    public var pressure: MemoryPressure
-    public var liveBackgroundPageLimit: Int
+    package var settings: HibernationSettings
+    package var pressure: MemoryPressure
+    package var liveBackgroundPageLimit: Int
 
-    public init(settings: HibernationSettings, pressure: MemoryPressure = .normal, liveBackgroundPageLimit: Int) {
+    package init(settings: HibernationSettings, pressure: MemoryPressure = .normal, liveBackgroundPageLimit: Int) {
         self.settings = settings
         self.pressure = pressure
         self.liveBackgroundPageLimit = liveBackgroundPageLimit
     }
 
-    public static func liveBackgroundPageLimit(forPhysicalMemory bytes: UInt64) -> Int {
+    package static func liveBackgroundPageLimit(forPhysicalMemory bytes: UInt64) -> Int {
         let pages = Int(bytes / bytesPerLiveBackgroundPage)
         return min(max(pages, liveBackgroundPageRange.lowerBound), liveBackgroundPageRange.upperBound)
     }
@@ -54,7 +54,7 @@ public struct HibernationPolicy: Sendable {
         }
     }
 
-    public func plan(for candidates: [HibernationCandidate], now: ContinuousClock.Instant) -> HibernationPlan {
+    package func plan(for candidates: [HibernationCandidate], now: ContinuousClock.Instant) -> HibernationPlan {
         guard settings.isEnabled else { return HibernationPlan(dueTabIDs: [], nextEvaluation: nil) }
         let background = candidates.filter { !$0.isActive }
         let eligible = background

@@ -4,7 +4,6 @@ import os
 
 public actor SessionStore {
     public enum Failure: Error { case unsupportedVersion }
-    public static let defaultCoalescingDelay = Duration.seconds(1)
 
     private struct Document: Codable {
         var version = 1
@@ -22,7 +21,13 @@ public actor SessionStore {
     private var latestRevision: UInt64 = 0
     private var pending: PendingSave?
 
-    public init(directory: URL, coalescingDelay: Duration = defaultCoalescingDelay) {
+    private static let coalescingDelay = Duration.seconds(1)
+
+    public init(directory: URL) {
+        self.init(directory: directory, coalescingDelay: Self.coalescingDelay)
+    }
+
+    package init(directory: URL, coalescingDelay: Duration) {
         file = directory.appendingPathComponent("session.json")
         self.coalescingDelay = coalescingDelay
     }
