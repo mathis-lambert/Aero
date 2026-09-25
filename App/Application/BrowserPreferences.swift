@@ -22,12 +22,33 @@ enum BrowserLanguage: String, CaseIterable, Identifiable {
     }
 }
 
+enum BrowserAppearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+    var id: Self { self }
+    /// `nil` follows the system.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+    var label: LocalizedStringKey {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+}
+
 /// Application preferences are separate from profiles and browsing records.
 @MainActor @Observable
 final class BrowserPreferences {
     private enum Key {
         static let testSuitePrefix = "app.getaero.browser.tests."
         static let language = "browser.language"
+        static let appearance = "browser.appearance"
         static let appleLanguages = "AppleLanguages"
         static let hibernationEnabled = "browser.hibernation.enabled"
         static let hibernationIdleMinutes = "browser.hibernation.idleMinutes"
@@ -38,6 +59,9 @@ final class BrowserPreferences {
     private let defaults: UserDefaults
     private let launchLanguage: BrowserLanguage
     private(set) var language: BrowserLanguage
+    var appearance: BrowserAppearance {
+        didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) }
+    }
     var hibernation: HibernationSettings {
         didSet { storeHibernation() }
     }
@@ -54,6 +78,7 @@ final class BrowserPreferences {
         let language = defaults.string(forKey: Key.language).flatMap(BrowserLanguage.init(rawValue:)) ?? .system
         self.language = language
         launchLanguage = language
+        appearance = defaults.string(forKey: Key.appearance).flatMap(BrowserAppearance.init(rawValue:)) ?? .system
         hibernation = Self.loadHibernation(from: defaults)
         appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconVariant.init(id:))
     }

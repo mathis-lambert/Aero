@@ -9,10 +9,11 @@ struct CommandBarView: View {
     @FocusState private var focused: Bool
     @Environment(\.colorScheme) private var scheme
 
+    /// The whole catalog, in its order, except the palette itself.
     private var commands: [BrowserCommand] {
-        let available: [BrowserCommand] = [.newTab, .profiles, .toggleSidebar, .reopenTab]
-        return available.filter { command in
-            browser.isEnabled(command) && (text.isEmpty || command.title.localizedStandardContains(text))
+        BrowserCommand.allCases.filter { command in
+            command != .commandPalette && browser.isEnabled(command)
+                && (text.isEmpty || command.title.localizedStandardContains(text))
         }
     }
     private var hasNavigation: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -41,7 +42,7 @@ struct CommandBarView: View {
                     }
                 }
                 ForEach(Array(commands.enumerated()), id: \.element) { offset, command in
-                    resultRow(symbol: command.symbol, title: command.title, shortcut: command.shortcutLabel,
+                    resultRow(symbol: command.symbol, title: command.title, shortcut: command.shortcut?.label,
                               index: offset + (hasNavigation ? 1 : 0)) {
                         browser.window.commandBar = nil
                         browser.perform(command)

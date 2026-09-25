@@ -3,8 +3,6 @@ import SwiftUI
 
 struct ProfilesView: View {
     let browser: BrowserModel
-    var initialProfileID: UUID? = nil
-    var startsCreating = false
     @Environment(\.dismiss) private var dismiss
     @State private var editingID: UUID?
     @State private var name = ""
@@ -112,15 +110,7 @@ struct ProfilesView: View {
         }
         .padding(28)
         .frame(width: 640, height: 370)
-        .onAppear {
-            if startsCreating {
-                creating = true
-                color = .ocean
-                nameFocused = true
-            } else if let profile = browser.session.profiles.first(where: { $0.id == initialProfileID }) ?? browser.profile {
-                edit(profile)
-            }
-        }
+        .onAppear { if let profile = browser.profile { edit(profile) } }
         .onExitCommand { dismiss() }
     }
 

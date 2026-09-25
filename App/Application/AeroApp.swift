@@ -21,7 +21,7 @@ struct AeroApp: App {
 
         Settings {
             SettingsView(browser: browser)
-                .preferredColorScheme(browser.session.appearance.colorScheme)
+                .preferredColorScheme(browser.preferences.appearance.colorScheme)
         }
         .windowStyle(.hiddenTitleBar)
     }

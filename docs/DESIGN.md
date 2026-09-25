@@ -52,7 +52,7 @@ Failure modes:
 4. The choice is lost after relaunch, or applied before the application is ready and then overwritten.
 5. Test runs change the icon stored for real use.
 
-Verification: E2E `testAppIconChoicePersistsAcrossLaunches` (select a variant, relaunch, still selected; Automatic restores the default selection). Tests namespace preferences, so a test choice never reaches real settings (5). The Dock image itself is not asserted by UI tests.
+Verification: E2E `testAppearanceChoicesPersistAcrossLaunches` (select the dark theme and a variant, relaunch, both still selected; Automatic restores the default selection). Tests namespace preferences, so a test choice never reaches real settings (5). The Dock image itself is not asserted by UI tests.
 
 ## Settings
 
@@ -64,7 +64,7 @@ Group related options in simple surface cards. Appearance provides system/light/
 
 - Selected tabs use a raised surface. Hover and press feedback remain subtle.
 - Profile identity includes its name as well as color.
-- The command palette supports arrows, Return, and Escape. Menus and shortcuts invoke the same command handlers, scoped to the focused browser scene.
+- The command palette offers every available command of the central catalog, filtered by title as you type, after the typed address or search. It supports arrows, Return, and Escape. Menus and shortcuts invoke the same command handlers, scoped to the focused browser scene.
 - Show one thin loading indicator and a clear recovery action on navigation failure.
 - Use the shared 0.28-second spring for shell transitions. Respect Reduce Motion. Nothing animates while idle.
 - Keep WebKit pages stable while SwiftUI changes. Visual transitions must not reload websites.

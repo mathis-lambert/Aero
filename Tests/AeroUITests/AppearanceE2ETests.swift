@@ -1,22 +1,28 @@
 import XCTest
 
-/// The app icon choice in Settings › Appearance. See docs/DESIGN.md › Choosing an icon.
+/// The theme and app icon choices in Settings › Appearance. See docs/DESIGN.md › Choosing an icon.
 @MainActor
-final class AppIconE2ETests: BrowserE2ETestCase {
+final class AppearanceE2ETests: BrowserE2ETestCase {
     private static let variant = "settings.appIcon.a-sun"
     private static let automatic = "settings.appIcon.automatic"
+    private static let dark = "settings.theme.dark"
+    private static let system = "settings.theme.system"
 
-    func testAppIconChoicePersistsAcrossLaunches() {
+    func testAppearanceChoicesPersistAcrossLaunches() {
         openAppearance()
+        XCTAssertTrue(app.buttons[Self.system].isSelected, "The theme follows the system by default")
         XCTAssertTrue(app.buttons[Self.automatic].isSelected, "Automatic is the default")
+        app.buttons[Self.dark].click()
         app.buttons[Self.variant].click()
+        XCTAssertTrue(app.buttons[Self.dark].isSelected)
         XCTAssertTrue(app.buttons[Self.variant].isSelected)
         XCTAssertFalse(app.buttons[Self.automatic].isSelected)
-        attachScreenshot("app-icon-chosen", of: app.windows["aero.settings"])
+        attachScreenshot("appearance-chosen", of: app.windows["aero.settings"])
 
         relaunch()
         openAppearance()
-        XCTAssertTrue(app.buttons[Self.variant].isSelected, "The choice survives a relaunch")
+        XCTAssertTrue(app.buttons[Self.dark].isSelected, "The theme survives a relaunch")
+        XCTAssertTrue(app.buttons[Self.variant].isSelected, "The icon survives a relaunch")
 
         app.buttons[Self.automatic].click()
         XCTAssertTrue(app.buttons[Self.automatic].isSelected)

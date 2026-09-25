@@ -74,23 +74,6 @@ extension ProfileColor {
     }
 }
 
-extension BrowserAppearance {
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .system: nil
-        case .light: .light
-        case .dark: .dark
-        }
-    }
-    var label: LocalizedStringKey {
-        switch self {
-        case .system: "System"
-        case .light: "Light"
-        case .dark: "Dark"
-        }
-    }
-}
-
 struct IconButton: View {
     let symbol: String
     let label: LocalizedStringKey

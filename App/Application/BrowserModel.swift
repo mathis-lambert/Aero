@@ -266,8 +266,6 @@ final class BrowserModel {
         }
     }
 
-    func setAppearance(_ appearance: BrowserAppearance) { session.appearance = appearance; persist() }
-
     func cycleTab(backwards: Bool) {
         if cycleTabs.isEmpty {
             let allowed = Set(tabs.map(\.id))

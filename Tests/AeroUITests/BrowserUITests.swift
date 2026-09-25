@@ -26,6 +26,19 @@ final class BrowserUITests: XCTestCase {
         XCTAssertTrue(app.textFields["newTab.input"].exists)
     }
 
+    /// The palette searches the whole command catalog, not a fixed selection.
+    func testCommandPaletteRunsAnyCatalogCommand() {
+        app.typeKey("k", modifierFlags: .command)
+        let input = app.textFields["command.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 3))
+        input.typeText("history")
+        app.typeKey(.downArrow, modifierFlags: [])
+        app.typeKey(.return, modifierFlags: [])
+        let historyTab = app.buttons.matching(identifier: "sidebar.tab").matching(NSPredicate(format: "label == %@", "History")).firstMatch
+        XCTAssertTrue(historyTab.waitForExistence(timeout: 3), "The first command after the search opens History")
+        XCTAssertFalse(input.exists)
+    }
+
     func testCreateRenameAndRestoreProfile() {
         openProfiles()
         app.buttons["profiles.add"].click()
@@ -94,6 +107,7 @@ final class BrowserUITests: XCTestCase {
             XCTAssertTrue(address.exists)
             XCTAssertGreaterThan(address.frame.minY, navigation[2].frame.maxY)
             XCTAssertGreaterThan(profile.frame.minY, address.frame.maxY)
+            XCTAssertFalse(window.buttons[XCUIIdentifierCloseWindow].exists, "The titlebar's own buttons stay hidden")
             XCTAssertFalse(app.buttons["page.showSidebar"].exists)
         }
 
@@ -143,7 +157,8 @@ final class BrowserUITests: XCTestCase {
         app.buttons["settings.shortcuts"].click()
         XCTAssertTrue(app.staticTexts["The essentials, always within reach."].exists)
         app.buttons["settings.profiles"].click()
-        XCTAssertTrue(app.buttons["settings.addProfile"].exists)
+        app.buttons["settings.manageProfiles"].click()
+        XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3), "Settings opens the same profile sheet")
     }
 
     func testPerformanceSettingsPersistAcrossLaunches() {

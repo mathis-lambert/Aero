@@ -11,7 +11,7 @@ struct BrowserWindowView: View {
 
     var body: some View {
         content
-            .preferredColorScheme(browser.session.appearance.colorScheme)
+            .preferredColorScheme(browser.preferences.appearance.colorScheme)
     }
 
     private var content: some View {

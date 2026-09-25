@@ -27,7 +27,7 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     let browser: BrowserModel
     @State private var section: SettingsSection = .general
-    @State private var profileEditor: ProfileEditorRequest?
+    @State private var managingProfiles = false
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
@@ -83,9 +83,7 @@ struct SettingsView: View {
         .frame(minWidth: 780, idealWidth: 800, minHeight: 540, idealHeight: 560)
         .ignoresSafeArea(.container, edges: .top)
         .background(WindowConfiguration(identifier: "aero.settings"))
-        .sheet(item: $profileEditor) { request in
-            ProfilesView(browser: browser, initialProfileID: request.profileID, startsCreating: request.profileID == nil)
-        }
+        .sheet(isPresented: $managingProfiles) { ProfilesView(browser: browser) }
     }
 
     private var general: some View {
@@ -116,16 +114,17 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 18) {
             Text("Choose how the browser looks.").foregroundStyle(.secondary)
             HStack(spacing: 14) {
-                ForEach(BrowserAppearance.allCases, id: \.self) { option in
-                    Button { browser.setAppearance(option) } label: {
+                ForEach(BrowserAppearance.allCases) { option in
+                    let selected = browser.preferences.appearance == option
+                    Button { browser.preferences.appearance = option } label: {
                         VStack(spacing: 10) {
                             ThemePreview(appearance: option)
                                 .frame(height: 90)
                                 .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-                                .overlay(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).strokeBorder(browser.session.appearance == option ? Color.accentColor : BrowserPalette(scheme: scheme).line, lineWidth: browser.session.appearance == option ? 2 : 1))
+                                .overlay(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).strokeBorder(selected ? Color.accentColor : BrowserPalette(scheme: scheme).line, lineWidth: selected ? 2 : 1))
                             HStack(spacing: 5) {
                                 Text(option.label)
-                                if browser.session.appearance == option { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor) }
+                                if selected { Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor) }
                             }
                             .font(.system(size: 12, weight: .medium))
                         }
@@ -134,7 +133,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings.theme.\(option.rawValue)")
-                    .accessibilityAddTraits(browser.session.appearance == option ? .isSelected : [])
+                    .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }
             SettingsCard { AppIconPicker(browser: browser) }
@@ -151,21 +150,8 @@ struct SettingsView: View {
     private var profiles: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Keep website sign-ins and tabs separate.").foregroundStyle(.secondary)
-            SettingsCard {
-                VStack(spacing: 0) {
-                    ForEach(Array(browser.session.profiles.enumerated()), id: \.element.id) { index, profile in
-                        if index > 0 { Divider().padding(.vertical, 12) }
-                        HStack(spacing: 12) {
-                            ProfileBadge(profile: profile, size: 32)
-                            Text(verbatim: profile.name).fontWeight(.medium)
-                            Spacer()
-                            Button("Edit") { profileEditor = ProfileEditorRequest(profileID: profile.id) }
-                        }
-                    }
-                }
-            }
-            Button("Add profile", systemImage: "plus") { profileEditor = ProfileEditorRequest(profileID: nil) }
-                .accessibilityIdentifier("settings.addProfile")
+            Button("Manage profiles", systemImage: "person.crop.circle") { managingProfiles = true }
+                .accessibilityIdentifier("settings.manageProfiles")
         }
     }
 
@@ -174,29 +160,24 @@ struct SettingsView: View {
             Text("The essentials, always within reach.").foregroundStyle(.secondary)
             SettingsCard {
                 VStack(spacing: 0) {
-                    ForEach(Array(BrowserCommand.allCases.filter { $0.shortcutLabel != nil }.enumerated()), id: \.element) { index, command in
+                    ForEach(Array(BrowserCommand.allCases.filter { $0.shortcut != nil }.enumerated()), id: \.element) { index, command in
                         if index > 0 { Divider().padding(.vertical, 10) }
                         HStack {
                             Text(verbatim: command.title)
                             Spacer()
-                            if let shortcut = command.shortcutLabel { ShortcutLabel(text: shortcut) }
+                            if let shortcut = command.shortcut { ShortcutLabel(text: shortcut.label) }
                         }
                     }
                     Divider().padding(.vertical, 10)
                     HStack {
                         Text("Switch recent tabs")
                         Spacer()
-                        ShortcutLabel(text: "⌃ ⇥")
+                        ShortcutLabel(text: KeyboardRouter.recentTabsShortcut.label)
                     }
                 }
             }
         }
     }
-}
-
-private struct ProfileEditorRequest: Identifiable {
-    let id = UUID()
-    let profileID: UUID?
 }
 
 private struct ThemePreview: View {

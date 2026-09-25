@@ -562,22 +562,6 @@
         }
       }
     },
-    "Edit": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modifier"
-          }
-        }
-      }
-    },
     "English": {
       "localizations": {
         "en": {
@@ -878,22 +862,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Séparez les connexions aux sites et les onglets."
-          }
-        }
-      }
-    },
-    "Keyboard": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keyboard"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clavier"
           }
         }
       }
@@ -1410,22 +1378,6 @@
         }
       }
     },
-    "Profile": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profile"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profil"
-          }
-        }
-      }
-    },
     "Profile details": {
       "localizations": {
         "en": {
@@ -1630,22 +1582,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Session indisponible"
-          }
-        }
-      }
-    },
-    "Settings": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réglages"
           }
         }
       }
@@ -1902,22 +1838,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les commandes essentielles à portée de main."
-          }
-        }
-      }
-    },
-    "Theme": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Theme"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thème"
           }
         }
       }

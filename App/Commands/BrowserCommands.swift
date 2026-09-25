@@ -40,27 +40,33 @@ extension BrowserCommand {
         }
     }
 
-    private var keyBinding: (shortcut: KeyboardShortcut, label: String)? {
+    var shortcut: KeyboardShortcut? {
         switch self {
-        case .newTab: (KeyboardShortcut("t"), "⌘ T")
-        case .openLocation: (KeyboardShortcut("l"), "⌘ L")
-        case .commandPalette: (KeyboardShortcut("k"), "⌘ K")
-        case .back: (KeyboardShortcut("["), "⌘ [")
-        case .forward: (KeyboardShortcut("]"), "⌘ ]")
-        case .reload: (KeyboardShortcut("r"), "⌘ R")
-        case .closeTab: (KeyboardShortcut("w"), "⌘ W")
-        case .reopenTab: (KeyboardShortcut("t", modifiers: [.command, .shift]), "⇧ ⌘ T")
-        case .toggleSidebar: (KeyboardShortcut("s", modifiers: [.command, .shift]), "⇧ ⌘ S")
+        case .newTab: KeyboardShortcut("t")
+        case .openLocation: KeyboardShortcut("l")
+        case .commandPalette: KeyboardShortcut("k")
+        case .back: KeyboardShortcut("[")
+        case .forward: KeyboardShortcut("]")
+        case .reload: KeyboardShortcut("r")
+        case .closeTab: KeyboardShortcut("w")
+        case .reopenTab: KeyboardShortcut("t", modifiers: [.command, .shift])
+        case .toggleSidebar: KeyboardShortcut("s", modifiers: [.command, .shift])
         case .profiles: nil
-        case .showHistory: (KeyboardShortcut("y"), "⌘ Y")
-        case .findInPage: (KeyboardShortcut("f"), "⌘ F")
-        case .findNext: (KeyboardShortcut("g"), "⌘ G")
-        case .findPrevious: (KeyboardShortcut("g", modifiers: [.command, .shift]), "⇧ ⌘ G")
+        case .showHistory: KeyboardShortcut("y")
+        case .findInPage: KeyboardShortcut("f")
+        case .findNext: KeyboardShortcut("g")
+        case .findPrevious: KeyboardShortcut("g", modifiers: [.command, .shift])
         }
     }
+}
 
-    var shortcut: KeyboardShortcut? { keyBinding?.shortcut }
-    var shortcutLabel: String? { keyBinding?.label }
+extension KeyboardShortcut {
+    /// Menu notation, with modifiers in the system order: “⇧ ⌘ T”.
+    var label: String {
+        let symbols: [(EventModifiers, String)] = [(.control, "⌃"), (.option, "⌥"), (.shift, "⇧"), (.command, "⌘")]
+        let key = key == .tab ? "⇥" : String(key.character).uppercased()
+        return (symbols.filter { modifiers.contains($0.0) }.map(\.1) + [key]).joined(separator: " ")
+    }
 }
 
 extension BrowserModel {

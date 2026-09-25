@@ -43,10 +43,6 @@ public struct BrowserTab: Identifiable, Codable, Equatable, Sendable {
     }
 }
 
-public enum BrowserAppearance: String, Codable, CaseIterable, Sendable {
-    case system, light, dark
-}
-
 public enum SessionError: Error, Equatable {
     case invalidProfileName, missingProfile, inconsistentData
 }
@@ -56,14 +52,12 @@ public struct BrowserSession: Codable, Equatable, Sendable {
     public private(set) var profiles: [BrowserProfile]
     public private(set) var spaces: [BrowserSpace]
     public private(set) var tabs: [BrowserTab]
-    public var appearance: BrowserAppearance
 
     public init(profileName: String) {
         let profile = BrowserProfile(name: profileName)
         profiles = [profile]
         spaces = [BrowserSpace(profileID: profile.id)]
         tabs = []
-        appearance = .system
     }
 
     @discardableResult
