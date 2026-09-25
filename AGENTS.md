@@ -25,6 +25,7 @@ Use an Xcode application project and one local Swift package. This is a responsi
 ```text
 App/
   Application/          # Startup, dependency assembly, windows, session coordination
+  Commands/             # Menus, command dispatch, and keyboard routing
   Features/             # UI and presentation behavior grouped by feature
   Design/               # Shared visual tokens, motion, and reusable UI components
   Resources/            # Application assets and string catalogs
@@ -37,6 +38,7 @@ Packages/BrowserKit/
   Tests/                # Tests for each package target
 Tests/                  # Application integration and UI tests
 Configuration/          # Build settings, property lists, entitlements
+Scripts/                # Development tools: E2E runner, memory measurement, icon generation; never run by the app
 docs/                   # Project documentation and specifications
 ```
 
