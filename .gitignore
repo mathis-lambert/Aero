@@ -6,3 +6,5 @@ xcuserdata/
 *.xcuserstate
 .swiftpm/
 *.xcresult
+# Worktrees of local agent tools
+.kilo/
