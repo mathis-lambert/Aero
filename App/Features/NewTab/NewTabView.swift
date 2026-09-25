@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct NewTabView: View {
+    private static let fieldHeight: CGFloat = 52
+    private static let submitSize: CGFloat = 30
+
     let browser: BrowserModel
     @State private var query = ""
     @FocusState private var focused: Bool
@@ -9,34 +12,36 @@ struct NewTabView: View {
     var body: some View {
         VStack {
             Spacer(minLength: 32)
-            HStack(spacing: 14) {
+            HStack(spacing: BrowserDesign.fieldSpacing) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 18, weight: .regular))
+                    .font(BrowserDesign.Typography.fieldIcon)
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
                 TextField("Search or enter an address", text: $query)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 17))
+                    .font(BrowserDesign.Typography.field)
                     .focused($focused)
                     .onSubmit(submit)
                     .accessibilityIdentifier("newTab.input")
                 Button(action: submit) {
                     Image(systemName: "arrow.up")
-                        .font(.system(size: 14, weight: .semibold))
-                        .frame(width: 30, height: 30)
-                        .background(.primary.opacity(query.isEmpty ? 0.035 : 0.10), in: Circle())
+                        .font(BrowserDesign.Typography.chrome.weight(.semibold))
+                        .frame(width: Self.submitSize, height: Self.submitSize)
+                        .background(query.isEmpty ? BrowserPalette(scheme: scheme).hover : BrowserPalette(scheme: scheme).pressed, in: Circle())
                 }
                 .buttonStyle(.plain)
                 .disabled(query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .accessibilityLabel("Open")
                 .accessibilityIdentifier("newTab.submit")
             }
-            .padding(.horizontal, 20)
-            .frame(height: 70)
+            .padding(.leading, 20)
+            .padding(.trailing, (Self.fieldHeight - Self.submitSize) / 2)
+            .frame(height: Self.fieldHeight)
             .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
                             border: BrowserPalette(scheme: scheme).line,
                             radius: BrowserDesign.Radius.card)
-            .frame(maxWidth: 600)
+            .paletteShadow()
+            .frame(maxWidth: BrowserDesign.paletteWidth)
             .padding(.horizontal, 44)
             Spacer(minLength: 32)
         }

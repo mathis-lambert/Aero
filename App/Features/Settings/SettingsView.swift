@@ -25,6 +25,12 @@ private enum SettingsSection: String, CaseIterable, Identifiable {
 
 struct SettingsView: View {
     static let windowID = "aero.settings"
+    /// Room around the card for its shadow: the window itself is transparent.
+    private static let shadowMargin: CGFloat = 44
+    private static let sidebarWidth: CGFloat = 190
+    private static let segmentHeight: CGFloat = 26
+    private static let segmentMinimumWidth: CGFloat = 52
+    private static let segmentInset: CGFloat = 3
 
     let browser: BrowserModel
     @Environment(\.dismissWindow) private var dismissWindow
@@ -32,23 +38,21 @@ struct SettingsView: View {
     @State private var managingProfiles = false
     @Environment(\.colorScheme) private var scheme
 
-    private var colors: SettingsColors { SettingsColors(scheme: scheme) }
+    private var palette: BrowserPalette { BrowserPalette(scheme: scheme) }
 
     var body: some View {
         HStack(spacing: 0) {
             sidebar
 
-            Rectangle()
-                .fill(colors.border)
-                .frame(width: 1)
+            Hairline(axis: .vertical)
 
             VStack(alignment: .leading, spacing: 16) {
                 Text(section.title)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(BrowserDesign.Typography.title)
                     .padding(.top, 24)
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: SettingsLayout.cardSpacing) {
                         switch section {
                         case .general: general
                         case .tabs: PerformanceSettingsView(browser: browser)
@@ -62,34 +66,28 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(colors.canvas)
+            .background(palette.raised)
         }
-        .font(.system(size: 14))
-        .foregroundStyle(colors.ink)
+        .font(BrowserDesign.Typography.chrome)
+        .foregroundStyle(palette.ink)
         .frame(minWidth: 760, idealWidth: 780, minHeight: 500, idealHeight: 540)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: .black.opacity(0.14), radius: 36, y: 12)
-        .padding(44)
+        .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.window))
+        .paletteShadow()
+        .padding(Self.shadowMargin)
         .background(SettingsWindowSurface())
         .sheet(isPresented: $managingProfiles) { ProfilesView(browser: browser) }
     }
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 10) {
-                Button { dismissWindow(id: Self.windowID) } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .semibold))
-                        .frame(width: 28, height: 28)
-                        .background(colors.control, in: RoundedRectangle(cornerRadius: 8))
+            HStack(spacing: 8) {
+                IconButton(symbol: "xmark", label: "Close settings", size: BrowserDesign.navigationButtonSize) {
+                    dismissWindow(id: Self.windowID)
                 }
-                .buttonStyle(.plain)
-                .help("Close settings")
-                .accessibilityLabel("Close settings")
                 .accessibilityIdentifier("settings.close")
 
                 Text("Settings")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(BrowserDesign.Typography.chrome.weight(.semibold))
             }
             .padding(.top, 18)
             .padding(.bottom, 20)
@@ -98,13 +96,13 @@ struct SettingsView: View {
                 let selected = section == item
                 Button { section = item } label: {
                     Label(item.title, systemImage: item.symbol)
-                        .font(.system(size: 14, weight: selected ? .semibold : .regular))
+                        .fontWeight(selected ? .semibold : .regular)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(height: 36)
-                        .padding(.horizontal, 11)
-                        .foregroundStyle(selected ? colors.ink : colors.secondary)
-                        .background(selected ? colors.selected : .clear, in: RoundedRectangle(cornerRadius: 9))
-                        .contentShape(RoundedRectangle(cornerRadius: 9))
+                        .frame(height: BrowserDesign.tabRowHeight)
+                        .padding(.horizontal, BrowserDesign.rowInset)
+                        .foregroundStyle(selected ? palette.ink : palette.secondary)
+                        .background(selected ? palette.raised : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                        .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("settings.\(item.rawValue)")
@@ -115,12 +113,12 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
-        .frame(width: 190)
-        .background(colors.sidebar)
+        .frame(width: Self.sidebarWidth)
+        .background(palette.canvas)
     }
 
     private var general: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: SettingsLayout.cardSpacing) {
             SettingsCard {
                 VStack(spacing: 0) {
                     SettingsRow("Language", caption: "Choose the language used by the browser.") {
@@ -136,8 +134,8 @@ struct SettingsView: View {
 
                     if browser.preferences.needsLanguageRestart {
                         Text("Reopen the browser to apply the language change.")
-                            .font(.system(size: 11))
-                            .foregroundStyle(colors.secondary)
+                            .font(BrowserDesign.Typography.caption)
+                            .foregroundStyle(palette.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 6)
                             .accessibilityIdentifier("settings.languageRestart")
@@ -161,20 +159,21 @@ struct SettingsView: View {
                 let selected = browser.preferences.appearance == option
                 Button { browser.preferences.appearance = option } label: {
                     Text(option.label)
-                        .font(.system(size: 12, weight: selected ? .semibold : .regular))
-                        .frame(minWidth: 52)
-                        .frame(height: 26)
-                        .padding(.horizontal, 3)
-                        .background(selected ? colors.selected : .clear, in: RoundedRectangle(cornerRadius: 7))
-                        .contentShape(RoundedRectangle(cornerRadius: 7))
+                        .font(BrowserDesign.Typography.label)
+                        .fontWeight(selected ? .semibold : .regular)
+                        .frame(minWidth: Self.segmentMinimumWidth)
+                        .frame(height: Self.segmentHeight)
+                        .padding(.horizontal, Self.segmentInset)
+                        .background(selected ? palette.raised : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control - Self.segmentInset))
+                        .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control - Self.segmentInset))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("settings.theme.\(option.rawValue)")
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .padding(3)
-        .background(colors.control, in: RoundedRectangle(cornerRadius: 9))
+        .padding(Self.segmentInset)
+        .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
     }
 
     private var profiles: some View {

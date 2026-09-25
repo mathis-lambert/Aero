@@ -10,7 +10,6 @@ struct FindBar: View {
     let page: BrowserPage
     @FocusState private var focused: Bool
     @Environment(\.colorScheme) private var scheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 6) {
@@ -28,7 +27,7 @@ struct FindBar: View {
                 .accessibilityIdentifier("find.input")
             if find.hasNoMatches {
                 Text("No matches")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                     .fixedSize()
                     .accessibilityIdentifier("find.noMatches")
                     .transition(.opacity)
@@ -44,11 +43,11 @@ struct FindBar: View {
         .padding(.trailing, 4)
         .frame(width: Self.width, height: BrowserDesign.controlHeight + 8)
         .browserSurface(fill: BrowserPalette(scheme: scheme).raised,
-                        border: find.hasNoMatches ? Color.red.opacity(0.45) : BrowserPalette(scheme: scheme).line,
+                        border: find.hasNoMatches ? BrowserPalette(scheme: scheme).miss : BrowserPalette(scheme: scheme).line,
                         radius: BrowserDesign.Radius.card)
-        .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
+        .floatShadow()
         .shake(trigger: find.missCount)
-        .animation(reduceMotion ? nil : BrowserDesign.motion, value: find.hasNoMatches)
+        .browserAnimation(value: find.hasNoMatches)
         .onChange(of: find.focusRequest, initial: true) { focused = true }
         .task(id: find.query) {
             do { try await Task.sleep(for: Self.typingDelay) } catch { return }

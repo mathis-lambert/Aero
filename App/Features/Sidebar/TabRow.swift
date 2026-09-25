@@ -31,24 +31,25 @@ struct TabRow<Icon: View>: View {
     let close: () -> Void
     @ViewBuilder let icon: Icon
     @State private var hovered = false
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(spacing: 0) {
             Button(action: select) {
-                HStack(spacing: 10) {
+                HStack(spacing: BrowserDesign.rowInset) {
                     icon.frame(width: BrowserDesign.rowIconWidth)
                     Text(verbatim: tab.sidebarTitle)
                         .lineLimit(1).truncationMode(.tail)
                     Spacer(minLength: 0)
                 }
-                .padding(.leading, 10)
+                .padding(.leading, BrowserDesign.rowInset)
                 .frame(height: BrowserDesign.tabRowHeight)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("sidebar.tab")
             Button(action: close) {
-                Image(systemName: "xmark").font(.system(size: 9, weight: .semibold))
+                Image(systemName: "xmark").font(BrowserDesign.Typography.glyph)
                     .frame(width: 26, height: 30).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -57,7 +58,7 @@ struct TabRow<Icon: View>: View {
         }
         .background {
             if selected { SelectionHighlight(namespace: selection) }
-            else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(.primary.opacity(hovered ? 0.04 : 0)) }
+            else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(hovered ? BrowserPalette(scheme: scheme).hover : .clear) }
         }
         .onHover { hovered = $0 }
         .accessibilityElement(children: .contain)

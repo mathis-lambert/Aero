@@ -4,30 +4,30 @@ import WebKit
 
 struct BrowserContentView: View {
     let page: BrowserPage
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         ZStack(alignment: .top) {
             // The page surface shows through until the document has painted, instead of a white flash.
             WebPageHost(page: page)
                 .opacity(page.hasRenderedFirstFrame ? 1 : 0)
-                .animation(reduceMotion ? nil : BrowserDesign.pageReveal, value: page.hasRenderedFirstFrame)
+                .pageRevealAnimation(value: page.hasRenderedFirstFrame)
             if page.isLoading {
                 ProgressView(value: page.progress)
                     .progressViewStyle(.linear)
                     .frame(height: 2)
             }
             if let failure = page.failure {
-                VStack(spacing: 16) {
-                    Image(systemName: "globe.badge.chevron.backward").font(.system(size: 36, weight: .light))
-                    Text(failure == .processTerminated ? "This page needs to be reloaded" : "This page could not be opened")
-                        .font(.title2)
+                ContentUnavailableView {
+                    Label(failure == .processTerminated ? "This page needs to be reloaded" : "This page could not be opened",
+                          systemImage: "globe.badge.chevron.backward")
+                } description: {
                     Text("Check the address or your connection, then try again.")
-                        .foregroundStyle(.secondary)
+                } actions: {
                     Button("Try again") { page.reload() }.buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.background)
+                .background(BrowserPalette(scheme: scheme).canvas)
             }
         }
     }

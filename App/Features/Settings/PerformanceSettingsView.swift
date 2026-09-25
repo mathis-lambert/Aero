@@ -39,7 +39,7 @@ struct PerformanceSettingsView: View {
                 }
             }
             Text("Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner.")
-                .font(.system(size: 12)).foregroundStyle(.secondary)
+                .font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 6)
         }

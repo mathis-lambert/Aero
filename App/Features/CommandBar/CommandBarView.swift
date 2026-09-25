@@ -21,11 +21,11 @@ struct CommandBarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 14) {
-                Image(systemName: "magnifyingglass").font(.system(size: 18)).foregroundStyle(.secondary)
+            HStack(spacing: BrowserDesign.fieldSpacing) {
+                Image(systemName: "magnifyingglass").font(BrowserDesign.Typography.fieldIcon).foregroundStyle(.secondary)
                 TextField("Search, enter an address, or find a command", text: $text)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 17))
+                    .font(BrowserDesign.Typography.field)
                     .focused($focused)
                     .onSubmit { activate() }
                     .onKeyPress(.downArrow) { selection = min(selection + 1, max(0, count - 1)); return .handled }
@@ -34,7 +34,7 @@ struct CommandBarView: View {
                 ShortcutLabel(text: "esc")
             }
             .padding(22)
-            Divider()
+            Hairline()
             VStack(spacing: 3) {
                 if hasNavigation {
                     resultRow(symbol: "arrow.up.right", title: text, shortcut: "↵", index: 0) {
@@ -50,19 +50,19 @@ struct CommandBarView: View {
                 }
             }
             .padding(8)
-            Divider()
+            Hairline()
             HStack(spacing: 6) {
                 Text("Navigate with ↑ ↓")
                 Spacer()
                 Text("Open with ↵")
             }
-            .font(.system(size: 10)).foregroundStyle(.secondary)
+            .font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
             .padding(.horizontal, 16).padding(.vertical, 11)
         }
         .browserSurface(fill: BrowserPalette(scheme: scheme).canvas,
                         border: BrowserPalette(scheme: scheme).line,
                         radius: BrowserDesign.Radius.card)
-        .shadow(color: .black.opacity(0.16), radius: 32, y: 16)
+        .paletteShadow()
         .onAppear { text = request.initialText }
         .defaultFocus($focused, true)
         .task {
@@ -76,13 +76,13 @@ struct CommandBarView: View {
     private func resultRow(symbol: String, title: String, shortcut: String?, index: Int, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: symbol).frame(width: 18).foregroundStyle(.secondary)
+                Image(systemName: symbol).frame(width: BrowserDesign.rowIconWidth).foregroundStyle(.secondary)
                 Text(verbatim: title).lineLimit(1)
                 Spacer()
                 if let shortcut { ShortcutLabel(text: shortcut) }
             }
             .padding(.horizontal, 12).frame(height: 40)
-            .background(.primary.opacity(selection == index ? 0.065 : 0), in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+            .background(selection == index ? BrowserPalette(scheme: scheme).fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

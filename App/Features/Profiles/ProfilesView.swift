@@ -9,6 +9,7 @@ struct ProfilesView: View {
     @State private var color: ProfileColor = .terracotta
     @State private var creating = false
     @FocusState private var nameFocused: Bool
+    @Environment(\.colorScheme) private var scheme
 
     private var valid: Bool {
         let value = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -19,7 +20,7 @@ struct ProfilesView: View {
         VStack(alignment: .leading, spacing: 24) {
             HStack {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Your profiles").font(.system(size: 26, weight: .regular, design: .serif))
+                    Text("Your profiles").font(BrowserDesign.Typography.title)
                     Text("Separate spaces for different sides of your day.")
                         .font(.callout).foregroundStyle(.secondary)
                 }
@@ -35,11 +36,11 @@ struct ProfilesView: View {
                                 Text(verbatim: profile.name).lineLimit(1)
                                 Spacer()
                                 if profile.id == browser.window.selectedProfileID {
-                                    Image(systemName: "checkmark").font(.caption).foregroundStyle(.secondary)
+                                    Image(systemName: "checkmark").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                                 }
                             }
                             .padding(10)
-                            .background(.primary.opacity(editingID == profile.id ? 0.06 : 0), in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                            .background(editingID == profile.id ? BrowserPalette(scheme: scheme).fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -59,24 +60,24 @@ struct ProfilesView: View {
                 }
                 .frame(width: 185)
 
-                Divider()
+                Hairline(axis: .vertical)
                 VStack(alignment: .leading, spacing: 18) {
                     Text(creating ? "New profile" : "Profile details").font(.headline)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Name").font(.caption).foregroundStyle(.secondary)
+                        Text("Name").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                         TextField("Profile name", text: $name)
                             .textFieldStyle(.roundedBorder)
                             .focused($nameFocused)
                             .accessibilityIdentifier("profiles.name")
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Accent color").font(.caption).foregroundStyle(.secondary)
+                        Text("Accent color").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                         HStack(spacing: 12) {
                             ForEach(ProfileColor.allCases, id: \.self) { option in
                                 Button { color = option } label: {
                                     Circle().fill(option.tint)
                                         .frame(width: 26, height: 26)
-                                        .overlay { if color == option { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(.white) } }
+                                        .overlay { if color == option { Image(systemName: "checkmark").font(BrowserDesign.Typography.caption.weight(.bold)).foregroundStyle(.white) } }
                                         .padding(3)
                                         .overlay(Circle().strokeBorder(color == option ? option.tint : .clear, lineWidth: 1))
                                 }
@@ -87,7 +88,7 @@ struct ProfilesView: View {
                         }
                     }
                     Label("Cookies and website sign-ins stay separate for each profile.", systemImage: "lock.shield")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 6)
                     HStack {

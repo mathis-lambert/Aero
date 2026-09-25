@@ -1,2151 +1,2074 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "%@ of %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ of %2$@"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ of %2$@"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ sur %2$@"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$@"
           }
         }
       }
     },
-    "%@, %@": {
-      "comment": "App icon variant: mark, then palette, such as “Feather, Sun”.",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@, %2$@"
+    "%@, %@" : {
+      "comment" : "App icon variant: mark, then palette, such as “Feather, Sun”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@, %2$@"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
           }
         }
       }
     },
-    "Accent color": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accent color"
+    "Accent color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accent color"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couleur d’accent"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur d’accent"
           }
         }
       }
     },
-    "Add profile": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add profile"
+    "Add profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add profile"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajouter un profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un profil"
           }
         }
       }
     },
-    "All history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All history"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tout l’historique"
-          }
-        }
-      }
-    },
-    "App icon": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "App icon"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Icône de l’app"
-          }
-        }
-      }
-    },
-    "Appearance": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Appearance"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apparence"
-          }
-        }
-      }
-    },
-    "Aurora": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aurora"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aurore"
-          }
-        }
-      }
-    },
-    "Automatic": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Automatic"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Automatique"
-          }
-        }
-      }
+    "Aero" : {
+
     },
-    "Back": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Back"
+    "All history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Précédent"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout l’historique"
           }
         }
       }
     },
-    "Black on white": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Black on white"
+    "App icon" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App icon"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Noir sur blanc"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icône de l’app"
           }
         }
       }
     },
-    "Blue": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blue"
+    "Appearance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bleu"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apparence"
           }
         }
       }
     },
-    "Cancel": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
+    "Aurora" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aurora"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Annuler"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aurore"
           }
         }
       }
     },
-    "Cancel download": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel download"
+    "Automatic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Annuler le téléchargement"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique"
           }
         }
       }
     },
-    "Cancelled": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancelled"
+    "Back" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Annulé"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Précédent"
           }
         }
       }
     },
-    "Changes could not be saved. Check that there is enough disk space and try again.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Changes could not be saved. Check that there is enough disk space and try again."
+    "Black on white" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Black on white"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les modifications n’ont pas pu être enregistrées. Vérifiez l’espace disque disponible et réessayez."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noir sur blanc"
           }
         }
       }
     },
-    "Check the address or your connection, then try again.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check the address or your connection, then try again."
+    "Blue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blue"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vérifiez l’adresse ou votre connexion, puis réessayez."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bleu"
           }
         }
       }
     },
-    "Choose a profile name between 1 and %d characters.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose a profile name between 1 and %d characters."
+    "Cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez un nom de profil de 1 à %d caractères."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
           }
         }
       }
     },
-    "Choose how the browser looks.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose how the browser looks."
+    "Cancel download" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel download"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez l’apparence du navigateur."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler le téléchargement"
           }
         }
       }
     },
-    "Choose the language used by the browser.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose the language used by the browser."
+    "Cancelled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelled"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez la langue du navigateur."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulé"
           }
         }
       }
     },
-    "Clear": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear"
+    "Changes could not be saved. Check that there is enough disk space and try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes could not be saved. Check that there is enough disk space and try again."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Effacer"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les modifications n’ont pas pu être enregistrées. Vérifiez l’espace disque disponible et réessayez."
           }
         }
       }
     },
-    "Clear history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear history"
+    "Check the address or your connection, then try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the address or your connection, then try again."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Effacer l’historique"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez l’adresse ou votre connexion, puis réessayez."
           }
         }
       }
     },
-    "Clear history for “%@”?": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear history for “%@”?"
+    "Choose a profile name between 1 and %d characters." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a profile name between 1 and %d characters."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Effacer l’historique de « %@ » ?"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un nom de profil de 1 à %d caractères."
           }
         }
       }
     },
-    "Clear history…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear history…"
+    "Choose how the browser looks." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose how the browser looks."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Effacer l’historique…"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez l’apparence du navigateur."
           }
         }
       }
     },
-    "Close find bar": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Close find bar"
+    "Choose the language used by the browser." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the language used by the browser."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fermer la recherche"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez la langue du navigateur."
           }
         }
       }
     },
-    "Close settings": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Close settings"
+    "Clear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fermer les réglages"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer"
           }
         }
       }
     },
-    "Close tab": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Close tab"
+    "Clear history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fermer l’onglet"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer l’historique"
           }
         }
       }
     },
-    "Commands": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Commands"
+    "Clear history for “%@”?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear history for “%@”?"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Commandes"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer l’historique de « %@ » ?"
           }
         }
       }
     },
-    "Cookies and website sign-ins stay separate for each profile.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cookies and website sign-ins stay separate for each profile."
+    "Clear history…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear history…"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les cookies et les connexions aux sites restent séparés pour chaque profil."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer l’historique…"
           }
         }
       }
     },
-    "Create profile": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Create profile"
+    "Close find bar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close find bar"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Créer le profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer la recherche"
           }
         }
       }
     },
-    "Dark": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dark"
+    "Close settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close settings"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sombre"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer les réglages"
           }
         }
       }
     },
-    "Dawn": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dawn"
+    "Close tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close tab"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aube"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer l’onglet"
           }
         }
       }
     },
-    "Delete": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete"
+    "Commands" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commands"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Supprimer"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commandes"
           }
         }
       }
     },
-    "Done": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done"
+    "Cookies and website sign-ins stay separate for each profile." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cookies and website sign-ins stay separate for each profile."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terminé"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les cookies et les connexions aux sites restent séparés pour chaque profil."
           }
         }
       }
     },
-    "Download": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Download"
+    "Create profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create profile"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Téléchargement"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer le profil"
           }
         }
       }
     },
-    "Downloads": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Downloads"
+    "Dark" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Téléchargements"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sombre"
           }
         }
       }
     },
-    "English": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "English"
+    "Dawn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dawn"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "English"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aube"
           }
         }
       }
     },
-    "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened."
+    "Delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Saisissez une adresse web ou une recherche. Seules les adresses HTTP et HTTPS sont prises en charge."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer"
           }
         }
       }
     },
-    "Failed": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed"
+    "Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échec"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminé"
           }
         }
       }
     },
-    "Feather": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feather"
+    "Download" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plume"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement"
           }
         }
       }
     },
-    "Find": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Find"
+    "Downloads" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloads"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargements"
           }
         }
       }
     },
-    "Find in page": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Find in page"
+    "English" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher dans la page"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
           }
         }
       }
     },
-    "Find next": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Find next"
+    "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a website address or a search. Only HTTP and HTTPS addresses can be opened."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher le suivant"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez une adresse web ou une recherche. Seules les adresses HTTP et HTTPS sont prises en charge."
           }
         }
       }
     },
-    "Find previous": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Find previous"
+    "Failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher le précédent"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec"
           }
         }
       }
     },
-    "Find…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Find…"
+    "Feather" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feather"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher…"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plume"
           }
         }
       }
     },
-    "Forward": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Forward"
+    "Find" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Suivant"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher"
           }
         }
       }
     },
-    "Français": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Français"
+    "Find in page" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find in page"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Français"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans la page"
           }
         }
       }
     },
-    "Free memory by unloading tabs you have not used for a while. They reload where you left off.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Free memory by unloading tabs you have not used for a while. They reload where you left off."
+    "Find next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find next"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Libère de la mémoire en déchargeant les onglets inutilisés depuis un moment. Ils se rechargent là où vous les aviez laissés."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher le suivant"
           }
         }
       }
     },
-    "General": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "General"
+    "Find previous" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find previous"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Général"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher le précédent"
           }
         }
       }
     },
-    "Graphite": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Graphite"
+    "Find…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find…"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Graphite"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher…"
           }
         }
       }
     },
-    "History": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "History"
+    "Forward" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forward"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Historique"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivant"
           }
         }
       }
     },
-    "History could not be opened. It has been kept unchanged.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "History could not be opened. It has been kept unchanged."
+    "Français" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’historique n’a pas pu être ouvert. Il a été conservé intact."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français"
           }
         }
       }
     },
-    "History unavailable": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "History unavailable"
+    "Free memory by unloading tabs you have not used for a while. They reload where you left off." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free memory by unloading tabs you have not used for a while. They reload where you left off."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Historique indisponible"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libère de la mémoire en déchargeant les onglets inutilisés depuis un moment. Ils se rechargent là où vous les aviez laissés."
           }
         }
       }
     },
-    "Keep pinned tabs awake": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keep pinned tabs awake"
+    "General" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Garder les onglets épinglés actifs"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Général"
           }
         }
       }
     },
-    "Keep website sign-ins and tabs separate.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keep website sign-ins and tabs separate."
+    "Graphite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graphite"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Séparez les connexions aux sites et les onglets."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graphite"
           }
         }
       }
     },
-    "Keyboard shortcuts": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keyboard shortcuts"
+    "History" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Raccourcis clavier"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historique"
           }
         }
       }
     },
-    "Language": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Language"
+    "History could not be opened. It has been kept unchanged." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History could not be opened. It has been kept unchanged."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Langue"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’historique n’a pas pu être ouvert. Il a été conservé intact."
           }
         }
       }
     },
-    "Last hour": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Last hour"
+    "History unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History unavailable"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dernière heure"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historique indisponible"
           }
         }
       }
     },
-    "Lavender": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lavender"
+    "Keep pinned tabs awake" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep pinned tabs awake"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lavande"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garder les onglets épinglés actifs"
           }
         }
       }
     },
-    "Letter A": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Letter A"
+    "Keep website sign-ins and tabs separate." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep website sign-ins and tabs separate."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lettre A"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séparez les connexions aux sites et les onglets."
           }
         }
       }
     },
-    "Light": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Light"
+    "Language" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clair"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue"
           }
         }
       }
     },
-    "Manage profiles": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Manage profiles"
+    "Last hour" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last hour"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gérer les profils"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernière heure"
           }
         }
       }
     },
-    "Moss": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Moss"
+    "Lavender" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lavender"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mousse"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lavande"
           }
         }
       }
     },
-    "Name": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Name"
+    "Letter A" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letter A"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nom"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lettre A"
           }
         }
       }
     },
-    "Navigate": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Navigate"
+    "Light" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Navigation"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clair"
           }
         }
       }
     },
-    "Navigate with ↑ ↓": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Navigate with ↑ ↓"
+    "Manage profiles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage profiles"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Naviguer avec ↑ ↓"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer les profils"
           }
         }
       }
     },
-    "New profile": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New profile"
+    "Moss" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moss"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nouveau profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mousse"
           }
         }
       }
     },
-    "New tab": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New tab"
+    "Name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nouvel onglet"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom"
           }
         }
       }
     },
-    "Next match": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Next match"
+    "Navigate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigate"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Correspondance suivante"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigation"
           }
         }
       }
     },
-    "Night": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Night"
+    "Navigate with ↑ ↓" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigate with ↑ ↓"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nuit"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naviguer avec ↑ ↓"
           }
         }
       }
     },
-    "No history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No history"
+    "New profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New profile"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aucun historique"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau profil"
           }
         }
       }
     },
-    "No matches": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No matches"
+    "New tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New tab"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aucune correspondance"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvel onglet"
           }
         }
       }
     },
-    "No results": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No results"
+    "Next match" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next match"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aucun résultat"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correspondance suivante"
           }
         }
       }
     },
-    "OK": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
+    "Night" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OK"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuit"
           }
         }
       }
     },
-    "Ocean": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ocean"
+    "No history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Océan"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun historique"
           }
         }
       }
     },
-    "Olive": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Olive"
+    "No matches" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matches"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Olive"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune correspondance"
           }
         }
       }
     },
-    "Open": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open"
+    "No results" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrir"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun résultat"
           }
         }
       }
     },
-    "Open in new tab": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open in new tab"
+    "Ocean" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocean"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrir dans un nouvel onglet"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Océan"
           }
         }
       }
     },
-    "Open location": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open location"
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrir une adresse"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         }
       }
     },
-    "Open with ↵": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open with ↵"
+    "Olive" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olive"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrir avec ↵"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olive"
           }
         }
       }
     },
-    "Pages you visit appear here.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pages you visit appear here."
+    "Open" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les pages que vous consultez apparaissent ici."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir"
           }
         }
       }
     },
-    "Paper": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Paper"
+    "Open in new tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in new tab"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Papier"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans un nouvel onglet"
           }
         }
       }
     },
-    "Performance": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Performance"
+    "Open location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open location"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Performances"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir une adresse"
           }
         }
       }
     },
-    "Personal": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Personal"
+    "Open with ↵" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open with ↵"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Personnel"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir avec ↵"
           }
         }
       }
     },
-    "Pin tab": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pin tab"
+    "Pages you visit appear here." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pages you visit appear here."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Épingler l’onglet"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages que vous consultez apparaissent ici."
           }
         }
       }
     },
-    "Plum": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plum"
+    "Paper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paper"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prune"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Papier"
           }
         }
       }
     },
-    "Previous match": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Previous match"
+    "Personal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Correspondance précédente"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnel"
           }
         }
       }
     },
-    "Profile details": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profile details"
+    "Pin tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin tab"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Détails du profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler l’onglet"
           }
         }
       }
     },
-    "Profile name": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profile name"
+    "Plum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plum"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nom du profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prune"
           }
         }
       }
     },
-    "Profiles": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profiles"
+    "Previous match" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous match"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profils"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correspondance précédente"
           }
         }
       }
     },
-    "Reload page": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reload page"
+    "Profile details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile details"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recharger la page"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Détails du profil"
           }
         }
       }
     },
-    "Reopen closed tab": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reopen closed tab"
+    "Profile name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile name"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rouvrir l’onglet fermé"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom du profil"
           }
         }
       }
     },
-    "Reopen the browser to apply the language change.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reopen the browser to apply the language change."
+    "Profiles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profiles"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rouvrez le navigateur pour appliquer le changement de langue."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils"
           }
         }
       }
     },
-    "Retry download": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Retry download"
+    "Reload page" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload page"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réessayer le téléchargement"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recharger la page"
           }
         }
       }
     },
-    "Save changes": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save changes"
+    "Reopen closed tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reopen closed tab"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enregistrer"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rouvrir l’onglet fermé"
           }
         }
       }
     },
-    "Search history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search history"
+    "Reopen the browser to apply the language change." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reopen the browser to apply the language change."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher dans l’historique"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rouvrez le navigateur pour appliquer le changement de langue."
           }
         }
       }
     },
-    "Search or enter an address": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search or enter an address"
+    "Retry download" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry download"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher ou saisir une adresse"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer le téléchargement"
           }
         }
       }
     },
-    "Search, enter an address, or find a command": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search, enter an address, or find a command"
+    "Save changes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save changes"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher, saisir une adresse ou une commande"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer"
           }
         }
       }
     },
-    "Separate spaces for different sides of your day.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Separate spaces for different sides of your day."
+    "Search history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un espace distinct pour chaque facette de votre journée."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans l’historique"
           }
         }
       }
     },
-    "Session unavailable": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Session unavailable"
+    "Search or enter an address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search or enter an address"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Session indisponible"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher ou saisir une adresse"
           }
         }
       }
     },
-    "Settings": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings"
+    "Search, enter an address, or find a command" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search, enter an address, or find a command"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réglages"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher, saisir une adresse ou une commande"
           }
         }
       }
     },
-    "Settings…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings…"
+    "Separate spaces for different sides of your day." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separate spaces for different sides of your day."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réglages…"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un espace distinct pour chaque facette de votre journée."
           }
         }
       }
     },
-    "Show all history": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show all history"
+    "Settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Afficher tout l’historique"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages"
           }
         }
       }
     },
-    "Show in Finder": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show in Finder"
+    "Settings…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings…"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Afficher dans le Finder"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages…"
           }
         }
       }
     },
-    "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon."
+    "Session unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session unavailable"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Affichée dans le Dock pendant qu’Aero est ouvert. Le Finder et le Launchpad gardent l’icône par défaut."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session indisponible"
           }
         }
       }
     },
-    "Sleep after": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sleep after"
+    "Show all history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show all history"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mise en veille après"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher tout l’historique"
           }
         }
       }
     },
-    "Sleep inactive tabs": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sleep inactive tabs"
+    "Show in Finder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in Finder"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mettre en veille les onglets inactifs"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans le Finder"
           }
         }
       }
     },
-    "Something needs your attention": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Something needs your attention"
+    "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Une action est nécessaire"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affichée dans le Dock pendant qu’Aero est ouvert. Le Finder et le Launchpad gardent l’icône par défaut."
           }
         }
       }
     },
-    "Stop loading": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stop loading"
+    "Sleep after" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep after"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arrêter le chargement"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise en veille après"
           }
         }
       }
     },
-    "Sun": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sun"
+    "Sleep inactive tabs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep inactive tabs"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Soleil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre en veille les onglets inactifs"
           }
         }
       }
     },
-    "Switch profile": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Switch profile"
+    "Something needs your attention" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something needs your attention"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Changer de profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une action est nécessaire"
           }
         }
       }
     },
-    "Switch recent tabs": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Switch recent tabs"
+    "Stop loading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop loading"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parcourir les onglets récents"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter le chargement"
           }
         }
       }
     },
-    "System": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "System"
+    "Sun" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sun"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Système"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soleil"
           }
         }
       }
     },
-    "System language": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "System language"
+    "Switch profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch profile"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Langue du système"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer de profil"
           }
         }
       }
     },
-    "Tabs": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tabs"
+    "System" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Onglets"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Système"
           }
         }
       }
     },
-    "Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner."
+    "System language" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System language"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les onglets qui lisent un média, utilisent la caméra ou le micro, sont en plein écran ou contiennent du texte non envoyé restent actifs. Quand le Mac manque de mémoire, les onglets inactifs se mettent en veille plus tôt."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue du système"
           }
         }
       }
     },
-    "Terracotta": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terracotta"
+    "Tabs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabs"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terre cuite"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglets"
           }
         }
       }
     },
-    "The accent color follows your active profile.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The accent color follows your active profile."
+    "Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La couleur d’accent suit votre profil actif."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les onglets qui lisent un média, utilisent la caméra ou le micro, sont en plein écran ou contiennent du texte non envoyé restent actifs. Quand le Mac manque de mémoire, les onglets inactifs se mettent en veille plus tôt."
           }
         }
       }
     },
-    "The essentials, always within reach.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The essentials, always within reach."
+    "Terracotta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terracotta"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les commandes essentielles à portée de main."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terre cuite"
           }
         }
       }
     },
-    "This page could not be opened": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This page could not be opened"
+    "This page could not be opened" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This page could not be opened"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’ouvrir cette page"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’ouvrir cette page"
           }
         }
       }
     },
-    "This page needs to be reloaded": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This page needs to be reloaded"
+    "This page needs to be reloaded" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This page needs to be reloaded"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cette page doit être rechargée"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette page doit être rechargée"
           }
         }
       }
     },
-    "Today": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
+    "Today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aujourd’hui"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd’hui"
           }
         }
       }
     },
-    "Today and yesterday": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today and yesterday"
+    "Today and yesterday" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today and yesterday"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aujourd’hui et hier"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd’hui et hier"
           }
         }
       }
     },
-    "Toggle sidebar": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toggle sidebar"
+    "Toggle sidebar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle sidebar"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Afficher/masquer la barre latérale"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher/masquer la barre latérale"
           }
         }
       }
     },
-    "Try again": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Try again"
+    "Try again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réessayer"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
           }
         }
       }
     },
-    "Try other words.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Try other words."
+    "Try other words." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try other words."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Essayez d’autres mots."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez d’autres mots."
           }
         }
       }
     },
-    "Unpin tab": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unpin tab"
+    "Unpin tab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpin tab"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Désépingler l’onglet"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler l’onglet"
           }
         }
       }
     },
-    "Use profile": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use profile"
+    "Use profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use profile"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Utiliser ce profil"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser ce profil"
           }
         }
       }
     },
-    "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept."
+    "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les pages consultées sont retirées de l’historique de ce profil. Les onglets, les données des sites et les connexions sont conservés."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages consultées sont retirées de l’historique de ce profil. Les onglets, les données des sites et les connexions sont conservés."
           }
         }
       }
     },
-    "White on black": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "White on black"
+    "White on black" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "White on black"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blanc sur noir"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blanc sur noir"
           }
         }
       }
     },
-    "Yesterday": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yesterday"
+    "Yesterday" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hier"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier"
           }
         }
       }
     },
-    "Your profiles": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your profiles"
+    "Your profiles" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your profiles"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vos profils"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vos profils"
           }
         }
       }
     },
-    "Your saved data has been kept unchanged.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your saved data has been kept unchanged."
+    "Your saved data has been kept unchanged." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your saved data has been kept unchanged."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vos données enregistrées ont été conservées intactes."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vos données enregistrées ont été conservées intactes."
           }
         }
       }
     },
-    "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it."
+    "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Votre session enregistrée n’a pas pu être ouverte. Elle a été conservée intacte. Quittez l’application pour l’examiner ou la récupérer."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre session enregistrée n’a pas pu être ouverte. Elle a été conservée intacte. Quittez l’application pour l’examiner ou la récupérer."
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

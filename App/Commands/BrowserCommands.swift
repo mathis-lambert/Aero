@@ -64,8 +64,7 @@ extension KeyboardShortcut {
     /// Menu notation, with modifiers in the system order: “⇧ ⌘ T”.
     var label: String {
         let symbols: [(EventModifiers, String)] = [(.control, "⌃"), (.option, "⌥"), (.shift, "⇧"), (.command, "⌘")]
-        let key = key == .tab ? "⇥" : String(key.character).uppercased()
-        return (symbols.filter { modifiers.contains($0.0) }.map(\.1) + [key]).joined(separator: " ")
+        return (symbols.filter { modifiers.contains($0.0) }.map(\.1) + [String(key.character).uppercased()]).joined(separator: " ")
     }
 }
 

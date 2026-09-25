@@ -11,17 +11,17 @@ struct HistoryRow: View {
     private var time: String { entry.lastVisit.formatted(date: .omitted, time: .shortened) }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: BrowserDesign.rowInset) {
             FaviconView(cache: favicons, key: profileID.flatMap { FaviconKey(profileID: $0, url: entry.url) }, size: BrowserDesign.tabIconSize) {
                 Image(systemName: "globe").foregroundStyle(.secondary)
             }
             .frame(width: BrowserDesign.rowIconWidth)
             VStack(alignment: .leading, spacing: 1) {
                 Text(verbatim: title).lineLimit(1)
-                Text(verbatim: host).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(verbatim: host).font(BrowserDesign.Typography.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 12)
-            Text(verbatim: time).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+            Text(verbatim: time).font(BrowserDesign.Typography.caption).foregroundStyle(.secondary).monospacedDigit()
         }
         .padding(.vertical, 2)
         .help(entry.url.absoluteString)

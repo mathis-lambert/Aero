@@ -7,7 +7,6 @@ struct BrowserWindowView: View {
     let browser: BrowserModel
     @State private var sidebarRevealed = false
     @Environment(\.colorScheme) private var scheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         content
@@ -34,7 +33,7 @@ struct BrowserWindowView: View {
                             .overlay(alignment: .topTrailing) {
                                 if browser.window.find.isPresented {
                                     FindBar(find: browser.window.find, page: page)
-                                        .padding(BrowserDesign.floatingSidebarInset)
+                                        .padding(BrowserDesign.floatingInset)
                                         .transition(.move(edge: .top).combined(with: .opacity))
                                 }
                             }
@@ -66,8 +65,8 @@ struct BrowserWindowView: View {
                         .browserSurface(fill: BrowserPalette(scheme: scheme).sidebar,
                                         border: BrowserPalette(scheme: scheme).line,
                                         radius: BrowserDesign.Radius.floatingSidebar)
-                        .shadow(color: .black.opacity(0.2), radius: 20, x: 5, y: 4)
-                        .padding(BrowserDesign.floatingSidebarInset)
+                        .floatShadow()
+                        .padding(BrowserDesign.floatingInset)
                         .contentShape(Rectangle())
                         .onHover { if !$0 { sidebarRevealed = false } }
                         .allowsHitTesting(browser.window.commandBar == nil)
@@ -81,7 +80,7 @@ struct BrowserWindowView: View {
                     .accessibilityHidden(true)
                 CommandBarView(browser: browser, request: request)
                     .id(request.id)
-                    .frame(maxWidth: 600)
+                    .frame(maxWidth: BrowserDesign.paletteWidth)
                     .padding(.top, 120)
                     .padding(.horizontal, 48)
                     .frame(maxWidth: .infinity)
@@ -92,16 +91,16 @@ struct BrowserWindowView: View {
         .ignoresSafeArea(.container, edges: .top)
         .background(BrowserPalette(scheme: scheme).sidebar)
         .foregroundStyle(BrowserPalette(scheme: scheme).ink)
-        .font(BrowserDesign.bodyFont)
+        .font(BrowserDesign.Typography.chrome)
         .tint(browser.profile?.color.tint ?? ProfileColor.terracotta.tint)
-        .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.sidebarPinned)
-        .animation(reduceMotion ? nil : BrowserDesign.motion, value: sidebarRevealed)
-        .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.commandBar != nil)
-        .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.find.isPresented)
+        .browserAnimation(value: browser.window.sidebarPinned)
+        .browserAnimation(value: sidebarRevealed)
+        .browserAnimation(value: browser.window.commandBar != nil)
+        .browserAnimation(value: browser.window.find.isPresented)
         .downloadsDockBadge(activeCount: browser.downloads.activeCount)
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
         .onChange(of: browser.window.commandBar != nil) { _, presented in if presented { sidebarRevealed = false } }
-        .background(WindowConfiguration(identifier: WindowConfiguration.mainWindowIdentifier, usesBrowserChrome: true))
+        .background(WindowConfiguration())
         .focusedSceneValue(\.browserModel, browser)
         .sheet(isPresented: Binding(get: { browser.window.profilesPresented }, set: { browser.window.profilesPresented = $0 })) {
             ProfilesView(browser: browser)

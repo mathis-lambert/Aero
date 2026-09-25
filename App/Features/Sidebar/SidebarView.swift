@@ -7,7 +7,6 @@ struct SidebarView: View {
     @State private var targetedTabID: UUID?
     @State private var endTargeted = false
     @Environment(\.colorScheme) private var scheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -20,7 +19,7 @@ struct SidebarView: View {
             Button { browser.perform(.openLocation) } label: {
                 HStack(spacing: 8) {
                     Image(systemName: browser.internalPage?.symbol ?? (browser.selectedTab == nil ? "magnifyingglass" : "globe"))
-                        .font(.system(size: 12))
+                        .font(BrowserDesign.Typography.label)
                         .foregroundStyle(.secondary)
                     if let page = browser.internalPage {
                         Text(verbatim: page.title).lineLimit(1)
@@ -34,16 +33,16 @@ struct SidebarView: View {
                     }
                     Spacer(minLength: 0)
                 }
-                .font(BrowserDesign.bodyFont)
+                .font(BrowserDesign.Typography.chrome)
                 .padding(.horizontal, 12)
                 .frame(height: 36)
-                .background(.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                .background(BrowserPalette(scheme: scheme).fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                 .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open location")
             .accessibilityIdentifier("sidebar.location")
-            .padding(.horizontal, 10)
+            .padding(.horizontal, BrowserDesign.rowInset)
             .padding(.top, 8)
             .padding(.bottom, 4)
 
@@ -54,30 +53,29 @@ struct SidebarView: View {
                     ProfileSwitcher(browser: browser)
                         .padding(.bottom, 6)
 
-                    Rectangle().fill(BrowserPalette(scheme: scheme).line).frame(height: 1)
-                        .padding(.horizontal, 4).padding(.bottom, 5)
+                    Hairline().padding(.horizontal, 4).padding(.bottom, 5)
 
                     Button { browser.perform(.newTab) } label: {
-                        HStack(spacing: 10) {
+                        HStack(spacing: BrowserDesign.rowInset) {
                             Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
                             Text("New tab")
                             Spacer()
                         }
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .frame(height: 32)
+                        .padding(.horizontal, BrowserDesign.rowInset)
+                        .frame(height: BrowserDesign.controlHeight)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("sidebar.newTab")
 
                     if browser.window.selectedTabID == nil {
-                        HStack(spacing: 10) {
-                            Image(systemName: "magnifyingglass").font(.system(size: 12)).frame(width: BrowserDesign.rowIconWidth)
+                        HStack(spacing: BrowserDesign.rowInset) {
+                            Image(systemName: "magnifyingglass").font(BrowserDesign.Typography.label).frame(width: BrowserDesign.rowIconWidth)
                             Text("New tab")
                             Spacer()
                         }
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, BrowserDesign.rowInset)
                         .frame(height: BrowserDesign.tabRowHeight)
                         .background { SelectionHighlight(namespace: selection) }
                         .accessibilityAddTraits(.isSelected)
@@ -87,7 +85,7 @@ struct SidebarView: View {
                                select: { browser.selectTab(tab.id) }, close: { browser.closeTab(tab.id) }) {
                             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
                                 Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe")
-                                    .font(.system(size: 13)).foregroundStyle(.secondary)
+                                    .font(BrowserDesign.Typography.chrome).foregroundStyle(.secondary)
                             }
                         }
                         .contextMenu { TabContextMenu(tab: tab, browser: browser) }
@@ -107,10 +105,10 @@ struct SidebarView: View {
                         .overlay(alignment: .top) { if endTargeted { DropIndicator() } }
                         .accessibilityHidden(true)
                 }
-                .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.window.selectedTabID)
-                .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.tabs.map(\.id))
-                .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.tabs.map(\.isPinned))
-                .padding(.horizontal, 10)
+                .browserAnimation(value: browser.window.selectedTabID)
+                .browserAnimation(value: browser.tabs.map(\.id))
+                .browserAnimation(value: browser.tabs.map(\.isPinned))
+                .padding(.horizontal, BrowserDesign.rowInset)
                 .padding(.top, 12)
             }
             .scrollIndicators(.hidden)
@@ -120,7 +118,7 @@ struct SidebarView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(reduceMotion ? nil : BrowserDesign.motion, value: browser.downloads.downloads.isEmpty)
+        .browserAnimation(value: browser.downloads.downloads.isEmpty)
         .disabled(!browser.isReady)
     }
 

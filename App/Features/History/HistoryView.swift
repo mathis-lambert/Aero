@@ -56,7 +56,7 @@ struct HistoryView: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("History").font(.system(size: 24, weight: .semibold))
+                Text("History").font(BrowserDesign.Typography.title)
                 Text(verbatim: browser.profile?.name ?? "").foregroundStyle(.secondary)
             }
             Spacer()
@@ -67,7 +67,7 @@ struct HistoryView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: BrowserDesign.rowInset) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary).accessibilityHidden(true)
             TextField("Search history", text: $query)
                 .textFieldStyle(.plain)
@@ -100,7 +100,7 @@ struct HistoryView: View {
                 ForEach(HistoryDay.group(entries)) { day in
                     Section { rows(of: day) } header: {
                         day.title
-                            .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                            .font(BrowserDesign.Typography.label).foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 4)
                             .background(BrowserPalette(scheme: scheme).canvas)

@@ -8,12 +8,12 @@ struct ProfileSwitcher: View {
         Button { presented.toggle() } label: {
             HStack(spacing: 6) {
                 if let profile = browser.profile {
-                    Text(verbatim: profile.name).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                    Text(verbatim: profile.name).font(BrowserDesign.Typography.label.weight(.semibold)).lineLimit(1)
                     Circle().fill(profile.color.tint).frame(width: 5, height: 5)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
+                    .font(BrowserDesign.Typography.glyph).foregroundStyle(.secondary)
             }
             .frame(height: BrowserDesign.controlHeight)
             .contentShape(Rectangle())
@@ -24,7 +24,7 @@ struct ProfileSwitcher: View {
         .accessibilityIdentifier("sidebar.profiles")
         .popover(isPresented: $presented, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Your profiles").font(.caption).foregroundStyle(.secondary).padding(8)
+                Text("Your profiles").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary).padding(8)
                 ForEach(browser.session.profiles) { profile in
                     Button {
                         browser.switchProfile(profile.id)
@@ -34,13 +34,13 @@ struct ProfileSwitcher: View {
                             ProfileBadge(profile: profile, size: 24)
                             Text(verbatim: profile.name).lineLimit(1)
                             Spacer()
-                            if profile.id == browser.window.selectedProfileID { Image(systemName: "checkmark").font(.caption) }
+                            if profile.id == browser.window.selectedProfileID { Image(systemName: "checkmark").font(BrowserDesign.Typography.caption) }
                         }
                         .padding(8).contentShape(Rectangle())
                     }
                     .buttonStyle(QuietButtonStyle())
                 }
-                Divider().padding(.vertical, 4)
+                Hairline().padding(.vertical, 4)
                 Button {
                     presented = false
                     browser.perform(.profiles)

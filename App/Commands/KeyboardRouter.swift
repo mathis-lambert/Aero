@@ -7,8 +7,6 @@ import SwiftUI
 /// IME composition and page-first shortcuts, follows the normal responder chain and menus.
 @MainActor
 final class KeyboardRouter {
-    /// Switches between recent tabs; Shift goes back. Matched by key code, which Shift does not change.
-    static let recentTabsShortcut = KeyboardShortcut(.tab, modifiers: .control)
     private static let tabKeyCode: UInt16 = 48
     private var monitor: Any?
 

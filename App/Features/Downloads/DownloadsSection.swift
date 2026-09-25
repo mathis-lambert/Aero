@@ -9,21 +9,20 @@ struct DownloadsSection: View {
     private static let rowHeight: CGFloat = 44
 
     let downloads: DownloadCoordinator
-    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Downloads").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text("Downloads").font(BrowserDesign.Typography.label).foregroundStyle(.secondary)
                 Spacer()
                 if downloads.downloads.contains(where: { $0.state != .downloading }) {
                     Button("Clear") { downloads.clearInactive() }
                         .buttonStyle(.plain)
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                         .accessibilityIdentifier("downloads.clear")
                 }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, BrowserDesign.rowInset)
             ScrollView {
                 VStack(spacing: 2) {
                     ForEach(downloads.downloads) { download in
@@ -37,9 +36,7 @@ struct DownloadsSection: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .padding(.vertical, 8)
-        .overlay(alignment: .top) {
-            Rectangle().fill(BrowserPalette(scheme: scheme).line).frame(height: 1).padding(.horizontal, 14)
-        }
+        .overlay(alignment: .top) { Hairline().padding(.horizontal, 14) }
     }
 }
 
@@ -48,7 +45,7 @@ private struct DownloadRow: View {
     let downloads: DownloadCoordinator
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: BrowserDesign.rowInset) {
             FileIcon(filename: download.filename)
                 .opacity(download.state == .downloading ? 0.6 : 1)
                 .accessibilityHidden(true)
@@ -57,12 +54,12 @@ private struct DownloadRow: View {
                 if download.state == .downloading, download.totalBytes != nil {
                     ProgressView(value: download.fractionCompleted).progressViewStyle(.linear).controlSize(.mini)
                 }
-                status.font(.caption2).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
+                status.font(BrowserDesign.Typography.caption).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
             }
             Spacer(minLength: 0)
             action
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, BrowserDesign.rowInset)
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { if download.state == .finished, let file = download.destination { NSWorkspace.shared.open(file) } }
         .accessibilityElement(children: .contain)

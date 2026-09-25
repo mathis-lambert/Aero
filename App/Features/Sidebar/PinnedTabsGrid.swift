@@ -8,6 +8,8 @@ struct PinnedTabsGrid: View {
     private static let spacing: CGFloat = 8
     private static let tileHeight: CGFloat = 48
     private static let emptyZoneHeight: CGFloat = 8
+    /// The site initial stands in for a missing favicon, at the size of the placeholder symbols.
+    private static let initialFont = Font.system(size: 18, weight: .medium, design: .rounded)
 
     let browser: BrowserModel
     @State private var targetedTabID: UUID?
@@ -41,9 +43,9 @@ struct PinnedTabsGrid: View {
         return Button { browser.selectTab(tab.id) } label: {
             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize) {
                 if let page = InternalPage(url: tab.url) {
-                    Image(systemName: page.symbol).font(.system(size: 17)).foregroundStyle(.secondary)
+                    Image(systemName: page.symbol).font(BrowserDesign.Typography.fieldIcon).foregroundStyle(.secondary)
                 } else {
-                    Text(verbatim: initial(tab)).font(.system(size: 18, weight: .medium, design: .rounded))
+                    Text(verbatim: initial(tab)).font(Self.initialFont)
                 }
             }
             .frame(maxWidth: .infinity)
