@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Reports the memory footprint of a running LightBrowser and the WebKit processes it owns.
+// Reports the memory footprint of a running Auro and the WebKit processes it owns.
 // Usage: swift Scripts/measure-memory.swift [process-name] [--sample seconds] [--detailed]
 //
 // Development tool only. WebKit XPC processes are children of launchd, so ownership is resolved
@@ -9,7 +9,7 @@
 import Darwin
 import Foundation
 
-let defaultProcessName = "LightBrowser"
+let defaultProcessName = "Auro"
 let webKitProcessPattern = "com.apple.WebKit"
 
 func run(_ tool: String, _ arguments: [String]) -> String {

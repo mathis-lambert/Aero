@@ -2,12 +2,12 @@ import AppKit
 import SwiftUI
 
 @main
-struct LightBrowserApp: App {
+struct AuroApp: App {
     @NSApplicationDelegateAdaptor(BrowserAppDelegate.self) private var delegate
     @State private var browser = BrowserModel()
 
     var body: some Scene {
-        Window("LightBrowser", id: "browser") {
+        Window("Auro", id: "browser") {
             BrowserWindowView(browser: browser)
                 .task {
                     delegate.browser = browser

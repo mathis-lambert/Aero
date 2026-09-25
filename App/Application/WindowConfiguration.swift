@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Gives the browser a full-height content view while AppKit keeps window behavior.
 struct WindowConfiguration: NSViewRepresentable {
-    static let mainWindowIdentifier = "lightbrowser.main"
+    static let mainWindowIdentifier = "auro.main"
     let identifier: String
     var usesBrowserChrome = false
 

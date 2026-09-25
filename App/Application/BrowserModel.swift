@@ -33,21 +33,21 @@ final class BrowserModel {
     init() {
         launchInterval = Self.signposter.beginInterval(Diagnostics.Signpost.launch)
         let environment = ProcessInfo.processInfo.environment
-        let testing = environment["LIGHTBROWSER_TEST_DATA"]
+        let testing = environment["AURO_TEST_DATA"]
             .map { URL(fileURLWithPath: $0).lastPathComponent }
         preferences = BrowserPreferences(testNamespace: testing)
         let folder: URL
         if let testing {
             // Resolve inside this application's sandbox, not the UI test runner's container.
-            folder = URL.temporaryDirectory.appendingPathComponent("LightBrowserTests", isDirectory: true)
+            folder = URL.temporaryDirectory.appendingPathComponent("AuroTests", isDirectory: true)
                 .appendingPathComponent(testing, isDirectory: true)
         }
         else {
             let support = URL.applicationSupportDirectory
             #if DEBUG
-            folder = support.appendingPathComponent("LightBrowser Development", isDirectory: true)
+            folder = support.appendingPathComponent("Auro Development", isDirectory: true)
             #else
-            folder = support.appendingPathComponent("LightBrowser", isDirectory: true)
+            folder = support.appendingPathComponent("Auro", isDirectory: true)
             #endif
         }
         store = SessionStore(directory: folder)

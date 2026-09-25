@@ -1,4 +1,4 @@
-# LightBrowser contributor instructions
+# Auro contributor instructions
 
 ## Product and scope
 
@@ -128,10 +128,10 @@ docs/                   # Project documentation and specifications
 - Use Swift Testing for core/module behavior and XCTest/XCUITest where application or UI integration requires them. Test outcomes and invariants, not private implementation details.
 - Prioritize profile isolation, tab lifecycle, session recovery, migrations, command routing, and prevention of user-data loss.
 - Run the smallest relevant checks, plus the application build when changing shared APIs or integration. Report exactly what ran and what remains unverified.
-- The application is `LightBrowser.xcodeproj`, with a shared `LightBrowser` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a), Apple Swift 6.4, Swift 6 language mode, macOS 27.0+, and arm64.
-- Build: `xcodebuild -project LightBrowser.xcodeproj -scheme LightBrowser -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/lightbrowser-derived build`.
+- The application is `Auro.xcodeproj`, with a shared `Auro` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a), Apple Swift 6.4, Swift 6 language mode, macOS 27.0+, and arm64.
+- Build: `xcodebuild -project Auro.xcodeproj -scheme Auro -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/auro-derived build`.
 - Package tests: `swift test --package-path Packages/BrowserKit`. Live WebKit tests need access to macOS WebKit services. In a restricted execution environment, use writable compiler caches and disclose any environment-related limits.
-- UI tests: use the build command above with `test` in place of `build`. They require a logged-in GUI session. Tests use `LIGHTBROWSER_TEST_DATA` to namespace temporary data inside the app sandbox and make website stores ephemeral.
+- UI tests: use the build command above with `test` in place of `build`. They require a logged-in GUI session. Tests use `AURO_TEST_DATA` to namespace temporary data inside the app sandbox and make website stores ephemeral.
 - Performance: tab hibernation, signposts, the launch test and `Scripts/measure-memory.swift` are described in `docs/PERFORMANCE.md`.
 - Current scope: one main window, one space per profile, English/French catalogs, atomic versioned JSON session storage, and a native light/dark/system appearance. Debug and release bundle IDs/data locations are separate. Onboarding, import, and AI are outside this batch.
 - Extension scope, distribution/update channel, and future multi-window behavior remain open. Session JSON is the current implementation, not a commitment to use JSON for a future large browsing history.

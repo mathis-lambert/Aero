@@ -82,7 +82,7 @@ struct SettingsView: View {
         .foregroundStyle(BrowserPalette(scheme: scheme).ink)
         .frame(minWidth: 780, idealWidth: 800, minHeight: 540, idealHeight: 560)
         .ignoresSafeArea(.container, edges: .top)
-        .background(WindowConfiguration(identifier: "lightbrowser.settings"))
+        .background(WindowConfiguration(identifier: "auro.settings"))
         .sheet(item: $profileEditor) { request in
             ProfilesView(browser: browser, initialProfileID: request.profileID, startsCreating: request.profileID == nil)
         }

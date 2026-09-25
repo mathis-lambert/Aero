@@ -29,11 +29,11 @@ Known limits: only the main frame is inspected for unsent text; downloads and po
 
 Report the build configuration, hardware, and scenario (idle, navigation, many tabs, media) with any number.
 
-- **Signposts:** subsystem `dev.lightbrowser`; categories `Launch`, `PageLifecycle`, `Storage`. Record with Instruments' os_signpost or Points of Interest instruments to see launch-to-session-ready, session load/write, and page creation, restoration and hibernation.
+- **Signposts:** subsystem `dev.auro`; categories `Launch`, `PageLifecycle`, `Storage`. Record with Instruments' os_signpost or Points of Interest instruments to see launch-to-session-ready, session load/write, and page creation, restoration and hibernation.
 - **Cold launch:** `LaunchPerformanceTests` measures launch until the window is responsive. Use the Release configuration:
   ```sh
-  xcodebuild -project LightBrowser.xcodeproj -scheme LightBrowser -configuration Release \
-    -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/lightbrowser-derived \
-    -only-testing:LightBrowserUITests/LaunchPerformanceTests test
+  xcodebuild -project Auro.xcodeproj -scheme Auro -configuration Release \
+    -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/auro-derived \
+    -only-testing:AuroUITests/LaunchPerformanceTests test
   ```
 - **Memory:** `swift Scripts/measure-memory.swift` reports the footprint of the running app plus the WebKit processes attributed to it. Add `--sample 1` to sample over time and `--detailed` for per-category memory. WebKit processes of other apps, such as Safari, are excluded.

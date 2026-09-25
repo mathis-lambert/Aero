@@ -71,7 +71,7 @@ final class BrowserUITests: XCTestCase {
     }
 
     func testSidebarNavigationAndWindowControls() {
-        let window = app.windows["lightbrowser.main"]
+        let window = app.windows["auro.main"]
         let sidebarToggle = app.buttons["sidebar.toggle"]
         let profile = app.buttons["sidebar.profiles"]
         let address = app.buttons["sidebar.location"]
@@ -120,7 +120,7 @@ final class BrowserUITests: XCTestCase {
         let pinnedAddress = app.buttons["sidebar.location"].frame
         app.typeKey("s", modifierFlags: [.command, .shift])
         XCTAssertFalse(app.buttons["sidebar.toggle"].exists)
-        let window = app.windows["lightbrowser.main"]
+        let window = app.windows["auro.main"]
         window.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
             .withOffset(CGVector(dx: 4, dy: 0)).hover()
         XCTAssertTrue(app.buttons["sidebar.toggle"].waitForExistence(timeout: 3))

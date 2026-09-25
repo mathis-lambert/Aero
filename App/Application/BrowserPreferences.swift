@@ -26,7 +26,7 @@ enum BrowserLanguage: String, CaseIterable, Identifiable {
 @MainActor @Observable
 final class BrowserPreferences {
     private enum Key {
-        static let testSuitePrefix = "dev.lightbrowser.tests."
+        static let testSuitePrefix = "dev.auro.tests."
         static let language = "browser.language"
         static let appleLanguages = "AppleLanguages"
         static let hibernationEnabled = "browser.hibernation.enabled"
