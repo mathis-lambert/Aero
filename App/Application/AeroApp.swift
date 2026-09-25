@@ -19,11 +19,13 @@ struct AeroApp: App {
         .windowResizability(.contentMinSize)
         .commands { BrowserMenuCommands() }
 
-        Settings {
+        Window("Settings", id: SettingsView.windowID) {
             SettingsView(browser: browser)
                 .preferredColorScheme(browser.preferences.appearance.colorScheme)
         }
-        .windowStyle(.hiddenTitleBar)
+        .windowStyle(.plain)
+        .defaultSize(width: 868, height: 628)
+        .windowResizability(.contentMinSize)
     }
 }
 

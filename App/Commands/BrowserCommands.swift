@@ -119,8 +119,13 @@ extension BrowserModel {
 
 struct BrowserMenuCommands: Commands {
     @FocusedValue(\.browserModel) private var browser
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(replacing: .appSettings) {
+            Button("Settings…") { openWindow(id: SettingsView.windowID) }
+                .keyboardShortcut(",", modifiers: .command)
+        }
         CommandGroup(replacing: .newItem) {
             command(.newTab)
             command(.openLocation)

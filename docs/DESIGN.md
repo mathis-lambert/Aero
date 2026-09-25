@@ -42,7 +42,7 @@ Promote values to shared tokens when they form a repeated visual rule. Keep one-
 
 ### Choosing an icon
 
-Settings › Appearance offers the app icon: **Automatic** (the system icon, papier in light and nuit in dark) or one of the twenty alternates in `App/Resources/AppIcons`; the A on paper and on night is the system icon itself, so it is not repeated as an alternate. The choice replaces the Dock icon once the session has loaded at launch, and immediately when changed, drawn on the macOS icon grid (an 824 pt rounded square on a 1024 pt canvas). macOS does not let a sandboxed app change its Finder or Launchpad icon, so those keep the system icon; the setting says so. The picker renders its thumbnails away from the main actor while it is shown and keeps none afterwards.
+Settings › General offers the app icon: **Automatic** (the system icon, papier in light and nuit in dark) or one of the twenty alternates in `App/Resources/AppIcons`; the A on paper and on night is the system icon itself, so it is not repeated as an alternate. The choice replaces the Dock icon once the session has loaded at launch, and immediately when changed, drawn on the macOS icon grid (an 824 pt rounded square on a 1024 pt canvas). macOS does not let a sandboxed app change its Finder or Launchpad icon, so those keep the system icon; the setting says so. The picker renders its thumbnails away from the main actor while it is shown and keeps none afterwards.
 
 Failure modes:
 
@@ -56,9 +56,9 @@ Verification: E2E `testAppearanceChoicesPersistAcrossLaunches` (select the dark 
 
 ## Settings
 
-Use a dedicated settings window with a left category list and right detail pane. Current categories are General, Appearance, Performance, Profiles, and Keyboard Shortcuts. Display only working options; do not add placeholder account, sync, privacy, or extension pages.
+Use a compact dedicated settings window with a left category list and right detail pane. A close button at the top left replaces the native window controls. Categories are General (language, appearance, app icon), Tabs (hibernation), and Profiles. Display only working options; do not add placeholder account, sync, privacy, or extension pages.
 
-Group related options in simple surface cards. Appearance provides system/light/dark previews. Language offers the system default, English, and French; changes are applied on the next launch, with an explicit message. This uses per-app localization preferences instead of runtime bundle replacement.
+Group related options in bordered cards with compact controls. Appearance offers light/dark/system choices. Language offers the system default, English, and French; changes are applied on the next launch, with an explicit message. This uses per-app localization preferences instead of runtime bundle replacement.
 
 ## Interaction and accessibility
 

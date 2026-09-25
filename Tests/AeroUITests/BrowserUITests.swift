@@ -149,21 +149,36 @@ final class BrowserUITests: XCTestCase {
         app.typeKey(",", modifierFlags: .command)
         let language = app.popUpButtons["settings.language"]
         XCTAssertTrue(language.waitForExistence(timeout: 5))
+        attachScreenshot("settings-general-compact")
         language.click()
         app.menuItems["Français"].click()
         XCTAssertTrue(app.staticTexts["settings.languageRestart"].waitForExistence(timeout: 3))
-        app.buttons["settings.appearance"].click()
         app.buttons["settings.theme.light"].click()
-        app.buttons["settings.shortcuts"].click()
-        XCTAssertTrue(app.staticTexts["The essentials, always within reach."].exists)
+        attachScreenshot("settings-general-light")
+        app.buttons["settings.tabs"].click()
+        XCTAssertTrue(app.checkBoxes["settings.hibernation.enabled"].exists)
+        attachScreenshot("settings-tabs")
         app.buttons["settings.profiles"].click()
+        attachScreenshot("settings-profiles")
         app.buttons["settings.manageProfiles"].click()
         XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3), "Settings opens the same profile sheet")
+
+        app.terminate()
+        app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
+        app.launch()
+        XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
+        app.typeKey(",", modifierFlags: .command)
+        XCTAssertTrue(app.staticTexts["Réglages"].waitForExistence(timeout: 3))
+        attachScreenshot("settings-general-french")
+        app.buttons["settings.close"].click()
+        XCTAssertFalse(app.buttons["settings.close"].exists)
+        app.typeKey(",", modifierFlags: .command)
+        XCTAssertTrue(app.buttons["settings.close"].waitForExistence(timeout: 3))
     }
 
     func testPerformanceSettingsPersistAcrossLaunches() {
         app.typeKey(",", modifierFlags: .command)
-        app.buttons["settings.performance"].click()
+        app.buttons["settings.tabs"].click()
         let enabled = app.checkBoxes["settings.hibernation.enabled"]
         let idleLimit = app.popUpButtons["settings.hibernation.idleLimit"]
         XCTAssertTrue(enabled.waitForExistence(timeout: 3))
@@ -176,7 +191,7 @@ final class BrowserUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.textFields["newTab.input"].waitForExistence(timeout: TestApplication.launchTimeout))
         app.typeKey(",", modifierFlags: .command)
-        app.buttons["settings.performance"].click()
+        app.buttons["settings.tabs"].click()
         XCTAssertTrue(idleLimit.waitForExistence(timeout: 3))
         XCTAssertFalse(idleLimit.isEnabled)
     }
@@ -185,5 +200,12 @@ final class BrowserUITests: XCTestCase {
         app.menuBars.menuBarItems["Navigate"].click()
         app.menuItems["Manage profiles"].click()
         XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3))
+    }
+
+    private func attachScreenshot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 }

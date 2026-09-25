@@ -5,7 +5,7 @@ import SwiftUI
 struct AppIconPicker: View {
     let browser: BrowserModel
 
-    private static let tileSize: CGFloat = 52
+    private static let tileSize: CGFloat = 44
     private static let selectionWidth: CGFloat = 2
 
     /// Rendered away from the main actor while the page is shown: each artwork holds about a thousand shapes.
@@ -16,9 +16,9 @@ struct AppIconPicker: View {
     private var selection: AppIconVariant? { browser.preferences.appIcon }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             SettingsRow("App icon", caption: "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon.") { EmptyView() }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 12)], alignment: .leading, spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 8)], alignment: .leading, spacing: 8) {
                 tile(nil, image: Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)), label: String(localized: "Automatic"))
                 ForEach(AppIconVariant.all) { variant in
                     tile(variant, image: thumbnails[variant].map { Image(decorative: $0, scale: displayScale) }, label: variant.label)
@@ -27,9 +27,13 @@ struct AppIconPicker: View {
         }
         .task(id: displayScale) {
             let pixels = Int(Self.tileSize * displayScale)
+            var loaded: [AppIconVariant: CGImage] = [:]
             for variant in AppIconVariant.all {
-                thumbnails[variant] = await Self.thumbnail(of: variant, pixels: pixels)
+                guard !Task.isCancelled else { return }
+                loaded[variant] = await Self.thumbnail(of: variant, pixels: pixels)
             }
+            guard !Task.isCancelled else { return }
+            thumbnails = loaded
         }
     }
 

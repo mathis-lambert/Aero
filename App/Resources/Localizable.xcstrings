@@ -402,6 +402,22 @@
         }
       }
     },
+    "Close settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close settings"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fermer les réglages"
+          }
+        }
+      }
+    },
     "Close tab": {
       "localizations": {
         "en": {
@@ -1586,6 +1602,38 @@
         }
       }
     },
+    "Settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réglages"
+          }
+        }
+      }
+    },
+    "Settings…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réglages…"
+          }
+        }
+      }
+    },
     "Show all history": {
       "localizations": {
         "en": {
@@ -1774,6 +1822,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Langue du système"
+          }
+        }
+      }
+    },
+    "Tabs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onglets"
           }
         }
       }

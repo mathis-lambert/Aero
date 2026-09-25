@@ -22,7 +22,7 @@ enum BrowserLanguage: String, CaseIterable, Identifiable {
     }
 }
 
-enum BrowserAppearance: String, CaseIterable, Identifiable {
+enum BrowserAppearance: String, Identifiable {
     case system, light, dark
     var id: Self { self }
     /// `nil` follows the system.

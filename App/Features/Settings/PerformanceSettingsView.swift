@@ -7,7 +7,7 @@ struct PerformanceSettingsView: View {
     private var settings: HibernationSettings { browser.preferences.hibernation }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             SettingsCard {
                 VStack(spacing: 0) {
                     SettingsRow("Sleep inactive tabs", caption: "Free memory by unloading tabs you have not used for a while. They reload where you left off.") {
@@ -16,7 +16,7 @@ struct PerformanceSettingsView: View {
                             .labelsHidden()
                             .accessibilityIdentifier("settings.hibernation.enabled")
                     }
-                    Divider().padding(.vertical, 12)
+                    SettingsDivider()
                     SettingsRow("Sleep after") {
                         Picker("Sleep after", selection: binding(\.idleLimit)) {
                             ForEach(HibernationSettings.idleLimitOptions, id: \.self) { limit in
@@ -28,7 +28,7 @@ struct PerformanceSettingsView: View {
                         .accessibilityIdentifier("settings.hibernation.idleLimit")
                     }
                     .disabled(!settings.isEnabled)
-                    Divider().padding(.vertical, 12)
+                    SettingsDivider()
                     SettingsRow("Keep pinned tabs awake") {
                         Toggle("Keep pinned tabs awake", isOn: binding(\.keepsPinnedTabsLoaded))
                             .toggleStyle(.switch)
@@ -38,10 +38,10 @@ struct PerformanceSettingsView: View {
                     .disabled(!settings.isEnabled)
                 }
             }
-            Label("Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner.", systemImage: "info.circle")
-                .font(.caption).foregroundStyle(.secondary)
+            Text("Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner.")
+                .font(.system(size: 12)).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 6)
         }
     }
 
