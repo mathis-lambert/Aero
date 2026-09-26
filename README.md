@@ -45,4 +45,4 @@ Not implemented yet: onboarding, import, extensions, credential integration, sep
 
 ⌘K, ⇧⌘S, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
 
-Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`. The full design system (brand book, tokens, components, icons) is a standalone site in `docs/design-system`: open its `index.html`, or hand the folder to another tool; `python3 Scripts/build-design-system.py` rebuilds it.
+Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`.

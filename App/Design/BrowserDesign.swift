@@ -1,7 +1,7 @@
 import BrowserCore
 import SwiftUI
 
-/// The chrome's share of the Aero design system (`docs/DESIGN.md`): every value repeated by
+/// The chrome's tokens (`docs/DESIGN.md`): every value repeated by
 /// more than one feature lives here.
 enum BrowserDesign {
     enum Radius {

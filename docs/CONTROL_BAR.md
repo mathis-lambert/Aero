@@ -27,7 +27,7 @@ Suggestion requests go through an ephemeral session without cookies, cache or cr
 
 Each time the page appears, a gust rises from below its bottom edge (`WindArc`, `Wind.metal`). A soft light in the profile's accent travels with it to the control bar; as the gust passes the crescent of dithered dots, they grow in and the texture swings once and settles; when the light reaches the bar, a band crosses it from bottom to top and leaves a fine ring and halo. The gust, the light and the bar share one clock, so the impact lands on the bar at any window size. The timings are the constants at the top of `Wind.metal`, `WindArc` and `ControlBarGlow`.
 
-The dots are the design system's mistral field in the profile's accent (`light(in:)`), drawn antialiased on the GPU; the app only advances the time. The wind drifts at 30 frames per second while someone is there and rests 20 s after the page appears or the pointer last moved, resuming from the same shapes. It never drifts while the window is inactive, with Reduce Motion (the page then appears whole) or in Low Power Mode.
+The dots are the app icon's wind field in the profile's accent (`light(in:)`), drawn antialiased on the GPU; the app only advances the time. The wind drifts at 30 frames per second while someone is there and rests 20 s after the page appears or the pointer last moved, resuming from the same shapes. It never drifts while the window is inactive, with Reduce Motion (the page then appears whole) or in Low Power Mode.
 
 Measured on the Release build (Apple silicon, pointer still): drifting costs about 0.2–0.8 s of CPU per 10 s; resting and background cost nothing. The compiled shader adds 12 KB. Building needs Xcode's Metal Toolchain component.
 

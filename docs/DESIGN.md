@@ -2,7 +2,7 @@
 
 The chrome is a compact, neutral workspace around the page. The brand (the Gilda Display serif and the dithered wind) appears only on the app icon and on the New Tab page's wind (`docs/CONTROL_BAR.md`): no wordmark, logo, serif, illustration or marketing copy in the chrome.
 
-Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserDesign` (radii, typography, sizes, motion), `BrowserPalette` (colors, read with `@Environment(\.palette)`), the shadow and animation modifiers, `Hairline`, `IconButton`, `ShortcutLabel` and `ProfileBadge`. Promote a value to a token when it is a repeated rule; keep one-off layout values local. The brand book, the tokens and a preview of every component are in `docs/design-system` (open `index.html`); its sources mirror the Aero design system on claude.ai, and `Scripts/build-design-system.py` rebuilds the site from them.
+Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserDesign` (radii, typography, sizes, motion), `BrowserPalette` (colors, read with `@Environment(\.palette)`), the shadow and animation modifiers, `Hairline`, `IconButton`, `ShortcutLabel` and `ProfileBadge`. Promote a value to a token when it is a repeated rule; keep one-off layout values local.
 
 ## Tokens
 

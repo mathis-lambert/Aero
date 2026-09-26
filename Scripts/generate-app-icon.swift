@@ -8,7 +8,7 @@
 //
 // The capital A comes from Gilda Display, the brand serif (SIL Open Font License 1.1,
 // https://github.com/google/fonts/tree/main/ofl/gildadisplay); the font itself is not stored in the repository.
-// The dots port the design system's DitherField (the "trame" shape over the "mistral" or "nuages" field), so the
+// The dots are a halftone of a warped wind field (the "mistral" or "clouds" motif), so the
 // icons match the brand surfaces. Marks are drawn in a 100-unit box scaled to a 1024 px canvas, y pointing down.
 
 import CoreGraphics
@@ -19,7 +19,7 @@ let canvas = 1024.0, unit = canvas / 100, side = Int(canvas)
 let minimumDotRadius = 0.35
 
 enum Mark: String, CaseIterable { case a, feather }
-enum Motif: String { case mistral, nuages }
+enum Motif: String { case mistral, clouds }
 
 struct Palette {
     let name: String
@@ -27,7 +27,7 @@ struct Palette {
     let ink: String
     /// When set, dots darker than `inkSplit` use this second ink: large dots in one colour, small ones in another.
     var deepInk: String? = nil
-    var motif: Motif = .nuages
+    var motif: Motif = .clouds
 }
 let inkSplit = 0.6
 
@@ -154,12 +154,12 @@ func fbm(_ x: Double, _ y: Double) -> Double {
 func wind(_ motif: Motif, _ x: Double, _ y: Double) -> Double {
     let angle = 24.0 * .pi / 180, scale = canvas * 0.55, seed = 3.0
     let u = (x * cos(angle) + y * sin(angle)) / scale + seed * 13.1, v = (-x * sin(angle) + y * cos(angle)) / scale + seed * 7.7
-    if motif == .nuages { return fbm(u * 1.2, v * 1.2) }
+    if motif == .clouds { return fbm(u * 1.2, v * 1.2) }
     let px = u * 0.45, py = v * 1.6
     return fbm(px + 1.9 * fbm(px, py), py + 1.9 * fbm(px + 5.2, py + 1.3))
 }
 
-// MARK: - Dots ("trame": the radius grows with darkness) and output
+// MARK: - Dots ("halftone": the radius grows with darkness) and output
 
 struct Dot { let x: Double, y: Double, radius: Double, darkness: Double }
 
