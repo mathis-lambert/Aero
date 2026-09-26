@@ -22,6 +22,7 @@ public final class WebPageRegistry {
         set { policy.settings = newValue; refreshHibernationSchedule() }
     }
     public weak var delegate: WebPageRegistryDelegate?
+    public weak var extensionHost: WebExtensionHost?
     public let downloads: DownloadCoordinator
     private let contentBlocker: ContentBlocker?
 
@@ -31,18 +32,22 @@ public final class WebPageRegistry {
     var evaluation: Task<Void, Never>?
     private var hibernatedStates: [UUID: Any] = [:]
     private var stores: [UUID: WKWebsiteDataStore] = [:]
+    private var extensions: [UUID: ProfileExtensions] = [:]
     private var pressureMonitor: MemoryPressureMonitor?
     private let ephemeral: Bool
+    private let extensionsFolder: URL
 
-    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, ephemeral: Bool = false,
+    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL, ephemeral: Bool = false,
                             hibernation: HibernationSettings = .default) {
         let limit = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
-        self.init(downloads: downloads, contentBlocker: contentBlocker, ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
+        self.init(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: extensionsFolder, ephemeral: ephemeral, hibernation: hibernation,
+                  liveBackgroundPageLimit: limit)
     }
 
-    package init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, ephemeral: Bool, hibernation: HibernationSettings,
-                 liveBackgroundPageLimit: Int) {
+    package init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL = FileManager.default.temporaryDirectory,
+                 ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
         self.downloads = downloads
+        self.extensionsFolder = extensionsFolder
         self.contentBlocker = contentBlocker
         self.ephemeral = ephemeral
         policy = HibernationPolicy(settings: hibernation, liveBackgroundPageLimit: liveBackgroundPageLimit)
@@ -62,7 +67,20 @@ public final class WebPageRegistry {
         return store
     }
 
-    func isLoaded(_ tabID: UUID) -> Bool { livePages[tabID] != nil }
+    /// Made with the profile's first page, so every page of the profile runs its extensions.
+    public func extensions(for profileID: UUID) -> ProfileExtensions {
+        if let existing = extensions[profileID] { return existing }
+        let created = ProfileExtensions(profileID: profileID, folder: extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true),
+                                        store: dataStore(for: profileID), ephemeral: ephemeral, host: extensionHost) { [weak self] in
+            self?.livePages[$0]?.page
+        }
+        extensions[profileID] = created
+        return created
+    }
+
+    /// The profile's extensions if they were made, for views and tab events, which must not make them.
+    public func extensionsIfMade(for profileID: UUID) -> ProfileExtensions? { extensions[profileID] }
+
 
     /// Makes the tab's page visible, creating or restoring it when needed.
     public func activate(_ tab: BrowserTab, profileID: UUID) -> BrowserPage {
@@ -120,7 +138,10 @@ public final class WebPageRegistry {
     }
 
     private func makePage(for tab: BrowserTab, profileID: UUID) -> BrowserPage {
-        let page = BrowserPage(configuration: BrowserPage.configuration(store: dataStore(for: profileID)))
+        let extensions = extensions(for: profileID)
+        // An extension's own page loads with its configuration; a website's page runs the profile's extensions.
+        let configuration = NavigationInput.isExtensionURL(tab.url) ? extensions.configuration(for: tab.url) : nil
+        let page = BrowserPage(configuration: configuration ?? BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions.controller))
         connect(page, to: tab.id)
         if let state = hibernatedStates.removeValue(forKey: tab.id) {
             page.restore(state, url: tab.url)

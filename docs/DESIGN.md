@@ -2,22 +2,22 @@
 
 The chrome is a compact, neutral workspace around the page. The brand (the Gilda Display serif and the dithered wind) appears only on the app icon and on the New Tab page's wind (`docs/CONTROL_BAR.md`): no wordmark, logo, serif, illustration or marketing copy in the chrome.
 
-Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserDesign` (radii, typography, sizes, motion), `BrowserPalette` (colors, read with `@Environment(\.palette)`), the shadow and animation modifiers, `Hairline`, `IconButton`, `ShortcutLabel` and `ProfileBadge`. Promote a value to a token when it is a repeated rule; keep one-off layout values local.
+Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserDesign` (radii, typography, sizes, motion), `BrowserPalette` (colors, read with `@Environment(\.palette)`), the shadow and animation modifiers, `Hairline`, `IconButton` and `ProfileBadge`; `Prompt`, `Tooltip` and `Keycaps` have their own files. Promote a value to a token when it is a repeated rule; keep one-off layout values local.
 
 ## Tokens
 
 | Element | Rule |
 | --- | --- |
-| Surfaces | `sidebar` (window ground), `canvas` (page frame, Settings list), `raised` (selection, cards, fields); all opaque, so Reduce Transparency needs nothing more |
+| Surfaces | `sidebar` (window ground), `canvas` (page frame), `raised` (selection, cards, fields, prompts); all opaque, so Reduce Transparency needs nothing more |
 | Fills | `hover`, `fill` and `pressed`: ink at 4, 6 and 10% |
 | Lines | `line` is the only divider and border, drawn with `Hairline` |
 | Accent | Per profile, for identity and selection. `luminous` is its brighter version for light effects on the dark canvas; `light(in:)` picks it or the tint |
 | Signal | `miss` for errors and the find bar's no-match border, always with text |
-| Typography | System face: 13 pt chrome, 12 pt medium labels, 11 pt captions and keycaps, 22 pt semibold titles, 15 pt control bar field, 9 pt row glyphs |
+| Typography | System face: 13 pt chrome, 12 pt medium labels, 11 pt captions and keycaps, 22 pt semibold titles, 15 pt semibold prompt questions, 15 pt control bar field, 9 pt row glyphs |
 | Spacing | 4, 8, 12, 16, 24, 32, 48 pt; rows use a 10 pt inset and icon gap |
 | Corners | 20 pt window; page 14 pt inside a 6 pt inset; floating sidebar 8 pt inside a 12 pt inset; 12 pt cards and fields; 8 pt controls; 4 pt keycaps |
 | Hover | Every borderless button takes `hover` under the pointer and `pressed` while pressed, through `QuietButtonStyle` |
-| Shadows | `floatShadow` for the revealed sidebar and the find bar, `panelShadow` for the control bar and Settings. No others |
+| Shadows | `floatShadow` for the revealed sidebar and the find bar, `panelShadow` for the control bar and prompts. No others |
 | Motion | One 0.28 s spring through `browserAnimation(value:)`, dropped with Reduce Motion. Nothing animates while idle |
 | Icons | SF Symbols; site favicons for websites |
 
@@ -27,7 +27,22 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 - The sidebar's first row holds the window controls (standard AppKit buttons created through public API), sidebar toggle, back, forward and reload; the second holds the current address. Then one page per profile with pinned tiles, New Tab and the tab list, and a footer with the downloads button, the profiles and a button to add one (`docs/PROFILES.md`).
 - The hidden sidebar reappears over the page when the pointer reaches the left edge; its hover area includes its margin so it does not close on the way in.
 - The find bar floats over the page's top trailing corner; a miss shows text, the `miss` border and a short shake.
-- Settings is its own window: a category list (General, Tabs, Profiles) and cards of working options only. Language changes apply at the next launch, and say so.
+- Settings is the system's Settings window: a toolbar tab per section (General, Tabs, Profiles, Extensions), each a grouped form of working options only, with native controls. Profiles are edited in place there. ⌘, opens it and ⌘W closes it. Language changes apply at the next launch, and say so.
+
+## Prompts
+
+Every question the browser asks is a `Prompt`: a `raised` card with the panel shadow over the window, which is dimmed and takes no clicks. It holds an optional icon, the question, an optional explanation, any fields, and its actions on the trailing side. `PromptCancelButton` answers Escape and shows its keycap; `PromptConfirmButton`, the accent-filled default, answers Return. A click outside the card cancels.
+
+The window shows one prompt at a time, from `BrowserWindowState.prompt`: quitting, creating or editing a profile, clearing history, an extension's request and errors. `present(_:)` replaces what is shown; `dismissPrompt()` cancels it. `.prompt(_:onCancel:)` presents it, and takes the keyboard from the focused page or field so Return and Escape reach the card. An extension request asked from Settings shows in the Settings window, through the same modifier. There are no sheets or alerts.
+
+Failure modes:
+
+1. Return or Escape reaches the page or field underneath instead of the prompt.
+2. The window behind still takes clicks or shortcuts while a prompt is shown.
+3. A prompt replaced by another never answers the code waiting on it, such as an extension waiting for permission.
+4. A prompt appears in a window that is not in front, where nobody can answer it.
+
+Verification: E2E `testQuitAsksFirst` (Escape and Return with a page focused; 1, 2), `testCreateRenameAndRestoreProfile`, `testHistoryTabIsReusedPersistsAndCanBeDeletedAndCleared` and `testFolderExtensionRunsInItsProfileOnly` (the review in Settings; 4). 3 holds by construction: `present(_:)` refuses a pending extension request before showing another prompt.
 
 ## Tooltips and keycaps
 

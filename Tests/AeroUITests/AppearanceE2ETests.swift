@@ -5,8 +5,8 @@ import XCTest
 final class AppearanceE2ETests: BrowserE2ETestCase {
     private static let variant = "settings.appIcon.a-sun"
     private static let automatic = "settings.appIcon.automatic"
-    private static let dark = "settings.theme.dark"
-    private static let system = "settings.theme.system"
+    private static let dark = "Dark"
+    private static let system = "System"
     /// The Finder's custom icon inside the app bundle, which the Finder, the Dock and Launchpad show.
     private static let customIcon = "Icon\r"
 
@@ -19,11 +19,11 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
 
     func testAppearanceChoicesPersistAcrossLaunches() {
         openGeneral()
-        XCTAssertTrue(app.buttons[Self.system].isSelected, "The theme follows the system by default")
+        XCTAssertTrue(isChosen(Self.system), "The theme follows the system by default")
         XCTAssertTrue(app.buttons[Self.automatic].isSelected, "Automatic is the default")
-        app.buttons[Self.dark].click()
+        theme(Self.dark).click()
         app.buttons[Self.variant].click()
-        XCTAssertTrue(app.buttons[Self.dark].isSelected)
+        XCTAssertTrue(isChosen(Self.dark))
         XCTAssertTrue(app.buttons[Self.variant].isSelected)
         XCTAssertFalse(app.buttons[Self.automatic].isSelected)
         XCTAssertTrue(poll { FileManager.default.fileExists(atPath: self.customIconFile.path) },
@@ -32,7 +32,7 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
 
         relaunch()
         openGeneral()
-        XCTAssertTrue(app.buttons[Self.dark].isSelected, "The theme survives a relaunch")
+        XCTAssertTrue(isChosen(Self.dark), "The theme survives a relaunch")
         XCTAssertTrue(app.buttons[Self.variant].isSelected, "The icon survives a relaunch")
 
         app.buttons[Self.automatic].click()
@@ -43,10 +43,11 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
     }
 
     private func openGeneral() {
-        app.typeKey(",", modifierFlags: .command)
-        let section = app.buttons["settings.general"]
-        XCTAssertTrue(section.waitForExistence(timeout: Self.renderTimeout))
-        section.click()
+        openSettings("General")
         XCTAssertTrue(app.buttons[Self.automatic].waitForExistence(timeout: Self.renderTimeout))
     }
+
+    private func theme(_ name: String) -> XCUIElement { app.radioButtons[name] }
+
+    private func isChosen(_ name: String) -> Bool { theme(name).value as? Int == 1 }
 }

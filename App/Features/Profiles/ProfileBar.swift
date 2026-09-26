@@ -40,7 +40,7 @@ struct ProfileBar: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("sidebar.profile")
         .contextMenu {
-            Button("Edit profile…", systemImage: "pencil") { browser.window.profileSheet = .edit(profile.id) }
+            Button("Edit profile…", systemImage: "pencil") { browser.present(.profile(.edit(profile.id))) }
         }
     }
 }

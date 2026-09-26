@@ -19,7 +19,7 @@ Verification: E2E `testAddressActionsAndControlCenter` (the pasteboard holds the
 A popover on the address's control center button:
 
 - **Share**, through the system share menu.
-- **Extensions**: the place installed extensions will appear and be pinned; installing them is a later batch.
+- **Extensions**: the profile's extensions, each running its action or opening its popup, then Add to Aero on a Chrome Web Store extension page, or a way to the store (`docs/EXTENSIONS.md`).
 - **Block ads & trackers** and **Automatic picture in picture** for this site, each showing its current state; clicking switches it for the site.
 - **Secure** or **Not secure**: secure when the page and everything it loaded came over HTTPS with a trusted certificate. Clicking opens the system certificate panel for the page's server.
 - **…**: Clear cache, Clear cookies and Site settings…, which shows the site settings in the control center.

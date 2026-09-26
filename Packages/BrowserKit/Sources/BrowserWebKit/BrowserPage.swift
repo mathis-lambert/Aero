@@ -57,9 +57,10 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     /// this is the private preference Safari sets. Without it, picture in picture is simply absent.
     private static let pictureInPictureSetter = NSSelectorFromString("_setAllowsPictureInPictureMediaPlayback:")
 
-    static func configuration(store: WKWebsiteDataStore) -> WKWebViewConfiguration {
+    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController? = nil) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
+        configuration.webExtensionController = extensions
         configuration.applicationNameForUserAgent = userAgentName
         configuration.preferences.isElementFullscreenEnabled = true
         configuration.allowsAirPlayForMediaPlayback = true
@@ -94,7 +95,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     public func load(_ url: URL) {
-        guard NavigationInput.isWebURL(url) else { fail(.unsupportedNavigation); return }
+        guard NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) else { fail(.unsupportedNavigation); return }
         failure = nil
         requestedURL = url
         webView.load(URLRequest(url: url))
@@ -187,7 +188,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
         isSecure = webView.url?.scheme == "https" && webView.hasOnlySecureContent
-        guard let url = webView.url, NavigationInput.isWebURL(url) else { return }
+        guard let url = webView.url else { return }
+        if NavigationInput.isExtensionURL(url) { onMetadata?(url, webView.title ?? ""); return }
+        guard NavigationInput.isWebURL(url) else { return }
         // An address change outside a load is a same-document navigation (`pushState`).
         if !webView.isLoading { recordVisit(url) }
         onMetadata?(url, webView.title ?? "")
@@ -284,7 +287,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         if navigationAction.shouldPerformDownload { return .download }
         if navigationAction.targetFrame?.isMainFrame == true { updateContentBlocking(for: url) }
         // Frame-local blob/about documents are legitimate; never launch external schemes implicitly.
-        if NavigationInput.isWebURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
+        if NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
         if navigationAction.targetFrame?.isMainFrame != false { fail(.unsupportedNavigation) }
         return .cancel
     }

@@ -10,8 +10,10 @@ struct BrowserWindowView: View {
     @State private var sidebarRevealed = false
     @Environment(\.palette) private var palette
 
-    /// The control bar or the quit prompt covers the window, which then takes no clicks.
-    private var isOverlaid: Bool { browser.window.controlBar != nil || browser.window.quitPromptPresented }
+    /// The prompt shown in this window; an extension request asked from Settings shows there.
+    private var prompt: WindowPrompt? { browser.window.prompt.flatMap { $0.isInSettings ? nil : $0 } }
+    /// The control bar or a prompt covers the window, which then takes no clicks.
+    private var isOverlaid: Bool { browser.window.controlBar != nil || prompt != nil }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -69,13 +71,10 @@ struct BrowserWindowView: View {
                         .transition(.move(edge: .leading).combined(with: .opacity))
                 }
             }
-            if isOverlaid {
+            if browser.window.controlBar != nil {
                 Color.black.opacity(0.12)
                     .ignoresSafeArea()
-                    .onTapGesture {
-                        browser.window.controlBar = nil
-                        browser.window.quitPromptPresented = false
-                    }
+                    .onTapGesture { browser.window.controlBar = nil }
                     .accessibilityHidden(true)
             }
             if let presentation = browser.window.controlBar {
@@ -87,11 +86,6 @@ struct BrowserWindowView: View {
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
             }
-            if browser.window.quitPromptPresented {
-                QuitPrompt(browser: browser)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
-            }
         }
         .frame(minWidth: 820, minHeight: 580)
         .ignoresSafeArea(.container, edges: .top)
@@ -102,10 +96,10 @@ struct BrowserWindowView: View {
         .browserAnimation(value: browser.window.sidebarPinned)
         .browserAnimation(value: sidebarRevealed)
         .browserAnimation(value: browser.window.controlBar != nil)
-        .browserAnimation(value: browser.window.quitPromptPresented)
         .browserAnimation(value: browser.window.find.isPresented)
         .downloadsDockBadge(activeCount: browser.downloads.activeCount)
         .downloadFlights(browser.downloads)
+        .prompt(prompt, onCancel: browser.dismissPrompt) { WindowPromptView(browser: browser, prompt: $0) }
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
         .onChange(of: isOverlaid) { _, overlaid in if overlaid { sidebarRevealed = false } }
         .onChange(of: browser.window.selectedTabID) { _, _ in
@@ -114,12 +108,26 @@ struct BrowserWindowView: View {
         }
         .background(WindowConfiguration())
         .focusedSceneValue(\.browserModel, browser)
-        .sheet(item: Binding(get: { browser.window.profileSheet }, set: { browser.window.profileSheet = $0 })) { sheet in
-            ProfilesView(browser: browser, sheet: sheet)
-        }
-        .alert("Something needs your attention", isPresented: Binding(get: { browser.errorMessage != nil }, set: { if !$0 { browser.errorMessage = nil } })) {
-            Button("OK", role: .cancel) { browser.errorMessage = nil }
-        } message: { Text(verbatim: browser.errorMessage ?? "") }
         .preferredColorScheme(browser.preferences.appearance.colorScheme)
+    }
+}
+
+/// The card for each of the window's prompts. See docs/DESIGN.md › Prompts.
+struct WindowPromptView: View {
+    let browser: BrowserModel
+    let prompt: WindowPrompt
+
+    var body: some View {
+        switch prompt {
+        case .quit: QuitPrompt(browser: browser)
+        case .profile(let target): ProfilePrompt(browser: browser, target: target)
+        case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)
+        case .extensionRequest(let request): ExtensionRequestPrompt(browser: browser, request: request)
+        case .error(let message):
+            Prompt(title: Text("Something needs your attention"), message: Text(verbatim: message)) {
+                PromptConfirmButton(title: "OK") { browser.dismissPrompt() }
+                    .accessibilityIdentifier("error.dismiss")
+            }
+        }
     }
 }

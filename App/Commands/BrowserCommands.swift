@@ -1,3 +1,4 @@
+import AppKit
 import BrowserCore
 import SwiftUI
 
@@ -74,7 +75,7 @@ extension BrowserCommand {
 extension BrowserModel {
     /// Nothing runs behind the quit prompt.
     func isEnabled(_ command: BrowserCommand) -> Bool {
-        guard isReady, !window.quitPromptPresented else { return false }
+        guard isReady, window.prompt == nil else { return false }
         switch command {
         case .back: return currentPage?.canGoBack == true
         case .forward: return currentPage?.canGoForward == true
@@ -107,7 +108,7 @@ extension BrowserModel {
         case .closeTab: if let id = window.selectedTabID { closeTab(id) }
         case .reopenTab: reopenTab()
         case .toggleSidebar: window.sidebarPinned.toggle()
-        case .profiles: window.profileSheet = window.selectedProfileID.map(ProfileSheet.edit)
+        case .profiles: if let id = window.selectedProfileID { present(.profile(.edit(id))) }
         case .showHistory: show(.history)
         case .findInPage, .findNext, .findPrevious: find(command)
         case .copyLink: copyLink()
@@ -133,21 +134,16 @@ struct BrowserMenuCommands: Commands {
     /// Quitting works from every window, so it does not wait for the browser window's focus.
     let quit: () -> Void
     @FocusedValue(\.browserModel) private var browser
-    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
         CommandGroup(replacing: .appTermination) {
             Button("Quit Aero", action: quit).keyboardShortcut("q")
         }
-        CommandGroup(replacing: .appSettings) {
-            Button("Settings…") { openWindow(id: SettingsView.windowID) }
-                .keyboardShortcut(",", modifiers: .command)
-        }
         CommandGroup(replacing: .newItem) {
             command(.newTab)
             command(.openLocation)
             Divider()
-            command(.closeTab)
+            closeTab
             command(.reopenTab)
         }
         CommandGroup(after: .pasteboard) {
@@ -171,6 +167,16 @@ struct BrowserMenuCommands: Commands {
             Divider()
             command(.profiles)
         }
+    }
+
+    /// ⌘W closes the tab, or, in a window without tabs such as Settings, the window: the menu item
+    /// would otherwise take the shortcut from the system's Close even while disabled.
+    private var closeTab: some View {
+        Button(BrowserCommand.closeTab.title) {
+            if let browser { browser.perform(.closeTab) } else { NSApp.keyWindow?.performClose(nil) }
+        }
+        .keyboardShortcut(BrowserCommand.closeTab.shortcut)
+        .disabled(browser.map { !$0.isEnabled(.closeTab) } ?? false)
     }
 
     private func command(_ command: BrowserCommand) -> some View {

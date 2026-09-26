@@ -3,7 +3,7 @@ import Foundation
 import Testing
 
 @Test @MainActor func storesAreReusedOnlyWithinTheSameProfile() {
-    let registry = WebPageRegistry(downloads: makeTestDownloads(), ephemeral: true)
+    let registry = WebPageRegistry(downloads: makeTestDownloads(), extensionsFolder: FileManager.default.temporaryDirectory, ephemeral: true)
     let personal = UUID()
     let work = UUID()
     #expect(registry.dataStore(for: personal) === registry.dataStore(for: personal))
@@ -12,7 +12,7 @@ import Testing
 }
 
 @Test @MainActor func cookiesDoNotCrossProfileBoundaries() async throws {
-    let registry = WebPageRegistry(downloads: makeTestDownloads(), ephemeral: true)
+    let registry = WebPageRegistry(downloads: makeTestDownloads(), extensionsFolder: FileManager.default.temporaryDirectory, ephemeral: true)
     let first = registry.dataStore(for: UUID())
     let second = registry.dataStore(for: UUID())
     let cookie = try #require(HTTPCookie(properties: [

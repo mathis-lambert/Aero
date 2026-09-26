@@ -54,6 +54,19 @@ class BrowserE2ETestCase: XCTestCase {
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }
 
+    /// Opens the native Settings window, on the tab titled `section` when given.
+    func openSettings(_ section: String? = nil) {
+        app.typeKey(",", modifierFlags: .command)
+        guard let section else { return }
+        let tab = app.toolbars.buttons[section]
+        XCTAssertTrue(tab.waitForExistence(timeout: Self.renderTimeout), "Settings shows its \(section) tab")
+        tab.click()
+    }
+
+    func closeSettings() {
+        app.typeKey("w", modifierFlags: .command)
+    }
+
     /// Quits from the prompt, so the session is saved, then launches again.
     func quitAndRelaunch() {
         app.typeKey("q", modifierFlags: .command)

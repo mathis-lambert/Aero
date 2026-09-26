@@ -5,9 +5,14 @@ public enum NavigationInput {
         ["http", "https"].contains(url.scheme?.lowercased() ?? "") && !(url.host ?? "").isEmpty
     }
 
-    /// Addresses a tab may hold: websites and the browser's internal pages.
+    /// An extension's own page, such as its options or onboarding.
+    public static func isExtensionURL(_ url: URL) -> Bool {
+        url.scheme?.lowercased() == "webkit-extension" && !(url.host ?? "").isEmpty
+    }
+
+    /// Addresses a tab may hold: websites, extensions' pages and the browser's internal pages.
     public static func isTabURL(_ url: URL) -> Bool {
-        isWebURL(url) || InternalPage(url: url) != nil
+        isWebURL(url) || isExtensionURL(url) || InternalPage(url: url) != nil
     }
 
     /// Text naming an address rather than words to search: a scheme, a dot or localhost. The

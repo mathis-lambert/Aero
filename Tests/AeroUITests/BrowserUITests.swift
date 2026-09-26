@@ -42,8 +42,8 @@ final class BrowserUITests: BrowserE2ETestCase {
 
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
-        app.typeKey(",", modifierFlags: .command)
-        let toggle = app.checkBoxes["settings.confirmsQuit"]
+        openSettings("General")
+        let toggle = app.switches["settings.confirmsQuit"]
         XCTAssertTrue(toggle.waitForExistence(timeout: Self.renderTimeout))
         XCTAssertEqual(toggle.value as? Int, 0, "Settings shows the prompt is off")
         app.typeKey("q", modifierFlags: .command)
@@ -127,50 +127,47 @@ final class BrowserUITests: BrowserE2ETestCase {
     }
 
     func testSettingsSectionsAndLanguagePreference() {
-        app.typeKey(",", modifierFlags: .command)
+        openSettings("General")
         let language = app.popUpButtons["settings.language"]
         XCTAssertTrue(language.waitForExistence(timeout: 5))
         attachScreenshot("settings-general-compact")
         language.click()
         app.menuItems["Français"].click()
         XCTAssertTrue(app.staticTexts["settings.languageRestart"].waitForExistence(timeout: 3))
-        app.buttons["settings.theme.light"].click()
-        attachScreenshot("settings-general-light")
-        app.buttons["settings.tabs"].click()
-        XCTAssertTrue(app.checkBoxes["settings.hibernation.enabled"].exists)
-        attachScreenshot("settings-tabs")
-        app.buttons["settings.profiles"].click()
-        attachScreenshot("settings-profiles")
-        app.buttons["settings.manageProfiles"].click()
-        XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3), "Settings opens the same profile sheet")
+        app.radioButtons["Light"].click()
+        attachScreenshot("settings-general-light", of: app)
+        app.toolbars.buttons["Tabs"].click()
+        XCTAssertTrue(app.switches["settings.hibernation.enabled"].waitForExistence(timeout: 3))
+        attachScreenshot("settings-tabs", of: app)
+        app.toolbars.buttons["Profiles"].click()
+        XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3), "Settings edits profiles in place")
+        attachScreenshot("settings-profiles", of: app)
 
         app.terminate()
         app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
-        app.typeKey(",", modifierFlags: .command)
-        XCTAssertTrue(app.staticTexts["Réglages"].waitForExistence(timeout: 3))
-        attachScreenshot("settings-general-french")
-        app.buttons["settings.close"].click()
-        XCTAssertFalse(app.buttons["settings.close"].exists)
-        app.typeKey(",", modifierFlags: .command)
-        XCTAssertTrue(app.buttons["settings.close"].waitForExistence(timeout: 3))
+        openSettings("Général")
+        XCTAssertTrue(app.popUpButtons["settings.language"].waitForExistence(timeout: 3), "Settings is in French")
+        attachScreenshot("settings-general-french", of: app)
+        closeSettings()
+        XCTAssertFalse(app.popUpButtons["settings.language"].waitForExistence(timeout: 1), "⌘W closes Settings")
+        openSettings()
+        XCTAssertTrue(app.popUpButtons["settings.language"].waitForExistence(timeout: 3), "⌘, opens it again")
     }
 
     func testPerformanceSettingsPersistAcrossLaunches() {
-        app.typeKey(",", modifierFlags: .command)
-        app.buttons["settings.tabs"].click()
-        let enabled = app.checkBoxes["settings.hibernation.enabled"]
+        openSettings("Tabs")
+        let enabled = app.switches["settings.hibernation.enabled"]
         let idleLimit = app.popUpButtons["settings.hibernation.idleLimit"]
         XCTAssertTrue(enabled.waitForExistence(timeout: 3))
         XCTAssertTrue(idleLimit.isEnabled)
         enabled.click()
         XCTAssertFalse(idleLimit.isEnabled)
-        XCTAssertFalse(app.checkBoxes["settings.hibernation.keepsPinned"].isEnabled)
+        XCTAssertFalse(app.switches["settings.hibernation.keepsPinned"].isEnabled)
 
         relaunch()
-        app.typeKey(",", modifierFlags: .command)
-        app.buttons["settings.tabs"].click()
+        openSettings("Tabs")
         XCTAssertTrue(idleLimit.waitForExistence(timeout: 3))
         XCTAssertFalse(idleLimit.isEnabled)
     }

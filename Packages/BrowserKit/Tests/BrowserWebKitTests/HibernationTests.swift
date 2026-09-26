@@ -38,11 +38,11 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     let original = activate(first, in: registry)
     activate(second, in: registry)
     await registry.hibernateDuePages()
-    #expect(!registry.isLoaded(first.id))
-    #expect(registry.isLoaded(second.id))
+    #expect(registry.livePages[first.id] == nil)
+    #expect(registry.livePages[second.id] != nil)
     let restored = activate(first, in: registry)
     #expect(restored !== original)
-    #expect(registry.isLoaded(first.id))
+    #expect(registry.livePages[first.id] != nil)
 }
 
 @Test @MainActor func pinnedPagesStayLoadedWhenRequested() async throws {
@@ -55,7 +55,7 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     activate(pinned, in: registry)
     registry.deactivate()
     await registry.hibernateDuePages()
-    #expect(registry.isLoaded(pinned.id))
+    #expect(registry.livePages[pinned.id] != nil)
 }
 
 @Test @MainActor func unsavedInputKeepsAPageAwake() async throws {

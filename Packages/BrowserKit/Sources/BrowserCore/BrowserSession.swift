@@ -13,6 +13,7 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
     public var emoji: String?
     /// Saved answers by origin; an origin without one is left out.
     public internal(set) var sitePermissions: [SiteOrigin: [SitePermission: SiteDecision]]
+    public internal(set) var extensions: [InstalledExtension]
 
     public init(id: UUID = UUID(), name: String, color: ProfileColor = .terracotta, emoji: String? = nil) {
         self.id = id
@@ -20,16 +21,7 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
         self.color = color
         self.emoji = emoji
         sitePermissions = [:]
-    }
-
-    /// Like the emoji, the permissions are optional in the file: a profile that never saved one has none.
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(UUID.self, forKey: .id)
-        name = try container.decode(String.self, forKey: .name)
-        color = try container.decode(ProfileColor.self, forKey: .color)
-        emoji = try container.decodeIfPresent(String.self, forKey: .emoji)
-        sitePermissions = try container.decodeIfPresent([SiteOrigin: [SitePermission: SiteDecision]].self, forKey: .sitePermissions) ?? [:]
+        extensions = []
     }
 
     public func decision(for permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? {
@@ -112,6 +104,18 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
         profiles[index].sitePermissions[origin, default: [:]][permission] = decision
         if profiles[index].sitePermissions[origin]?.isEmpty == true { profiles[index].sitePermissions[origin] = nil }
+    }
+
+    /// Adds the extension to the profile, or replaces the record with the same identifier.
+    public mutating func setExtension(_ record: InstalledExtension, profileID: UUID) {
+        guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
+        if let existing = profiles[index].extensions.firstIndex(where: { $0.id == record.id }) { profiles[index].extensions[existing] = record }
+        else { profiles[index].extensions.append(record) }
+    }
+
+    public mutating func removeExtension(_ extensionID: String, profileID: UUID) {
+        guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
+        profiles[index].extensions.removeAll { $0.id == extensionID }
     }
 
     public mutating func resetPermissions(at origin: SiteOrigin, profileID: UUID) {

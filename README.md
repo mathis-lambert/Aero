@@ -26,9 +26,10 @@ UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`)
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search (`docs/HISTORY.md`).
 - Find in page, downloads, popups, favicons (`docs/BROWSING.md`).
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture (`docs/SITE_CONTROLS.md`).
+- Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder (`docs/EXTENSIONS.md`).
 - Light, dark and system appearance, alternate app icons, English and French.
 
-Not implemented yet: onboarding, import, extensions, credential integration, separate popup windows, editable shortcuts and profile deletion.
+Not implemented yet: onboarding, import, native messaging for extensions, credential integration, separate popup windows, editable shortcuts and profile deletion.
 
 ## Shortcuts
 

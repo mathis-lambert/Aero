@@ -106,18 +106,34 @@
         }
       }
     },
-    "Add extension" : {
+    "Add" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add extension"
+            "value" : "Add"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter une extension"
+            "value" : "Ajouter"
+          }
+        }
+      }
+    },
+    "Add from folder…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add from folder…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter depuis un dossier…"
           }
         }
       }
@@ -134,6 +150,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajouter un profil"
+          }
+        }
+      }
+    },
+    "Add to Aero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Aero"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter à Aero"
+          }
+        }
+      }
+    },
+    "Add “%@”?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add “%@”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter « %@ » ?"
           }
         }
       }
@@ -509,34 +557,18 @@
         }
       }
     },
-    "Choose how the browser looks." : {
+    "Choose the folder that holds the extension's manifest.json." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose how the browser looks."
+            "value" : "Choose the folder that holds the extension's manifest.json."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez l’apparence du navigateur."
-          }
-        }
-      }
-    },
-    "Choose the language used by the browser." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose the language used by the browser."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choisissez la langue du navigateur."
+            "value" : "Choisissez le dossier qui contient le manifest.json de l’extension."
           }
         }
       }
@@ -649,22 +681,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fermer la recherche"
-          }
-        }
-      }
-    },
-    "Close settings" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close settings"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fermer les réglages"
           }
         }
       }
@@ -845,22 +861,6 @@
         }
       }
     },
-    "Done" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terminé"
-          }
-        }
-      }
-    },
     "Download" : {
       "localizations" : {
         "en" : {
@@ -889,6 +889,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Téléchargements"
+          }
+        }
+      }
+    },
+    "Edit profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit profile"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le profil"
           }
         }
       }
@@ -925,6 +941,22 @@
         }
       }
     },
+    "Enabled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enabled"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activée"
+          }
+        }
+      }
+    },
     "English" : {
       "localizations" : {
         "en" : {
@@ -953,22 +985,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extensions"
-          }
-        }
-      }
-    },
-    "Extensions are coming in a later version" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extensions are coming in a later version"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les extensions arrivent dans une prochaine version"
           }
         }
       }
@@ -1149,6 +1165,22 @@
         }
       }
     },
+    "Get extensions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get extensions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtenir des extensions"
+          }
+        }
+      }
+    },
     "Graphite" : {
       "localizations" : {
         "en" : {
@@ -1225,22 +1257,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Garder les onglets épinglés actifs"
-          }
-        }
-      }
-    },
-    "Keep website sign-ins and tabs separate." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep website sign-ins and tabs separate."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Séparez les connexions aux sites et les onglets."
           }
         }
       }
@@ -1549,6 +1565,22 @@
         }
       }
     },
+    "No extensions in this profile. Add them from the Chrome Web Store, through the control center of an extension's page." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No extensions in this profile. Add them from the Chrome Web Store, through the control center of an extension's page."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune extension dans ce profil. Ajoutez-en depuis le Chrome Web Store, avec le centre de contrôle de la page d’une extension."
+          }
+        }
+      }
+    },
     "No history" : {
       "localizations" : {
         "en" : {
@@ -1758,6 +1790,22 @@
         }
       }
     },
+    "Options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
+          }
+        }
+      }
+    },
     "Other site data is stored" : {
       "localizations" : {
         "en" : {
@@ -1834,6 +1882,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personnel"
+          }
+        }
+      }
+    },
+    "Pin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler"
           }
         }
       }
@@ -1998,6 +2062,54 @@
         }
       }
     },
+    "Read and change your data on %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read and change your data on %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire et modifier vos données sur %@"
+          }
+        }
+      }
+    },
+    "Read and change your data on every website" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read and change your data on every website"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire et modifier vos données sur tous les sites web"
+          }
+        }
+      }
+    },
+    "Reload" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recharger"
+          }
+        }
+      }
+    },
     "Reload page" : {
       "localizations" : {
         "en" : {
@@ -2010,6 +2122,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recharger la page"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer"
           }
         }
       }
@@ -2074,6 +2202,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réessayer le téléchargement"
+          }
+        }
+      }
+    },
+    "Review update" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review update"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Examiner la mise à jour"
           }
         }
       }
@@ -2207,22 +2351,6 @@
         }
       }
     },
-    "Separate spaces for different sides of your day." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Separate spaces for different sides of your day."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un espace distinct pour chaque facette de votre journée."
-          }
-        }
-      }
-    },
     "Settings" : {
       "localizations" : {
         "en" : {
@@ -2235,22 +2363,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages"
-          }
-        }
-      }
-    },
-    "Settings…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réglages…"
           }
         }
       }
@@ -2591,6 +2703,38 @@
         }
       }
     },
+    "The extension could not be installed. Check your connection and try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The extension could not be installed. Check your connection and try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’extension n’a pas pu être installée. Vérifiez votre connexion et réessayez."
+          }
+        }
+      }
+    },
+    "This folder does not hold an extension Aero can load." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This folder does not hold an extension Aero can load."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce dossier ne contient pas d’extension qu’Aero peut charger."
+          }
+        }
+      }
+    },
     "This page could not be opened" : {
       "localizations" : {
         "en" : {
@@ -2719,6 +2863,22 @@
         }
       }
     },
+    "Unpin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler"
+          }
+        }
+      }
+    },
     "Unpin tab" : {
       "localizations" : {
         "en" : {
@@ -2731,6 +2891,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Désépingler l’onglet"
+          }
+        }
+      }
+    },
+    "Update" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre à jour"
+          }
+        }
+      }
+    },
+    "Update “%@”?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update “%@”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre à jour « %@ » ?"
           }
         }
       }
@@ -2767,6 +2959,22 @@
         }
       }
     },
+    "Uses: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uses: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise : %@"
+          }
+        }
+      }
+    },
     "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept." : {
       "localizations" : {
         "en" : {
@@ -2779,22 +2987,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les pages consultées sont retirées de l’historique de ce profil. Les onglets, les données des sites et les connexions sont conservés."
-          }
-        }
-      }
-    },
-    "Where searches from the control bar go." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Where searches from the control bar go."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Où vont les recherches de la barre de contrôle."
           }
         }
       }
@@ -2875,6 +3067,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Votre session enregistrée n’a pas pu être ouverte. Elle a été conservée intacte. Quittez l’application pour l’examiner ou la récupérer."
+          }
+        }
+      }
+    },
+    "“%@” asks for more access" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” asks for more access"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » demande plus d’accès"
           }
         }
       }

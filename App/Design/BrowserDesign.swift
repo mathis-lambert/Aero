@@ -23,6 +23,8 @@ enum BrowserDesign {
         /// Small close and disclosure glyphs inside rows.
         static let glyph = Font.system(size: 9, weight: .semibold)
         static let title = Font.system(size: 22, weight: .semibold)
+        /// A prompt's question.
+        static let heading = Font.system(size: 15, weight: .semibold)
         /// The control bar's field and its icon.
         static let field = Font.system(size: 15)
     }
@@ -101,7 +103,7 @@ extension View {
         shadow(color: .black.opacity(0.2), radius: 20, x: 5, y: 4)
     }
 
-    /// Centered panels: the control bar and the Settings window.
+    /// Centered panels: the control bar and prompts.
     func panelShadow() -> some View {
         shadow(color: .black.opacity(0.16), radius: 32, y: 16)
     }
@@ -118,17 +120,9 @@ private struct BrowserAnimation<Value: Equatable>: ViewModifier {
 }
 
 struct Hairline: View {
-    enum Axis { case horizontal, vertical }
-    var axis = Axis.horizontal
     @Environment(\.palette) private var palette
 
-    var body: some View {
-        let line = Rectangle().fill(palette.line)
-        switch axis {
-        case .horizontal: line.frame(height: 1)
-        case .vertical: line.frame(width: 1)
-        }
-    }
+    var body: some View { Rectangle().fill(palette.line).frame(height: 1) }
 }
 
 extension ProfileColor {

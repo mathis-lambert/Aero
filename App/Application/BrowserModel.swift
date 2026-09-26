@@ -15,13 +15,21 @@ final class BrowserModel {
     private(set) var session = BrowserSession(profileName: String(localized: "Personal"))
     private(set) var isReady = false
     private(set) var loadFailed = false
-    var errorMessage: String?
+    /// Shown as the window's error prompt.
+    var errorMessage: String? {
+        get { if case .error(let message) = window.prompt { message } else { nil } }
+        set {
+            if let newValue { present(.error(newValue)) }
+            else if case .error = window.prompt { window.prompt = nil }
+        }
+    }
     let window = BrowserWindowState()
     let preferences: BrowserPreferences
     let favicons: FaviconCache
     let history: BrowserHistory
     let suggestionFetcher = SuggestionFetcher()
     @ObservationIgnored private let filterLists: FilterListUpdater?
+    @ObservationIgnored private var extensionsTask: Task<Void, Never>?
     var currentPage: BrowserPage?
 
     @ObservationIgnored let pages: WebPageRegistry
@@ -64,7 +72,8 @@ final class BrowserModel {
         let downloadsFolder = testing == nil ? URL.downloadsDirectory : folder.appendingPathComponent("Downloads", isDirectory: true)
         let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
         let contentBlocker = ContentBlocker(directory: folder.appendingPathComponent("Content Rules", isDirectory: true))
-        pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, ephemeral: testing != nil, hibernation: preferences.hibernation)
+        pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: folder.appendingPathComponent("Extensions", isDirectory: true),
+                                ephemeral: testing != nil, hibernation: preferences.hibernation)
         // Test runs never download from the internet: only the fixture list, when a test provides one.
         let testFilterList = testing == nil ? nil : environment["AERO_TEST_FILTERS"].flatMap(URL.init(string:))
         if let contentBlocker, testing == nil || testFilterList != nil {
@@ -72,6 +81,7 @@ final class BrowserModel {
                                             preferences: preferences, testSource: testFilterList)
         } else { filterLists = nil }
         pages.delegate = self
+        pages.extensionHost = self
     }
 
     var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
@@ -100,6 +110,7 @@ final class BrowserModel {
         // After the session, so neither delays the first tabs.
         AppIcon.restore(preferences.appIcon)
         filterLists?.start()
+        extensionsTask = Task { [weak self] in await self?.startExtensions() }
     }
 
     private func endLaunchInterval() {
@@ -163,8 +174,10 @@ final class BrowserModel {
             pages.deactivate()
             return
         }
-        if window.selectedTabID != id { window.find.dismiss() }
+        let previous = window.selectedTabID
+        if previous != id { window.find.dismiss() }
         window.selectedTabID = id
+        if previous != id { extensionsDidSelect(tab, previous: previous) }
         if recordRecent { recentTabs.removeAll { $0 == id }; recentTabs.insert(id, at: 0) }
         if InternalPage(url: tab.url) != nil {
             currentPage = nil
@@ -202,6 +215,7 @@ final class BrowserModel {
     func addTab(_ url: URL, in spaceID: UUID) -> BrowserTab? {
         guard NavigationInput.isTabURL(url), let tab = session.open(url, in: spaceID) else { return nil }
         persist()
+        extensionsDidOpen(tab)
         return tab
     }
 
@@ -210,6 +224,7 @@ final class BrowserModel {
     func updateTab(_ id: UUID, url: URL, title: String) {
         guard let existing = session.tabs.first(where: { $0.id == id }), existing.url != url || existing.title != title else { return }
         session.updateTab(id: id, url: url, title: title)
+        extensionsDidUpdate(existing)
         if !title.isEmpty, let profileID = profileID(of: existing) {
             history.updateTitle(title, for: url, profileID: profileID)
         }
@@ -235,6 +250,7 @@ final class BrowserModel {
         let oldTabs = tabs
         guard let tab = session.close(id: id) else { return }
         pages.close(tabID: id)
+        extensionsDidClose(tab)
         if rememberForReopen {
             closedTabs.append(tab)
             if closedTabs.count > Self.maximumClosedTabs { closedTabs.removeFirst() }
@@ -251,6 +267,7 @@ final class BrowserModel {
         guard let index = closedTabs.lastIndex(where: { $0.spaceID == space?.id }) else { return }
         let tab = closedTabs.remove(at: index)
         session.restore(tab)
+        extensionsDidOpen(tab)
         selectTab(tab.id)
         persist()
     }
@@ -271,7 +288,7 @@ final class BrowserModel {
         pages.hibernationSettings = settings
     }
 
-    /// `emoji` is already validated by the profile sheet.
+    /// `emoji` is already validated by the profile editors.
     func saveProfile(id: UUID?, name: String, color: ProfileColor, emoji: String?) -> Bool {
         do {
             if let id { try session.editProfile(id: id, name: name, color: color, emoji: emoji) }
@@ -301,6 +318,27 @@ final class BrowserModel {
         change(&session)
         persist()
         if decision(for: .ads, at: site.origin, profileID: site.profileID) != blocked { currentPage?.reload() }
+    }
+
+    /// One prompt at a time: a new one replaces what is shown, refusing a pending extension request.
+    func present(_ prompt: WindowPrompt) {
+        dismissPrompt()
+        window.prompt = prompt
+    }
+
+    func dismissPrompt() {
+        if case .extensionRequest(let request) = window.prompt { answer(request, accepted: false) }
+        window.prompt = nil
+    }
+
+    func saveExtension(_ record: InstalledExtension, inProfile profileID: UUID) {
+        session.setExtension(record, profileID: profileID)
+        persist()
+    }
+
+    func deleteExtension(_ extensionID: String, inProfile profileID: UUID) {
+        session.removeExtension(extensionID, profileID: profileID)
+        persist()
     }
 
     func cycleTab(backwards: Bool) {

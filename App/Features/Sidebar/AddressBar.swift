@@ -6,6 +6,8 @@ import SwiftUI
 struct AddressBar: View {
     private static let height: CGFloat = 36
     private static let buttonSize: CGFloat = 28
+    /// More pinned extensions stay in the control center, so the address keeps its room.
+    private static let pinnedLimit = 2
     private static let copiedDuration = Duration.milliseconds(1500)
 
     let browser: BrowserModel
@@ -43,6 +45,11 @@ struct AddressBar: View {
             .accessibilityIdentifier("sidebar.location")
             if browser.currentSite != nil {
                 HStack(spacing: 0) {
+                    if let profileID = browser.window.selectedProfileID, let extensions = browser.pages.extensionsIfMade(for: profileID) {
+                        ForEach(browser.installedExtensions(inProfile: profileID).filter { $0.isEnabled && $0.isPinned }.prefix(Self.pinnedLimit)) { record in
+                            ExtensionButton(browser: browser, extensions: extensions, record: record, size: Self.buttonSize, anchorsPopup: true)
+                        }
+                    }
                     IconButton(symbol: showsCopied ? "checkmark" : BrowserCommand.copyLink.symbol, label: showsCopied ? "Link copied" : "Copy link",
                                size: Self.buttonSize, shortcut: BrowserCommand.copyLink.shortcut) { browser.perform(.copyLink) }
                         .contentTransition(.symbolEffect(.replace))
@@ -50,6 +57,7 @@ struct AddressBar: View {
                     IconButton(symbol: BrowserCommand.controlCenter.symbol, label: "Site controls", size: Self.buttonSize) {
                         browser.window.controlCenterPresented.toggle()
                     }
+                    .background(AnchorView(key: ExtensionAnchor.controlCenter, anchors: browser.window.extensionAnchors))
                     .popover(isPresented: Bindable(browser.window).controlCenterPresented, arrowEdge: .bottom) {
                         if let site = browser.currentSite { ControlCenterView(browser: browser, site: site) }
                     }

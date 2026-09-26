@@ -29,15 +29,7 @@ struct ControlCenterView: View {
                     .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
                     .accessibilityIdentifier("controlCenter.share")
                 }
-                section("Extensions") {
-                    Image(systemName: "plus")
-                        .frame(width: Self.tileHeight, height: Self.tileHeight)
-                        .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
-                        .foregroundStyle(.tertiary)
-                        .tooltip(String(localized: "Extensions are coming in a later version"))
-                        .accessibilityLabel("Add extension")
-                        .accessibilityHint("Extensions are coming in a later version")
-                }
+                section("Extensions") { ExtensionsGrid(browser: browser) }
                 section("Settings") {
                     VStack(alignment: .leading, spacing: 4) {
                         siteSwitch(.ads, title: "Block ads & trackers", identifier: "controlCenter.ads")

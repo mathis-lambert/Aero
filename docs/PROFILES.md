@@ -11,12 +11,12 @@ A profile owns a browsing identity: its website store, its history and one space
 
 ## Emoji
 
-A profile may have one emoji. The profile sheet takes it as text: the field keeps a single emoji, and anything else leaves the profile with its color dot. `BrowserProfile.emoji(from:)` in BrowserCore is the only rule, applied on every edit and when a saved session is validated.
+A profile may have one emoji. The profile prompt and Settings › Profiles take it as text: the field keeps a single emoji, and anything else leaves the profile with its color dot. `BrowserProfile.emoji(from:)` in BrowserCore is the only rule, applied on every edit and when a saved session is validated.
 
 ## Failure modes
 
 1. A vertical scroll in the tab list switches profiles, or a swipe stops between two pages.
-2. The footer and the pages disagree about the selected profile after a click, a swipe or a profile created from the sheet.
+2. The footer and the pages disagree about the selected profile after a click, a swipe or a profile created from the prompt.
 3. Switching back to a profile loses its selected tab, or leaves the previous profile's control bar or find bar open.
 4. Sliding past a profile's page loads its websites.
 5. The emoji field accepts words, digits, several emoji, whitespace or a lone modifier; a sequence emoji (flag, family, skin tone, keycap) is rejected or split.

@@ -26,7 +26,7 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
                       "The highlighted suggestion is searched with the chosen engine")
 
         relaunch()
-        openSettings()
+        openSettings("General")
         XCTAssertEqual(app.popUpButtons["settings.searchEngine"].value as? String, "Google", "The engine survives a relaunch")
     }
 
@@ -38,9 +38,9 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
         app.typeKey("a", modifierFlags: .command)
         app.typeKey(.delete, modifierFlags: [])
 
-        openSettings()
-        app.checkBoxes["settings.searchSuggestions"].click()
-        app.buttons["settings.close"].click()
+        openSettings("General")
+        app.switches["settings.searchSuggestions"].click()
+        closeSettings()
         controlBarInput.click()
         controlBarInput.typeText("aero")
         pause(Self.typingPause)
@@ -115,16 +115,11 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
         app.descendants(matching: .any).matching(identifier: Self.item).matching(NSPredicate(format: "label == %@", label)).firstMatch
     }
 
-    private func openSettings() {
-        app.typeKey(",", modifierFlags: .command)
-        XCTAssertTrue(app.popUpButtons["settings.searchEngine"].waitForExistence(timeout: Self.renderTimeout))
-    }
-
     private func setSearchEngine(_ name: String) {
-        openSettings()
+        openSettings("General")
         app.popUpButtons["settings.searchEngine"].click()
         app.menuItems[name].click()
-        app.buttons["settings.close"].click()
+        closeSettings()
     }
 
     private func pause(_ seconds: TimeInterval) {

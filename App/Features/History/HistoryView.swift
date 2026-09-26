@@ -15,7 +15,6 @@ struct HistoryView: View {
     @State private var hasMore = false
     @State private var isUnavailable = false
     @State private var selection: Set<HistoryEntry.ID> = []
-    @State private var confirmingClear = false
     @FocusState private var focus: Focus?
     @Environment(\.palette) private var palette
 
@@ -44,9 +43,6 @@ struct HistoryView: View {
         }
         // Choosing an entry moves the keyboard to the list, so Delete and Return act on it.
         .onChange(of: selection) { _, selected in if !selected.isEmpty { focus = .list } }
-        .sheet(isPresented: $confirmingClear) {
-            ClearHistorySheet(profileName: browser.profile?.name ?? "", clear: clear)
-        }
         .task(id: LoadKey(profileID: profileID, query: query)) {
             do { try await Task.sleep(for: Self.reloadDelay) } catch { return }
             await load(appending: false)
@@ -60,7 +56,7 @@ struct HistoryView: View {
                 Text(verbatim: browser.profile?.name ?? "").foregroundStyle(.secondary)
             }
             Spacer()
-            Button("Clear history…") { confirmingClear = true }
+            Button("Clear history…") { browser.present(.clearHistory(clear)) }
                 .disabled(isUnavailable || (entries.isEmpty && query.isEmpty))
                 .accessibilityIdentifier("history.clear")
         }

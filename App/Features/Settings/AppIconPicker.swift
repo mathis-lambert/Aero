@@ -16,8 +16,7 @@ struct AppIconPicker: View {
     private var selection: AppIconVariant? { browser.preferences.appIcon }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SettingsRow("App icon", caption: "Shown in the Dock, the Finder and Launchpad, even while Aero is closed.") { EmptyView() }
+        Group {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 8)], alignment: .leading, spacing: 8) {
                 tile(nil, image: Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)), label: String(localized: "Automatic"))
                 ForEach(AppIconVariant.all) { variant in

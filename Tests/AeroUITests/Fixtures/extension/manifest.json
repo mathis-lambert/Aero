@@ -1,0 +1,11 @@
+{
+    "manifest_version": 3,
+    "name": "Aero Test Extension",
+    "version": "1.0",
+    "description": "E2E fixture: a content script, a popup, and a worker using an API WebKit lacks.",
+    "action": { "default_popup": "action-popup.html", "default_title": "Aero Test Extension" },
+    "background": { "service_worker": "worker.js" },
+    "content_scripts": [{ "matches": ["http://localhost/*"], "js": ["content.js"] }],
+    "host_permissions": ["http://localhost/*"],
+    "permissions": ["storage", "webNavigation"]
+}

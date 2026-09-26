@@ -35,7 +35,7 @@ struct SidebarView: View {
             ProfileBar(browser: browser)
             Spacer(minLength: 4)
             IconButton(symbol: "plus", label: "New profile", size: BrowserDesign.navigationButtonSize) {
-                browser.window.profileSheet = .create
+                browser.present(.profile(.create))
             }
             .accessibilityIdentifier("sidebar.addProfile")
         }
