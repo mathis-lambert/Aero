@@ -46,13 +46,13 @@ struct QuitPrompt: View {
                 .accessibilityIdentifier("quit.never")
                 Spacer(minLength: 16)
                 Button { browser.window.quitPromptPresented = false } label: {
-                    HStack(spacing: 8) { Text("Cancel"); ShortcutLabel(text: "esc") }
+                    HStack(spacing: 8) { Text("Cancel"); Keycaps("esc") }
                 }
                 .buttonStyle(PanelButtonStyle())
                 .keyboardShortcut(.cancelAction)
                 .accessibilityIdentifier("quit.cancel")
                 Button { NSApp.terminate(nil) } label: {
-                    HStack(spacing: 8) { Text("Quit"); ShortcutLabel(text: "↵", onAccent: true) }
+                    HStack(spacing: 8) { Text("Quit"); Keycaps("↵", onAccent: true) }
                 }
                 .buttonStyle(PanelButtonStyle(prominent: true))
                 .keyboardShortcut(.defaultAction)

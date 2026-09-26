@@ -76,7 +76,7 @@ struct ControlBarView: View {
                     if model.isOverlay { browser.window.controlBar = nil } else { model.text = "" }
                 }
                 .accessibilityIdentifier("controlBar.input")
-            if model.isOverlay { ShortcutLabel(text: "esc") }
+            if model.isOverlay { Keycaps("esc") }
         }
         .padding(.horizontal, Self.fieldInset)
         .frame(height: Self.fieldHeight)
@@ -107,8 +107,8 @@ struct ControlBarView: View {
                     }
                 }
                 Spacer(minLength: 8)
-                if let shortcut = item.shortcut { ShortcutLabel(text: shortcut) }
-                else if selected { ShortcutLabel(text: "↵") }
+                if let shortcut = item.shortcut { Keycaps(shortcut) }
+                else if selected { Keycaps("↵") }
             }
             .padding(.horizontal, BrowserDesign.rowInset)
             .frame(height: Self.rowHeight)
@@ -183,7 +183,7 @@ private extension ControlBarItem {
         }
     }
 
-    var shortcut: String? {
-        if case .command(let command) = self { command.shortcut?.label } else { nil }
+    var shortcut: KeyboardShortcut? {
+        if case .command(let command) = self { command.shortcut } else { nil }
     }
 }

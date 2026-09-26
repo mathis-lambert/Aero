@@ -29,6 +29,22 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 - The find bar floats over the page's top trailing corner; a miss shows text, the `miss` border and a short shake.
 - Settings is its own window: a category list (General, Tabs, Profiles) and cards of working options only. Language changes apply at the next launch, and say so.
 
+## Tooltips and keycaps
+
+`.tooltip(_:shortcut:)` replaces the system help tag on every chrome control: a small `raised` plate with a `line` border and the float shadow, the label, and the command's keycaps when it has a shortcut. It appears 0.5 s after the pointer rests on the control, then follows it at once to a neighbour for a moment, like the system's. It lives in its own borderless panel, so the sidebar or the window edge never clips it, and it takes the window's appearance. The pointer leaving, a click, a key or a scroll hides it. Only a hovered control has a timer; nothing runs otherwise.
+
+`Keycaps` draws a shortcut as keys: one cap per modifier and key, in the system face at 11 pt medium, on a `raised` face with a hairline border and a darker bottom edge. Shortcuts come from the command catalog (`BrowserCommand.shortcut`), so a tooltip, the control bar and the menu always agree. Special keys use their symbols (↵, ⇥, ⌫) and Escape reads "esc".
+
+Failure modes:
+
+1. A tooltip stays after the pointer leaves, after a click, a key, a scroll, or when the window closes or the app goes to the background.
+2. Tooltips flicker while the pointer crosses a row of buttons, or every neighbour waits the full delay again.
+3. A tooltip is clipped by the sidebar or leaves the screen.
+4. A tooltip takes the wrong appearance, or two show at once.
+5. A shortcut shown differs from its menu item.
+
+Verification: E2E `testTooltipsShowLabelAndShortcut` (hovering the sidebar toggle shows its label and keys, a click hides it; 1, 5). Appearance and clipping are checked from its screenshot.
+
 ## App icon
 
 `App/Resources/AppIcon.icon` is the system icon: a Gilda Display capital A filled with the dithered wind. `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>` regenerates it and the twenty alternates in `App/Resources/AppIcons` (font not stored here).

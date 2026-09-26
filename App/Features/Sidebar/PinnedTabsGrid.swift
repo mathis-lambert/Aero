@@ -58,7 +58,7 @@ struct PinnedTabsGrid: View {
             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
         }
         .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
-        .help(tab.displayTitle)
+        .tooltip(tab.displayTitle)
         .accessibilityLabel(tab.displayTitle)
         .accessibilityIdentifier("sidebar.pinned")
         .accessibilityAddTraits(selected ? .isSelected : [])

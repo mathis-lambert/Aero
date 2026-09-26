@@ -3,6 +3,22 @@ import XCTest
 /// Localization, the sidebar and window controls, and Settings.
 @MainActor
 final class BrowserUITests: BrowserE2ETestCase {
+    func testTooltipsShowLabelAndShortcut() {
+        let toggle = app.buttons["sidebar.toggle"]
+        toggle.hover()
+        let tooltip = app.dialogs["tooltip"]
+        XCTAssertTrue(tooltip.waitForExistence(timeout: Self.renderTimeout), "Resting on a control shows its tooltip")
+        XCTAssertTrue(tooltip.staticTexts["Toggle sidebar"].exists)
+        let caps = tooltip.staticTexts.matching(identifier: "keycap")
+        XCTAssertEqual((0..<caps.count).map { caps.element(boundBy: $0).value as? String }, ["⇧", "⌘", "S"],
+                       "The keys of the menu's shortcut")
+        attachScreenshot("tooltip", of: app)
+        app.buttons["sidebar.back"].hover()
+        XCTAssertTrue(tooltip.staticTexts["Back"].waitForExistence(timeout: 0.3), "A neighbour's tooltip follows at once")
+        app.buttons["sidebar.back"].click()
+        XCTAssertFalse(tooltip.waitForExistence(timeout: 1), "A click hides it")
+    }
+
     func testQuitAsksFirst() {
         open("solid.html", expecting: "Solid fixture")
         app.typeKey("q", modifierFlags: .command)

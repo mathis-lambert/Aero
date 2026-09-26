@@ -22,7 +22,7 @@ struct HistoryRow: View {
             Text(verbatim: time).font(BrowserDesign.Typography.caption).foregroundStyle(.secondary).monospacedDigit()
         }
         .padding(.vertical, 2)
-        .help(entry.url.absoluteString)
+        .tooltip(entry.url.absoluteString)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: entry.displayTitle))
         .accessibilityValue(Text(verbatim: "\(entry.url.siteName), \(time)"))

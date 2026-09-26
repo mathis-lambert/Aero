@@ -70,15 +70,16 @@ struct SidebarView: View {
 
     private var navigation: some View {
         HStack(spacing: 0) {
-            IconButton(symbol: "sidebar.left", label: "Toggle sidebar", size: BrowserDesign.navigationButtonSize) { browser.perform(.toggleSidebar) }
+            IconButton(symbol: "sidebar.left", label: "Toggle sidebar", size: BrowserDesign.navigationButtonSize, shortcut: BrowserCommand.toggleSidebar.shortcut) { browser.perform(.toggleSidebar) }
                 .accessibilityIdentifier("sidebar.toggle")
-            IconButton(symbol: "chevron.left", label: "Back", size: BrowserDesign.navigationButtonSize) { browser.perform(.back) }
+            IconButton(symbol: "chevron.left", label: "Back", size: BrowserDesign.navigationButtonSize, shortcut: BrowserCommand.back.shortcut) { browser.perform(.back) }
                 .disabled(!browser.isEnabled(.back))
                 .accessibilityIdentifier("sidebar.back")
-            IconButton(symbol: "chevron.right", label: "Forward", size: BrowserDesign.navigationButtonSize) { browser.perform(.forward) }
+            IconButton(symbol: "chevron.right", label: "Forward", size: BrowserDesign.navigationButtonSize, shortcut: BrowserCommand.forward.shortcut) { browser.perform(.forward) }
                 .disabled(!browser.isEnabled(.forward))
                 .accessibilityIdentifier("sidebar.forward")
-            IconButton(symbol: browser.currentPage?.isLoading == true ? "xmark" : "arrow.clockwise", label: browser.currentPage?.isLoading == true ? "Stop loading" : "Reload page", size: BrowserDesign.navigationButtonSize) {
+            IconButton(symbol: browser.currentPage?.isLoading == true ? "xmark" : "arrow.clockwise", label: browser.currentPage?.isLoading == true ? "Stop loading" : "Reload page", size: BrowserDesign.navigationButtonSize,
+                       shortcut: browser.currentPage?.isLoading == true ? nil : BrowserCommand.reload.shortcut) {
                 if browser.currentPage?.isLoading == true { browser.currentPage?.stop() }
                 else { browser.perform(.reload) }
             }

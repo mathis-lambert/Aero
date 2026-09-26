@@ -35,7 +35,7 @@ struct ProfileBar: View {
             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
         }
         .buttonStyle(QuietButtonStyle())
-        .help(Text(verbatim: profile.name))
+        .tooltip(profile.name)
         .accessibilityLabel(Text(verbatim: profile.name))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("sidebar.profile")

@@ -1,3 +1,4 @@
+import BrowserCore
 import BrowserWebKit
 import SwiftUI
 
@@ -32,11 +33,11 @@ struct FindBar: View {
                     .accessibilityIdentifier("find.noMatches")
                     .transition(.opacity)
             }
-            IconButton(symbol: "chevron.up", label: "Previous match", size: BrowserDesign.navigationButtonSize) { search(backwards: true) }
+            IconButton(symbol: "chevron.up", label: "Previous match", size: BrowserDesign.navigationButtonSize, shortcut: BrowserCommand.findPrevious.shortcut) { search(backwards: true) }
                 .accessibilityIdentifier("find.previous")
-            IconButton(symbol: "chevron.down", label: "Next match", size: BrowserDesign.navigationButtonSize) { search(backwards: false) }
+            IconButton(symbol: "chevron.down", label: "Next match", size: BrowserDesign.navigationButtonSize, shortcut: BrowserCommand.findNext.shortcut) { search(backwards: false) }
                 .accessibilityIdentifier("find.next")
-            IconButton(symbol: "xmark", label: "Close find bar", size: BrowserDesign.navigationButtonSize) { find.dismiss(returningFocusTo: page) }
+            IconButton(symbol: "xmark", label: "Close find bar", size: BrowserDesign.navigationButtonSize, shortcut: .cancelAction) { find.dismiss(returningFocusTo: page) }
                 .accessibilityIdentifier("find.close")
         }
         .padding(.leading, 12)

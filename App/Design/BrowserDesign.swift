@@ -19,7 +19,7 @@ enum BrowserDesign {
         static let chrome = Font.system(size: 13)
         static let label = Font.system(size: 12, weight: .medium)
         static let caption = Font.system(size: 11)
-        static let keycap = Font.system(size: 11, weight: .medium, design: .monospaced)
+        static let keycap = Font.system(size: 11, weight: .medium)
         /// Small close and disclosure glyphs inside rows.
         static let glyph = Font.system(size: 9, weight: .semibold)
         static let title = Font.system(size: 22, weight: .semibold)
@@ -66,6 +66,9 @@ struct BrowserPalette: Equatable {
     var hover: Color { ink.opacity(0.04) }
     var fill: Color { ink.opacity(0.06) }
     var pressed: Color { ink.opacity(0.10) }
+    /// A key's face and its lower edge, which lifts it off any surface.
+    var keycap: Color { scheme == .dark ? Color(white: 0.23) : .white }
+    var keycapEdge: Color { scheme == .dark ? .black.opacity(0.55) : ink.opacity(0.16) }
     /// Errors and the find bar's no-match border; always paired with text.
     var miss: Color { scheme == .dark ? Color(red: 1, green: 0.54, blue: 0.36) : Color(red: 0.76, green: 0.25, blue: 0.05) }
 }
@@ -167,6 +170,8 @@ struct IconButton: View {
     let symbol: String
     let label: LocalizedStringKey
     var size: CGFloat = BrowserDesign.controlHeight
+    /// Shown in the tooltip; pass the command's, so it matches the menu.
+    var shortcut: KeyboardShortcut?
     var action: () -> Void
 
     var body: some View {
@@ -177,7 +182,7 @@ struct IconButton: View {
                 .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
         }
         .buttonStyle(QuietButtonStyle())
-        .help(Text(label))
+        .tooltip(Text(label), shortcut: shortcut)
         .accessibilityLabel(Text(label))
     }
 }
@@ -229,23 +234,6 @@ private struct PointerFeedback<Label: View>: View {
             .opacity(isEnabled ? 1 : 0.3)
             .onHover { hovered = $0 }
             .animation(BrowserDesign.hover, value: hovered)
-    }
-}
-
-struct ShortcutLabel: View {
-    let text: String
-    /// On an accent fill, such as a prominent button.
-    var onAccent = false
-    @Environment(\.palette) private var palette
-
-    var body: some View {
-        Text(verbatim: text)
-            .font(BrowserDesign.Typography.keycap)
-            .foregroundStyle(onAccent ? AnyShapeStyle(.white.opacity(0.85)) : AnyShapeStyle(.secondary))
-            .padding(.horizontal, 5)
-            .padding(.vertical, 3)
-            .background(onAccent ? .white.opacity(0.2) : palette.line, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.xs))
-            .accessibilityHidden(true)
     }
 }
 

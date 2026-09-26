@@ -57,7 +57,7 @@ struct AppIconPicker: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(QuietButtonStyle(radius: Self.tileSize * BrowserDesign.faviconCornerRatio))
-        .help(label)
+        .tooltip(label)
         .accessibilityLabel(label)
         .accessibilityIdentifier("settings.appIcon.\(variant?.id ?? "automatic")")
         .accessibilityAddTraits(selected ? .isSelected : [])
