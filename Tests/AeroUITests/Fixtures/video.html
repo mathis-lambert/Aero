@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Video fixture</title></head>
+<body>
+<video id="video" width="320" height="180" playsinline></video>
+<p id="modes">Modes inline</p>
+<button onclick="video.muted = false; video.play()">Play</button>
+<canvas id="canvas" width="160" height="90"></canvas>
+<script>
+const context = canvas.getContext("2d");
+let hue = 0;
+setInterval(() => { context.fillStyle = `hsl(${hue += 5}, 80%, 50%)`; context.fillRect(0, 0, 160, 90); }, 50);
+video.srcObject = canvas.captureStream(20);
+video.addEventListener("webkitpresentationmodechanged", () => modes.textContent += " " + video.webkitPresentationMode);
+</script>
+</body>
+</html>

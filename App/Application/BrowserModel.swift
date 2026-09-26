@@ -21,6 +21,7 @@ final class BrowserModel {
     let favicons: FaviconCache
     let history: BrowserHistory
     let suggestionFetcher = SuggestionFetcher()
+    @ObservationIgnored private let filterLists: FilterListUpdater?
     var currentPage: BrowserPage?
 
     @ObservationIgnored let pages: WebPageRegistry
@@ -62,7 +63,14 @@ final class BrowserModel {
         // Test runs must never write into the user's Downloads folder.
         let downloadsFolder = testing == nil ? URL.downloadsDirectory : folder.appendingPathComponent("Downloads", isDirectory: true)
         let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
-        pages = WebPageRegistry(downloads: downloads, ephemeral: testing != nil, hibernation: preferences.hibernation)
+        let contentBlocker = ContentBlocker(directory: folder.appendingPathComponent("Content Rules", isDirectory: true))
+        pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, ephemeral: testing != nil, hibernation: preferences.hibernation)
+        // Test runs never download from the internet: only the fixture list, when a test provides one.
+        let testFilterList = testing == nil ? nil : environment["AERO_TEST_FILTERS"].flatMap(URL.init(string:))
+        if let contentBlocker, testing == nil || testFilterList != nil {
+            filterLists = FilterListUpdater(blocker: contentBlocker, store: FilterListStore(directory: folder.appendingPathComponent("Filter Lists", isDirectory: true)),
+                                            preferences: preferences, testSource: testFilterList)
+        } else { filterLists = nil }
         pages.delegate = self
     }
 
@@ -89,8 +97,9 @@ final class BrowserModel {
             errorMessage = String(localized: "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.")
             endLaunchInterval()
         }
-        // After the session, so drawing it never delays the first tabs.
+        // After the session, so neither delays the first tabs.
         AppIcon.restore(preferences.appIcon)
+        filterLists?.start()
     }
 
     private func endLaunchInterval() {
@@ -279,13 +288,19 @@ final class BrowserModel {
     }
 
     func setDecision(_ decision: SiteDecision?, for permission: SitePermission, at site: CurrentSite) {
-        session.setDecision(decision, for: permission, at: site.origin, profileID: site.profileID)
-        persist()
+        changeDecisions(at: site) { $0.setDecision(decision, for: permission, at: site.origin, profileID: site.profileID) }
     }
 
     func resetPermissions(at site: CurrentSite) {
-        session.resetPermissions(at: site.origin, profileID: site.profileID)
+        changeDecisions(at: site) { $0.resetPermissions(at: site.origin, profileID: site.profileID) }
+    }
+
+    /// A change to the site's blocking reloads its page, which then loads with or without the rules.
+    private func changeDecisions(at site: CurrentSite, _ change: (inout BrowserSession) -> Void) {
+        let blocked = decision(for: .ads, at: site.origin, profileID: site.profileID)
+        change(&session)
         persist()
+        if decision(for: .ads, at: site.origin, profileID: site.profileID) != blocked { currentPage?.reload() }
     }
 
     func cycleTab(backwards: Bool) {

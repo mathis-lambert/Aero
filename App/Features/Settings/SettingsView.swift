@@ -150,6 +150,8 @@ struct SettingsView: View {
 
             SettingsCard { search }
 
+            SettingsCard { siteDefaults }
+
             SettingsCard {
                 SettingsRow("Ask before quitting", caption: "⌘Q asks for confirmation, so a stray shortcut never closes your tabs.") {
                     Toggle("Ask before quitting", isOn: Bindable(browser.preferences).confirmsQuit)
@@ -160,6 +162,24 @@ struct SettingsView: View {
             }
 
             SettingsCard { AppIconPicker(browser: browser) }
+        }
+    }
+
+    private var siteDefaults: some View {
+        VStack(spacing: 0) {
+            SettingsRow("Block ads and trackers", caption: "Uses EasyList and EasyPrivacy, © The EasyList authors, under CC BY-SA 3.0. A site can be allowed from its controls.") {
+                Toggle("Block ads and trackers", isOn: Binding(get: { browser.preferences.blocksAds }, set: browser.setBlocksAds))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .accessibilityIdentifier("settings.blocksAds")
+            }
+            SettingsDivider()
+            SettingsRow("Automatic picture in picture", caption: "A playing video moves to a floating window when you switch tabs, and comes back with its tab.") {
+                Toggle("Automatic picture in picture", isOn: Bindable(browser.preferences).automaticPictureInPicture)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .accessibilityIdentifier("settings.automaticPictureInPicture")
+            }
         }
     }
 

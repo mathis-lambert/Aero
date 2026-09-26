@@ -1,6 +1,6 @@
 # Browsing
 
-Failure modes were written before each implementation. E2E tests run against local fixtures (`Tests/AeroUITests/Fixtures`) served by `FixtureServer` on `localhost`.
+Failure modes were written before each implementation. The site in the selected tab (control center, site data, permissions, ad blocking, picture in picture) is in `docs/SITE_CONTROLS.md`. E2E tests run against local fixtures (`Tests/AeroUITests/Fixtures`) served by `FixtureServer` on `localhost`.
 
 ## Favicons
 
@@ -94,28 +94,6 @@ Failure modes:
 5. The session is not saved when quitting from the prompt.
 
 Verification: E2E `testQuitAsksFirst` (Escape keeps the app running; Return quits and the session survives; "don't ask again" quits at once on the next ⌘Q and shows in Settings; 2, 4, 5). 1 holds by construction: only the menu item asks.
-
-## Site data and permissions
-
-Right-clicking the reload button offers Clear cookies, Clear cache and Site settings…; all three are catalog commands, so the command palette has them too. They act on the selected page's site in its profile's data store. WebKit groups data by site (the registrable domain), so clearing `mail.example.com` clears `example.com` and its other subdomains, as Safari does. Clearing cookies or all data reloads the page, so it stops using what was removed.
-
-Site settings is a popover on the reload button: the site's cookie count and whether it stores other data, Delete data, and a decision for camera, microphone and location: Ask (WebKit's own prompt, every time), Allow or Block. Decisions belong to the profile, are saved with the session and keyed by the page's origin (`scheme://host[:port]`, lowercased, without the default port). An embedded frame gets the page's decision; WebKit's permissions policy already keeps cross-origin frames out unless the page delegates to them. Reset permissions returns every decision to Ask.
-
-The app declares camera, microphone and location usage, with the hardened runtime entitlements that let macOS ask for them.
-
-Failure modes:
-
-1. Clearing touches another site, or another profile's store.
-2. A subdomain keeps the site's cookies, such as a session cookie set on the parent domain.
-3. The page keeps using removed cookies until the user reloads it.
-4. A decision is keyed on another origin (an embedded frame, a different port or letter case), so it does not apply to the page it was set on.
-5. A decision is lost at relaunch, or survives its profile's deletion.
-6. A camera and microphone request is granted while one of the two is blocked, or Ask grants without a prompt.
-7. WebKit waits forever for a decision, or a closed tab answers one.
-8. macOS refuses the device although the site is allowed (missing usage description or entitlement).
-9. The actions run on a browser page (`aero://`) or with no page.
-
-Verification: E2E `testSiteDataClearsAndPermissionsPersist` (Clear cookies and Delete data empty the site's cookies and reload it while `127.0.0.1` keeps its own; blocked camera and location are refused without a prompt; decisions survive a relaunch; 1, 3, 5). By construction: 2 (WebKit removes whole site records), 4 (`SiteOrigin` is the only key, from the page's address), 5's deletion case (decisions live on the profile), 6 and 7 (`BrowserPage`'s delegate), 9 (the commands are disabled without a web page). 8 needs a real device prompt and is checked by hand; Clear cache has no observable E2E effect.
 
 ## Limits
 

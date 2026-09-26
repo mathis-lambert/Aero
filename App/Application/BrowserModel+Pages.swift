@@ -38,7 +38,7 @@ extension BrowserModel: WebPageRegistryDelegate {
 
     func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? {
         guard let tab = session.tabs.first(where: { $0.id == tabID }), let profileID = profileID(of: tab) else { return nil }
-        return session.profiles.first { $0.id == profileID }?.decision(for: permission, at: origin)
+        return decision(for: permission, at: origin, profileID: profileID)
     }
 
     func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID) {

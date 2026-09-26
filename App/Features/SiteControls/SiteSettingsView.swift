@@ -2,62 +2,30 @@ import BrowserCore
 import BrowserWebKit
 import SwiftUI
 
-extension BrowserModel {
-    /// The selected page's site in its profile. See docs/BROWSING.md › Site data and permissions.
-    struct CurrentSite: Equatable {
-        let host: String
-        let origin: SiteOrigin
-        let profileID: UUID
-    }
-
-    var currentSite: CurrentSite? {
-        guard currentPage != nil, internalPage == nil, let tab = selectedTab, let host = tab.url.host(),
-              let origin = SiteOrigin(url: tab.url), let profileID = profileID(of: tab) else { return nil }
-        return CurrentSite(host: host, origin: origin, profileID: profileID)
-    }
-
-    /// Removing cookies or all data reloads the page, so it stops using what was removed.
-    func clearSiteData(_ kind: SiteDataKind) async {
-        guard let site = currentSite else { return }
-        let page = currentPage
-        await pages.removeSiteData(kind, for: site.host, profileID: site.profileID)
-        if kind != .cache { page?.reload() }
-    }
-}
-
-extension SitePermission {
-    var title: LocalizedStringKey {
-        switch self {
-        case .camera: "Camera"
-        case .microphone: "Microphone"
-        case .location: "Location"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .camera: "video"
-        case .microphone: "mic"
-        case .location: "location"
-        }
-    }
-}
-
+/// The site's data and every permission, on the reload button or inside the control center.
 struct SiteSettingsView: View {
-    private static let width: CGFloat = 300
+    static let width: CGFloat = 340
 
     let browser: BrowserModel
     let site: BrowserModel.CurrentSite
+    /// Shown inside the control center, which it returns to.
+    var onBack: (() -> Void)?
     @State private var usage: SiteDataUsage?
 
     private var profile: BrowserProfile? { browser.session.profiles.first { $0.id == site.profileID } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(verbatim: site.host)
-                .font(BrowserDesign.Typography.chrome.weight(.semibold))
-                .lineLimit(1)
-                .truncationMode(.middle)
+            HStack(spacing: 6) {
+                if let onBack {
+                    IconButton(symbol: "chevron.left", label: "Back", size: 24, action: onBack)
+                        .accessibilityIdentifier("siteSettings.back")
+                }
+                Text(verbatim: site.host)
+                    .font(BrowserDesign.Typography.chrome.weight(.semibold))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
             VStack(alignment: .leading, spacing: 8) {
                 heading("Cookies and site data")
                 if let usage {
@@ -104,13 +72,13 @@ struct SiteSettingsView: View {
 
     private func row(_ permission: SitePermission) -> some View {
         HStack {
-            Label(permission.title, systemImage: permission.symbol)
-            Spacer()
+            Label(permission.title, systemImage: permission.symbol).lineLimit(1)
+            Spacer(minLength: 8)
             Picker(permission.title, selection: Binding(
                 get: { profile?.decision(for: permission, at: site.origin) },
                 set: { browser.setDecision($0, for: permission, at: site) }
             )) {
-                Text("Ask").tag(SiteDecision?.none)
+                Text(permission.isDevice ? "Ask" : "Default").tag(SiteDecision?.none)
                 Text("Allow").tag(SiteDecision?.some(.allow))
                 Text("Block").tag(SiteDecision?.some(.block))
             }

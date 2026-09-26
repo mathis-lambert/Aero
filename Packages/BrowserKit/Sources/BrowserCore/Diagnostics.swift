@@ -6,6 +6,7 @@ public enum Diagnostics {
         public static let launch = "Launch"
         package static let pageLifecycle = "PageLifecycle"
         package static let storage = "Storage"
+        public static let contentBlocking = "ContentBlocking"
     }
 
     public enum Signpost {

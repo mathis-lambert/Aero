@@ -57,6 +57,9 @@ final class BrowserPreferences {
         static let hibernationIdleMinutes = "browser.hibernation.idleMinutes"
         static let hibernationKeepsPinned = "browser.hibernation.keepsPinnedTabsLoaded"
         static let appIcon = "browser.appIcon"
+        static let blocksAds = "browser.blocksAds"
+        static let automaticPictureInPicture = "browser.automaticPictureInPicture"
+        static let filterListsCheckedAt = "browser.filterLists.checkedAt"
     }
 
     private let defaults: UserDefaults
@@ -82,6 +85,17 @@ final class BrowserPreferences {
     var appIcon: AppIconVariant? {
         didSet { defaults.set(appIcon?.id, forKey: Key.appIcon) }
     }
+    /// Sites without their own decision follow these two.
+    var blocksAds: Bool {
+        didSet { defaults.set(blocksAds, forKey: Key.blocksAds) }
+    }
+    var automaticPictureInPicture: Bool {
+        didSet { defaults.set(automaticPictureInPicture, forKey: Key.automaticPictureInPicture) }
+    }
+    /// When ad blocking last asked for newer lists, whatever the answer.
+    var filterListsCheckedAt: Date? {
+        didSet { defaults.set(filterListsCheckedAt, forKey: Key.filterListsCheckedAt) }
+    }
     var needsLanguageRestart: Bool { language != launchLanguage }
 
     init(testNamespace: String?) {
@@ -97,6 +111,9 @@ final class BrowserPreferences {
         confirmsQuit = defaults.object(forKey: Key.confirmsQuit) as? Bool ?? true
         hibernation = Self.loadHibernation(from: defaults)
         appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconVariant.init(id:))
+        blocksAds = defaults.object(forKey: Key.blocksAds) as? Bool ?? true
+        automaticPictureInPicture = defaults.object(forKey: Key.automaticPictureInPicture) as? Bool ?? true
+        filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
     }
 
     func setLanguage(_ language: BrowserLanguage) {

@@ -1,0 +1,5 @@
+[Adblock Plus 2.0]
+! Version: 1
+! Title: Aero test filters
+||127.0.0.1^$third-party
+##.ad-banner

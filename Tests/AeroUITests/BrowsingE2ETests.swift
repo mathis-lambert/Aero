@@ -66,62 +66,6 @@ final class BrowsingE2ETests: BrowserE2ETestCase {
         XCTAssertEqual(tabRows.count, 2)
     }
 
-    func testSiteDataClearsAndPermissionsPersist() {
-        open("site.html", host: "127.0.0.1", expecting: "No cookie")
-        setCookie()
-        open("site.html", expecting: "No cookie")
-        setCookie()
-
-        siteMenu("Clear cookies")
-        XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "Clearing cookies reloads the page without them")
-        setCookie()
-        siteMenu("Site settings…")
-        let cookies = app.staticTexts["siteSettings.cookies"]
-        XCTAssertTrue(cookies.waitForExistence(timeout: Self.renderTimeout))
-        XCTAssertTrue(poll { cookies.value as? String == "1 cookie" }, "The popover counts the site's cookies")
-        attachScreenshot("site-settings")
-        app.buttons["siteSettings.deleteData"].click()
-        XCTAssertTrue(poll { cookies.value as? String == "No cookies" })
-        XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "Deleting data reloads the page")
-
-        choose("Block", for: "siteSettings.camera")
-        choose("Block", for: "siteSettings.location")
-        app.typeKey(.escape, modifierFlags: [])
-        app.webViews.buttons["Use camera"].click()
-        XCTAssertTrue(page("Camera NotAllowedError").waitForExistence(timeout: Self.pageTimeout), "A blocked camera is refused without a prompt")
-        app.webViews.buttons["Use location"].click()
-        XCTAssertTrue(page("Location denied").waitForExistence(timeout: Self.pageTimeout), "A blocked location is refused without a prompt")
-
-        tabRows.element(boundBy: 0).click()
-        app.typeKey("r", modifierFlags: .command)
-        XCTAssertTrue(page("Cookie set").waitForExistence(timeout: Self.pageTimeout), "Another site keeps its cookies")
-
-        quitAndRelaunch()
-        tabRows.element(boundBy: 1).click()
-        siteMenu("Site settings…")
-        XCTAssertTrue(app.popUpButtons["siteSettings.camera"].waitForExistence(timeout: Self.renderTimeout))
-        XCTAssertEqual(app.popUpButtons["siteSettings.camera"].value as? String, "Block", "Decisions survive a relaunch")
-        XCTAssertEqual(app.popUpButtons["siteSettings.microphone"].value as? String, "Ask")
-    }
-
-    private func page(_ text: String) -> XCUIElement { app.webViews.staticTexts[text] }
-
-    private func setCookie() {
-        app.webViews.buttons["Set cookie"].click()
-        XCTAssertTrue(page("Cookie set").waitForExistence(timeout: Self.renderTimeout))
-    }
-
-    private func siteMenu(_ item: String) {
-        app.buttons["sidebar.reload"].rightClick()
-        app.menuItems[item].click()
-    }
-
-    private func choose(_ decision: String, for permission: String) {
-        app.popUpButtons[permission].click()
-        app.menuItems[decision].click()
-        XCTAssertTrue(poll { self.app.popUpButtons[permission].value as? String == decision })
-    }
-
     private func waitForTabIcon(_ color: ScreenshotColor) -> Bool {
         let row = tabRows.firstMatch
         guard row.waitForExistence(timeout: Self.pageTimeout) else { return false }

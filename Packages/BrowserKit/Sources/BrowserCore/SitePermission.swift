@@ -1,11 +1,19 @@
 import Foundation
 
-/// A device a site may ask for. See docs/BROWSING.md › Site data and permissions.
+/// What a site may do: use a device, show ads and trackers, or have its video moved to picture in
+/// picture. See docs/SITE_CONTROLS.md › Site data and permissions.
 public enum SitePermission: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
-    case camera, microphone, location
+    case camera, microphone, location, ads, automaticPictureInPicture
+
+    /// Devices ask every time without a decision; the others follow a browser-wide setting.
+    public var isDevice: Bool {
+        switch self {
+        case .camera, .microphone, .location: true
+        case .ads, .automaticPictureInPicture: false
+        }
+    }
 }
 
-/// A saved answer; a permission without one asks every time.
 public enum SiteDecision: String, Codable, Sendable {
     case allow, block
 }

@@ -8,7 +8,7 @@ final class FixtureServer: Sendable {
 
     private static let readyTimeout = DispatchTimeInterval.seconds(5)
     private static let maximumRequestLength = 64 * 1024
-    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png", "csv": "text/csv", "json": "application/json"]
+    private static let contentTypes = ["html": "text/html; charset=utf-8", "png": "image/png", "csv": "text/csv", "json": "application/json", "txt": "text/plain; charset=utf-8"]
     /// Served as attachments, so the browser downloads them instead of displaying them.
     private static let attachmentExtensions: Set = ["csv"]
 

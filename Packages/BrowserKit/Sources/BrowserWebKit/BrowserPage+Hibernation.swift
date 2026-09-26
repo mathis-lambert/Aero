@@ -2,7 +2,7 @@ import WebKit
 
 /// State that would be lost or interrupted if the page were unloaded.
 enum HibernationBlocker: Equatable {
-    case capture, fullScreen, mediaPlayback, unsavedInput, unverifiedInput
+    case capture, fullScreen, mediaPlayback, pictureInPicture, unsavedInput, unverifiedInput
 }
 
 extension BrowserPage {
@@ -12,6 +12,10 @@ extension BrowserPage {
         if await webView.requestMediaPlaybackState() == .playing { return .mediaPlayback }
         if webView.url == nil || failure == .processTerminated { return nil }
         do {
+            // A paused video keeps its picture in picture window, which unloading the page would close.
+            if try await webView.callAsyncJavaScript(PageScripts.isInPictureInPicture, contentWorld: PageScripts.world) as? Bool == true {
+                return .pictureInPicture
+            }
             let unsaved = try await webView.callAsyncJavaScript(PageScripts.hasUnsavedInput, contentWorld: PageScripts.world)
             return unsaved as? Bool == true ? .unsavedInput : nil
         } catch {

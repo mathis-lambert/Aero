@@ -56,7 +56,7 @@ struct BrowserWindowView: View {
                     .contentShape(Rectangle())
                     .onHover { if $0 { sidebarRevealed = true } }
                     .allowsHitTesting(!sidebarRevealed && !isOverlaid)
-                if sidebarRevealed || browser.window.siteSettingsPresented {
+                if sidebarRevealed || browser.window.holdsSidebarOpen {
                     SidebarView(browser: browser)
                         .frame(width: BrowserDesign.sidebarWidth)
                         .frame(maxHeight: .infinity)
@@ -108,7 +108,10 @@ struct BrowserWindowView: View {
         .downloadFlights(browser.downloads)
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
         .onChange(of: isOverlaid) { _, overlaid in if overlaid { sidebarRevealed = false } }
-        .onChange(of: browser.window.selectedTabID) { _, _ in browser.window.siteSettingsPresented = false }
+        .onChange(of: browser.window.selectedTabID) { _, _ in
+            browser.window.siteSettingsPresented = false
+            browser.window.controlCenterPresented = false
+        }
         .background(WindowConfiguration())
         .focusedSceneValue(\.browserModel, browser)
         .sheet(item: Binding(get: { browser.window.profileSheet }, set: { browser.window.profileSheet = $0 })) { sheet in

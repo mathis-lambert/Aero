@@ -17,35 +17,10 @@ struct SidebarView: View {
             }
             .frame(height: BrowserDesign.sidebarHeaderHeight)
 
-            Button { browser.perform(.openLocation) } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: browser.internalPage?.symbol ?? (browser.selectedTab == nil ? "magnifyingglass" : "globe"))
-                        .font(BrowserDesign.Typography.label)
-                        .foregroundStyle(.secondary)
-                    if let page = browser.internalPage {
-                        Text(verbatim: page.title).lineLimit(1)
-                    } else if let tab = browser.selectedTab {
-                        Text(verbatim: tab.url.siteName)
-                            .lineLimit(1).truncationMode(.middle)
-                    } else {
-                        Text("Search or enter an address")
-                            .lineLimit(1)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .font(BrowserDesign.Typography.chrome)
-                .padding(.horizontal, 12)
-                .frame(height: 36)
-                .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-                .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-            }
-            .buttonStyle(QuietButtonStyle())
-            .accessibilityLabel("Open location")
-            .accessibilityIdentifier("sidebar.location")
-            .padding(.horizontal, BrowserDesign.rowInset)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
+            AddressBar(browser: browser)
+                .padding(.horizontal, BrowserDesign.rowInset)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
 
             ProfilePager(browser: browser)
             footer

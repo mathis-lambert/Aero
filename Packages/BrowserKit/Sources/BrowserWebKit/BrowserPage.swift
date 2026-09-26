@@ -17,6 +17,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public private(set) var canGoBack = false
     public private(set) var canGoForward = false
     public private(set) var failure: PageFailure?
+    /// The page and everything it loaded came over HTTPS with a certificate WebKit trusts.
+    public private(set) var isSecure = false
     /// False until the first document has rendered a frame; later navigations keep it true.
     public private(set) var hasRenderedFirstFrame = false
 
@@ -30,6 +32,11 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
     @ObservationIgnored var onClose: (() -> Void)?
     @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
+    @ObservationIgnored weak var contentBlocker: ContentBlocker?
+    /// The blocker's state last applied, so a navigation that changes nothing sends WebKit nothing.
+    @ObservationIgnored private var contentBlockingState: Int?
+    /// Set while a video this page played went to picture in picture because its tab was left.
+    @ObservationIgnored private var movedToPictureInPicture = false
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []
     @ObservationIgnored private var requestedURL: URL?
     /// The address of the last recorded visit; reloads and restores of it add no visit.
@@ -46,6 +53,10 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             .first ?? "27.0"
     }
 
+    /// macOS WebKit turns picture in picture off in every web view and has no public setting for it;
+    /// this is the private preference Safari sets. Without it, picture in picture is simply absent.
+    private static let pictureInPictureSetter = NSSelectorFromString("_setAllowsPictureInPictureMediaPlayback:")
+
     static func configuration(store: WKWebsiteDataStore) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
@@ -53,6 +64,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         configuration.preferences.isElementFullscreenEnabled = true
         configuration.allowsAirPlayForMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = .audio
+        if configuration.preferences.responds(to: pictureInPictureSetter) {
+            configuration.preferences.setValue(true, forKey: "allowsPictureInPictureMediaPlayback")
+        }
         configuration.userContentController.addUserScript(PageScripts.editedFieldTracker)
         return configuration
     }
@@ -74,7 +88,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             webView.observe(\.canGoBack, changeHandler: refresh),
             webView.observe(\.canGoForward, changeHandler: refresh),
             webView.observe(\.title, changeHandler: refresh),
-            webView.observe(\.url, changeHandler: refresh)
+            webView.observe(\.url, changeHandler: refresh),
+            webView.observe(\.hasOnlySecureContent, changeHandler: refresh)
         ]
     }
 
@@ -120,6 +135,35 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     public func focus() { webView.window?.makeFirstResponder(webView) }
 
+    public var serverTrust: SecTrust? { webView.serverTrust }
+
+    // MARK: - Picture in picture
+
+    /// Moves a playing video to picture in picture; a script from the app needs no click in the page.
+    func moveVideoToPictureInPicture() async {
+        let moved = try? await webView.callAsyncJavaScript(PageScripts.enterPictureInPicture, contentWorld: PageScripts.world)
+        movedToPictureInPicture = moved as? Bool == true
+    }
+
+    /// Brings back inline the video `moveVideoToPictureInPicture` moved; one the user closed stays closed.
+    func returnVideoFromPictureInPicture() {
+        guard movedToPictureInPicture else { return }
+        movedToPictureInPicture = false
+        webView.callAsyncJavaScript(PageScripts.exitPictureInPicture, in: nil, in: PageScripts.world)
+    }
+
+    // MARK: - Content blocking
+
+    /// Adds or removes the blocking rules for the site `url` belongs to; they apply from the next request.
+    func updateContentBlocking(for url: URL? = nil) {
+        guard let contentBlocker, let origin = (url ?? webView.url).flatMap(SiteOrigin.init(url:)) else { return }
+        let enabled = onPermission?(.ads, origin) != .allow
+        let state = contentBlocker.state(enabled: enabled)
+        guard state != contentBlockingState else { return }
+        contentBlockingState = state
+        contentBlocker.apply(to: webView.configuration.userContentController, enabled: enabled)
+    }
+
     func dispose() {
         onMetadata = nil
         onVisit = nil
@@ -128,6 +172,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onPopup = nil
         onClose = nil
         onPermission = nil
+        contentBlocker = nil
         firstFrameTimeout?.cancel()
         observations.removeAll()
         webView.stopLoading()
@@ -141,6 +186,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         progress = webView.estimatedProgress
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
+        isSecure = webView.url?.scheme == "https" && webView.hasOnlySecureContent
         guard let url = webView.url, NavigationInput.isWebURL(url) else { return }
         // An address change outside a load is a same-document navigation (`pushState`).
         if !webView.isLoading { recordVisit(url) }
@@ -236,6 +282,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         guard let url = navigationAction.request.url else { return .cancel }
         if navigationAction.shouldPerformDownload { return .download }
+        if navigationAction.targetFrame?.isMainFrame == true { updateContentBlocking(for: url) }
         // Frame-local blob/about documents are legitimate; never launch external schemes implicitly.
         if NavigationInput.isWebURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
         if navigationAction.targetFrame?.isMainFrame != false { fail(.unsupportedNavigation) }

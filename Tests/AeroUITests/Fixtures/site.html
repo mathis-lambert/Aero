@@ -3,19 +3,9 @@
 <head><meta charset="utf-8"><title>Site fixture</title></head>
 <body>
 <p id="cookie"></p>
-<p id="camera">Camera not requested</p>
-<p id="location">Location not requested</p>
 <button onclick="document.cookie = 'aero=1; max-age=3600'; showCookie()">Set cookie</button>
-<button onclick="useCamera()">Use camera</button>
-<button onclick="useLocation()">Use location</button>
 <script>
-const show = (id, text) => document.getElementById(id).textContent = text;
-const showCookie = () => show("cookie", document.cookie.includes("aero=1") ? "Cookie set" : "No cookie");
-const useCamera = () => navigator.mediaDevices.getUserMedia({ video: true })
-    .then(() => show("camera", "Camera allowed"), error => show("camera", "Camera " + error.name));
-const useLocation = () => navigator.geolocation.getCurrentPosition(
-    () => show("location", "Location allowed"),
-    error => show("location", error.code === error.PERMISSION_DENIED ? "Location denied" : "Location error " + error.code));
+const showCookie = () => document.getElementById("cookie").textContent = document.cookie.includes("aero=1") ? "Cookie set" : "No cookie";
 showCookie();
 </script>
 </body>

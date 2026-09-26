@@ -15,6 +15,7 @@ class BrowserE2ETestCase: XCTestCase {
         server = try FixtureServer()
         app = TestApplication.make()
         app.launchEnvironment[TestApplication.searchEndpointKey] = server.searchEndpoint.absoluteString
+        app.launchEnvironment[TestApplication.filterListKey] = server.url("filters.txt").absoluteString
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }

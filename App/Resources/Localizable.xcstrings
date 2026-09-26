@@ -74,6 +74,22 @@
         }
       }
     },
+    "A playing video moves to a floating window when you switch tabs, and comes back with its tab." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A playing video moves to a floating window when you switch tabs, and comes back with its tab."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une vidéo en lecture passe dans une fenêtre flottante quand vous changez d’onglet, et revient avec son onglet."
+          }
+        }
+      }
+    },
     "Accent color" : {
       "localizations" : {
         "en" : {
@@ -90,6 +106,22 @@
         }
       }
     },
+    "Add extension" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add extension"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une extension"
+          }
+        }
+      }
+    },
     "Add profile" : {
       "localizations" : {
         "en" : {
@@ -102,6 +134,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajouter un profil"
+          }
+        }
+      }
+    },
+    "Ads and trackers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ads and trackers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publicités et traqueurs"
           }
         }
       }
@@ -237,6 +285,22 @@
         }
       }
     },
+    "Automatic picture in picture" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic picture in picture"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image dans l’image automatique"
+          }
+        }
+      }
+    },
     "Back" : {
       "localizations" : {
         "en" : {
@@ -281,6 +345,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bloquer"
+          }
+        }
+      }
+    },
+    "Block ads & trackers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block ads & trackers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquer pubs et traqueurs"
+          }
+        }
+      }
+    },
+    "Block ads and trackers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block ads and trackers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquer les publicités et traqueurs"
           }
         }
       }
@@ -637,6 +733,22 @@
         }
       }
     },
+    "Copy link" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy link"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le lien"
+          }
+        }
+      }
+    },
     "Create profile" : {
       "localizations" : {
         "en" : {
@@ -681,6 +793,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aube"
+          }
+        }
+      }
+    },
+    "Default" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par défaut"
           }
         }
       }
@@ -809,6 +937,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "English"
+          }
+        }
+      }
+    },
+    "Extensions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions"
+          }
+        }
+      }
+    },
+    "Extensions are coming in a later version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions are coming in a later version"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les extensions arrivent dans une prochaine version"
           }
         }
       }
@@ -1165,6 +1325,22 @@
         }
       }
     },
+    "Link copied" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link copied"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lien copié"
+          }
+        }
+      }
+    },
     "Location" : {
       "localizations" : {
         "en" : {
@@ -1209,6 +1385,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Micro"
+          }
+        }
+      }
+    },
+    "More" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus"
           }
         }
       }
@@ -1422,6 +1614,22 @@
         }
       }
     },
+    "Not secure" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not secure"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sécurisé"
+          }
+        }
+      }
+    },
     "Ocean" : {
       "localizations" : {
         "en" : {
@@ -1434,6 +1642,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Océan"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactivé"
           }
         }
       }
@@ -1466,6 +1690,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Olive"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activé"
           }
         }
       }
@@ -1951,6 +2191,22 @@
         }
       }
     },
+    "Secure" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secure"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sécurisé"
+          }
+        }
+      }
+    },
     "Separate spaces for different sides of your day." : {
       "localizations" : {
         "en" : {
@@ -2015,6 +2271,22 @@
         }
       }
     },
+    "Share" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partager"
+          }
+        }
+      }
+    },
     "Show all history" : {
       "localizations" : {
         "en" : {
@@ -2027,6 +2299,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Afficher tout l’historique"
+          }
+        }
+      }
+    },
+    "Show certificate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show certificate"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le certificat"
           }
         }
       }
@@ -2091,6 +2379,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Affiche les suggestions du moteur pendant la saisie. Les adresses ne sont jamais envoyées."
+          }
+        }
+      }
+    },
+    "Site controls" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site controls"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrôles du site"
           }
         }
       }
@@ -2319,6 +2623,22 @@
         }
       }
     },
+    "This page, or something it loaded, is not encrypted" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This page, or something it loaded, is not encrypted"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette page, ou un élément qu’elle a chargé, n’est pas chiffrée"
+          }
+        }
+      }
+    },
     "Today" : {
       "localizations" : {
         "en" : {
@@ -2427,6 +2747,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utiliser ce profil"
+          }
+        }
+      }
+    },
+    "Uses EasyList and EasyPrivacy, © The EasyList authors, under CC BY-SA 3.0. A site can be allowed from its controls." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uses EasyList and EasyPrivacy, © The EasyList authors, under CC BY-SA 3.0. A site can be allowed from its controls."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise EasyList et EasyPrivacy, © les auteurs d’EasyList, sous licence CC BY-SA 3.0. Un site peut être autorisé depuis ses contrôles."
           }
         }
       }

@@ -11,8 +11,13 @@ final class BrowserWindowState {
     var controlBar: ControlBarPresentation?
     var profileSheet: ProfileSheet?
     var quitPromptPresented = false
-    /// Shown on the sidebar's reload button, which appears for it when the sidebar is hidden.
+    /// Popovers on the sidebar's reload button and address; the sidebar appears for them when hidden.
     var siteSettingsPresented = false
+    var controlCenterPresented = false
+    /// Counts copies, so the address can confirm each one.
+    var linkCopies = 0
+
+    var holdsSidebarOpen: Bool { siteSettingsPresented || controlCenterPresented }
     /// Changes when the New Tab page or a browser page should focus its search field.
     var inputFocusRequest = UUID()
     let find = FindInPage()

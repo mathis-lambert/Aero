@@ -38,7 +38,7 @@ Packages/BrowserKit/
   Tests/                # Tests for each package target
 Tests/                  # Application integration and UI tests
 Configuration/          # Build settings, property lists, entitlements
-Scripts/                # Development tools: E2E runner, memory measurement, icon generation; never run by the app
+Scripts/                # Development tools: E2E runner, memory measurement, icon and filter list generation; never run by the app
 docs/                   # Project documentation and specifications
 ```
 
@@ -109,7 +109,7 @@ docs/                   # Project documentation and specifications
 - Before unloading a page, account for unsaved input, active media/capture, downloads, and other state that cannot safely be restored. Do not promise lossless restoration of arbitrary web application state.
 - Keep profile website data and browser-owned records isolated. Private browsing must not enter persistent history or session restoration.
 - Configure a page's data store before creation. Changing a tab's profile requires an explicit transition, not relabeling a live page.
-- Use public APIs by default. Do not copy private WebKit workarounds from Search without documenting the need and compatibility consequences.
+- Use public APIs by default. Do not copy private WebKit workarounds from Search without documenting the need and compatibility consequences. The one private API in use is the picture in picture preference (`docs/SITE_CONTROLS.md`).
 - Validate origins and payloads at JavaScript/native bridges. Scope site permissions and never log credentials, cookies, or sensitive page contents.
 - Prefer integration with Apple's credential facilities over building another password vault. Keychain storage alone does not imply Apple Passwords AutoFill integration.
 - Version persisted formats, use atomic writes or transactions, and test migrations. Preserve unreadable data for recovery instead of silently overwriting it with empty state.

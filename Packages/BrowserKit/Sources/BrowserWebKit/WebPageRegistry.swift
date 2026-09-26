@@ -23,6 +23,7 @@ public final class WebPageRegistry {
     }
     public weak var delegate: WebPageRegistryDelegate?
     public let downloads: DownloadCoordinator
+    private let contentBlocker: ContentBlocker?
 
     var livePages: [UUID: LivePage] = [:]
     var activeTabID: UUID?
@@ -33,19 +34,23 @@ public final class WebPageRegistry {
     private var pressureMonitor: MemoryPressureMonitor?
     private let ephemeral: Bool
 
-    public convenience init(downloads: DownloadCoordinator, ephemeral: Bool = false, hibernation: HibernationSettings = .default) {
+    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, ephemeral: Bool = false,
+                            hibernation: HibernationSettings = .default) {
         let limit = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
-        self.init(downloads: downloads, ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
+        self.init(downloads: downloads, contentBlocker: contentBlocker, ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
     }
 
-    package init(downloads: DownloadCoordinator, ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
+    package init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, ephemeral: Bool, hibernation: HibernationSettings,
+                 liveBackgroundPageLimit: Int) {
         self.downloads = downloads
+        self.contentBlocker = contentBlocker
         self.ephemeral = ephemeral
         policy = HibernationPolicy(settings: hibernation, liveBackgroundPageLimit: liveBackgroundPageLimit)
         pressureMonitor = MemoryPressureMonitor { [weak self] pressure in
             self?.policy.pressure = pressure
             self?.refreshHibernationSchedule()
         }
+        contentBlocker?.onInstall = { [weak self] in self?.refreshContentBlocking() }
     }
 
     isolated deinit { evaluation?.cancel() }
@@ -61,6 +66,7 @@ public final class WebPageRegistry {
 
     /// Makes the tab's page visible, creating or restoring it when needed.
     public func activate(_ tab: BrowserTab, profileID: UUID) -> BrowserPage {
+        leave(activeTabID, for: tab.id)
         markPreviousActiveAsIdle()
         activeTabID = tab.id
         let page: BrowserPage
@@ -71,11 +77,13 @@ public final class WebPageRegistry {
             page = makePage(for: tab, profileID: profileID)
             livePages[tab.id] = LivePage(page: page, lastActive: .now)
         }
+        page.returnVideoFromPictureInPicture()
         refreshHibernationSchedule()
         return page
     }
 
     public func deactivate() {
+        leave(activeTabID, for: nil)
         markPreviousActiveAsIdle()
         activeTabID = nil
         refreshHibernationSchedule()
@@ -92,6 +100,23 @@ public final class WebPageRegistry {
         hibernatedStates[tabID] = live.page.webView.interactionState
         live.page.dispose()
         Self.signposter.emitEvent(Diagnostics.Signpost.pageHibernated)
+    }
+
+    /// Pages take the setting from their next load; a site's own switch reloads it instead.
+    public func refreshContentBlocking() {
+        for live in livePages.values { live.page.updateContentBlocking() }
+    }
+
+    /// A video playing in the tab left behind moves to picture in picture when its site allows it,
+    /// and comes back at once if the tab was selected again meanwhile.
+    private func leave(_ tabID: UUID?, for nextTabID: UUID?) {
+        guard let tabID, tabID != nextTabID, let page = livePages[tabID]?.page,
+              let origin = page.webView.url.flatMap(SiteOrigin.init(url:)),
+              delegate?.page(tabID, decisionFor: .automaticPictureInPicture, at: origin) == .allow else { return }
+        Task { [weak self] in
+            await page.moveVideoToPictureInPicture()
+            if self?.activeTabID == tabID { page.returnVideoFromPictureInPicture() }
+        }
     }
 
     private func makePage(for tab: BrowserTab, profileID: UUID) -> BrowserPage {
@@ -114,6 +139,7 @@ public final class WebPageRegistry {
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
         page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
         page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
+        page.contentBlocker = contentBlocker
         page.onClose = { [weak self] in
             guard let opener = self?.livePages[tabID]?.openerTabID else { return }
             self?.delegate?.pageDidRequestClose(tabID, openerTabID: opener)

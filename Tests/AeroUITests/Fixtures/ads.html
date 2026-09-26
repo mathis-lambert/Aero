@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Ads fixture</title></head>
+<body>
+<h1>Ads fixture</h1>
+<p id="tracker">Tracker pending</p>
+<p id="first-party">First party pending</p>
+<p id="banner">Banner pending</p>
+<div class="ad-banner">Advert</div>
+<script>
+const show = (id, text) => document.getElementById(id).textContent = text;
+const load = (id, name, src) => {
+    const image = new Image();
+    image.onload = () => show(id, name + " loaded");
+    image.onerror = () => show(id, name + " blocked");
+    image.src = src;
+};
+load("tracker", "Tracker", "http://127.0.0.1:" + location.port + "/icon-orange.png");
+load("first-party", "First party", "/icon-orange.png");
+requestAnimationFrame(() => {
+    const hidden = getComputedStyle(document.querySelector(".ad-banner")).display === "none";
+    show("banner", hidden ? "Banner hidden" : "Banner shown");
+});
+</script>
+</body>
+</html>

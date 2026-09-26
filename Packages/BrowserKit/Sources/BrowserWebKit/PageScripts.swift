@@ -31,6 +31,34 @@ enum PageScripts {
         return true;
         """
 
+    /// The smallest video, in points, worth a picture in picture window: smaller ones are previews or decoration.
+    static let minimumPictureInPictureArea = 160 * 90
+
+    /// Function body moving the largest visible, unmuted, playing video of the page to picture in
+    /// picture, unless one is there already; returns whether it did.
+    static let enterPictureInPicture = """
+        const videos = Array.from(document.querySelectorAll("video"));
+        if (videos.some((video) => video.webkitPresentationMode !== "inline")) return false;
+        const area = (video) => { const box = video.getBoundingClientRect(); return box.width * box.height; };
+        const candidates = videos.filter((video) => !video.paused && !video.ended && !video.muted && video.volume > 0
+            && video.videoWidth > 0 && area(video) >= \(minimumPictureInPictureArea)
+            && video.webkitSupportsPresentationMode?.("picture-in-picture"));
+        const video = candidates.sort((a, b) => area(b) - area(a))[0];
+        if (!video) return false;
+        video.webkitSetPresentationMode("picture-in-picture");
+        return true;
+        """
+
+    static let exitPictureInPicture = """
+        for (const video of document.querySelectorAll("video")) {
+            if (video.webkitPresentationMode === "picture-in-picture") video.webkitSetPresentationMode("inline");
+        }
+        """
+
+    static let isInPictureInPicture = """
+        return Array.from(document.querySelectorAll("video")).some((video) => video.webkitPresentationMode === "picture-in-picture");
+        """
+
     static let maximumSelectionLength = 256
 
     static let selectedText = """

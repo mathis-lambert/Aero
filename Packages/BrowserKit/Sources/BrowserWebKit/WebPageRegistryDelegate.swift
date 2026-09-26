@@ -16,6 +16,7 @@ public protocol WebPageRegistryDelegate: AnyObject {
     func pageDidOpenPopup(_ tabID: UUID)
     /// A popup called `window.close()`; its opener may be selected again.
     func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID)
-    /// The saved answer of the tab's profile, or `nil` to let WebKit ask.
+    /// The tab's profile's answer, with the browser-wide setting in place of a missing one, or `nil`
+    /// for a device WebKit should ask for.
     func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision?
 }

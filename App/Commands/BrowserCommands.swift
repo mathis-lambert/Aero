@@ -18,6 +18,8 @@ extension BrowserCommand {
         case .findInPage: String(localized: "Find…")
         case .findNext: String(localized: "Find next")
         case .findPrevious: String(localized: "Find previous")
+        case .copyLink: String(localized: "Copy link")
+        case .controlCenter: String(localized: "Site controls")
         case .clearCookies: String(localized: "Clear cookies")
         case .clearCache: String(localized: "Clear cache")
         case .siteSettings: String(localized: "Site settings…")
@@ -40,6 +42,8 @@ extension BrowserCommand {
         case .findInPage: "text.magnifyingglass"
         case .findNext: "chevron.down"
         case .findPrevious: "chevron.up"
+        case .copyLink: "link"
+        case .controlCenter: "switch.2"
         case .clearCookies: "trash"
         case .clearCache: "externaldrive.badge.xmark"
         case .siteSettings: "slider.horizontal.3"
@@ -57,7 +61,8 @@ extension BrowserCommand {
         case .closeTab: KeyboardShortcut("w")
         case .reopenTab: KeyboardShortcut("t", modifiers: [.command, .shift])
         case .toggleSidebar: KeyboardShortcut("s", modifiers: [.command, .shift])
-        case .profiles, .clearCookies, .clearCache, .siteSettings: nil
+        case .copyLink: KeyboardShortcut("c", modifiers: [.command, .shift])
+        case .profiles, .controlCenter, .clearCookies, .clearCache, .siteSettings: nil
         case .showHistory: KeyboardShortcut("y")
         case .findInPage: KeyboardShortcut("f")
         case .findNext: KeyboardShortcut("g")
@@ -77,7 +82,7 @@ extension BrowserModel {
         case .closeTab: return selectedTab != nil
         case .findInPage, .findNext, .findPrevious: return currentPage != nil
         case .reopenTab: return canReopen
-        case .clearCookies, .clearCache, .siteSettings: return currentSite != nil
+        case .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: return currentSite != nil
         default: return true
         }
     }
@@ -105,6 +110,8 @@ extension BrowserModel {
         case .profiles: window.profileSheet = window.selectedProfileID.map(ProfileSheet.edit)
         case .showHistory: show(.history)
         case .findInPage, .findNext, .findPrevious: find(command)
+        case .copyLink: copyLink()
+        case .controlCenter: window.controlCenterPresented = true
         case .clearCookies: Task { await clearSiteData(.cookies) }
         case .clearCache: Task { await clearSiteData(.cache) }
         case .siteSettings: window.siteSettingsPresented = true
