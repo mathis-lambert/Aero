@@ -170,6 +170,22 @@
         }
       }
     },
+    "Added to Aero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added to Aero"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouté à Aero"
+          }
+        }
+      }
+    },
     "Add “%@”?" : {
       "localizations" : {
         "en" : {
@@ -1337,6 +1353,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clair"
+          }
+        }
+      }
+    },
+    "Light or dark, with the system" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light or dark, with the system"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clair ou sombre, selon le système"
           }
         }
       }

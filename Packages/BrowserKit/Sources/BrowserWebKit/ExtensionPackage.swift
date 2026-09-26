@@ -17,6 +17,15 @@ enum ExtensionPackage {
         String(SHA256.hash(data: key).prefix(16).flatMap { [$0 >> 4, $0 & 0x0f] }.map { Character(UnicodeScalar(UInt8(ascii: "a") + $0)) })
     }
 
+    /// An unpacked extension's identifier, as Chrome gives it: from its manifest's `key`, the public
+    /// key a store package is signed with, or else from the folder's path.
+    static func identifier(ofFolder folder: URL) -> String {
+        let manifest = (try? Data(contentsOf: folder.appendingPathComponent("manifest.json")))
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        if let key = (manifest?["key"] as? String).flatMap({ Data(base64Encoded: $0) }) { return identifier(forPublicKey: key) }
+        return identifier(forPublicKey: Data(folder.standardizedFileURL.path.utf8))
+    }
+
     // MARK: - CRX3
 
     /// The archive of a CRX3 package, once the proof made with the key `identifier` derives from checks
@@ -82,13 +91,16 @@ enum ExtensionPackage {
 
     /// Unpacks, prepares and puts an extension in `destination`, replacing what is there only once all of
     /// it succeeded, so a failure never leaves half an extension.
-    static func install(archive: Data? = nil, folder source: URL? = nil, at destination: URL) throws {
+    enum Source { case archive(Data), folder(URL) }
+
+    static func install(_ source: Source, at destination: URL) throws {
         let staging = destination.deletingLastPathComponent().appendingPathComponent(".staging-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: staging) }
         try FileManager.default.createDirectory(at: staging.deletingLastPathComponent(), withIntermediateDirectories: true)
-        if let source {
-            try FileManager.default.copyItem(at: source, to: staging)
-        } else if let archive {
+        switch source {
+        case .folder(let folder):
+            try FileManager.default.copyItem(at: folder, to: staging)
+        case .archive(let archive):
             let zip = staging.appendingPathExtension("zip")
             defer { try? FileManager.default.removeItem(at: zip) }
             try archive.write(to: zip)

@@ -32,6 +32,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
     @ObservationIgnored var onClose: (() -> Void)?
     @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
+    /// The Chrome Web Store's install button for this page's address, after an install when pressed.
+    @ObservationIgnored var onWebStoreButton: ((_ pressed: Bool) async -> WebStoreButton?)?
     @ObservationIgnored weak var contentBlocker: ContentBlocker?
     /// The blocker's state last applied, so a navigation that changes nothing sends WebKit nothing.
     @ObservationIgnored private var contentBlockingState: Int?
@@ -57,7 +59,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     /// this is the private preference Safari sets. Without it, picture in picture is simply absent.
     private static let pictureInPictureSetter = NSSelectorFromString("_setAllowsPictureInPictureMediaPlayback:")
 
-    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController? = nil) -> WKWebViewConfiguration {
+    private static func isPageURL(_ url: URL) -> Bool { NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) }
+
+    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
         configuration.webExtensionController = extensions
@@ -69,6 +73,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             configuration.preferences.setValue(true, forKey: "allowsPictureInPictureMediaPlayback")
         }
         configuration.userContentController.addUserScript(PageScripts.editedFieldTracker)
+        configuration.userContentController.addUserScript(PageScripts.webStoreButton)
+        configuration.userContentController.addScriptMessageHandler(WebStoreBridge(), contentWorld: PageScripts.world, name: PageScripts.webStoreHandlerName)
         return configuration
     }
 
@@ -95,7 +101,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     public func load(_ url: URL) {
-        guard NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) else { fail(.unsupportedNavigation); return }
+        guard Self.isPageURL(url) else { fail(.unsupportedNavigation); return }
         failure = nil
         requestedURL = url
         webView.load(URLRequest(url: url))
@@ -119,7 +125,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public func goForward() { failure = nil; webView.goForward() }
 
     /// Selects and scrolls to the next match, wrapping around; returns whether one exists.
-    public func find(_ text: String, backwards: Bool = false) async -> Bool {
+    public func find(_ text: String, backwards: Bool) async -> Bool {
         let configuration = WKFindConfiguration()
         configuration.backwards = backwards
         configuration.caseSensitive = false
@@ -173,6 +179,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onPopup = nil
         onClose = nil
         onPermission = nil
+        onWebStoreButton = nil
         contentBlocker = nil
         firstFrameTimeout?.cancel()
         observations.removeAll()
@@ -287,7 +294,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         if navigationAction.shouldPerformDownload { return .download }
         if navigationAction.targetFrame?.isMainFrame == true { updateContentBlocking(for: url) }
         // Frame-local blob/about documents are legitimate; never launch external schemes implicitly.
-        if NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
+        if Self.isPageURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
         if navigationAction.targetFrame?.isMainFrame != false { fail(.unsupportedNavigation) }
         return .cancel
     }
@@ -339,5 +346,27 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         let decisions = permissions.map { onPermission($0, site) }
         if decisions.contains(.block) { return .deny }
         return decisions.allSatisfy { $0 == .allow } ? .grant : .prompt
+    }
+}
+
+/// What the Chrome Web Store's install button says, and whether it can be pressed.
+public struct WebStoreButton: Sendable {
+    public let title: String
+    public let isEnabled: Bool
+
+    public init(title: String, isEnabled: Bool) {
+        self.title = title
+        self.isEnabled = isEnabled
+    }
+}
+
+/// Answers the store script from Aero's world, which pages cannot post to. It carries no extension
+/// identifier: the page it asks for is found from the web view.
+private final class WebStoreBridge: NSObject, WKScriptMessageHandlerWithReply {
+    @MainActor
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) async -> (Any?, String?) {
+        guard message.frameInfo.isMainFrame, let page = message.webView?.navigationDelegate as? BrowserPage,
+              let button = await page.onWebStoreButton?(message.body as? String == "install") else { return (nil, nil) }
+        return (["title": button.title, "enabled": button.isEnabled], nil)
     }
 }

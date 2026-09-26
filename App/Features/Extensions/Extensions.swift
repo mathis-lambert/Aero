@@ -6,7 +6,7 @@ import os
 import WebKit
 
 /// What an extension asks the person to accept: its installation, an update, or more permissions.
-struct ExtensionRequest: Identifiable {
+struct ExtensionRequest {
     enum Kind { case installation, update, permissions }
 
     let id = UUID()
@@ -50,8 +50,22 @@ extension BrowserModel: WebExtensionHost {
             let webExtension = try await pages.extensions(for: profileID).prepare(crx: package, identifier: identifier)
             await review(webExtension, identifier: identifier, source: .webStore, inProfile: profileID, inSettings: inSettings)
         } catch {
-            errorMessage = String(localized: "The extension could not be installed. Check your connection and try again.")
+            present(.error(String(localized: "The extension could not be installed. Check your connection and try again.")))
         }
+    }
+
+    /// The store page's own button, in place of its grey Add to Chrome.
+    func page(_ tabID: UUID, webStoreButtonAt url: URL) -> WebStoreButton? {
+        guard let identifier = WebStore.extensionID(on: url), let tab = tab(tabID),
+              let profileID = profileID(of: tab) else { return nil }
+        return installedExtensions(inProfile: profileID).contains { $0.id == identifier }
+            ? WebStoreButton(title: String(localized: "Added to Aero"), isEnabled: false)
+            : WebStoreButton(title: String(localized: "Add to Aero"), isEnabled: true)
+    }
+
+    func page(_ tabID: UUID, didPressWebStoreButtonAt url: URL) async {
+        guard let identifier = WebStore.extensionID(on: url) else { return }
+        await installFromWebStore(identifier)
     }
 
     func installFromFolder(_ folder: URL) async {
@@ -60,7 +74,7 @@ extension BrowserModel: WebExtensionHost {
             let (identifier, webExtension) = try await pages.extensions(for: profileID).prepare(folder: folder)
             await review(webExtension, identifier: identifier, source: .folder(folder), inProfile: profileID, inSettings: true)
         } catch {
-            errorMessage = Self.notAnExtension
+            present(.error(Self.notAnExtension))
         }
     }
 
@@ -71,7 +85,7 @@ extension BrowserModel: WebExtensionHost {
             _ = try await pages.extensions(for: profileID).prepare(folder: folder)
             await load(record, inProfile: profileID)
         } catch {
-            errorMessage = Self.notAnExtension
+            present(.error(Self.notAnExtension))
         }
     }
 

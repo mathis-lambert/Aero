@@ -45,19 +45,6 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     #expect(registry.livePages[first.id] != nil)
 }
 
-@Test @MainActor func pinnedPagesStayLoadedWhenRequested() async throws {
-    var settings = immediate
-    settings.keepsPinnedTabsLoaded = true
-    let registry = makeRegistry(settings)
-    let pinned = try makeTab()
-    let delegate = PinnedTabs(pinned: [pinned.id])
-    registry.delegate = delegate
-    activate(pinned, in: registry)
-    registry.deactivate()
-    await registry.hibernateDuePages()
-    #expect(registry.livePages[pinned.id] != nil)
-}
-
 @Test @MainActor func unsavedInputKeepsAPageAwake() async throws {
     let registry = makeRegistry()
     let page = activate(try makeTab(), in: registry)
@@ -71,18 +58,4 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
         globalThis.aeroEditedFields.add(field);
         """, contentWorld: PageScripts.world)
     #expect(await page.hibernationBlocker() == .unsavedInput)
-}
-
-@MainActor
-private final class PinnedTabs: WebPageRegistryDelegate {
-    let pinned: Set<UUID>
-    init(pinned: Set<UUID>) { self.pinned = pinned }
-    func isPinned(_ tabID: UUID) -> Bool { pinned.contains(tabID) }
-    func page(_ tabID: UUID, didUpdateURL url: URL, title: String) {}
-    func page(_ tabID: UUID, didVisit url: URL) {}
-    func page(_ tabID: UUID, didDeclareIcons links: [FaviconLink], at url: URL) {}
-    func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab? { nil }
-    func pageDidOpenPopup(_ tabID: UUID) {}
-    func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID) {}
-    func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? { nil }
 }

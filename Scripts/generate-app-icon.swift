@@ -1,7 +1,8 @@
 #!/usr/bin/env swift
 // Generates every Aero icon in one pass, so the system icon and the alternates cannot drift apart:
 //   App/Resources/AppIcon.icon/Assets  aero-a-light.svg and aero-a-dark.svg, the system icon layers
-//   App/Resources/AppIcons             aero-<mark>-<palette>.svg, the alternates offered in Settings
+//   App/Resources/AppIcons             aero-<mark>-<palette>.svg, the alternates offered in Settings, and the
+//                                      system icon's two again, which Settings draws as Automatic
 //
 //   swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf> [--boost n]
 //   --boost thickens the A's hairlines (default 1.0) so its bar and serifs survive the dither.
@@ -133,7 +134,7 @@ func drawFeather(_ layer: Layer, shade: Bool) {
     g.move(to: at(0)); for step in 1...50 { g.addLine(to: at(Double(step) / 50)) }; g.strokePath()
 }
 
-// MARK: - Wind field (port of Aero.dither)
+// MARK: - Wind field (also drawn by App/Features/NewTab/Wind.metal)
 
 func hash(_ x: Double, _ y: Double) -> Double {
     let h = UInt32(truncatingIfNeeded: Int64(x) &* 374761393 &+ Int64(y) &* 668265263)
@@ -207,9 +208,12 @@ for mark in Mark.allCases {
         let marked = byMotif[palette.motif] ?? dots(for: mark, motif: palette.motif)
         byMotif[palette.motif] = marked
         let isSystemIcon = mark == .a && systemPalettes.contains(palette.name)
-        let file = (isSystemIcon ? systemIconURL : alternatesURL).appendingPathComponent("aero-\(mark.rawValue)-\(palette.name).svg")
-        try svg(marked, palette).write(to: file, atomically: true, encoding: .utf8)
+        let name = "aero-\(mark.rawValue)-\(palette.name).svg"
+        // The system icon's layers cannot be read back from the compiled icon, so Settings gets its own copy.
+        for folder in isSystemIcon ? [systemIconURL, alternatesURL] : [alternatesURL] {
+            try svg(marked, palette).write(to: folder.appendingPathComponent(name), atomically: true, encoding: .utf8)
+        }
         written += 1
     }
 }
-print("\(written) icons written: 2 in \(systemIconURL.path), \(written - 2) in \(alternatesURL.path)")
+print("\(written) icons written: 2 in \(systemIconURL.path) and \(alternatesURL.path), \(written - 2) more in \(alternatesURL.path)")

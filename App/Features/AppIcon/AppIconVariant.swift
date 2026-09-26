@@ -1,9 +1,19 @@
 import SwiftUI
 
 /// An alternate app icon from `App/Resources/AppIcons`. The stable `id` is what preferences store.
-/// The A on paper and on night is the system icon itself (Automatic), so it is not an alternate.
+/// The A on paper and on night is the system icon itself (Automatic), so it is not an alternate; it is
+/// kept as artwork only, to draw Automatic.
 struct AppIconVariant: Hashable, Identifiable, Sendable {
-    enum Mark: String, CaseIterable { case a, feather }
+    enum Mark: String, CaseIterable {
+        case a, feather
+
+        var label: String {
+            switch self {
+            case .a: String(localized: "Letter A")
+            case .feather: String(localized: "Feather")
+            }
+        }
+    }
     enum Palette: String, CaseIterable {
         case light, dark, blue, bw, wb, lavender, sun, terracotta, olive, dawn, aurora
     }
@@ -15,10 +25,14 @@ struct AppIconVariant: Hashable, Identifiable, Sendable {
         Palette.allCases.map { AppIconVariant(mark: mark, palette: $0) }
     }.filter { !($0.mark == .a && [.light, .dark].contains($0.palette)) }
 
-    var id: String { "\(mark.rawValue)-\(palette.rawValue)" }
-    var artworkURL: URL? { Bundle.main.url(forResource: "aero-\(id)", withExtension: "svg") }
+    /// The system icon's artwork in one appearance. The system's own rendering cannot stand in: once an
+    /// alternate is on the bundle, the system returns that one.
+    static func system(dark: Bool) -> AppIconVariant { AppIconVariant(mark: .a, palette: dark ? .dark : .light) }
 
-    /// Returns `nil` for an unknown identifier, such as a variant that was removed.
+    var id: String { "\(mark.rawValue)-\(palette.rawValue)" }
+    var artwork: NSImage? { Bundle.main.url(forResource: "aero-\(id)", withExtension: "svg").flatMap(NSImage.init(contentsOf:)) }
+
+    /// Returns `nil` for an unknown identifier.
     init?(id: String) {
         guard let variant = Self.all.first(where: { $0.id == id }) else { return nil }
         self = variant
@@ -30,17 +44,10 @@ struct AppIconVariant: Hashable, Identifiable, Sendable {
     }
 
     var label: String {
-        String(localized: "\(markName), \(paletteName)", comment: "App icon variant: mark, then palette, such as “Feather, Sun”.")
+        String(localized: "\(mark.label), \(paletteName)", comment: "App icon variant: mark, then palette, such as “Feather, Sun”.")
     }
 
-    private var markName: String {
-        switch mark {
-        case .a: String(localized: "Letter A")
-        case .feather: String(localized: "Feather")
-        }
-    }
-
-    private var paletteName: String {
+    var paletteName: String {
         switch palette {
         case .light: String(localized: "Paper")
         case .dark: String(localized: "Night")

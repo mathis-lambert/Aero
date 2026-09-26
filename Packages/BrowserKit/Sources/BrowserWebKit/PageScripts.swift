@@ -14,6 +14,59 @@ enum PageScripts {
         }, { capture: true, passive: true });
         """, injectionTime: .atDocumentStart, forMainFrameOnly: true, in: world)
 
+    /// On the Chrome Web Store, puts Aero's install button in place of the store's grey one. The store's
+    /// markup is generated, so nothing leans on its class names: its button is the disabled one naming Chrome. The page never says what to install;
+    /// Aero reads that from the tab's address. See docs/EXTENSIONS.md › Installing.
+    static let webStoreButton = WKUserScript(source: """
+        (() => {
+            if (location.hostname !== "chromewebstore.google.com") return;
+            const bridge = (body) => window.webkit.messageHandlers.\(webStoreHandlerName).postMessage(body);
+            const show = (button, state) => {
+                if (!state) { button.previousElementSibling.style.display = ""; button.remove(); return; }
+                const texts = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+                let last = null;
+                for (let node = texts.nextNode(); node; node = texts.nextNode()) if (node.nodeValue.trim()) last = node;
+                if (last) last.nodeValue = state.title; else button.textContent = state.title;
+                button.disabled = !state.enabled;
+            };
+            const place = () => {
+                for (const theirs of document.querySelectorAll("button[disabled]:not([data-aero])")) {
+                    if (!/chrome/i.test(theirs.textContent)) continue;
+                    const ours = theirs.cloneNode(true);
+                    for (const name of ["jsaction", "jscontroller", "jsname", "jslog", "aria-describedby"]) ours.removeAttribute(name);
+                    ours.dataset.aero = "install";
+                    ours.disabled = true;
+                    theirs.dataset.aero = "hidden";
+                    theirs.style.display = "none";
+                    theirs.after(ours);
+                    bridge("state").then((state) => show(ours, state));
+                }
+            };
+            // Caught on the window, before the store's own handlers on the document see the click.
+            window.addEventListener("click", (event) => {
+                const ours = event.target.closest?.('button[data-aero="install"]');
+                if (!ours) return;
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                // Only the person's click: the store's own scripts click buttons too.
+                if (ours.disabled || !event.isTrusted) return;
+                ours.disabled = true;
+                bridge("install").then((state) => show(ours, state));
+            }, true);
+            // The store rewrites itself as it moves between extensions. A timer, not a frame: a tab out of
+            // sight gets no frames.
+            let queued = false;
+            new MutationObserver(() => {
+                if (queued) return;
+                queued = true;
+                setTimeout(() => { queued = false; place(); }, 60);
+            }).observe(document.documentElement, { childList: true, subtree: true });
+            place();
+        })();
+        """, injectionTime: .atDocumentEnd, forMainFrameOnly: true, in: world)
+
+    static let webStoreHandlerName = "aeroWebStore"
+
     /// Function body returning whether a field the user edited still holds unsubmitted text.
     static let hasUnsavedInput = """
         const fields = globalThis.aeroEditedFields ?? new Set();

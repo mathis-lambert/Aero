@@ -1,33 +1,46 @@
-import AppKit
 import SwiftUI
 
-/// Automatic plus every alternate icon; the choice applies everywhere at once.
+/// Automatic, drawn in both of its appearances, then the alternates by mark. Every tile is drawn from
+/// its own artwork, so none changes with the icon chosen. The choice applies everywhere at once.
 struct AppIconPicker: View {
+    private static let tileSize: CGFloat = 32
+    private static let automatic = [AppIconVariant.system(dark: false), .system(dark: true)]
+
     let browser: BrowserModel
-
-    private static let tileSize: CGFloat = 44
-    private static let selectionWidth: CGFloat = 2
-
     /// Rendered away from the main actor while the page is shown: each artwork holds about a thousand shapes.
     @State private var thumbnails: [AppIconVariant: CGImage] = [:]
     @Environment(\.displayScale) private var displayScale
-    @Environment(\.palette) private var palette
 
     private var selection: AppIconVariant? { browser.preferences.appIcon }
 
     var body: some View {
-        Group {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 8)], alignment: .leading, spacing: 8) {
-                tile(nil, image: Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)), label: String(localized: "Automatic"))
-                ForEach(AppIconVariant.all) { variant in
-                    tile(variant, image: thumbnails[variant].map { Image(decorative: $0, scale: displayScale) }, label: variant.label)
+        VStack(alignment: .leading, spacing: 14) {
+            choice(nil, label: String(localized: "Automatic")) {
+                HStack(spacing: 10) {
+                    HStack(spacing: 4) { ForEach(Self.automatic) { icon($0) } }.ring(selection == nil)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Automatic")
+                        Text("Light or dark, with the system").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            ForEach(AppIconVariant.Mark.allCases, id: \.self) { mark in
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(mark.label).font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        ForEach(AppIconVariant.all.filter { $0.mark == mark }) { variant in
+                            choice(variant, label: variant.label) { icon(variant).ring(selection == variant) }
+                                .tooltip(variant.paletteName)
+                        }
+                    }
                 }
             }
         }
+        .padding(.vertical, 4)
         .task(id: displayScale) {
             let pixels = Int(Self.tileSize * displayScale)
             var loaded: [AppIconVariant: CGImage] = [:]
-            for variant in AppIconVariant.all {
+            for variant in Self.automatic + AppIconVariant.all {
                 guard !Task.isCancelled else { return }
                 loaded[variant] = await Self.thumbnail(of: variant, pixels: pixels)
             }
@@ -36,36 +49,40 @@ struct AppIconPicker: View {
         }
     }
 
-    private func tile(_ variant: AppIconVariant?, image: Image?, label: String) -> some View {
-        let selected = selection == variant
-        return Button { browser.setAppIcon(variant) } label: {
-            Group {
-                if let image {
-                    image.resizable().interpolation(.high).aspectRatio(contentMode: .fit)
-                } else {
-                    palette.raised
-                }
+    private func icon(_ variant: AppIconVariant) -> some View {
+        Group {
+            if let thumbnail = thumbnails[variant] {
+                Image(decorative: thumbnail, scale: displayScale).resizable().interpolation(.high)
+            } else {
+                Color.secondary.opacity(0.1)
             }
-            .clipShape(RoundedRectangle(cornerRadius: Self.tileSize * BrowserDesign.faviconCornerRatio))
-            .frame(width: Self.tileSize, height: Self.tileSize)
-            .overlay {
-                RoundedRectangle(cornerRadius: Self.tileSize * BrowserDesign.faviconCornerRatio + Self.selectionWidth * 2)
-                    .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: Self.selectionWidth)
-                    .padding(-Self.selectionWidth * 2)
-            }
-            .contentShape(Rectangle())
         }
-        .buttonStyle(QuietButtonStyle(radius: Self.tileSize * BrowserDesign.faviconCornerRatio))
-        .tooltip(label)
-        .accessibilityLabel(label)
-        .accessibilityIdentifier("settings.appIcon.\(variant?.id ?? "automatic")")
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        .frame(width: Self.tileSize, height: Self.tileSize)
+        .clipShape(RoundedRectangle(cornerRadius: Self.tileSize * BrowserDesign.faviconCornerRatio))
+    }
+
+    private func choice(_ variant: AppIconVariant?, label: String, @ViewBuilder content: () -> some View) -> some View {
+        Button { browser.setAppIcon(variant) } label: { content().contentShape(Rectangle()) }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityIdentifier("settings.appIcon.\(variant?.id ?? "automatic")")
+            .accessibilityAddTraits(selection == variant ? [.isButton, .isSelected] : .isButton)
     }
 
     @concurrent
     private static func thumbnail(of variant: AppIconVariant, pixels: Int) async -> CGImage? {
-        guard let url = variant.artworkURL, let artwork = NSImage(contentsOf: url) else { return nil }
+        guard let artwork = variant.artwork else { return nil }
         var rect = CGRect(x: 0, y: 0, width: pixels, height: pixels)
         return artwork.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+    }
+}
+
+private extension View {
+    /// The accent ring around a chosen icon; its room is kept when not chosen, so nothing moves.
+    func ring(_ shown: Bool) -> some View {
+        padding(4).overlay {
+            RoundedRectangle(cornerRadius: 11).strokeBorder(shown ? Color.accentColor : .clear, lineWidth: 2)
+        }
     }
 }

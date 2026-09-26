@@ -16,10 +16,9 @@ struct ExtensionButton: View {
     let browser: BrowserModel
     let extensions: ProfileExtensions
     let record: InstalledExtension
-    var size: CGFloat = BrowserDesign.navigationButtonSize
+    let size: CGFloat
     /// Registered as its popup's anchor; buttons that go away with their popover leave it to the control center's.
     var anchorsPopup = false
-    @Environment(\.palette) private var palette
 
     var body: some View {
         let _ = extensions.actionRevision
@@ -42,7 +41,7 @@ struct ExtensionButton: View {
         }
         .buttonStyle(QuietButtonStyle())
         .background { if anchorsPopup { AnchorView(key: record.id, anchors: browser.window.extensionAnchors) } }
-        .tooltip(action?.label.isEmpty == false ? action!.label : name)
+        .tooltip(action.map(\.label).flatMap { $0.isEmpty ? nil : $0 } ?? name)
         .contextMenu { ExtensionMenu(browser: browser, extensions: extensions, record: record) }
         .accessibilityLabel(Text(verbatim: name))
         .accessibilityValue(Text(verbatim: action?.badgeText ?? ""))

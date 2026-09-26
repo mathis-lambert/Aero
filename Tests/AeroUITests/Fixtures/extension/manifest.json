@@ -2,10 +2,11 @@
     "manifest_version": 3,
     "name": "Aero Test Extension",
     "version": "1.0",
-    "description": "E2E fixture: a content script, a popup, and a worker using an API WebKit lacks.",
+    "description": "E2E fixture: a content script, a popup, and a worker using an API WebKit lacks and a native host.",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJgachnG0UYDN6tIZmrn7ApN+gS3I0gJjgRXcjtJJUnli6/soo/wPTIwFwwG0NZT/9Ov81/ZPODVe0Vob/fDcFj81J3LUi4Oa4Oxkz14ReA2tevcl5dg0UqKpXze4GKbfyI2jA0PAEmE366ckhbAUodbZn2SCD/1bxbbzHoCgPBiOg6X74uyLEPPStJ8Q68aMzwW+IBC27e4c7t9GlkvJFB/Ollz5+R803b5MMz+AAiVx6nx7kyamtNB978gcSgfyh3NnPqU13XHtNkZKz6PYATVUmplgfDs+Sh9ClAep8KQTcqxot23SFg2od2gfMtOU//I3FsyTEcpu+qVVOTfSQIDAQAB",
     "action": { "default_popup": "action-popup.html", "default_title": "Aero Test Extension" },
     "background": { "service_worker": "worker.js" },
     "content_scripts": [{ "matches": ["http://localhost/*"], "js": ["content.js"] }],
     "host_permissions": ["http://localhost/*"],
-    "permissions": ["storage", "webNavigation"]
+    "permissions": ["webNavigation", "nativeMessaging"]
 }

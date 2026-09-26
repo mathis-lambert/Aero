@@ -16,6 +16,7 @@ class BrowserE2ETestCase: XCTestCase {
         app = TestApplication.make()
         app.launchEnvironment[TestApplication.searchEndpointKey] = server.searchEndpoint.absoluteString
         app.launchEnvironment[TestApplication.filterListKey] = server.url("filters.txt").absoluteString
+        app.launchEnvironment[TestApplication.nativeHostsKey] = Self.fixtures.appendingPathComponent("native-hosts").path
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }
@@ -25,13 +26,22 @@ class BrowserE2ETestCase: XCTestCase {
         server.stop()
     }
 
+    /// Fixtures read by the app itself, from the repository: the sandboxed runner has no folder the app may read.
+    static let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures", isDirectory: true)
+
     var controlBarInput: XCUIElement { app.textFields["controlBar.input"] }
+
+    /// Text shown by the selected tab's page.
+    func page(_ text: String) -> XCUIElement { app.webViews.staticTexts[text] }
+
+    /// Lets time pass where nothing observable can be waited for, such as a request that must not happen.
+    func pause(_ seconds: TimeInterval) { RunLoop.current.run(until: .now.addingTimeInterval(seconds)) }
     var tabRows: XCUIElementQuery { app.buttons.matching(identifier: "sidebar.tab") }
 
-    /// Labels of the elements with `identifier`, in reading order, from one snapshot of `root`, so a
+    /// Labels of the elements with `identifier`, in reading order, from one snapshot of the app, so a
     /// list that reloads during the query cannot fail it halfway.
-    func labels(of identifier: String, in root: XCUIElement? = nil) -> [String] {
-        guard let snapshot = try? (root ?? app).snapshot() else { return [] }
+    func labels(of identifier: String) -> [String] {
+        guard let snapshot = try? app.snapshot() else { return [] }
         var matches: [any XCUIElementSnapshot] = []
         func collect(_ element: any XCUIElementSnapshot) {
             if element.identifier == identifier { matches.append(element) }

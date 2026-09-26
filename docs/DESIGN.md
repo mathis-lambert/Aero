@@ -14,11 +14,11 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 | Accent | Per profile, for identity and selection. `luminous` is its brighter version for light effects on the dark canvas; `light(in:)` picks it or the tint |
 | Signal | `miss` for errors and the find bar's no-match border, always with text |
 | Typography | System face: 13 pt chrome, 12 pt medium labels, 11 pt captions and keycaps, 22 pt semibold titles, 15 pt semibold prompt questions, 15 pt control bar field, 9 pt row glyphs |
-| Spacing | 4, 8, 12, 16, 24, 32, 48 pt; rows use a 10 pt inset and icon gap |
+| Spacing | Rows use a 10 pt inset and icon gap; other spacing is local to its layout |
 | Corners | 20 pt window; page 14 pt inside a 6 pt inset; floating sidebar 8 pt inside a 12 pt inset; 12 pt cards and fields; 8 pt controls; 4 pt keycaps |
-| Hover | Every borderless button takes `hover` under the pointer and `pressed` while pressed, through `QuietButtonStyle` |
-| Shadows | `floatShadow` for the revealed sidebar and the find bar, `panelShadow` for the control bar and prompts. No others |
-| Motion | One 0.28 s spring through `browserAnimation(value:)`, dropped with Reduce Motion. Nothing animates while idle |
+| Hover | Every borderless button takes `hover` under the pointer and `pressed` while pressed, through `QuietButtonStyle`; disabled buttons show none. Nothing animates while idle |
+| Shadows | `floatShadow` for the revealed sidebar and the find bar, `panelShadow` for the control bar and prompts; tooltips take their panel's system shadow, and the download flight's icon a small one of its own |
+| Motion | A 0.28 s spring (`browserAnimation(value:)`), a 0.12 s hover fade and a 0.18 s page reveal; the spring and the reveal are dropped with Reduce Motion. Nothing animates while idle |
 | Icons | SF Symbols; site favicons for websites |
 
 ## Layout
@@ -33,7 +33,7 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 
 Every question the browser asks is a `Prompt`: a `raised` card with the panel shadow over the window, which is dimmed and takes no clicks. It holds an optional icon, the question, an optional explanation, any fields, and its actions on the trailing side. `PromptCancelButton` answers Escape and shows its keycap; `PromptConfirmButton`, the accent-filled default, answers Return. A click outside the card cancels.
 
-The window shows one prompt at a time, from `BrowserWindowState.prompt`: quitting, creating or editing a profile, clearing history, an extension's request and errors. `present(_:)` replaces what is shown; `dismissPrompt()` cancels it. `.prompt(_:onCancel:)` presents it, and takes the keyboard from the focused page or field so Return and Escape reach the card. An extension request asked from Settings shows in the Settings window, through the same modifier. There are no sheets or alerts.
+The window shows one prompt at a time, from `BrowserWindowState.prompt`: quitting, creating or editing a profile, clearing history, an extension's request and errors. `present(_:)` replaces what is shown; `dismissPrompt()` cancels it. `.prompt(_:onCancel:)` presents it, and takes the keyboard from the focused page or field so Return and Escape reach the card. An extension request asked from Settings shows in the Settings window, through the same modifier. The browser shows no sheets or alerts of its own; only the system's open and certificate panels attach as sheets.
 
 Failure modes:
 
@@ -46,9 +46,9 @@ Verification: E2E `testQuitAsksFirst` (Escape and Return with a page focused; 1,
 
 ## Tooltips and keycaps
 
-`.tooltip(_:shortcut:)` replaces the system help tag on every chrome control: a small `raised` plate with a `line` border and the float shadow, the label, and the command's keycaps when it has a shortcut. It appears 0.5 s after the pointer rests on the control, then follows it at once to a neighbour for a moment, like the system's. It lives in its own borderless panel, so the sidebar or the window edge never clips it, and it takes the window's appearance. The pointer leaving, a click, a key or a scroll hides it. Only a hovered control has a timer; nothing runs otherwise.
+`.tooltip(_:shortcut:)` replaces the system help tag on every chrome control: a small `raised` plate with a `line` border and its panel's shadow, the label, and the command's keycaps when it has a shortcut. It appears 0.5 s after the pointer rests on the control, then follows it at once to a neighbour for a moment, like the system's. It lives in its own borderless panel, so the sidebar or the window edge never clips it, and it takes the window's appearance. The pointer leaving, a click, a key or a scroll hides it. Only a hovered control has a timer; nothing runs otherwise.
 
-`Keycaps` draws a shortcut as keys: one cap per modifier and key, in the system face at 11 pt medium, on a `raised` face with a hairline border and a darker bottom edge. Shortcuts come from the command catalog (`BrowserCommand.shortcut`), so a tooltip, the control bar and the menu always agree. Special keys use their symbols (↵, ⇥, ⌫) and Escape reads "esc".
+`Keycaps` draws a shortcut as keys: one cap per modifier and key, in the system face at 11 pt medium, on a `raised` face with a hairline border and a darker bottom edge. Shortcuts come from the command catalog (`BrowserCommand.shortcut`), so a tooltip, the control bar and the menu always agree. Return shows ↵ and Escape reads "esc".
 
 Failure modes:
 
@@ -62,9 +62,9 @@ Verification: E2E `testTooltipsShowLabelAndShortcut` (hovering the sidebar toggl
 
 ## App icon
 
-`App/Resources/AppIcon.icon` is the system icon: a Gilda Display capital A filled with the dithered wind. `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>` regenerates it and the twenty alternates in `App/Resources/AppIcons` (font not stored here).
+`App/Resources/AppIcon.icon` is the system icon: a Gilda Display capital A filled with the dithered wind. `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>` regenerates it and, in `App/Resources/AppIcons`, the twenty alternates and a copy of the system icon's two for Settings (font not stored here).
 
-Settings › General offers Automatic (the system icon, which follows the appearance) or an alternate. `AppIcon` puts the alternate on the app bundle, as the Finder's Get Info does, so the Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed; Automatic removes it. At launch Aero sets it again if an update or a build replaced the bundle. Aero is not sandboxed, which this needs; the build strips the icon file before signing, since `codesign` rejects it.
+Settings › General shows Automatic apart, with the system icon in both of its appearances, then the alternates by mark. Every tile is drawn from its own artwork, never from the icon the system reports, which becomes the alternate once one is on the bundle. `AppIcon` puts the alternate on the app bundle, as the Finder's Get Info does, so the Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed; Automatic removes it. At launch Aero sets it again if an update or a build replaced the bundle. Aero is not sandboxed, which this needs; the build strips the icon file before signing, since `codesign` rejects it.
 
 Failure modes:
 
@@ -73,7 +73,7 @@ Failure modes:
 3. Choosing Automatic leaves the previous variant in the Dock.
 4. The choice is lost after relaunch, or applied too early and overwritten.
 5. Test runs change the real preference.
-
 6. An update or a rebuild drops the icon, or a development build fails to sign because of it.
+7. Once an alternate is on the bundle, the Automatic tile shows it instead of the system icon.
 
-Verification: E2E `AppearanceE2ETests` (theme and variant survive a relaunch, the icon file appears on the bundle and Automatic removes it; test preferences are namespaced). How the Finder and the Dock draw it is checked by eye.
+Verification: E2E `AppearanceE2ETests` (theme and variant survive a relaunch, the icon file appears on the bundle and Automatic removes it, test preferences are namespaced; 3–5). 7 holds by construction: tiles are drawn from the bundled artwork. How the Finder and the Dock draw it is checked by eye.

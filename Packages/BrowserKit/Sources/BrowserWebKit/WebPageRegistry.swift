@@ -36,18 +36,21 @@ public final class WebPageRegistry {
     private var pressureMonitor: MemoryPressureMonitor?
     private let ephemeral: Bool
     private let extensionsFolder: URL
+    private let nativeHostFolders: [URL]
 
-    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL, ephemeral: Bool = false,
-                            hibernation: HibernationSettings = .default) {
+    /// `nativeHostFolders` are searched for native messaging host manifests, in order.
+    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL, nativeHostFolders: [URL],
+                            ephemeral: Bool, hibernation: HibernationSettings = .default) {
         let limit = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
-        self.init(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: extensionsFolder, ephemeral: ephemeral, hibernation: hibernation,
-                  liveBackgroundPageLimit: limit)
+        self.init(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: extensionsFolder, nativeHostFolders: nativeHostFolders,
+                  ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
     }
 
     package init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL = FileManager.default.temporaryDirectory,
-                 ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
+                 nativeHostFolders: [URL] = [], ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
         self.downloads = downloads
         self.extensionsFolder = extensionsFolder
+        self.nativeHostFolders = nativeHostFolders
         self.contentBlocker = contentBlocker
         self.ephemeral = ephemeral
         policy = HibernationPolicy(settings: hibernation, liveBackgroundPageLimit: liveBackgroundPageLimit)
@@ -71,7 +74,7 @@ public final class WebPageRegistry {
     public func extensions(for profileID: UUID) -> ProfileExtensions {
         if let existing = extensions[profileID] { return existing }
         let created = ProfileExtensions(profileID: profileID, folder: extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true),
-                                        store: dataStore(for: profileID), ephemeral: ephemeral, host: extensionHost) { [weak self] in
+                                        nativeHostFolders: nativeHostFolders, store: dataStore(for: profileID), ephemeral: ephemeral, host: extensionHost) { [weak self] in
             self?.livePages[$0]?.page
         }
         extensions[profileID] = created
@@ -139,7 +142,7 @@ public final class WebPageRegistry {
 
     private func makePage(for tab: BrowserTab, profileID: UUID) -> BrowserPage {
         let extensions = extensions(for: profileID)
-        // An extension's own page loads with its configuration; a website's page runs the profile's extensions.
+        // An extension's own page needs its context's configuration.
         let configuration = NavigationInput.isExtensionURL(tab.url) ? extensions.configuration(for: tab.url) : nil
         let page = BrowserPage(configuration: configuration ?? BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions.controller))
         connect(page, to: tab.id)
@@ -160,6 +163,11 @@ public final class WebPageRegistry {
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
         page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
         page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
+        page.onWebStoreButton = { [weak self, weak page] pressed in
+            guard let url = page?.webView.url, let delegate = self?.delegate else { return nil }
+            if pressed { await delegate.page(tabID, didPressWebStoreButtonAt: url) }
+            return delegate.page(tabID, webStoreButtonAt: url)
+        }
         page.contentBlocker = contentBlocker
         page.onClose = { [weak self] in
             guard let opener = self?.livePages[tabID]?.openerTabID else { return }

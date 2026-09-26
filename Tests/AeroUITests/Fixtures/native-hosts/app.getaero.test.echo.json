@@ -1,0 +1,7 @@
+{
+    "name": "app.getaero.test.echo",
+    "description": "E2E fixture: tee copies each framed message back; the origin it is given names no file it can open.",
+    "path": "/usr/bin/tee",
+    "type": "stdio",
+    "allowed_origins": ["chrome-extension://ialmiggklogaegphdgaghickmakcpfnn/"]
+}

@@ -34,11 +34,11 @@ Packages/BrowserKit/
   Sources/
     BrowserCore/        # Models, navigation rules, command definitions
     BrowserWebKit/      # WebKit integration and loaded page lifecycle
-    BrowserStorage/     # Application persistence and migrations
+    BrowserStorage/     # Application persistence
   Tests/                # Tests for each package target
 Tests/                  # Application integration and UI tests
 Configuration/          # Build settings, property lists, entitlements
-Scripts/                # Development tools: E2E runner, memory measurement, icon and filter list generation; never run by the app
+Scripts/                # Development tools: E2E runner, memory measurement, icon and filter list generation, notarized release; never run by the app
 docs/                   # Project documentation and specifications
 ```
 
@@ -112,7 +112,7 @@ docs/                   # Project documentation and specifications
 - Use public APIs by default. Do not copy private WebKit workarounds from Search without documenting the need and compatibility consequences. The one private API in use is the picture in picture preference (`docs/SITE_CONTROLS.md`).
 - Validate origins and payloads at JavaScript/native bridges. Scope site permissions and never log credentials, cookies, or sensitive page contents.
 - Prefer integration with Apple's credential facilities over building another password vault. Keychain storage alone does not imply Apple Passwords AutoFill integration.
-- Version persisted formats, use atomic writes or transactions, and test migrations. Preserve unreadable data for recovery instead of silently overwriting it with empty state.
+- Version persisted formats and use atomic writes or transactions. Pre-release, a format change is a hard cut, never a migration. Preserve unreadable data for recovery instead of silently overwriting it with empty state.
 - Keep development and test data separate from real browsing data, including WebKit stores and settings.
 - Evaluate memory across the app and its WebKit processes. Measure representative idle, navigation, many-tab, and media scenarios before making performance claims.
 - Preserve WebKit's available Ultra HD/media capabilities. Verify actual playback quality per service and hardware; WebKit use alone does not prove Safari-equivalent DRM support.
@@ -122,7 +122,7 @@ docs/                   # Project documentation and specifications
 1. Identify its state owner and module boundary; reuse existing navigation and page lifecycle behavior.
 2. Put feature UI and presentation behavior together. Add only the core rules, WebKit integration, or storage changes the feature needs.
 3. Register user actions in the command system and provide localized, accessible presentation.
-4. Define relevant cancellation, failure, restoration, and migration behavior. Avoid stale events and duplicate side effects.
+4. Define relevant cancellation, failure and restoration behavior. Avoid stale events and duplicate side effects.
 5. Verify complex behavior with E2E tests under the testing policy below and inspect affected native interactions. Measure performance when the change affects page lifetime, rendering, caches, or background work.
 
 ## Validation and project status
@@ -131,14 +131,15 @@ docs/                   # Project documentation and specifications
 - Highly prefer E2E tests as the sole testing mechanism. Use them to verify complex features work. At the end of E2E tests, produce a verifiable and repeatable artifact: retain the `.xcresult` bundle with relevant screenshots or attachments, and record the exact command, revision, environment, and fixture setup needed to reproduce it.
 - If you must test a system in isolation, first write down all the ways it could fail, then write the code. Before implementation, document the failure modes and write the isolated tests that exercise them.
 - Keep an isolated test only when it catches a concrete bug that the E2E suite misses. Do not add tests that merely mirror implementation, check trivial values, or duplicate E2E coverage. Use Swift Testing for justified isolated tests and XCTest/XCUITest for E2E tests.
-- Prioritize profile isolation, tab lifecycle, session recovery, migrations, command routing, and prevention of user-data loss.
+- Prioritize profile isolation, tab lifecycle, session recovery, command routing, and prevention of user-data loss.
 - Run the smallest relevant checks, plus the application build when changing shared APIs or integration. Report exactly what ran and what remains unverified.
-- The application is `Aero.xcodeproj`, with a shared `Aero` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a) with its Metal Toolchain component (`xcodebuild -downloadComponent MetalToolchain`; build-time only), Apple Swift 6.4, Swift 6 language mode, macOS 27.0+, and arm64.
+- The application is `Aero.xcodeproj`, with a shared `Aero` scheme and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a) with its Metal Toolchain component (`xcodebuild -downloadComponent MetalToolchain`; build-time only), Apple Swift 6.4, Swift 6 language mode, macOS 26.0+, and arm64.
 - Build: `xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived build`.
 - Package tests: `swift test --package-path Packages/BrowserKit`. Live WebKit tests need access to macOS WebKit services. In a restricted execution environment, use writable compiler caches and disclose any environment-related limits.
 - UI tests: use the build command above with `test` in place of `build` and `-resultBundlePath /tmp/aero-e2e-<run-id>.xcresult` with a unique run ID. They require a logged-in GUI session. Tests use `AERO_TEST_DATA` to namespace temporary data and make website stores ephemeral.
 - E2E runs: `Scripts/run-e2e.sh [test-identifier…]` writes the `.xcresult` and a reproduction manifest to `/tmp`. Local fixtures and the browsing behaviors they cover are described in `docs/BROWSING.md`.
+- Release: `Scripts/release.sh` archives the Release app, signs it with Developer ID, notarizes and staples it into `/tmp/aero-release/Aero.app`; the notary credentials are stored once in the keychain (see the script).
 - Performance: tab hibernation, signposts, the launch test and `Scripts/measure-memory.swift` are described in `docs/PERFORMANCE.md`.
-- Current scope: one main window, one space per profile, English/French catalogs, atomic versioned JSON session storage, per-profile SQLite history (`docs/HISTORY.md`), session-only downloads, and a native light/dark/system appearance. Debug and release bundle IDs/data locations are separate. Extensions run per profile on WebKit's engine, with inert declarations for the APIs it lacks (`docs/EXTENSIONS.md`). Onboarding, import, and AI are outside this batch.
-- Aero is distributed outside the Mac App Store and is not sandboxed: the app icon choice writes to its own bundle. Website content stays in WebKit's sandboxed processes. Native messaging, the update channel, and future multi-window behavior remain open. Session JSON is the current implementation, not a commitment to use JSON for a future large browsing history.
+- Current scope: one main window, one space per profile, English/French catalogs, atomic versioned JSON session storage, per-profile SQLite history (`docs/HISTORY.md`), session-only downloads, and a native light/dark/system appearance. Debug and release bundle IDs/data locations are separate. Extensions run per profile on WebKit's engine, with inert declarations for the APIs it lacks (`docs/EXTENSIONS.md`). What is not implemented yet is listed in the README.
+- Aero is distributed outside the Mac App Store and is not sandboxed: the app icon choice writes to its own bundle. Website content stays in WebKit's sandboxed processes. The update channel and future multi-window behavior remain open. Session JSON is the current implementation, not a commitment to use JSON for a future large browsing history.
 - Keep this file concise and current. Put detailed feature specifications in `docs/`; add nested `AGENTS.md` files only for genuinely different local requirements.

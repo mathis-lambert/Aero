@@ -1,6 +1,6 @@
 # Aero
 
-A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. Apple Silicon, macOS 27.0 or newer, no external runtime dependencies.
+A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. Apple Silicon, macOS 26.0 or newer, no external runtime dependencies.
 
 ## Build and test
 
@@ -17,6 +17,8 @@ Scripts/run-e2e.sh [AeroUITests/<TestClass>…]
 
 UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`), ephemeral website stores and local fixtures. Debug and Release builds keep separate data (`Application Support/Aero Development` and `Aero`).
 
+`Scripts/release.sh` builds the notarized Release app, signed with Developer ID, into `/tmp/aero-release`. Its notary credentials are stored once in the keychain; the script says how.
+
 ## Features
 
 - Profiles, each with its own website store, tabs and history, switched from the sidebar footer or with a two-finger swipe (`docs/PROFILES.md`).
@@ -26,10 +28,10 @@ UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`)
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search (`docs/HISTORY.md`).
 - Find in page, downloads, popups, favicons (`docs/BROWSING.md`).
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture (`docs/SITE_CONTROLS.md`).
-- Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder (`docs/EXTENSIONS.md`).
+- Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder, with native messaging to the apps they pair with (`docs/EXTENSIONS.md`).
 - Light, dark and system appearance, alternate app icons, English and French.
 
-Not implemented yet: onboarding, import, native messaging for extensions, credential integration, separate popup windows, editable shortcuts and profile deletion.
+Not implemented yet: onboarding, import, passkeys, separate popup windows, editable shortcuts and profile deletion.
 
 ## Shortcuts
 
@@ -42,9 +44,10 @@ Not implemented yet: onboarding, import, native messaging for extensions, creden
 | ⌃Tab / ⌃⇧Tab | Recent tabs; release Control to choose |
 | ⌘[ / ⌘] / ⌘R | Back / forward / reload |
 | ⇧⌘S | Toggle sidebar |
+| ⇧⌘C | Copy link |
 | ⌘F / ⌘G / ⇧⌘G | Find in page / next / previous |
 | ⌘Y | History |
 
-⌘K, ⇧⌘S, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
+⌘K, ⇧⌘S, ⇧⌘C, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
 
 Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`.

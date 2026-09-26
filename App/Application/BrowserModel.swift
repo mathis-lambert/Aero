@@ -15,25 +15,17 @@ final class BrowserModel {
     private(set) var session = BrowserSession(profileName: String(localized: "Personal"))
     private(set) var isReady = false
     private(set) var loadFailed = false
-    /// Shown as the window's error prompt.
-    var errorMessage: String? {
-        get { if case .error(let message) = window.prompt { message } else { nil } }
-        set {
-            if let newValue { present(.error(newValue)) }
-            else if case .error = window.prompt { window.prompt = nil }
-        }
-    }
     let window = BrowserWindowState()
     let preferences: BrowserPreferences
     let favicons: FaviconCache
     let history: BrowserHistory
     let suggestionFetcher = SuggestionFetcher()
-    @ObservationIgnored private let filterLists: FilterListUpdater?
+    private let filterLists: FilterListUpdater?
     @ObservationIgnored private var extensionsTask: Task<Void, Never>?
     var currentPage: BrowserPage?
 
-    @ObservationIgnored let pages: WebPageRegistry
-    @ObservationIgnored private let store: SessionStore
+    let pages: WebPageRegistry
+    private let store: SessionStore
     @ObservationIgnored private var revision: UInt64 = 0
     @ObservationIgnored private var closedTabs: [BrowserTab] = []
     @ObservationIgnored private var lastSelection: [UUID: UUID] = [:]
@@ -42,7 +34,7 @@ final class BrowserModel {
     @ObservationIgnored private var cycleIndex = 0
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
     /// Test runs only: the fixture server that stands in for every search engine.
-    @ObservationIgnored private let searchTestEndpoint: URL?
+    private let searchTestEndpoint: URL?
 
     init() {
         launchInterval = Self.signposter.beginInterval(Diagnostics.Signpost.launch)
@@ -72,8 +64,11 @@ final class BrowserModel {
         let downloadsFolder = testing == nil ? URL.downloadsDirectory : folder.appendingPathComponent("Downloads", isDirectory: true)
         let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
         let contentBlocker = ContentBlocker(directory: folder.appendingPathComponent("Content Rules", isDirectory: true))
+        // Test runs reach only the hosts a test provides, never the Mac's own.
+        let nativeHosts = testing == nil ? NativeMessagingHost.chromeFolders
+            : environment["AERO_TEST_NATIVE_HOSTS"].map { [URL(fileURLWithPath: $0, isDirectory: true)] } ?? []
         pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: folder.appendingPathComponent("Extensions", isDirectory: true),
-                                ephemeral: testing != nil, hibernation: preferences.hibernation)
+                                nativeHostFolders: nativeHosts, ephemeral: testing != nil, hibernation: preferences.hibernation)
         // Test runs never download from the internet: only the fixture list, when a test provides one.
         let testFilterList = testing == nil ? nil : environment["AERO_TEST_FILTERS"].flatMap(URL.init(string:))
         if let contentBlocker, testing == nil || testFilterList != nil {
@@ -101,12 +96,11 @@ final class BrowserModel {
             if let saved = try await store.load() { session = saved }
             window.selectedProfileID = session.profiles.first?.id
             isReady = true
-            endLaunchInterval()
         } catch {
             loadFailed = true
-            errorMessage = String(localized: "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.")
-            endLaunchInterval()
+            present(.error(String(localized: "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.")))
         }
+        endLaunchInterval()
         // After the session, so neither delays the first tabs.
         AppIcon.restore(preferences.appIcon)
         filterLists?.start()
@@ -143,7 +137,7 @@ final class BrowserModel {
         let number = revision
         Task {
             do { try await store.scheduleSave(snapshot, revision: number) }
-            catch { errorMessage = Self.saveFailureMessage }
+            catch { present(.error(Self.saveFailureMessage)) }
         }
     }
 
@@ -153,7 +147,7 @@ final class BrowserModel {
         revision += 1
         do { try await store.save(session, revision: revision); return true }
         catch {
-            errorMessage = Self.saveFailureMessage
+            present(.error(Self.saveFailureMessage))
             return false
         }
     }
@@ -178,7 +172,7 @@ final class BrowserModel {
         if previous != id { window.find.dismiss() }
         window.selectedTabID = id
         if previous != id { extensionsDidSelect(tab, previous: previous) }
-        if recordRecent { recentTabs.removeAll { $0 == id }; recentTabs.insert(id, at: 0) }
+        if recordRecent { markRecent(id) }
         if InternalPage(url: tab.url) != nil {
             currentPage = nil
             pages.deactivate()
@@ -299,7 +293,7 @@ final class BrowserModel {
             persist()
             return true
         } catch {
-            errorMessage = String(localized: "Choose a profile name between 1 and \(BrowserProfile.maximumNameLength) characters.")
+            present(.error(String(localized: "Choose a profile name between 1 and \(BrowserProfile.maximumNameLength) characters.")))
             return false
         }
     }
@@ -346,7 +340,7 @@ final class BrowserModel {
             let allowed = Set(tabs.map(\.id))
             cycleTabs = recentTabs.filter { allowed.contains($0) }
             cycleTabs += tabs.map(\.id).filter { !cycleTabs.contains($0) }
-            cycleIndex = cycleTabs.firstIndex(of: window.selectedTabID ?? UUID()) ?? 0
+            cycleIndex = window.selectedTabID.flatMap { cycleTabs.firstIndex(of: $0) } ?? 0
         }
         guard !cycleTabs.isEmpty else { return }
         cycleIndex = (cycleIndex + (backwards ? -1 : 1) + cycleTabs.count) % cycleTabs.count
@@ -356,6 +350,11 @@ final class BrowserModel {
     func commitTabCycle() {
         guard !cycleTabs.isEmpty else { return }
         cycleTabs = []
-        if let id = window.selectedTabID { recentTabs.removeAll { $0 == id }; recentTabs.insert(id, at: 0) }
+        if let id = window.selectedTabID { markRecent(id) }
+    }
+
+    private func markRecent(_ id: UUID) {
+        recentTabs.removeAll { $0 == id }
+        recentTabs.insert(id, at: 0)
     }
 }

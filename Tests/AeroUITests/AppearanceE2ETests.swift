@@ -22,7 +22,7 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(isChosen(Self.system), "The theme follows the system by default")
         XCTAssertTrue(app.buttons[Self.automatic].isSelected, "Automatic is the default")
         theme(Self.dark).click()
-        app.buttons[Self.variant].click()
+        reveal(app.buttons[Self.variant]).click()
         XCTAssertTrue(isChosen(Self.dark))
         XCTAssertTrue(app.buttons[Self.variant].isSelected)
         XCTAssertFalse(app.buttons[Self.automatic].isSelected)
@@ -35,7 +35,7 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(isChosen(Self.dark), "The theme survives a relaunch")
         XCTAssertTrue(app.buttons[Self.variant].isSelected, "The icon survives a relaunch")
 
-        app.buttons[Self.automatic].click()
+        reveal(app.buttons[Self.automatic]).click()
         XCTAssertTrue(app.buttons[Self.automatic].isSelected)
         XCTAssertFalse(app.buttons[Self.variant].isSelected)
         XCTAssertTrue(poll { !FileManager.default.fileExists(atPath: self.customIconFile.path) },
@@ -48,6 +48,15 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
     }
 
     private func theme(_ name: String) -> XCUIElement { app.radioButtons[name] }
+
+    /// Settings › General scrolls: clicking below the scroll bar's knob pages down to `element`.
+    private func reveal(_ element: XCUIElement) -> XCUIElement {
+        let track = app.windows.firstMatch.scrollBars.firstMatch
+        for _ in 0..<5 where !element.isHittable {
+            track.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.97)).click()
+        }
+        return element
+    }
 
     private func isChosen(_ name: String) -> Bool { theme(name).value as? Int == 1 }
 }

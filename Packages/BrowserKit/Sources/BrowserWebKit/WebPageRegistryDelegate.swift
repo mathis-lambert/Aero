@@ -19,4 +19,8 @@ public protocol WebPageRegistryDelegate: AnyObject {
     /// The tab's profile's answer, with the browser-wide setting in place of a missing one, or `nil`
     /// for a device WebKit should ask for.
     func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision?
+    /// Aero's install button on a Chrome Web Store page, or `nil` to leave the store's own.
+    func page(_ tabID: UUID, webStoreButtonAt url: URL) -> WebStoreButton?
+    /// Returns once the installation it started was answered.
+    func page(_ tabID: UUID, didPressWebStoreButtonAt url: URL) async
 }

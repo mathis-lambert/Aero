@@ -24,19 +24,25 @@ public protocol WebExtensionHost: AnyObject {
 /// profile's website data store. See docs/EXTENSIONS.md.
 @MainActor @Observable
 public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate {
-    @ObservationIgnored public let controller: WKWebExtensionController
+    @ObservationIgnored let controller: WKWebExtensionController
     public private(set) var contexts: [String: WKWebExtensionContext] = [:]
     /// Changes when a button's icon, badge or label does, so the chrome redraws them.
     public private(set) var actionRevision = 0
     @ObservationIgnored private let profileID: UUID
     /// The profile's prepared extensions, one folder each.
     @ObservationIgnored private let folder: URL
+    @ObservationIgnored private let nativeHostFolders: [URL]
+    /// Running host programs by extension, each with the port WebKit gave it, retained while connected.
+    @ObservationIgnored private var nativeSessions: [String: [(port: WKWebExtension.MessagePort, connection: NativeMessagingConnection)]] = [:]
     @ObservationIgnored private weak var host: WebExtensionHost?
     @ObservationIgnored private let pages: (UUID) -> BrowserPage?
     @ObservationIgnored private lazy var window = ExtensionWindow(owner: self)
     @ObservationIgnored private var tabs: [UUID: ExtensionTab] = [:]
 
-    init(profileID: UUID, folder: URL, store: WKWebsiteDataStore, ephemeral: Bool, host: WebExtensionHost?, pages: @escaping (UUID) -> BrowserPage?) {
+    enum Failure: Error { case hostNotAllowed, hostEndedWithoutReply }
+
+    init(profileID: UUID, folder: URL, nativeHostFolders: [URL], store: WKWebsiteDataStore, ephemeral: Bool, host: WebExtensionHost?,
+         pages: @escaping (UUID) -> BrowserPage?) {
         let configuration: WKWebExtensionController.Configuration = ephemeral ? .nonPersistent() : .init(identifier: profileID)
         configuration.defaultWebsiteDataStore = store
         let views = WKWebViewConfiguration()
@@ -46,6 +52,7 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
         controller = WKWebExtensionController(configuration: configuration)
         self.profileID = profileID
         self.folder = folder
+        self.nativeHostFolders = nativeHostFolders
         self.host = host
         self.pages = pages
         super.init()
@@ -58,7 +65,9 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
     public func inspect(crx: Data, identifier: String) async throws -> WKWebExtension {
         let archive = FileManager.default.temporaryDirectory.appendingPathComponent("aero-\(UUID().uuidString).zip")
         defer { try? FileManager.default.removeItem(at: archive) }
-        try ExtensionPackage.archive(ofCRX: crx, identifier: identifier).write(to: archive)
+        try await Task.detached(priority: .userInitiated) {
+            try ExtensionPackage.archive(ofCRX: crx, identifier: identifier).write(to: archive)
+        }.value
         return try await WKWebExtension(resourceBaseURL: archive)
     }
 
@@ -66,16 +75,17 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
     public func prepare(crx: Data, identifier: String) async throws -> WKWebExtension {
         let destination = folder.appendingPathComponent(identifier, isDirectory: true)
         try await Task.detached(priority: .userInitiated) {
-            try ExtensionPackage.install(archive: ExtensionPackage.archive(ofCRX: crx, identifier: identifier), at: destination)
+            try ExtensionPackage.install(.archive(ExtensionPackage.archive(ofCRX: crx, identifier: identifier)), at: destination)
         }.value
         return try await WKWebExtension(resourceBaseURL: destination)
     }
 
-    /// Copies and prepares an unpacked extension; its identifier comes from the folder's path, as in Chrome.
+    /// Copies and prepares an unpacked extension. As in Chrome, its identifier comes from its manifest's
+    /// `key` when it has one, and otherwise from the folder's path.
     public func prepare(folder source: URL) async throws -> (identifier: String, extension: WKWebExtension) {
-        let identifier = ExtensionPackage.identifier(forPublicKey: Data(source.standardizedFileURL.path.utf8))
+        let identifier = ExtensionPackage.identifier(ofFolder: source)
         let destination = folder.appendingPathComponent(identifier, isDirectory: true)
-        try await Task.detached(priority: .userInitiated) { try ExtensionPackage.install(folder: source, at: destination) }.value
+        try await Task.detached(priority: .userInitiated) { try ExtensionPackage.install(.folder(source), at: destination) }.value
         return (identifier, try await WKWebExtension(resourceBaseURL: destination))
     }
 
@@ -92,8 +102,7 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
 
     /// Loads a prepared extension with the permissions the person granted. The identifier names its storage,
     /// so it must stay the same across launches.
-    @discardableResult
-    public func load(_ record: InstalledExtension) async throws -> WKWebExtension {
+    public func load(_ record: InstalledExtension) async throws {
         unload(record.id)
         let webExtension = try await WKWebExtension(resourceBaseURL: folder.appendingPathComponent(record.id, isDirectory: true))
         let context = WKWebExtensionContext(for: webExtension)
@@ -108,10 +117,10 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
         // The context reads the open tabs from the window the delegate returns.
         try controller.load(context)
         contexts[record.id] = context
-        return webExtension
     }
 
     public func unload(_ extensionID: String) {
+        for session in nativeSessions.removeValue(forKey: extensionID) ?? [] { session.connection.close() }
         guard let context = contexts.removeValue(forKey: extensionID) else { return }
         try? controller.unload(context)
     }
@@ -203,6 +212,63 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
                                        for context: WKWebExtensionContext) async throws {
         guard let popover = action.popupPopover else { return }
         host?.presentPopup(popover, for: context.uniqueIdentifier)
+    }
+
+    // MARK: - Native messaging
+
+    public func webExtensionController(_ controller: WKWebExtensionController, connectUsing port: WKWebExtension.MessagePort,
+                                       for extensionContext: WKWebExtensionContext, completionHandler: @escaping ((any Error)?) -> Void) {
+        let extensionID = extensionContext.uniqueIdentifier
+        do {
+            let connection = try connect(to: port.applicationIdentifier, for: extensionID, onMessage: { port.sendMessage($0) { _ in } }) { [weak self, weak port] in
+                port?.disconnect()
+                if let port { self?.endSession(of: port, for: extensionID) }
+            }
+            port.messageHandler = { [weak port] message, error in
+                guard error == nil, let message else { return }
+                // A message the program cannot take ends the connection, as in Chrome.
+                do { try connection.send(message) } catch { connection.close(); port?.disconnect() }
+            }
+            port.disconnectHandler = { [weak self, weak port] _ in
+                connection.close()
+                if let port { self?.endSession(of: port, for: extensionID) }
+            }
+            nativeSessions[extensionID, default: []].append((port, connection))
+            completionHandler(nil)
+        } catch {
+            completionHandler(error)
+        }
+    }
+
+    /// One message and its reply; a program that ends without replying answers with an error.
+    public func webExtensionController(_ controller: WKWebExtensionController, sendMessage message: Any, toApplicationWithIdentifier applicationIdentifier: String?,
+                                       for extensionContext: WKWebExtensionContext, replyHandler: @escaping (Any?, (any Error)?) -> Void) {
+        var connection: NativeMessagingConnection?
+        var answered = false
+        let answer: (Any?, (any Error)?) -> Void = { reply, error in
+            guard !answered else { return }
+            answered = true
+            connection?.close()
+            replyHandler(reply, error)
+        }
+        do {
+            connection = try connect(to: applicationIdentifier, for: extensionContext.uniqueIdentifier, onMessage: { answer($0, nil) }) {
+                answer(nil, Failure.hostEndedWithoutReply)
+            }
+            try connection?.send(message)
+        } catch {
+            answer(nil, error)
+        }
+    }
+
+    private func connect(to name: String?, for extensionID: String, onMessage: @escaping (Any) -> Void, onClose: @escaping () -> Void) throws -> NativeMessagingConnection {
+        guard contexts[extensionID]?.hasPermission(.nativeMessaging) == true,
+              let name, let host = NativeMessagingHost.named(name, in: nativeHostFolders), host.allows(extensionID: extensionID) else { throw Failure.hostNotAllowed }
+        return try NativeMessagingConnection(host: host, extensionID: extensionID, onMessage: onMessage, onClose: onClose)
+    }
+
+    private func endSession(of port: WKWebExtension.MessagePort, for extensionID: String) {
+        nativeSessions[extensionID]?.removeAll { $0.port === port }
     }
 
     // MARK: - Tabs and the window, as WebKit sees them

@@ -1,6 +1,6 @@
 # Site controls
 
-What the browser offers for the site in the selected tab: its address actions, the control center, site data and permissions, ad and tracker blocking, and automatic picture in picture. Failure modes were written before each implementation. E2E tests use the local fixtures described in `docs/BROWSING.md`.
+What the browser offers for the site in the selected tab: its address actions, the control center, site data and permissions, ad and tracker blocking, and automatic picture in picture.
 
 ## Address actions
 
@@ -19,10 +19,10 @@ Verification: E2E `testAddressActionsAndControlCenter` (the pasteboard holds the
 A popover on the address's control center button:
 
 - **Share**, through the system share menu.
-- **Extensions**: the profile's extensions, each running its action or opening its popup, then Add to Aero on a Chrome Web Store extension page, or a way to the store (`docs/EXTENSIONS.md`).
+- **Extensions**: the profile's extensions, each running its action or opening its popup, then a way to the Chrome Web Store (`docs/EXTENSIONS.md`).
 - **Block ads & trackers** and **Automatic picture in picture** for this site, each showing its current state; clicking switches it for the site.
 - **Secure** or **Not secure**: secure when the page and everything it loaded came over HTTPS with a trusted certificate. Clicking opens the system certificate panel for the page's server.
-- **…**: Clear cache, Clear cookies and Site settings…, which shows the site settings in the control center.
+- **…**: the site data actions below; Site settings… shows in the control center.
 
 The popover closes when the selected tab changes.
 
@@ -57,13 +57,13 @@ Failure modes:
 2. A subdomain keeps the site's cookies, such as a session cookie set on the parent domain.
 3. The page keeps using removed cookies until the user reloads it.
 4. A decision is keyed on another origin (an embedded frame, a different port or letter case), so it does not apply to the page it was set on.
-5. A decision is lost at relaunch, or survives its profile's deletion.
+5. A decision is lost at relaunch.
 6. A camera and microphone request is granted while one of the two is blocked, or Ask grants without a prompt.
 7. WebKit waits forever for a decision, or a closed tab answers one.
 8. macOS refuses the device although the site is allowed (missing usage description or entitlement).
 9. The actions run on a browser page (`aero://`) or with no page.
 
-Verification: E2E `testSiteDataClearsAndPermissionsPersist` (Clear cookies and Delete data empty the site's cookies and reload it while `127.0.0.1` keeps its own; decisions survive a relaunch; 1, 3, 5). By construction: 2 (WebKit removes whole site records), 4 (`SiteOrigin` is the only key, from the page's address), 5's deletion case (decisions live on the profile), 6 and 7 (`BrowserPage`'s delegate), 9 (the commands are disabled without a web page). Using a device is checked by hand: WebKit asks macOS for the app's own authorization before it asks for the site's decision, so the result depends on the machine (6, 8). Clear cache has no observable E2E effect.
+Verification: E2E `testSiteDataClearsAndPermissionsPersist` (Clear cookies and Delete data empty the site's cookies and reload it while `127.0.0.1` keeps its own; decisions survive a relaunch; 1, 3, 5). By construction: 2 (WebKit removes whole site records), 4 (`SiteOrigin` is the only key, from the page's address), 6 and 7 (`BrowserPage`'s delegate), 9 (the commands are disabled without a web page). Using a device is checked by hand: WebKit asks macOS for the app's own authorization before it asks for the site's decision, so the result depends on the machine (6, 8). Clear cache has no observable E2E effect.
 
 ## Ad and tracker blocking
 
@@ -77,7 +77,7 @@ Aero blocks with WebKit content rule lists, enforced inside WebKit's networking 
 
 WebKit accepts at most 150,000 rules per list and applies an exception only within its own list, so the converter splits the rules over several lists and repeats in each the exceptions that apply to it. Rules are ordered: network blocks, network exceptions, generic hiding, `$generichide` exceptions, domain hiding, `$elemhide` exceptions, `$document` exceptions.
 
-The app bundles a snapshot of both lists (`Scripts/update-filter-lists.sh` refreshes it), so blocking works from the first launch. `ContentBlocker` (BrowserWebKit) compiles the lists off the main thread into a rule list store under Application Support, named from a hash of the sources and the converter version, so later launches look them up instead of compiling. Once a day, while the app runs, it downloads both lists; a response is kept only if it is a complete Adblock Plus list newer than the one in use, written atomically, and compiles. Otherwise the previous lists stay in use. Test runs download from the fixture server instead, never from the internet, and bundle nothing.
+The app bundles a snapshot of both lists (`Scripts/update-filter-lists.sh` refreshes it), so blocking works from the first launch. `ContentBlocker` (BrowserWebKit) compiles the lists off the main thread into a rule list store under Application Support, named from a hash of the sources and the converter version, so later launches look them up instead of compiling. `FilterListUpdater` (the app) downloads both lists once a day while the app runs, retrying after an hour on failure; a response is kept only if it is a complete Adblock Plus list newer than the one in use and compiles, and `FilterListStore` (BrowserStorage) writes it atomically. Otherwise the previous lists stay in use. Test runs download from the fixture server instead, never from the internet, and bundle nothing.
 
 Each main-frame navigation adds the rule lists to the page, or removes them, from the site's decision, so a site set to Allow is unblocked from its first request. Pages opened before the lists are compiled get them when ready; changing the global setting applies to open pages from their next load; changing a site's switch reloads it.
 
@@ -95,7 +95,7 @@ Failure modes:
 10. Generic hiding breaks a site that has a `$generichide` exception.
 11. The lists' attribution is missing.
 
-Verification: E2E `testAdsAndTrackersAreBlockedUnlessAllowed` (a fixture list downloaded from the fixture server blocks a third-party image and hides an element but keeps the site's own image; the site's switch reloads it unblocked; 7, 8, 9's test case). Isolated `FilterListConverterTests` cover 1–5, with patterns checked by what they match. Measured on the 26 Sep 2026 lists: 139,551 rules and 693 skipped, converted in 2 s and compiled in 5.5 s in a release build (8 s to convert in a debug build), once per list version (6). Attribution: Settings › General (11).
+Verification: E2E `testAdsAndTrackersAreBlockedUnlessAllowed` (a fixture list downloaded from the fixture server blocks a third-party image and hides an element but keeps the site's own image; the site's switch reloads it unblocked; 7, 9's test case). Isolated `FilterListConverterTests` cover 1–5, with patterns checked by what they match. Measured on the 26 Sep 2026 lists: 139,551 rules and 693 skipped, converted in 2 s and compiled in 5.5 s in a release build (8 s to convert in a debug build), once per list version (6). Attribution: Settings › General (11).
 
 ## Automatic picture in picture
 

@@ -37,7 +37,7 @@ enum AppIcon {
 
     /// The artwork masked and shadowed like a system icon, so it sits with the other icons.
     private static func image(for variant: AppIconVariant) -> NSImage? {
-        guard let url = variant.artworkURL, let artwork = NSImage(contentsOf: url) else { return nil }
+        guard let artwork = variant.artwork else { return nil }
         let inset = (canvas - body) / 2
         let frame = NSRect(x: inset, y: inset, width: body, height: body)
         return NSImage(size: NSSize(width: canvas, height: canvas), flipped: false) { _ in
