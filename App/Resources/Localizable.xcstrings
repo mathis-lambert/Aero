@@ -34,6 +34,46 @@
         }
       }
     },
+    "%lld cookies" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cookie"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cookies"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cookie"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cookies"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Accent color" : {
       "localizations" : {
         "en" : {
@@ -85,6 +125,22 @@
         }
       }
     },
+    "Allow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autoriser"
+          }
+        }
+      }
+    },
     "App icon" : {
       "localizations" : {
         "en" : {
@@ -113,6 +169,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apparence"
+          }
+        }
+      }
+    },
+    "Ask" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander"
           }
         }
       }
@@ -197,6 +269,22 @@
         }
       }
     },
+    "Block" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquer"
+          }
+        }
+      }
+    },
     "Blue" : {
       "localizations" : {
         "en" : {
@@ -209,6 +297,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "Camera" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caméra"
           }
         }
       }
@@ -357,6 +461,38 @@
         }
       }
     },
+    "Clear cache" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear cache"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vider le cache"
+          }
+        }
+      }
+    },
+    "Clear cookies" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear cookies"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les cookies"
+          }
+        }
+      }
+    },
     "Clear history" : {
       "localizations" : {
         "en" : {
@@ -469,6 +605,22 @@
         }
       }
     },
+    "Cookies and site data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cookies and site data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cookies et données du site"
+          }
+        }
+      }
+    },
     "Cookies and website sign-ins stay separate for each profile." : {
       "localizations" : {
         "en" : {
@@ -545,6 +697,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer"
+          }
+        }
+      }
+    },
+    "Delete data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les données"
           }
         }
       }
@@ -997,6 +1165,22 @@
         }
       }
     },
+    "Location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position"
+          }
+        }
+      }
+    },
     "Manage profiles" : {
       "localizations" : {
         "en" : {
@@ -1009,6 +1193,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gérer les profils"
+          }
+        }
+      }
+    },
+    "Microphone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microphone"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Micro"
           }
         }
       }
@@ -1121,6 +1321,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nuit"
+          }
+        }
+      }
+    },
+    "No cookies" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No cookies"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun cookie"
           }
         }
       }
@@ -1302,6 +1518,22 @@
         }
       }
     },
+    "Other site data is stored" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other site data is stored"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’autres données du site sont stockées"
+          }
+        }
+      }
+    },
     "Pages you visit appear here." : {
       "localizations" : {
         "en" : {
@@ -1330,6 +1562,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Papier"
+          }
+        }
+      }
+    },
+    "Permissions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisations"
           }
         }
       }
@@ -1554,6 +1802,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rouvrez le navigateur pour appliquer le changement de langue."
+          }
+        }
+      }
+    },
+    "Reset permissions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset permissions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser les autorisations"
           }
         }
       }
@@ -1827,6 +2091,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Affiche les suggestions du moteur pendant la saisie. Les adresses ne sont jamais envoyées."
+          }
+        }
+      }
+    },
+    "Site settings…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site settings…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages du site…"
           }
         }
       }

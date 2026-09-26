@@ -1,6 +1,6 @@
 public enum BrowserCommand: String, CaseIterable, Sendable {
     case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles
-    case showHistory, findInPage, findNext, findPrevious
+    case showHistory, findInPage, findNext, findPrevious, clearCookies, clearCache, siteSettings
 
     /// Who receives the command's shortcut while a web page has keyboard focus.
     public enum KeyRouting: Sendable {
@@ -15,7 +15,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
     public var keyRouting: KeyRouting {
         switch self {
         case .newTab, .openLocation, .back, .forward, .reload, .closeTab, .reopenTab, .showHistory: .reserved
-        case .commandPalette, .toggleSidebar, .profiles, .findInPage, .findNext, .findPrevious: .pageFirst
+        case .commandPalette, .toggleSidebar, .profiles, .findInPage, .findNext, .findPrevious, .clearCookies, .clearCache, .siteSettings: .pageFirst
         }
     }
 }

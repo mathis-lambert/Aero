@@ -84,4 +84,5 @@ private final class PinnedTabs: WebPageRegistryDelegate {
     func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab? { nil }
     func pageDidOpenPopup(_ tabID: UUID) {}
     func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID) {}
+    func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? { nil }
 }

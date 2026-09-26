@@ -40,15 +40,25 @@ class BrowserE2ETestCase: XCTestCase {
         return matches.sorted { ($0.frame.minY, $0.frame.minX) < ($1.frame.minY, $1.frame.minX) }.map(\.label)
     }
 
-    func open(_ fixture: String, expecting text: String) {
+    func open(_ fixture: String, host: String = "localhost", expecting text: String) {
         app.typeKey("t", modifierFlags: .command)
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: Self.renderTimeout))
-        controlBarInput.typeText(server.url(fixture).absoluteString + "\n")
+        controlBarInput.typeText(server.url(fixture, host: host).absoluteString + "\n")
         XCTAssertTrue(app.webViews.staticTexts[text].waitForExistence(timeout: Self.pageTimeout), "\(fixture) loaded")
     }
 
     func relaunch() {
         app.terminate()
+        app.launch()
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
+    }
+
+    /// Quits from the prompt, so the session is saved, then launches again.
+    func quitAndRelaunch() {
+        app.typeKey("q", modifierFlags: .command)
+        XCTAssertTrue(app.groups["quit.prompt"].waitForExistence(timeout: Self.renderTimeout))
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.pageTimeout))
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }

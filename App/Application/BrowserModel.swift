@@ -278,6 +278,16 @@ final class BrowserModel {
         }
     }
 
+    func setDecision(_ decision: SiteDecision?, for permission: SitePermission, at site: CurrentSite) {
+        session.setDecision(decision, for: permission, at: site.origin, profileID: site.profileID)
+        persist()
+    }
+
+    func resetPermissions(at site: CurrentSite) {
+        session.resetPermissions(at: site.origin, profileID: site.profileID)
+        persist()
+    }
+
     func cycleTab(backwards: Bool) {
         if cycleTabs.isEmpty {
             let allowed = Set(tabs.map(\.id))

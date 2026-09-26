@@ -19,5 +19,10 @@
         <key>UTTypeDescription</key><string>Aero tab</string>
         <key>UTTypeConformsTo</key><array><string>public.data</string></array>
     </dict></array>
+    <!-- Websites ask through Aero; Site settings keeps each site's answer. Localized in InfoPlist.xcstrings. -->
+    <key>NSCameraUsageDescription</key><string>Websites you allow can use the camera.</string>
+    <key>NSMicrophoneUsageDescription</key><string>Websites you allow can use the microphone.</string>
+    <key>NSLocationUsageDescription</key><string>Websites you allow can use your location.</string>
+    <key>NSLocationWhenInUseUsageDescription</key><string>Websites you allow can use your location.</string>
     <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoadsInWebContent</key><true/><key>NSAllowsLocalNetworking</key><true/></dict>
 </dict></plist>

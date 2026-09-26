@@ -11,12 +11,29 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
     public var color: ProfileColor
     /// Stands for the profile in the sidebar; without one, its color does.
     public var emoji: String?
+    /// Saved answers by origin; an origin without one is left out.
+    public internal(set) var sitePermissions: [SiteOrigin: [SitePermission: SiteDecision]]
 
     public init(id: UUID = UUID(), name: String, color: ProfileColor = .terracotta, emoji: String? = nil) {
         self.id = id
         self.name = name
         self.color = color
         self.emoji = emoji
+        sitePermissions = [:]
+    }
+
+    /// Like the emoji, the permissions are optional in the file: a profile that never saved one has none.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        color = try container.decode(ProfileColor.self, forKey: .color)
+        emoji = try container.decodeIfPresent(String.self, forKey: .emoji)
+        sitePermissions = try container.decodeIfPresent([SiteOrigin: [SitePermission: SiteDecision]].self, forKey: .sitePermissions) ?? [:]
+    }
+
+    public func decision(for permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? {
+        sitePermissions[origin]?[permission]
     }
 
     /// The single emoji `text` holds, ignoring surrounding spaces, or `nil`. Sequences (flags, skin
@@ -88,6 +105,18 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         profiles[index].name = name
         profiles[index].color = color
         profiles[index].emoji = emoji
+    }
+
+    /// Saves `decision` for the profile, or forgets the saved one when it is `nil`.
+    public mutating func setDecision(_ decision: SiteDecision?, for permission: SitePermission, at origin: SiteOrigin, profileID: UUID) {
+        guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
+        profiles[index].sitePermissions[origin, default: [:]][permission] = decision
+        if profiles[index].sitePermissions[origin]?.isEmpty == true { profiles[index].sitePermissions[origin] = nil }
+    }
+
+    public mutating func resetPermissions(at origin: SiteOrigin, profileID: UUID) {
+        guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
+        profiles[index].sitePermissions[origin] = nil
     }
 
     @discardableResult

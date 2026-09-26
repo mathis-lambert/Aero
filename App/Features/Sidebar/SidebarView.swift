@@ -84,6 +84,14 @@ struct SidebarView: View {
                 else { browser.perform(.reload) }
             }
             .disabled(browser.currentPage == nil)
+            .contextMenu {
+                ForEach([BrowserCommand.clearCookies, .clearCache, .siteSettings], id: \.self) { command in
+                    Button(command.title) { browser.perform(command) }.disabled(!browser.isEnabled(command))
+                }
+            }
+            .popover(isPresented: Bindable(browser.window).siteSettingsPresented, arrowEdge: .bottom) {
+                if let site = browser.currentSite { SiteSettingsView(browser: browser, site: site) }
+            }
             .accessibilityIdentifier("sidebar.reload")
         }
     }

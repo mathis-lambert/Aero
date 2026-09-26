@@ -49,11 +49,12 @@ final class FixtureServer: Sendable {
     /// Where the app's search engines point in test runs (`AERO_TEST_SEARCH`).
     var searchEndpoint: URL { url("") }
 
-    /// Uses `localhost` so app-side requests fall under App Transport Security's local networking exception.
-    func url(_ fixture: String) -> URL {
+    /// Uses `localhost` by default so app-side requests fall under App Transport Security's local
+    /// networking exception; `127.0.0.1` serves the same files as another site.
+    func url(_ fixture: String, host: String = "localhost") -> URL {
         var components = URLComponents()
         components.scheme = "http"
-        components.host = "localhost"
+        components.host = host
         components.port = Int(port)
         components.path = "/" + fixture
         guard let url = components.url else { preconditionFailure("Invalid fixture name \(fixture)") }

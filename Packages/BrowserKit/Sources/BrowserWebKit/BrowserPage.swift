@@ -29,6 +29,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onIcons: (([FaviconLink], URL) -> Void)?
     @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
     @ObservationIgnored var onClose: (() -> Void)?
+    @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []
     @ObservationIgnored private var requestedURL: URL?
     /// The address of the last recorded visit; reloads and restores of it add no visit.
@@ -126,6 +127,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onIcons = nil
         onPopup = nil
         onClose = nil
+        onPermission = nil
         firstFrameTimeout?.cancel()
         observations.removeAll()
         webView.stopLoading()
@@ -265,4 +267,27 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     public func webViewDidClose(_ webView: WKWebView) { onClose?() }
+
+    public func webView(_ webView: WKWebView, decideMediaCapturePermissionsFor origin: WKSecurityOrigin, initiatedBy frame: WKFrameInfo, type: WKMediaCaptureType) async -> WKPermissionDecision {
+        switch type {
+        case .camera: decision(for: [.camera], requestedBy: origin)
+        case .microphone: decision(for: [.microphone], requestedBy: origin)
+        case .cameraAndMicrophone: decision(for: [.camera, .microphone], requestedBy: origin)
+        @unknown default: .prompt
+        }
+    }
+
+    public func webView(_ webView: WKWebView, requestGeolocationPermissionFor origin: WKSecurityOrigin, initiatedBy frame: WKFrameInfo) async -> WKPermissionDecision {
+        decision(for: [.location], requestedBy: origin)
+    }
+
+    /// The page's origin decides, including for the frames it delegates to; one blocked permission
+    /// refuses the request, and anything short of all allowed leaves WebKit to prompt.
+    private func decision(for permissions: [SitePermission], requestedBy origin: WKSecurityOrigin) -> WKPermissionDecision {
+        guard let site = webView.url.flatMap(SiteOrigin.init(url:)) ?? SiteOrigin(scheme: origin.protocol, host: origin.host, port: origin.port),
+              let onPermission else { return .prompt }
+        let decisions = permissions.map { onPermission($0, site) }
+        if decisions.contains(.block) { return .deny }
+        return decisions.allSatisfy { $0 == .allow } ? .grant : .prompt
+    }
 }

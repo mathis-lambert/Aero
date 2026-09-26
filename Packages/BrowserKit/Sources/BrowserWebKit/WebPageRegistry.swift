@@ -113,6 +113,7 @@ public final class WebPageRegistry {
         page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
         page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
+        page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
         page.onClose = { [weak self] in
             guard let opener = self?.livePages[tabID]?.openerTabID else { return }
             self?.delegate?.pageDidRequestClose(tabID, openerTabID: opener)

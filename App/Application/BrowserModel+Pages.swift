@@ -36,6 +36,11 @@ extension BrowserModel: WebPageRegistryDelegate {
         selectTab(tabID)
     }
 
+    func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? {
+        guard let tab = session.tabs.first(where: { $0.id == tabID }), let profileID = profileID(of: tab) else { return nil }
+        return session.profiles.first { $0.id == profileID }?.decision(for: permission, at: origin)
+    }
+
     func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID) {
         let wasSelected = window.selectedTabID == tabID
         closeTab(tabID, rememberForReopen: false)

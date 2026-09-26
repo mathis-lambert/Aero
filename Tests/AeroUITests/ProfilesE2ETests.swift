@@ -78,15 +78,5 @@ final class ProfilesE2ETests: BrowserE2ETestCase {
         app.typeKey("v", modifierFlags: .command)
     }
 
-    /// Quits from the prompt, so the session is saved, then launches again.
-    private func quitAndRelaunch() {
-        app.typeKey("q", modifierFlags: .command)
-        XCTAssertTrue(app.groups["quit.prompt"].waitForExistence(timeout: Self.renderTimeout))
-        app.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.pageTimeout))
-        app.launch()
-        XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
-    }
-
     private func isSelected(_ name: String) -> Bool { profile(name).isSelected }
 }
