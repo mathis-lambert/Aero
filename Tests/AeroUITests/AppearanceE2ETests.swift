@@ -7,6 +7,15 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
     private static let automatic = "settings.appIcon.automatic"
     private static let dark = "settings.theme.dark"
     private static let system = "settings.theme.system"
+    /// The Finder's custom icon inside the app bundle, which the Finder, the Dock and Launchpad show.
+    private static let customIcon = "Icon\r"
+
+    /// The app under test sits next to the test runner in the build products.
+    private var customIconFile: URL {
+        Bundle(for: Self.self).bundleURL
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appending(path: "Aero.app").appending(path: Self.customIcon)
+    }
 
     func testAppearanceChoicesPersistAcrossLaunches() {
         openGeneral()
@@ -17,6 +26,8 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(app.buttons[Self.dark].isSelected)
         XCTAssertTrue(app.buttons[Self.variant].isSelected)
         XCTAssertFalse(app.buttons[Self.automatic].isSelected)
+        XCTAssertTrue(poll { FileManager.default.fileExists(atPath: self.customIconFile.path) },
+                      "The icon is set on the app itself, so it shows while Aero is closed")
         attachScreenshot("appearance-chosen", of: app)
 
         relaunch()
@@ -27,6 +38,8 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
         app.buttons[Self.automatic].click()
         XCTAssertTrue(app.buttons[Self.automatic].isSelected)
         XCTAssertFalse(app.buttons[Self.variant].isSelected)
+        XCTAssertTrue(poll { !FileManager.default.fileExists(atPath: self.customIconFile.path) },
+                      "Automatic restores the system icon everywhere")
     }
 
     private func openGeneral() {

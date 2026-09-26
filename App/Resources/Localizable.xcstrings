@@ -117,6 +117,22 @@
         }
       }
     },
+    "Ask before quitting" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask before quitting"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander avant de quitter"
+          }
+        }
+      }
+    },
     "Aurora" : {
       "localizations" : {
         "en" : {
@@ -577,6 +593,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Téléchargements"
+          }
+        }
+      }
+    },
+    "Edit profile…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit profile…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le profil…"
+          }
+        }
+      }
+    },
+    "Emoji" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
           }
         }
       }
@@ -1077,6 +1125,22 @@
         }
       }
     },
+    "No downloads" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No downloads"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun téléchargement"
+          }
+        }
+      }
+    },
     "No history" : {
       "localizations" : {
         "en" : {
@@ -1121,6 +1185,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun résultat"
+          }
+        }
+      }
+    },
+    "None" : {
+      "comment" : "Placeholder of the profile emoji field.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun"
           }
         }
       }
@@ -1361,6 +1442,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profils"
+          }
+        }
+      }
+    },
+    "Quit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter"
+          }
+        }
+      }
+    },
+    "Quit Aero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Aero"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter Aero"
+          }
+        }
+      }
+    },
+    "Quit Aero?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Aero?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter Aero ?"
+          }
+        }
+      }
+    },
+    "Quit, and don't ask again" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit, and don't ask again"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter, et ne plus demander"
           }
         }
       }
@@ -1622,6 +1767,22 @@
         }
       }
     },
+    "Show emoji" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show emoji"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les emoji"
+          }
+        }
+      }
+    },
     "Show in Finder" : {
       "localizations" : {
         "en" : {
@@ -1638,18 +1799,18 @@
         }
       }
     },
-    "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon." : {
+    "Shown in the Dock, the Finder and Launchpad, even while Aero is closed." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon."
+            "value" : "Shown in the Dock, the Finder and Launchpad, even while Aero is closed."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Affichée dans le Dock pendant qu’Aero est ouvert. Le Finder et le Launchpad gardent l’icône par défaut."
+            "value" : "Affichée dans le Dock, le Finder et le Launchpad, même quand Aero est fermé."
           }
         }
       }
@@ -1746,22 +1907,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Soleil"
-          }
-        }
-      }
-    },
-    "Switch profile" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch profile"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Changer de profil"
           }
         }
       }
@@ -2114,6 +2259,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Votre session enregistrée n’a pas pu être ouverte. Elle a été conservée intacte. Quittez l’application pour l’examiner ou la récupérer."
+          }
+        }
+      }
+    },
+    "⌘Q asks for confirmation, so a stray shortcut never closes your tabs." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘Q asks for confirmation, so a stray shortcut never closes your tabs."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘Q demande une confirmation, pour qu’un raccourci malencontreux ne ferme jamais vos onglets."
           }
         }
       }

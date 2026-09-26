@@ -44,7 +44,7 @@ final class BrowserModel {
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
         let folder: URL
         if let testing {
-            // Resolve inside this application's sandbox, not the UI test runner's container.
+            // Only the namespace comes from the test runner, whose temporary folder is its own.
             folder = URL.temporaryDirectory.appendingPathComponent("AeroTests", isDirectory: true)
                 .appendingPathComponent(testing, isDirectory: true)
         }
@@ -68,8 +68,8 @@ final class BrowserModel {
 
     var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
     var accent: ProfileColor { profile?.color ?? .terracotta }
-    var space: BrowserSpace? { session.spaces.first { $0.profileID == window.selectedProfileID } }
-    var tabs: [BrowserTab] { session.tabs.filter { $0.spaceID == space?.id } }
+    var space: BrowserSpace? { window.selectedProfileID.flatMap(space(of:)) }
+    var tabs: [BrowserTab] { space.map(tabs(in:)) ?? [] }
     var selectedTab: BrowserTab? { tabs.first { $0.id == window.selectedTabID } }
     var canReopen: Bool { closedTabs.contains { $0.spaceID == space?.id } }
     var downloads: DownloadCoordinator { pages.downloads }
@@ -89,15 +89,22 @@ final class BrowserModel {
             errorMessage = String(localized: "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.")
             endLaunchInterval()
         }
-        // After the session, so drawing it never delays the first tabs. The application exists once the
-        // first window starts, so the icon is not overwritten afterwards.
-        if let icon = preferences.appIcon { DockIcon.apply(icon) }
+        // After the session, so drawing it never delays the first tabs.
+        AppIcon.restore(preferences.appIcon)
     }
 
     private func endLaunchInterval() {
         guard let launchInterval else { return }
         Self.signposter.endInterval(Diagnostics.Signpost.launch, launchInterval)
         self.launchInterval = nil
+    }
+
+    func space(of profileID: UUID) -> BrowserSpace? {
+        session.spaces.first { $0.profileID == profileID }
+    }
+
+    func tabs(in space: BrowserSpace) -> [BrowserTab] {
+        session.tabs.filter { $0.spaceID == space.id }
     }
 
     func profileID(of tab: BrowserTab) -> UUID? {
@@ -132,7 +139,7 @@ final class BrowserModel {
     }
 
     func switchProfile(_ id: UUID) {
-        guard session.profiles.contains(where: { $0.id == id }) else { return }
+        guard id != window.selectedProfileID, session.profiles.contains(where: { $0.id == id }) else { return }
         if let profileID = window.selectedProfileID { lastSelection[profileID] = window.selectedTabID }
         window.selectedProfileID = id
         window.controlBar = nil
@@ -247,7 +254,7 @@ final class BrowserModel {
 
     func setAppIcon(_ variant: AppIconVariant?) {
         preferences.appIcon = variant
-        DockIcon.apply(variant)
+        AppIcon.apply(variant)
     }
 
     func setHibernation(_ settings: HibernationSettings) {
@@ -255,11 +262,12 @@ final class BrowserModel {
         pages.hibernationSettings = settings
     }
 
-    func saveProfile(id: UUID?, name: String, color: ProfileColor) -> Bool {
+    /// `emoji` is already validated by the profile sheet.
+    func saveProfile(id: UUID?, name: String, color: ProfileColor, emoji: String?) -> Bool {
         do {
-            if let id { try session.editProfile(id: id, name: name, color: color) }
+            if let id { try session.editProfile(id: id, name: name, color: color, emoji: emoji) }
             else {
-                let created = try session.addProfile(name: name, color: color)
+                let created = try session.addProfile(name: name, color: color, emoji: emoji)
                 switchProfile(created.id)
             }
             persist()

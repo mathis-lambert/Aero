@@ -36,7 +36,7 @@ struct SettingsView: View {
     let browser: BrowserModel
     @Environment(\.dismissWindow) private var dismissWindow
     @State private var section: SettingsSection = .general
-    @State private var managingProfiles = false
+    @State private var profileSheet: ProfileSheet?
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -74,7 +74,7 @@ struct SettingsView: View {
         .panelShadow()
         .padding(Self.shadowMargin)
         .background(SettingsWindowSurface())
-        .sheet(isPresented: $managingProfiles) { ProfilesView(browser: browser) }
+        .sheet(item: $profileSheet) { ProfilesView(browser: browser, sheet: $0) }
     }
 
     private var sidebar: some View {
@@ -103,7 +103,7 @@ struct SettingsView: View {
                         .background(selected ? palette.raised : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                         .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(QuietButtonStyle())
                 .accessibilityIdentifier("settings.\(item.rawValue)")
                 .accessibilityAddTraits(selected ? .isSelected : [])
                 .padding(.bottom, 3)
@@ -150,6 +150,15 @@ struct SettingsView: View {
 
             SettingsCard { search }
 
+            SettingsCard {
+                SettingsRow("Ask before quitting", caption: "⌘Q asks for confirmation, so a stray shortcut never closes your tabs.") {
+                    Toggle("Ask before quitting", isOn: Bindable(browser.preferences).confirmsQuit)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .accessibilityIdentifier("settings.confirmsQuit")
+                }
+            }
+
             SettingsCard { AppIconPicker(browser: browser) }
         }
     }
@@ -189,7 +198,7 @@ struct SettingsView: View {
                         .background(selected ? palette.raised : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control - Self.segmentInset))
                         .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control - Self.segmentInset))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.control - Self.segmentInset))
                 .accessibilityIdentifier("settings.theme.\(option.rawValue)")
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
@@ -201,7 +210,7 @@ struct SettingsView: View {
     private var profiles: some View {
         SettingsCard {
             SettingsRow("Your profiles", caption: "Keep website sign-ins and tabs separate.") {
-                Button("Manage profiles") { managingProfiles = true }
+                Button("Manage profiles") { profileSheet = browser.window.selectedProfileID.map(ProfileSheet.edit) }
                     .accessibilityIdentifier("settings.manageProfiles")
             }
         }

@@ -1,34 +1,37 @@
 import XCTest
 
-/// Profiles, localization, the sidebar and window controls, and Settings.
+/// Localization, the sidebar and window controls, and Settings.
 @MainActor
 final class BrowserUITests: BrowserE2ETestCase {
-    func testCreateRenameAndRestoreProfile() {
-        openProfiles()
-        app.buttons["profiles.add"].click()
-        app.textFields["profiles.name"].click()
-        app.typeText("Work")
-        app.buttons["profiles.save"].click()
-        XCTAssertEqual(app.buttons["sidebar.profiles"].value as? String, "Work")
-
-        openProfiles()
-        let name = app.textFields["profiles.name"]
-        name.click()
-        app.typeKey("a", modifierFlags: .command)
-        app.typeText("Studio")
-        app.buttons["profiles.save"].click()
+    func testQuitAsksFirst() {
+        open("solid.html", expecting: "Solid fixture")
         app.typeKey("q", modifierFlags: .command)
-        XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
+        let prompt = app.groups["quit.prompt"]
+        XCTAssertTrue(prompt.waitForExistence(timeout: Self.renderTimeout), "⌘Q asks first")
+        attachScreenshot("quit-prompt")
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertFalse(prompt.waitForExistence(timeout: 1), "Escape cancels")
+        XCTAssertEqual(app.state, .runningForeground)
+
+        app.typeKey("q", modifierFlags: .command)
+        XCTAssertTrue(prompt.waitForExistence(timeout: Self.renderTimeout))
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.pageTimeout), "Return quits, even with a page focused")
+
+        app.launch()
+        XCTAssertTrue(tabRows.firstMatch.waitForExistence(timeout: TestApplication.launchTimeout), "The session was saved")
+        app.typeKey("q", modifierFlags: .command)
+        app.buttons["quit.never"].click()
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.pageTimeout))
+
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
-        openProfiles()
-        XCTAssertTrue(app.buttons["profiles.row.Studio"].exists)
-    }
-
-    func testProfileFormRejectsEmptyName() {
-        openProfiles()
-        app.buttons["profiles.add"].click()
-        XCTAssertFalse(app.buttons["profiles.save"].isEnabled)
+        app.typeKey(",", modifierFlags: .command)
+        let toggle = app.checkBoxes["settings.confirmsQuit"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertEqual(toggle.value as? Int, 0, "Settings shows the prompt is off")
+        app.typeKey("q", modifierFlags: .command)
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.pageTimeout), "⌘Q then quits at once")
     }
 
     func testFrenchNewTab() {
@@ -50,7 +53,7 @@ final class BrowserUITests: BrowserE2ETestCase {
     func testSidebarNavigationAndWindowControls() {
         let window = app.windows["aero.main"]
         let sidebarToggle = app.buttons["sidebar.toggle"]
-        let profile = app.buttons["sidebar.profiles"]
+        let profile = app.buttons.matching(identifier: "sidebar.profile").firstMatch
         let address = app.buttons["sidebar.location"]
         let navigation = ["sidebar.back", "sidebar.forward", "sidebar.reload"].map { app.buttons[$0] }
         let lights = ["window.close", "window.minimize", "window.fullScreen"]
@@ -154,11 +157,5 @@ final class BrowserUITests: BrowserE2ETestCase {
         app.buttons["settings.tabs"].click()
         XCTAssertTrue(idleLimit.waitForExistence(timeout: 3))
         XCTAssertFalse(idleLimit.isEnabled)
-    }
-
-    private func openProfiles() {
-        app.menuBars.menuBarItems["Navigate"].click()
-        app.menuItems["Manage profiles"].click()
-        XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3))
     }
 }

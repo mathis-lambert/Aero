@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// Automatic plus every alternate icon; the choice applies to the Dock at once and at each launch.
+/// Automatic plus every alternate icon; the choice applies everywhere at once.
 struct AppIconPicker: View {
     let browser: BrowserModel
 
@@ -17,7 +17,7 @@ struct AppIconPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SettingsRow("App icon", caption: "Shown in the Dock while Aero is running. The Finder and Launchpad keep the default icon.") { EmptyView() }
+            SettingsRow("App icon", caption: "Shown in the Dock, the Finder and Launchpad, even while Aero is closed.") { EmptyView() }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 8)], alignment: .leading, spacing: 8) {
                 tile(nil, image: Image(nsImage: NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)), label: String(localized: "Automatic"))
                 ForEach(AppIconVariant.all) { variant in
@@ -56,7 +56,7 @@ struct AppIconPicker: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(QuietButtonStyle(radius: Self.tileSize * BrowserDesign.faviconCornerRatio))
         .help(label)
         .accessibilityLabel(label)
         .accessibilityIdentifier("settings.appIcon.\(variant?.id ?? "automatic")")

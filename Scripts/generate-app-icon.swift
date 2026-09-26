@@ -18,7 +18,7 @@ import Foundation
 let canvas = 1024.0, unit = canvas / 100, side = Int(canvas)
 let minimumDotRadius = 0.35
 
-enum Mark: String, CaseIterable { case a, plume }
+enum Mark: String, CaseIterable { case a, feather }
 enum Motif: String { case mistral, nuages }
 
 struct Palette {
@@ -49,7 +49,7 @@ let palettes: [Palette] = [
 struct Tuning { let cells: Double; let contrast: Double; let shade: Double?; let shadeMix: Double; let threshold: Double }
 let tuning: [Mark: Tuning] = [
     .a: Tuning(cells: 110, contrast: 1.6, shade: 0.85, shadeMix: 0.4, threshold: 0.43),
-    .plume: Tuning(cells: 110, contrast: 1.9, shade: nil, shadeMix: 0.35, threshold: 0.35),
+    .feather: Tuning(cells: 110, contrast: 1.9, shade: nil, shadeMix: 0.35, threshold: 0.35),
 ]
 
 // MARK: - Arguments
@@ -167,7 +167,7 @@ func dots(for mark: Mark, motif: Motif) -> [Dot] {
     let tune = tuning[mark]!, mask = Layer(), shade = Layer()
     switch mark {
     case .a: drawA(mask)
-    case .plume: drawFeather(mask, shade: false); drawFeather(shade, shade: true)
+    case .feather: drawFeather(mask, shade: false); drawFeather(shade, shade: true)
     }
     let pitch = canvas / tune.cells, count = Int(tune.cells.rounded(.up))
     var result: [Dot] = []

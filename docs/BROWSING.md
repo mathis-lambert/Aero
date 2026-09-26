@@ -60,7 +60,7 @@ Verification: E2E `testFindInPageSelectsMatchesAndReportsMisses`.
 
 ## Downloads
 
-Undisplayable responses, `download` links and `Content-Disposition: attachment` become downloads, saved to Downloads (a test folder under `AERO_TEST_DATA`) with a sanitized, unique name, quarantined and tagged with their source. The sidebar lists them for the session, with progress, cancel, retry, Show in Finder and clear; the Dock shows the active count. Closing or hibernating the tab never stops one.
+Undisplayable responses, `download` links and `Content-Disposition: attachment` become downloads, saved to Downloads (a test folder under `AERO_TEST_DATA`) with a sanitized, unique name, quarantined and tagged with their source. The footer's downloads button lists them for the session in a popover (`docs/PROFILES.md`); the Dock shows the active count. Closing or hibernating the tab never stops one.
 
 Failure modes:
 
@@ -80,6 +80,20 @@ Tabs drag within the list, onto the pinned grid to pin and back to unpin, with a
 Failure modes: a drop lands in the wrong place or loses the tab; a tab changes space; text or files from other apps are taken for a tab.
 
 Verification: E2E `testTabsReorderAndPinByDragging`.
+
+## Quitting
+
+⌘Q and the Quit menu item ask first, in a prompt over the browser window: Return quits, Escape cancels, and a second ⌘Q quits too. "Quit, and don't ask again" turns the prompt off; Settings › General turns it back on. Quitting from the Dock, at logout or at restart never asks. Quitting saves the session first.
+
+Failure modes:
+
+1. The prompt blocks a logout, a restart or a quit from the Dock.
+2. Return or Escape reaches the focused page or field instead of the prompt.
+3. The prompt opens while the browser window is minimized or closed, so nothing can answer it.
+4. "Don't ask again" is lost after relaunch, or cannot be undone.
+5. The session is not saved when quitting from the prompt.
+
+Verification: E2E `testQuitAsksFirst` (Escape keeps the app running; Return quits and the session survives; "don't ask again" quits at once on the next ⌘Q and shows in Settings; 2, 4, 5). 1 holds by construction: only the menu item asks.
 
 ## Limits
 

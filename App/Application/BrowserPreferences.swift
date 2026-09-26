@@ -51,6 +51,7 @@ final class BrowserPreferences {
         static let appearance = "browser.appearance"
         static let searchEngine = "browser.searchEngine"
         static let searchSuggestions = "browser.searchSuggestions"
+        static let confirmsQuit = "browser.confirmsQuit"
         static let appleLanguages = "AppleLanguages"
         static let hibernationEnabled = "browser.hibernation.enabled"
         static let hibernationIdleMinutes = "browser.hibernation.idleMinutes"
@@ -69,6 +70,10 @@ final class BrowserPreferences {
     }
     var searchSuggestions: Bool {
         didSet { defaults.set(searchSuggestions, forKey: Key.searchSuggestions) }
+    }
+    /// Whether ⌘Q asks before quitting.
+    var confirmsQuit: Bool {
+        didSet { defaults.set(confirmsQuit, forKey: Key.confirmsQuit) }
     }
     var hibernation: HibernationSettings {
         didSet { storeHibernation() }
@@ -89,6 +94,7 @@ final class BrowserPreferences {
         appearance = defaults.string(forKey: Key.appearance).flatMap(BrowserAppearance.init(rawValue:)) ?? .system
         searchEngine = defaults.string(forKey: Key.searchEngine).flatMap(SearchEngine.init(rawValue:)) ?? .default
         searchSuggestions = defaults.object(forKey: Key.searchSuggestions) as? Bool ?? true
+        confirmsQuit = defaults.object(forKey: Key.confirmsQuit) as? Bool ?? true
         hibernation = Self.loadHibernation(from: defaults)
         appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconVariant.init(id:))
     }

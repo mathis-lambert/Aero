@@ -24,16 +24,23 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
 
     func testDownloadCompletesAndCanBeCleared() {
         open("downloads.html", expecting: "Download report")
+        app.buttons["downloads.button"].click()
+        XCTAssertTrue(app.staticTexts["downloads.empty"].waitForExistence(timeout: Self.renderTimeout), "The popover says there are none yet")
+        app.typeKey(.escape, modifierFlags: [])
         app.webViews.links["Download report"].click()
+        app.buttons["downloads.button"].click()
         let row = app.descendants(matching: .any).matching(identifier: "downloads.row").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: Self.pageTimeout), "The download appears in the sidebar")
+        XCTAssertTrue(row.waitForExistence(timeout: Self.pageTimeout), "The download appears in the popover")
         XCTAssertTrue(app.staticTexts["report.csv"].exists)
         XCTAssertTrue(app.buttons["downloads.reveal"].waitForExistence(timeout: Self.pageTimeout), "The download finishes")
         XCTAssertFalse(app.staticTexts["This page could not be opened"].exists, "The page that started the download stays displayed")
         attachScreenshot("download-finished")
 
         app.buttons["downloads.clear"].click()
-        XCTAssertFalse(row.waitForExistence(timeout: 1), "Clearing finished downloads hides the section")
+        XCTAssertTrue(app.staticTexts["downloads.empty"].waitForExistence(timeout: Self.renderTimeout), "Clearing removes finished downloads")
+        app.typeKey(.escape, modifierFlags: [])
+        app.buttons["downloads.button"].click()
+        XCTAssertTrue(app.staticTexts["downloads.empty"].waitForExistence(timeout: Self.renderTimeout), "The popover reopens with the current list")
     }
 
     func testTabsReorderAndPinByDragging() {

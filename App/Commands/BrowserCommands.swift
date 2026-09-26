@@ -69,8 +69,9 @@ extension KeyboardShortcut {
 }
 
 extension BrowserModel {
+    /// Nothing runs behind the quit prompt.
     func isEnabled(_ command: BrowserCommand) -> Bool {
-        guard isReady else { return false }
+        guard isReady, !window.quitPromptPresented else { return false }
         switch command {
         case .back: return currentPage?.canGoBack == true
         case .forward: return currentPage?.canGoForward == true
@@ -102,7 +103,7 @@ extension BrowserModel {
         case .closeTab: if let id = window.selectedTabID { closeTab(id) }
         case .reopenTab: reopenTab()
         case .toggleSidebar: window.sidebarPinned.toggle()
-        case .profiles: window.profilesPresented = true
+        case .profiles: window.profileSheet = window.selectedProfileID.map(ProfileSheet.edit)
         case .showHistory: show(.history)
         case .findInPage, .findNext, .findPrevious: find(command)
         }
@@ -120,10 +121,15 @@ extension BrowserModel {
 }
 
 struct BrowserMenuCommands: Commands {
+    /// Quitting works from every window, so it does not wait for the browser window's focus.
+    let quit: () -> Void
     @FocusedValue(\.browserModel) private var browser
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(replacing: .appTermination) {
+            Button("Quit Aero", action: quit).keyboardShortcut("q")
+        }
         CommandGroup(replacing: .appSettings) {
             Button("Settings…") { openWindow(id: SettingsView.windowID) }
                 .keyboardShortcut(",", modifiers: .command)

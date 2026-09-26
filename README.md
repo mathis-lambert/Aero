@@ -19,7 +19,7 @@ UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`)
 
 ## Features
 
-- Profiles, each with its own website store, tabs and history.
+- Profiles, each with its own website store, tabs and history, switched from the sidebar footer or with a two-finger swipe (`docs/PROFILES.md`).
 - One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K), with the chosen engine's suggestions (`docs/CONTROL_BAR.md`).
 - Pinned tabs, drag to reorder and pin, reopen closed tabs, recent-tab switching (⌃Tab).
 - Session restoration without loading pages, and tab hibernation (`docs/PERFORMANCE.md`).
@@ -45,4 +45,4 @@ Not implemented yet: onboarding, import, extensions, credential integration, sep
 
 ⌘K, ⇧⌘S, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
 
-Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`.
+Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`. The full design system (brand book, tokens, components, icons) is a standalone site in `docs/design-system`: open its `index.html`, or hand the folder to another tool; `python3 Scripts/build-design-system.py` rebuilds it.

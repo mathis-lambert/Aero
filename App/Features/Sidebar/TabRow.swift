@@ -52,7 +52,7 @@ struct TabRow<Icon: View>: View {
                 Image(systemName: "xmark").font(BrowserDesign.Typography.glyph)
                     .frame(width: 26, height: 30).contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(QuietButtonStyle())
             .opacity(hovered || selected ? 1 : 0)
             .accessibilityLabel("Close tab")
         }

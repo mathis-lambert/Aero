@@ -39,3 +39,28 @@ import Testing
         try session.addProfile(name: String(repeating: "a", count: BrowserProfile.maximumNameLength + 1), color: .moss)
     }
 }
+
+// Failure modes 5 and 6 in docs/PROFILES.md.
+@Test func profileEmojiIsExactlyOneEmoji() {
+    for emoji in ["🚀", "❤️", "🇫🇷", "👩‍👩‍👧", "👍🏽", "1️⃣", " 🌿 "] {
+        #expect(BrowserProfile.emoji(from: emoji) == emoji.trimmingCharacters(in: .whitespaces), "\(emoji)")
+    }
+    for text in ["", " ", "a", "Work", "1", "#", "🚀🌿", "🚀a", "\u{1F3FD}", "\u{FE0F}", "❤"] {
+        #expect(BrowserProfile.emoji(from: text) == nil, "\(text)")
+    }
+}
+
+@Test func sessionsValidateProfileEmoji() throws {
+    var session = BrowserSession(profileName: "Personal")
+    let work = try session.addProfile(name: "Work", color: .ocean, emoji: "🚀")
+    #expect(work.emoji == "🚀")
+    try session.validate()
+    try session.editProfile(id: work.id, name: "Work", color: .ocean, emoji: nil)
+    #expect(session.profiles.last?.emoji == nil)
+    #expect(throws: SessionError.invalidEmoji) { try session.editProfile(id: work.id, name: "Work", color: .ocean, emoji: "Work") }
+
+    let data = try JSONEncoder().encode(session)
+    let tampered = try #require(String(data: data, encoding: .utf8)?.replacingOccurrences(of: "\"name\":\"Work\"", with: "\"name\":\"Work\",\"emoji\":\"ab\""))
+    let decoded = try JSONDecoder().decode(BrowserSession.self, from: Data(tampered.utf8))
+    #expect(throws: SessionError.inconsistentData) { try decoded.validate() }
+}

@@ -2,7 +2,7 @@ import BrowserCore
 import SwiftUI
 
 /// Pinned tabs as compact tiles. Dropping a tab on a tile pins it before that tile; while the
-/// grid is empty, a thin zone above the profile switcher opens into a tile-sized target.
+/// grid is empty, a thin zone opens into a tile-sized target.
 struct PinnedTabsGrid: View {
     private static let columns = 3
     private static let spacing: CGFloat = 8
@@ -13,11 +13,12 @@ struct PinnedTabsGrid: View {
     private static let initialFont = Font.system(size: placeholderSize, weight: .medium, design: .rounded)
 
     let browser: BrowserModel
+    let pinned: [BrowserTab]
+    let selectedTabID: UUID?
+    let select: (BrowserTab) -> Void
     @State private var targetedTabID: UUID?
     @State private var emptyZoneTargeted = false
     @Environment(\.palette) private var palette
-
-    private var pinned: [BrowserTab] { browser.tabs.filter(\.isPinned) }
 
     var body: some View {
         if pinned.isEmpty {
@@ -40,8 +41,8 @@ struct PinnedTabsGrid: View {
     }
 
     private func tile(_ tab: BrowserTab) -> some View {
-        let selected = browser.window.selectedTabID == tab.id
-        return Button { browser.selectTab(tab.id) } label: {
+        let selected = selectedTabID == tab.id
+        return Button { select(tab) } label: {
             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize) {
                 if let page = InternalPage(url: tab.url) {
                     Image(systemName: page.symbol).font(.system(size: Self.placeholderSize)).foregroundStyle(.secondary)
@@ -56,7 +57,7 @@ struct PinnedTabsGrid: View {
                             radius: BrowserDesign.Radius.card)
             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
         .help(tab.displayTitle)
         .accessibilityLabel(tab.displayTitle)
         .accessibilityIdentifier("sidebar.pinned")

@@ -9,11 +9,24 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
     public var name: String
     public var color: ProfileColor
+    /// Stands for the profile in the sidebar; without one, its color does.
+    public var emoji: String?
 
-    public init(id: UUID = UUID(), name: String, color: ProfileColor = .terracotta) {
+    public init(id: UUID = UUID(), name: String, color: ProfileColor = .terracotta, emoji: String? = nil) {
         self.id = id
         self.name = name
         self.color = color
+        self.emoji = emoji
+    }
+
+    /// The single emoji `text` holds, ignoring surrounding spaces, or `nil`. Sequences (flags, skin
+    /// tones, families, keycaps) count as one; digits and symbols that only have an emoji form with
+    /// a variation selector need it.
+    public static func emoji(from text: String) -> String? {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let scalars = value.unicodeScalars
+        guard value.count == 1, let first = scalars.first, first.properties.isEmoji, !first.properties.isEmojiModifier else { return nil }
+        return scalars.contains(where: \.properties.isEmojiPresentation) || scalars.count > 1 ? value : nil
     }
 }
 
@@ -44,7 +57,7 @@ public struct BrowserTab: Identifiable, Codable, Equatable, Sendable {
 }
 
 public enum SessionError: Error, Equatable {
-    case invalidProfileName, missingProfile, inconsistentData
+    case invalidProfileName, invalidEmoji, missingProfile, inconsistentData
 }
 
 /// Durable state only. Window selection and loaded web pages have separate owners.
@@ -61,18 +74,20 @@ public struct BrowserSession: Codable, Equatable, Sendable {
     }
 
     @discardableResult
-    public mutating func addProfile(name: String, color: ProfileColor) throws -> BrowserProfile {
-        let profile = BrowserProfile(name: try Self.validName(name), color: color)
+    public mutating func addProfile(name: String, color: ProfileColor, emoji: String? = nil) throws -> BrowserProfile {
+        let profile = BrowserProfile(name: try Self.validName(name), color: color, emoji: try Self.validEmoji(emoji))
         profiles.append(profile)
         spaces.append(BrowserSpace(profileID: profile.id))
         return profile
     }
 
-    public mutating func editProfile(id: UUID, name: String, color: ProfileColor) throws {
+    public mutating func editProfile(id: UUID, name: String, color: ProfileColor, emoji: String?) throws {
         guard let index = profiles.firstIndex(where: { $0.id == id }) else { throw SessionError.missingProfile }
         let name = try Self.validName(name)
+        let emoji = try Self.validEmoji(emoji)
         profiles[index].name = name
         profiles[index].color = color
+        profiles[index].emoji = emoji
     }
 
     @discardableResult
@@ -125,11 +140,17 @@ public struct BrowserSession: Codable, Equatable, Sendable {
               profileIDs.count == profiles.count,
               spaceIDs.count == spaces.count,
               Set(tabs.map(\.id)).count == tabs.count,
-              profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name }),
+              profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name && (try? Self.validEmoji($0.emoji)) == $0.emoji }),
               profiles.allSatisfy({ profile in spaces.contains { $0.profileID == profile.id } }),
               spaces.allSatisfy({ profileIDs.contains($0.profileID) }),
               tabs.allSatisfy({ spaceIDs.contains($0.spaceID) && NavigationInput.isTabURL($0.url) })
         else { throw SessionError.inconsistentData }
+    }
+
+    private static func validEmoji(_ value: String?) throws -> String? {
+        guard let value else { return nil }
+        guard let emoji = BrowserProfile.emoji(from: value) else { throw SessionError.invalidEmoji }
+        return emoji
     }
 
     private static func validName(_ value: String) throws -> String {

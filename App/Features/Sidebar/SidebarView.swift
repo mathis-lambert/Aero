@@ -1,11 +1,12 @@
 import BrowserCore
 import SwiftUI
 
+/// Navigation and the address on top, one page of tabs per profile, and a footer with the downloads
+/// and the profiles. See docs/PROFILES.md.
 struct SidebarView: View {
+    private static let footerHeight: CGFloat = 44
+
     let browser: BrowserModel
-    @Namespace private var selection
-    @State private var targetedTabID: UUID?
-    @State private var endTargeted = false
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -39,95 +40,32 @@ struct SidebarView: View {
                 .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
                 .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(QuietButtonStyle())
             .accessibilityLabel("Open location")
             .accessibilityIdentifier("sidebar.location")
             .padding(.horizontal, BrowserDesign.rowInset)
             .padding(.top, 8)
             .padding(.bottom, 4)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 4) {
-                    PinnedTabsGrid(browser: browser)
-
-                    ProfileSwitcher(browser: browser)
-                        .padding(.bottom, 6)
-
-                    Hairline().padding(.horizontal, 4).padding(.bottom, 5)
-
-                    Button { browser.perform(.newTab) } label: {
-                        HStack(spacing: BrowserDesign.rowInset) {
-                            Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
-                            Text("New tab")
-                            Spacer()
-                        }
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, BrowserDesign.rowInset)
-                        .frame(height: BrowserDesign.controlHeight)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("sidebar.newTab")
-
-                    if browser.window.selectedTabID == nil {
-                        HStack(spacing: BrowserDesign.rowInset) {
-                            Image(systemName: "magnifyingglass").font(BrowserDesign.Typography.label).frame(width: BrowserDesign.rowIconWidth)
-                            Text("New tab")
-                            Spacer()
-                        }
-                        .padding(.horizontal, BrowserDesign.rowInset)
-                        .frame(height: BrowserDesign.tabRowHeight)
-                        .background { SelectionHighlight(namespace: selection) }
-                        .accessibilityAddTraits(.isSelected)
-                    }
-                    ForEach(unpinned) { tab in
-                        TabRow(tab: tab, selected: browser.window.selectedTabID == tab.id, selection: selection,
-                               select: { browser.selectTab(tab.id) }, close: { browser.closeTab(tab.id) }) {
-                            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
-                                Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe")
-                                    .font(BrowserDesign.Typography.chrome).foregroundStyle(.secondary)
-                            }
-                        }
-                        .contextMenu { TabContextMenu(tab: tab, browser: browser) }
-                        .draggable(tab.dragItem)
-                        .dropDestination(for: TabDragItem.self) { items, _ in
-                            drop(items, before: tab.id)
-                        } isTargeted: { targetedTabID = $0 ? tab.id : (targetedTabID == tab.id ? nil : targetedTabID) }
-                        .overlay(alignment: .top) { if targetedTabID == tab.id { DropIndicator() } }
-                    }
-                    // The rest of the list accepts drops at the end.
-                    Color.clear
-                        .frame(height: BrowserDesign.tabRowHeight)
-                        .contentShape(Rectangle())
-                        .dropDestination(for: TabDragItem.self) { items, _ in
-                            drop(items, before: nil)
-                        } isTargeted: { endTargeted = $0 }
-                        .overlay(alignment: .top) { if endTargeted { DropIndicator() } }
-                        .accessibilityHidden(true)
-                }
-                .browserAnimation(value: browser.window.selectedTabID)
-                .browserAnimation(value: browser.tabs.map(\.id))
-                .browserAnimation(value: browser.tabs.map(\.isPinned))
-                .padding(.horizontal, BrowserDesign.rowInset)
-                .padding(.top, 12)
-            }
-            .scrollIndicators(.hidden)
-
-            if !browser.downloads.downloads.isEmpty {
-                DownloadsSection(downloads: browser.downloads)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+            ProfilePager(browser: browser)
+            footer
         }
-        .browserAnimation(value: browser.downloads.downloads.isEmpty)
         .disabled(!browser.isReady)
     }
 
-    private var unpinned: [BrowserTab] { browser.tabs.filter { !$0.isPinned } }
-
-    private func drop(_ items: [TabDragItem], before targetID: UUID?) -> Bool {
-        guard let item = items.first else { return false }
-        browser.moveTab(item.tabID, before: targetID, pinned: false)
-        return true
+    private var footer: some View {
+        HStack(spacing: 0) {
+            DownloadsButton(downloads: browser.downloads)
+            Spacer(minLength: 4)
+            ProfileBar(browser: browser)
+            Spacer(minLength: 4)
+            IconButton(symbol: "plus", label: "New profile", size: BrowserDesign.navigationButtonSize) {
+                browser.window.profileSheet = .create
+            }
+            .accessibilityIdentifier("sidebar.addProfile")
+        }
+        .padding(.horizontal, BrowserDesign.rowInset)
+        .frame(height: Self.footerHeight)
     }
 
     private var navigation: some View {

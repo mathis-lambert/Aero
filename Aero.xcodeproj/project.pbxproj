@@ -124,6 +124,7 @@
 				6805EC6AFDAFDBE18E2FF355 /* Sources */,
 				0F91A57B11B30F1A7980649D /* Frameworks */,
 				2AC7AB26953A78AD46B49603 /* Resources */,
+				4E1A8C2B9D3F47E6A0B5C7D1 /* Remove Custom Icon */,
 			);
 			buildRules = (
 			);
@@ -200,6 +201,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4E1A8C2B9D3F47E6A0B5C7D1 /* Remove Custom Icon */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Remove Custom Icon";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# codesign rejects the custom icon that Settings puts on the app bundle; Aero sets it again at launch.\nrm -f \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Icon\"$(printf '\\r')\nxattr -d com.apple.FinderInfo \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\" 2>/dev/null || true\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		6805EC6AFDAFDBE18E2FF355 /* Sources */ = {

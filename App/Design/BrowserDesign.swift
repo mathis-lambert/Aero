@@ -46,6 +46,8 @@ enum BrowserDesign {
     static let downloadIconSize: CGFloat = 24
     static let faviconCornerRatio: CGFloat = 0.22
     static let motion = Animation.spring(duration: 0.28, bounce: 0.08)
+    /// Quick enough to follow the pointer; a fade, so it stays with Reduce Motion.
+    static let hover = Animation.easeOut(duration: 0.12)
     /// Fades a page in once it has rendered; short so navigation never feels delayed.
     static let pageReveal = Animation.easeOut(duration: 0.18)
 }
@@ -180,39 +182,80 @@ struct IconButton: View {
     }
 }
 
+/// The chrome's borderless buttons: the `hover` fill under the pointer and the `pressed` fill while
+/// pressed, over whatever surface the label draws.
 struct QuietButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
+    var radius = BrowserDesign.Radius.control
+
+    func makeBody(configuration: Configuration) -> some View {
+        PointerFeedback(isPressed: configuration.isPressed, radius: radius) { configuration.label }
+    }
+}
+
+/// The buttons of panels and prompts; the prominent one, filled with the accent, is the default.
+struct PanelButtonStyle: ButtonStyle {
+    var prominent = false
     @Environment(\.palette) private var palette
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(configuration.isPressed ? palette.pressed : .clear,
-                        in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+        let shape = RoundedRectangle(cornerRadius: BrowserDesign.Radius.control)
+        PointerFeedback(isPressed: configuration.isPressed, radius: BrowserDesign.Radius.control) {
+            configuration.label
+                .font(BrowserDesign.Typography.chrome.weight(.medium))
+                .lineLimit(1)
+                .fixedSize()
+                .foregroundStyle(prominent ? AnyShapeStyle(.white) : AnyShapeStyle(palette.ink))
+                .padding(.horizontal, 14)
+                .frame(height: BrowserDesign.controlHeight)
+                .background(prominent ? AnyShapeStyle(.tint) : AnyShapeStyle(palette.fill), in: shape)
+        }
+    }
+}
+
+private struct PointerFeedback<Label: View>: View {
+    let isPressed: Bool
+    let radius: CGFloat
+    @ViewBuilder let label: Label
+    @State private var hovered = false
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        let fill = isPressed ? palette.pressed : hovered && isEnabled ? palette.hover : .clear
+        label
+            .overlay {
+                RoundedRectangle(cornerRadius: radius).fill(fill).allowsHitTesting(false)
+            }
             .opacity(isEnabled ? 1 : 0.3)
+            .onHover { hovered = $0 }
+            .animation(BrowserDesign.hover, value: hovered)
     }
 }
 
 struct ShortcutLabel: View {
     let text: String
+    /// On an accent fill, such as a prominent button.
+    var onAccent = false
     @Environment(\.palette) private var palette
 
     var body: some View {
         Text(verbatim: text)
             .font(BrowserDesign.Typography.keycap)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(onAccent ? AnyShapeStyle(.white.opacity(0.85)) : AnyShapeStyle(.secondary))
             .padding(.horizontal, 5)
             .padding(.vertical, 3)
-            .background(palette.line, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.xs))
+            .background(onAccent ? .white.opacity(0.2) : palette.line, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.xs))
             .accessibilityHidden(true)
     }
 }
 
+/// The profile's emoji, or its initial, on its color.
 struct ProfileBadge: View {
     let profile: BrowserProfile
     var size: CGFloat = 30
     var body: some View {
-        Text(verbatim: String(profile.name.prefix(1)).uppercased())
-            .font(.system(size: size * 0.43, weight: .semibold, design: .rounded))
+        Text(verbatim: profile.emoji ?? String(profile.name.prefix(1)).uppercased())
+            .font(.system(size: size * (profile.emoji == nil ? 0.43 : 0.5), weight: .semibold, design: .rounded))
             .foregroundStyle(.white)
             .frame(width: size, height: size)
             .background(profile.color.tint, in: RoundedRectangle(cornerRadius: size * 0.3))

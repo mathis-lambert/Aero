@@ -10,6 +10,9 @@ struct BrowserWindowView: View {
     @State private var sidebarRevealed = false
     @Environment(\.palette) private var palette
 
+    /// The control bar or the quit prompt covers the window, which then takes no clicks.
+    private var isOverlaid: Bool { browser.window.controlBar != nil || browser.window.quitPromptPresented }
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             HStack(spacing: 0) {
@@ -45,14 +48,14 @@ struct BrowserWindowView: View {
                 .padding(.vertical, BrowserDesign.pageInset)
                 .padding(.leading, browser.window.sidebarPinned ? 0 : BrowserDesign.pageInset)
             }
-            .allowsHitTesting(browser.window.controlBar == nil)
+            .allowsHitTesting(!isOverlaid)
             if !browser.window.sidebarPinned {
                 Color.clear
                     .frame(width: BrowserDesign.sidebarRevealEdgeWidth)
                     .frame(maxHeight: .infinity)
                     .contentShape(Rectangle())
                     .onHover { if $0 { sidebarRevealed = true } }
-                    .allowsHitTesting(!sidebarRevealed && browser.window.controlBar == nil)
+                    .allowsHitTesting(!sidebarRevealed && !isOverlaid)
                 if sidebarRevealed {
                     SidebarView(browser: browser)
                         .frame(width: BrowserDesign.sidebarWidth)
@@ -62,15 +65,20 @@ struct BrowserWindowView: View {
                         .padding(BrowserDesign.floatingInset)
                         .contentShape(Rectangle())
                         .onHover { if !$0 { sidebarRevealed = false } }
-                        .allowsHitTesting(browser.window.controlBar == nil)
+                        .allowsHitTesting(!isOverlaid)
                         .transition(.move(edge: .leading).combined(with: .opacity))
                 }
             }
-            if let presentation = browser.window.controlBar {
+            if isOverlaid {
                 Color.black.opacity(0.12)
                     .ignoresSafeArea()
-                    .onTapGesture { browser.window.controlBar = nil }
+                    .onTapGesture {
+                        browser.window.controlBar = nil
+                        browser.window.quitPromptPresented = false
+                    }
                     .accessibilityHidden(true)
+            }
+            if let presentation = browser.window.controlBar {
                 GeometryReader { geometry in
                     ControlBarView(browser: browser, presentation: presentation)
                         .id(presentation.id)
@@ -78,6 +86,11 @@ struct BrowserWindowView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
+            }
+            if browser.window.quitPromptPresented {
+                QuitPrompt(browser: browser)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
         }
         .frame(minWidth: 820, minHeight: 580)
@@ -89,14 +102,15 @@ struct BrowserWindowView: View {
         .browserAnimation(value: browser.window.sidebarPinned)
         .browserAnimation(value: sidebarRevealed)
         .browserAnimation(value: browser.window.controlBar != nil)
+        .browserAnimation(value: browser.window.quitPromptPresented)
         .browserAnimation(value: browser.window.find.isPresented)
         .downloadsDockBadge(activeCount: browser.downloads.activeCount)
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
-        .onChange(of: browser.window.controlBar != nil) { _, presented in if presented { sidebarRevealed = false } }
+        .onChange(of: isOverlaid) { _, overlaid in if overlaid { sidebarRevealed = false } }
         .background(WindowConfiguration())
         .focusedSceneValue(\.browserModel, browser)
-        .sheet(isPresented: Binding(get: { browser.window.profilesPresented }, set: { browser.window.profilesPresented = $0 })) {
-            ProfilesView(browser: browser)
+        .sheet(item: Binding(get: { browser.window.profileSheet }, set: { browser.window.profileSheet = $0 })) { sheet in
+            ProfilesView(browser: browser, sheet: sheet)
         }
         .alert("Something needs your attention", isPresented: Binding(get: { browser.errorMessage != nil }, set: { if !$0 { browser.errorMessage = nil } })) {
             Button("OK", role: .cancel) { browser.errorMessage = nil }
