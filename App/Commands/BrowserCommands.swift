@@ -73,7 +73,7 @@ extension BrowserCommand {
 }
 
 extension BrowserModel {
-    /// Nothing runs behind the quit prompt.
+    /// Nothing runs behind a prompt.
     func isEnabled(_ command: BrowserCommand) -> Bool {
         guard isReady, window.prompt == nil else { return false }
         switch command {
@@ -186,13 +186,6 @@ struct BrowserMenuCommands: Commands {
     }
 }
 
-private struct BrowserModelFocusKey: FocusedValueKey {
-    typealias Value = BrowserModel
-}
-
 extension FocusedValues {
-    var browserModel: BrowserModel? {
-        get { self[BrowserModelFocusKey.self] }
-        set { self[BrowserModelFocusKey.self] = newValue }
-    }
+    @Entry var browserModel: BrowserModel?
 }

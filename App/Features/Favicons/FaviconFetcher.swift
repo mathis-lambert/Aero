@@ -8,7 +8,6 @@ struct FaviconFetcher: Sendable {
     private static let maximumDownloadBytes = 512 * 1024
     private static let requestTimeout: TimeInterval = 10
     private static let resourceTimeout: TimeInterval = 15
-    private static let successStatus = 200
 
     private let session = URLSession.anonymous(requestTimeout: requestTimeout, resourceTimeout: resourceTimeout)
 
@@ -28,7 +27,7 @@ struct FaviconFetcher: Sendable {
         do {
             let (file, response) = try await session.download(from: url)
             defer { try? FileManager.default.removeItem(at: file) }
-            guard (response as? HTTPURLResponse)?.statusCode == Self.successStatus,
+            guard (response as? HTTPURLResponse)?.statusCode == 200,
                   try file.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? .max <= Self.maximumDownloadBytes else { return nil }
             return try Data(contentsOf: file)
         } catch {

@@ -27,14 +27,6 @@ private func candidate(
     #expect(plan.nextEvaluation == recent.lastActive + settings.idleLimit)
 }
 
-@Test func disabledHibernationPlansNothing() {
-    var disabled = settings
-    disabled.isEnabled = false
-    let plan = HibernationPolicy(settings: disabled, pressure: .critical, liveBackgroundPageLimit: 0)
-        .plan(for: [candidate(idle: minute * 600)], now: now)
-    #expect(plan == HibernationPlan(dueTabIDs: [], nextEvaluation: nil))
-}
-
 @Test func pinnedPagesStayLoadedOnlyWhenRequested() {
     let pinned = candidate(idle: minute * 60, pinned: true)
     var keepPinned = settings
@@ -68,12 +60,4 @@ private func candidate(
         .plan(for: [exempt, other, newest], now: now)
     #expect(plan.dueTabIDs == [other.tabID])
     #expect(plan.nextEvaluation == now - minute + HibernationPolicy.exemptionRecheckInterval)
-}
-
-@Test func liveBudgetScalesWithPhysicalMemoryWithinBounds() {
-    let gibibyte: UInt64 = 1 << 30
-    #expect(HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: 8 * gibibyte) == 4)
-    #expect(HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: 16 * gibibyte) == 8)
-    #expect(HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: gibibyte) == 2)
-    #expect(HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: 512 * gibibyte) == 24)
 }

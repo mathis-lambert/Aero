@@ -43,11 +43,10 @@ extension Prompt where Content == EmptyView {
 
 /// Escape and a click outside the card do the same.
 struct PromptCancelButton: View {
-    var title: LocalizedStringKey = "Cancel"
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) { HStack(spacing: 8) { Text(title); Keycaps("esc") } }
+        Button(action: action) { HStack(spacing: 8) { Text("Cancel"); Keycaps(.cancelAction) } }
             .buttonStyle(PanelButtonStyle())
             .keyboardShortcut(.cancelAction)
     }
@@ -59,7 +58,7 @@ struct PromptConfirmButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) { HStack(spacing: 8) { Text(title); Keycaps("↵", onAccent: true) } }
+        Button(action: action) { HStack(spacing: 8) { Text(title); Keycaps(.defaultAction, onAccent: true) } }
             .buttonStyle(PanelButtonStyle(prominent: true))
             .keyboardShortcut(.defaultAction)
     }

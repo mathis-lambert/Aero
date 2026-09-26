@@ -9,7 +9,7 @@ import WebKit
 /// See docs/SITE_CONTROLS.md › Ad and tracker blocking.
 @MainActor
 public final class ContentBlocker {
-    public enum Failure: Error { case compilationFailed }
+    enum Failure: Error { case compilationFailed }
 
     private static let logger = Logger(subsystem: Diagnostics.subsystem, category: Diagnostics.Category.contentBlocking)
     private static let identifierPrefix = "filters-"

@@ -22,7 +22,7 @@ struct WindArc: View {
     /// The color the densest dots move toward.
     let core: Color
     let light: Color
-    /// Times the gust.
+    /// The page's size, from which the gust's arrival times follow.
     let size: CGSize
     let target: CGPoint
     /// Changes when the person moves the pointer over the page.
@@ -88,7 +88,8 @@ private final class WindClock {
     private var elapsed: TimeInterval = 0
     private var resumed: Date?
 
-    func setRunning(_ running: Bool, at date: Date = .now) {
+    func setRunning(_ running: Bool) {
+        let date = Date.now
         if running, resumed == nil { resumed = date }
         if !running, let resumed {
             elapsed += date.timeIntervalSince(resumed)

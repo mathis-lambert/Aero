@@ -48,7 +48,8 @@ enum HistoryClearRange: CaseIterable, Identifiable {
     }
 
     /// `nil` clears everything.
-    func start(now: Date = .now) -> Date? {
+    func start() -> Date? {
+        let now = Date.now
         let today = Calendar.current.startOfDay(for: now)
         switch self {
         case .lastHour: return now.addingTimeInterval(-Self.hour)

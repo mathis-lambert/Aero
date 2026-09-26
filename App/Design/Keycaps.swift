@@ -7,13 +7,8 @@ struct Keycaps: View {
 
     let keys: [String]
     /// On an accent fill, such as a prominent button.
-    var onAccent = false
+    let onAccent: Bool
     @Environment(\.palette) private var palette
-
-    init(_ keys: String..., onAccent: Bool = false) {
-        self.keys = keys
-        self.onAccent = onAccent
-    }
 
     init(_ shortcut: KeyboardShortcut, onAccent: Bool = false) {
         keys = shortcut.keys
@@ -59,13 +54,6 @@ private extension KeyEquivalent {
         switch self {
         case .return: "↵"
         case .escape: "esc"
-        case .tab: "⇥"
-        case .delete: "⌫"
-        case .space: "␣"
-        case .upArrow: "↑"
-        case .downArrow: "↓"
-        case .leftArrow: "←"
-        case .rightArrow: "→"
         default: String(character).uppercased()
         }
     }

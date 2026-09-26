@@ -25,7 +25,7 @@ public struct SiteOrigin: RawRepresentable, Hashable, Codable, CodingKeyRepresen
 
     public let rawValue: String
 
-    public init?(scheme: String, host: String, port: Int?) {
+    package init?(scheme: String, host: String, port: Int?) {
         let scheme = scheme.lowercased()
         let host = host.lowercased()
         guard let defaultPort = Self.defaultPorts[scheme], !host.isEmpty else { return nil }

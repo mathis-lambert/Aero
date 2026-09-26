@@ -100,7 +100,9 @@ final class BrowserPreferences {
 
     init(testNamespace: String?) {
         if let testNamespace {
-            defaults = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) ?? .standard
+            // Never the person's own preferences.
+            guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
+            defaults = suite
         } else { defaults = .standard }
         let language = defaults.string(forKey: Key.language).flatMap(BrowserLanguage.init(rawValue:)) ?? .system
         self.language = language

@@ -76,7 +76,6 @@ struct PinnedTabsGrid: View {
     }
 
     private func initial(_ tab: BrowserTab) -> String {
-        let name = tab.url.host?.replacingOccurrences(of: "www.", with: "") ?? tab.title
-        return String(name.prefix(1)).uppercased()
+        String(tab.url.siteName.prefix(1)).uppercased()
     }
 }

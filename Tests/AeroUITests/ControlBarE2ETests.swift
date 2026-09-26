@@ -121,8 +121,4 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
         app.menuItems[name].click()
         closeSettings()
     }
-
-    private func pause(_ seconds: TimeInterval) {
-        RunLoop.current.run(until: .now.addingTimeInterval(seconds))
-    }
 }

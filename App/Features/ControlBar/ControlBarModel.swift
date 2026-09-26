@@ -10,14 +10,14 @@ enum ControlBarTarget {
 }
 
 /// The control bar shown over the selected tab. The New Tab page hosts its own bar instead.
-struct ControlBarPresentation: Identifiable {
+struct ControlBarPresentation {
     let id = UUID()
     let target: ControlBarTarget
     let initialText: String
 }
 
 /// One row of results. See docs/CONTROL_BAR.md › Behavior for their order.
-enum ControlBarItem: Equatable {
+enum ControlBarItem {
     case open(URL)
     case search(String)
     case suggestion(String)

@@ -50,8 +50,8 @@ public enum SearchEngine: String, CaseIterable, Identifiable, Sendable {
 /// Reads an OpenSearch suggestion response, `["query", ["suggestion", …]]`. Responses are
 /// untrusted: only distinct, bounded strings that differ from the query are kept.
 public enum SearchSuggestions {
-    public static let maximumCount = 4
-    public static let maximumLength = 200
+    package static let maximumCount = 4
+    package static let maximumLength = 200
 
     public static func parse(_ data: Data, query: String) -> [String] {
         guard let response = try? JSONSerialization.jsonObject(with: data) as? [Any],

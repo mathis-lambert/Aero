@@ -52,6 +52,7 @@ struct ControlBarView: View {
         .padding(.horizontal, Self.margin)
         .task(id: model.text) { await model.refresh() }
         .task(id: browser.window.inputFocusRequest) {
+            // Once the field is in the window: focus asked for earlier is lost.
             await Task.yield()
             focused = true
             // Typing replaces what the bar starts with, such as the page's address after ⌘L.
@@ -76,7 +77,7 @@ struct ControlBarView: View {
                     if model.isOverlay { browser.window.controlBar = nil } else { model.text = "" }
                 }
                 .accessibilityIdentifier("controlBar.input")
-            if model.isOverlay { Keycaps("esc") }
+            if model.isOverlay { Keycaps(.cancelAction) }
         }
         .padding(.horizontal, Self.fieldInset)
         .frame(height: Self.fieldHeight)
@@ -108,7 +109,7 @@ struct ControlBarView: View {
                 }
                 Spacer(minLength: 8)
                 if let shortcut = item.shortcut { Keycaps(shortcut) }
-                else if selected { Keycaps("↵") }
+                else if selected { Keycaps(.defaultAction) }
             }
             .padding(.horizontal, BrowserDesign.rowInset)
             .frame(height: Self.rowHeight)

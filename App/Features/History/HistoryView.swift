@@ -38,6 +38,7 @@ struct HistoryView: View {
         .padding(.top, 36)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task(id: browser.window.inputFocusRequest) {
+            // Once the field is in the window: focus asked for earlier is lost.
             await Task.yield()
             focus = .search
         }

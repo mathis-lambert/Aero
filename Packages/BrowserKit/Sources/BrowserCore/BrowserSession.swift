@@ -123,7 +123,6 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         profiles[index].sitePermissions[origin] = nil
     }
 
-    @discardableResult
     public mutating func open(_ url: URL, in spaceID: UUID) -> BrowserTab? {
         guard spaces.contains(where: { $0.id == spaceID }) else { return nil }
         let tab = BrowserTab(spaceID: spaceID, url: url)
@@ -144,7 +143,6 @@ public struct BrowserSession: Codable, Equatable, Sendable {
 
     /// Moves a tab before another tab of its space, or to the end, and sets its pin state.
     /// Tabs never change space this way.
-    @discardableResult
     public mutating func moveTab(id: UUID, before targetID: UUID?, pinned: Bool) -> Bool {
         guard id != targetID, let index = tabs.firstIndex(where: { $0.id == id }) else { return false }
         if let targetID, tabs.first(where: { $0.id == targetID })?.spaceID != tabs[index].spaceID { return false }

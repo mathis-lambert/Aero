@@ -3,7 +3,7 @@ import Foundation
 /// Small downsampled site icons, one file per host inside each profile's folder.
 /// Icons are a cache: a missing or unreadable file only means the site shows its fallback.
 public actor FaviconStore {
-    public enum Failure: Error { case iconTooLarge }
+    package enum Failure: Error { case iconTooLarge }
     package static let maximumIconBytes = 64 * 1024
     private static let fileExtension = "png"
     private static let fileNameCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-."))

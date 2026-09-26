@@ -9,7 +9,7 @@ public struct HibernationSettings: Equatable, Sendable {
     public var idleLimit: Duration
     public var keepsPinnedTabsLoaded: Bool
 
-    public init(isEnabled: Bool, idleLimit: Duration, keepsPinnedTabsLoaded: Bool) {
+    package init(isEnabled: Bool, idleLimit: Duration, keepsPinnedTabsLoaded: Bool) {
         self.isEnabled = isEnabled
         self.idleLimit = idleLimit
         self.keepsPinnedTabsLoaded = keepsPinnedTabsLoaded

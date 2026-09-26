@@ -29,7 +29,7 @@ Each time the page appears, a gust rises from below its bottom edge (`WindArc`, 
 
 The dots are the app icon's wind field in the profile's accent (`light(in:)`), drawn antialiased on the GPU; the app only advances the time. The wind drifts at 30 frames per second while someone is there and rests 20 s after the page appears or the pointer last moved, resuming from the same shapes. It never drifts while the window is inactive, with Reduce Motion (the page then appears whole) or in Low Power Mode.
 
-Measured on the Release build (Apple silicon, pointer still): drifting costs about 0.2–0.8 s of CPU per 10 s; resting and background cost nothing. The compiled shader adds 12 KB. Building needs Xcode's Metal Toolchain component.
+Measured on the Release build (Apple silicon, pointer still): drifting costs about 0.2–0.8 s of CPU per 10 s; resting and background cost nothing. The compiled shader adds 12 KB.
 
 ## Failure modes
 
@@ -45,4 +45,4 @@ Measured on the Release build (Apple silicon, pointer still): drifting costs abo
 10. The wind or the intro keeps animating while nobody is there, while the window is inactive, with Reduce Motion or in Low Power Mode; the intro repeats without a new tab; resuming jumps to other shapes.
 11. Escape leaves the bar open, or closing it leaves keyboard focus nowhere.
 
-Verification: E2E `ControlBarE2ETests` covers 1–2 and 4–11 against the fixture server, which serves the suggestion and search endpoints and records the requests it receives (`AERO_TEST_SEARCH` points the engines there in test runs only). Isolated `SearchEngineTests` cover 3 and the address rules of 2, which the fixtures cannot vary exhaustively. The wind (10) is checked from the attached screenshots and by measuring the app's CPU time while drifting, resting and in the background, as above.
+Verification: E2E `ControlBarE2ETests` covers 2, 6–9 and 11 against the fixture server, which serves the suggestion and search endpoints and records the requests it receives (`AERO_TEST_SEARCH` points the engines there in test runs only). Isolated `SearchEngineTests` cover 3 and the address rules of 2, which the fixtures cannot vary exhaustively. By construction: 1 and 4 (a newer text cancels the pending request task, off the main actor), 5 (the selection is clamped in `ControlBarModel`). The wind (10) is checked from the attached screenshots and by measuring the app's CPU time while drifting, resting and in the background, as above.

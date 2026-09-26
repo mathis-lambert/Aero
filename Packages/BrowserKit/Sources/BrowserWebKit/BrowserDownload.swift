@@ -14,7 +14,7 @@ public final class BrowserDownload: Identifiable {
     static let unknownSizeStep: Int64 = 256 * 1024
 
     public let id = UUID()
-    public let sourceURL: URL?
+    package let sourceURL: URL?
     public internal(set) var filename: String
     public internal(set) var destination: URL?
     public internal(set) var state = State.downloading

@@ -7,7 +7,7 @@ public struct FaviconLink: Equatable, Sendable {
     public let sizes: String?
     public let type: String?
 
-    public init(rel: String, href: String, sizes: String?, type: String?) {
+    package init(rel: String, href: String, sizes: String?, type: String?) {
         self.rel = rel
         self.href = href
         self.sizes = sizes
@@ -28,7 +28,7 @@ public struct FaviconCandidate: Equatable, Sendable {
 
     public let url: URL
     /// `nil` when the page did not declare a usable size.
-    public let pixelSize: Int?
+    package let pixelSize: Int?
 
     /// Validated candidates, best first, ending with the origin's conventional `/favicon.ico`.
     public static func ranked(from links: [FaviconLink], pageURL: URL) -> [FaviconCandidate] {

@@ -1,8 +1,7 @@
 import BrowserCore
 import SwiftUI
 
-/// The chrome's tokens (`docs/DESIGN.md`): every value repeated by
-/// more than one feature lives here.
+/// The chrome's tokens (`docs/DESIGN.md`).
 enum BrowserDesign {
     enum Radius {
         // Insets keep nested corners concentric with the outer window silhouette.
@@ -54,7 +53,7 @@ enum BrowserDesign {
     static let pageReveal = Animation.easeOut(duration: 0.18)
 }
 
-struct BrowserPalette: Equatable {
+struct BrowserPalette {
     let scheme: ColorScheme
     var sidebar: Color { scheme == .dark ? Color(white: 0.13) : Color(white: 0.93) }
     var canvas: Color { scheme == .dark ? Color(white: 0.085) : Color(white: 0.975) }
@@ -233,8 +232,9 @@ private struct PointerFeedback<Label: View>: View {
 
 /// The profile's emoji, or its initial, on its color.
 struct ProfileBadge: View {
+    private let size: CGFloat = 30
     let profile: BrowserProfile
-    var size: CGFloat = 30
+
     var body: some View {
         Text(verbatim: profile.emoji ?? String(profile.name.prefix(1)).uppercased())
             .font(.system(size: size * (profile.emoji == nil ? 0.43 : 0.5), weight: .semibold, design: .rounded))

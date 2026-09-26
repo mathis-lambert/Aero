@@ -3,7 +3,7 @@ import Foundation
 /// Turns a server-suggested name into a safe, unused file name, the way Finder numbers copies.
 public enum DownloadFilename {
     /// APFS limit for one path component.
-    public static let maximumByteCount = 255
+    package static let maximumByteCount = 255
     private static let maximumNumberedCopies = 9_999
 
     public static func available(suggested: String, fallback: String, isTaken: (String) -> Bool) -> String {

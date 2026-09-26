@@ -3,7 +3,7 @@ import Foundation
 import os
 
 public actor SessionStore {
-    public enum Failure: Error { case unsupportedVersion }
+    package enum Failure: Error { case unsupportedVersion }
 
     private struct Document: Codable {
         static let currentVersion = 1

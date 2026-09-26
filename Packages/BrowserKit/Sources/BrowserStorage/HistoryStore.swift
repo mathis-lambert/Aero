@@ -4,11 +4,11 @@ import Foundation
 /// Per-profile browsing history in a SQLite database with a full-text index.
 /// The database opens on first use; a file it cannot read is left untouched.
 public actor HistoryStore {
-    public enum Failure: Error, Equatable { case unavailable }
+    package enum Failure: Error, Equatable { case unavailable }
 
-    public static let retention: TimeInterval = 365 * 24 * 60 * 60
-    public static let maximumTitleLength = 512
-    public static let maximumURLLength = 2048
+    package static let retention: TimeInterval = 365 * 24 * 60 * 60
+    package static let maximumTitleLength = 512
+    package static let maximumURLLength = 2048
     public static let pageSize = 200
     private static let schemaVersion: Int64 = 1
 

@@ -59,7 +59,7 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         app.webViews.buttons["Play"].click()
         app.typeKey("t", modifierFlags: .command)
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: Self.renderTimeout))
-        pause(for: 2)
+        pause(2)
         // The picture in picture window may sit over the sidebar, so the tab comes back from the keyboard.
         app.typeKey(.tab, modifierFlags: .control)
         XCTAssertTrue(page("Modes inline picture-in-picture inline").waitForExistence(timeout: Self.pageTimeout),
@@ -72,9 +72,9 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(poll { pictureInPicture.value as? String == "Off" })
         app.typeKey(.escape, modifierFlags: [])
         app.typeKey("t", modifierFlags: .command)
-        pause(for: 2)
+        pause(2)
         app.typeKey(.tab, modifierFlags: .control)
-        pause(for: 1)
+        pause(1)
         XCTAssertTrue(page("Modes inline picture-in-picture inline").exists, "A site turned off stays inline")
     }
 
@@ -112,7 +112,6 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         XCTAssertEqual(app.popUpButtons["siteSettings.microphone"].value as? String, "Ask")
     }
 
-    private func page(_ text: String) -> XCUIElement { app.webViews.staticTexts[text] }
 
     private func setCookie() {
         app.webViews.buttons["Set cookie"].click()
@@ -129,6 +128,4 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         app.menuItems[decision].click()
         XCTAssertTrue(poll { self.app.popUpButtons[permission].value as? String == decision })
     }
-
-    private func pause(for seconds: TimeInterval) { RunLoop.current.run(until: .now.addingTimeInterval(seconds)) }
 }

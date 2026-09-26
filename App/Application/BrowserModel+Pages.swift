@@ -31,10 +31,7 @@ extension BrowserModel: WebPageRegistryDelegate {
         return addTab(address, in: opener.spaceID)
     }
 
-    func pageDidOpenPopup(_ tabID: UUID) {
-        guard let tab = session.tabs.first(where: { $0.id == tabID }), tab.spaceID == space?.id else { return }
-        selectTab(tabID)
-    }
+    func pageDidOpenPopup(_ tabID: UUID) { activate(tabID: tabID) }
 
     func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? {
         guard let tab = session.tabs.first(where: { $0.id == tabID }), let profileID = profileID(of: tab) else { return nil }

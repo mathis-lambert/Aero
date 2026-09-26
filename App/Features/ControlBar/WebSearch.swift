@@ -27,7 +27,6 @@ struct WebSearch {
 struct SuggestionFetcher: Sendable {
     private static let timeout: TimeInterval = 3
     private static let maximumBytes = 64 * 1024
-    private static let successStatus = 200
 
     private let session = URLSession.anonymous(requestTimeout: timeout, resourceTimeout: timeout)
 
@@ -35,7 +34,7 @@ struct SuggestionFetcher: Sendable {
     @concurrent
     func suggestions(from url: URL, for query: String) async -> [String] {
         guard let (data, response) = try? await session.data(from: url),
-              (response as? HTTPURLResponse)?.statusCode == Self.successStatus,
+              (response as? HTTPURLResponse)?.statusCode == 200,
               data.count <= Self.maximumBytes else { return [] }
         return SearchSuggestions.parse(data, query: query)
     }

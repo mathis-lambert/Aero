@@ -254,7 +254,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */;
 			buildSettings = {
-				ENABLE_TESTABILITY = YES;
 				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO;
 			};
 			name = Release;
@@ -264,7 +263,7 @@
 			buildSettings = {
 				ARCHS = arm64;
 				CLANG_ENABLE_MODULES = YES;
-				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -288,7 +287,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Aero;
 			};
@@ -301,7 +299,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
-				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -316,7 +314,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Aero;
 			};

@@ -2,14 +2,14 @@ import Foundation
 
 /// Converts Adblock Plus lists (EasyList, EasyPrivacy) into WebKit content rule lists. Rules WebKit
 /// cannot enforce natively are skipped, never approximated. See docs/SITE_CONTROLS.md › Ad and tracker blocking.
-public enum FilterListConverter {
+package enum FilterListConverter {
     /// Changes whenever the output for the same lists changes, so compiled lists are rebuilt.
-    public static let version = 1
+    package static let version = 1
     /// WebKit refuses a list with more rules.
-    public static let maximumRulesPerList = 150_000
+    package static let maximumRulesPerList = 150_000
 
     /// Each list is JSON ready to compile; together they hold every converted rule.
-    public static func convert(_ lists: [String], maximumRulesPerList: Int = maximumRulesPerList) -> FilterConversion {
+    package static func convert(_ lists: [String], maximumRulesPerList: Int = maximumRulesPerList) -> FilterConversion {
         let rules = FilterRules(list: lists.joined(separator: "\n"))
         let encoder = JSONEncoder()
         // An exception only undoes rules before it in its own list, so every chunk carries its exceptions.
@@ -30,11 +30,11 @@ public enum FilterListConverter {
     }
 }
 
-public struct FilterConversion: Sendable {
-    public let lists: [String]
-    public let ruleCount: Int
+package struct FilterConversion: Sendable {
+    package let lists: [String]
+    package let ruleCount: Int
     /// Rules in a syntax WebKit cannot enforce natively.
-    public let skippedCount: Int
+    package let skippedCount: Int
 }
 
 /// The converted rules of a list, by the order they must keep: an exception follows what it undoes.

@@ -1,6 +1,6 @@
 # Browsing
 
-Failure modes were written before each implementation. The site in the selected tab (control center, site data, permissions, ad blocking, picture in picture) is in `docs/SITE_CONTROLS.md`. E2E tests run against local fixtures (`Tests/AeroUITests/Fixtures`) served by `FixtureServer` on `localhost`.
+The site in the selected tab (control center, site data, permissions, ad blocking, picture in picture) is in `docs/SITE_CONTROLS.md`. E2E tests run against local fixtures (`Tests/AeroUITests/Fixtures`) served by `FixtureServer` on `localhost`.
 
 ## Favicons
 
@@ -60,18 +60,27 @@ Verification: E2E `testFindInPageSelectsMatchesAndReportsMisses`.
 
 ## Downloads
 
-Undisplayable responses, `download` links and `Content-Disposition: attachment` become downloads, saved to Downloads (a test folder under `AERO_TEST_DATA`) with a sanitized, unique name, quarantined and tagged with their source. The footer's downloads button lists them for the session in a popover (`docs/PROFILES.md`); the Dock shows the active count. Closing or hibernating the tab never stops one.
+Undisplayable responses, `download` links and `Content-Disposition: attachment` become downloads, saved to Downloads (a test folder under `AERO_TEST_DATA`) with a sanitized, unique name, quarantined and tagged with their source. The Dock shows the active count. Closing or hibernating the tab never stops one.
+
+They live in a popover from the sidebar footer's downloads button. The button shows the progress of active downloads as a ring; the popover lists the session's downloads with progress, cancel, retry, Show in Finder and Clear, or says there are none.
+
+When a download starts, its file icon is thrown from the pointer (or the page's center when the pointer is elsewhere) in an arc into the downloads button, shrinking on the way, in about 0.6 s, and the button takes the hit: a small kick, then a damped wobble on its base. Nothing flies with Reduce Motion or while the sidebar is hidden; the flight never takes clicks.
 
 Failure modes:
 
 1. A suggested name escapes the folder, hides itself, is empty or too long.
 2. An existing file is overwritten.
-3. Progress redraws the sidebar for every packet.
+3. Progress, the ring or the list redraws the sidebar for every packet.
 4. A failure cannot be retried, or a cancel keeps its partial file.
 5. Tests write into the user's Downloads folder.
 6. Hibernation or closing interrupts a download.
+7. Clearing removes an active download.
+8. The popover shows a stale list, or cannot be reopened after it closes.
+9. A retry, a clear, a relaunch or a progress update throws a file again.
+10. The file flies to the wrong place after the window is resized, or while the sidebar is hidden.
+11. The flight runs with Reduce Motion, blocks clicks, or stays on screen.
 
-Verification: E2E `testDownloadCompletesAndCanBeCleared`. Isolated `DownloadFilenameTests` cover 1–2.
+Verification: E2E `testDownloadCompletesAndCanBeCleared` opens the popover, waits for the download and clears it once finished (8). Isolated `DownloadFilenameTests` cover 1–2. By construction: 3 (the ring updates in whole percents, `BrowserDownload.progressStep`), 7 (Clear removes only downloads that stopped, `clearInactive`), 9 (the flight is triggered only by `DownloadCoordinator.lastStarted`, which a new download sets). 10 and 11 are checked by hand.
 
 ## Reordering and pinning
 
@@ -101,4 +110,3 @@ Verification: E2E `testQuitAsksFirst` (Escape keeps the app running; Return quit
 - Popups open as tabs, not sized windows.
 - Find reports whether a match exists, not how many.
 - Downloads are kept for the session only.
-- History skips intermediate redirects; selecting a restored tab counts as a visit.

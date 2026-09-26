@@ -1,6 +1,7 @@
 #!/bin/zsh
 # Runs the UI (E2E) tests into a unique result bundle and records how to reproduce the run.
-# Usage: Scripts/run-e2e.sh [-only-testing identifier …]   e.g. AeroUITests/BrowsingE2ETests
+# Usage: Scripts/run-e2e.sh [test-identifier …]   e.g. AeroUITests/BrowsingE2ETests
+# Without identifiers it runs every E2E test except the launch measurement (docs/PERFORMANCE.md).
 set -euo pipefail
 
 cd "${0:A:h}/.."
@@ -11,6 +12,7 @@ command=(xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Debug
     -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived
     -resultBundlePath "$result")
 for test in "$@"; do command+=(-only-testing:"$test"); done
+(( $# )) || command+=(-skip-testing:AeroUITests/LaunchPerformanceTests)
 command+=(test)
 
 {

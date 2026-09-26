@@ -7,7 +7,6 @@ struct SidebarView: View {
     private static let footerHeight: CGFloat = 44
 
     let browser: BrowserModel
-    @Environment(\.palette) private var palette
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

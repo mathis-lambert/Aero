@@ -59,7 +59,6 @@ private struct TooltipAnchor: NSViewRepresentable {
             super.viewWillMove(toWindow: newWindow)
         }
 
-        /// The anchor's frame on screen.
         var screenFrame: NSRect? {
             window.map { $0.convertToScreen(convert(bounds, to: nil)) }
         }

@@ -6,7 +6,7 @@ public enum NavigationInput {
     }
 
     /// An extension's own page, such as its options or onboarding.
-    public static func isExtensionURL(_ url: URL) -> Bool {
+    package static func isExtensionURL(_ url: URL) -> Bool {
         url.scheme?.lowercased() == "webkit-extension" && !(url.host ?? "").isEmpty
     }
 

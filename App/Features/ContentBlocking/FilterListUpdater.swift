@@ -21,6 +21,7 @@ final class FilterListUpdater {
     private static let checkInterval: TimeInterval = 24 * 60 * 60
     private static let retryDelay = Duration.seconds(60 * 60)
     private static let requestTimeout: TimeInterval = 60
+    private static let resourceTimeout: TimeInterval = 300
     private static let logger = Logger(subsystem: Diagnostics.subsystem, category: Diagnostics.Category.contentBlocking)
 
     private let sources: [Source]
@@ -40,11 +41,7 @@ final class FilterListUpdater {
         self.blocker = blocker
         self.store = store
         self.preferences = preferences
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.httpShouldSetCookies = false
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-        configuration.timeoutIntervalForRequest = Self.requestTimeout
-        session = URLSession(configuration: configuration)
+        session = .anonymous(requestTimeout: Self.requestTimeout, resourceTimeout: Self.resourceTimeout)
     }
 
     isolated deinit { task?.cancel() }

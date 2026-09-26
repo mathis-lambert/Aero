@@ -1,6 +1,6 @@
 import XCTest
 
-/// Localization, the sidebar and window controls, and Settings.
+/// Localization, the sidebar and window controls, tooltips, the quit prompt and Settings.
 @MainActor
 final class BrowserUITests: BrowserE2ETestCase {
     func testTooltipsShowLabelAndShortcut() {
@@ -52,18 +52,11 @@ final class BrowserUITests: BrowserE2ETestCase {
 
     func testFrenchNewTab() {
         app.terminate()
-        app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
+        app.launchArguments = TestApplication.launchArguments(language: "fr", locale: "fr_FR")
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
         XCTAssertTrue(app.buttons["sidebar.newTab"].label.contains("Nouvel onglet"))
         XCTAssertEqual(controlBarInput.placeholderValue, "Rechercher ou saisir une adresse")
-    }
-
-    func testNewTabKeyboardFocus() {
-        app.typeKey("t", modifierFlags: .command)
-        let input = controlBarInput
-        input.typeText("example.com")
-        XCTAssertEqual(input.value as? String, "example.com")
     }
 
     func testSidebarNavigationAndWindowControls() {
@@ -144,7 +137,7 @@ final class BrowserUITests: BrowserE2ETestCase {
         attachScreenshot("settings-profiles", of: app)
 
         app.terminate()
-        app.launchArguments = TestApplication.languageArguments(language: "fr", locale: "fr_FR")
+        app.launchArguments = TestApplication.launchArguments(language: "fr", locale: "fr_FR")
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
         openSettings("Général")

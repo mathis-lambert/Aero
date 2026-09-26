@@ -5,7 +5,7 @@ import Foundation
 public enum InternalPage: String, Sendable {
     case history
 
-    public static let scheme = "aero"
+    package static let scheme = "aero"
 
     public init?(url: URL) {
         guard url.scheme?.lowercased() == Self.scheme, let host = url.host?.lowercased(), let page = Self(rawValue: host) else { return nil }
