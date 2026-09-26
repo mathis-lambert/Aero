@@ -1357,18 +1357,18 @@
         }
       }
     },
-    "Light or dark, with the system" : {
+    "Light or dark, with Aero" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Light or dark, with the system"
+            "value" : "Light or dark, with Aero"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clair ou sombre, selon le système"
+            "value" : "Clair ou sombre, selon Aero"
           }
         }
       }

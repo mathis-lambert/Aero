@@ -1,10 +1,28 @@
 import AppKit
 
 /// Puts the chosen icon on the app bundle, as pasting one in the Finder's Get Info does, so the
-/// Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed. `nil` removes it,
-/// back to the system icon, which follows the appearance.
+/// Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed.
+/// Automatic leaves the bundle artwork intact and follows the app appearance in the running Dock.
 @MainActor
-enum AppIcon {
+final class AppIcon {
+    private var variant: AppIconVariant?
+    private var appearanceObservation: NSKeyValueObservation?
+    private var renderedVariant: AppIconVariant?
+
+    init(variant: AppIconVariant?) {
+        self.variant = variant
+        appearanceObservation = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
+            Task { @MainActor [weak self] in self?.updateRunningIcon() }
+        }
+    }
+
+    private func updateRunningIcon() {
+        let resolved = variant ?? .system(dark: NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua)
+        guard renderedVariant != resolved, let image = Self.image(for: resolved) else { return }
+        NSApp.applicationIconImage = image
+        renderedVariant = resolved
+    }
+
     /// macOS icon grid: the icon body is an 824 pt rounded square centred on a 1024 pt canvas.
     private static let canvas: CGFloat = 1024
     private static let body: CGFloat = 824
@@ -12,27 +30,15 @@ enum AppIcon {
     private static let shadowBlur: CGFloat = 28
     private static let shadowOffset: CGFloat = -12
     private static let shadowOpacity: CGFloat = 0.28
-    /// Where the Finder keeps a folder's or a bundle's custom icon.
-    private static let customIconFile = "Icon\r"
 
     private static var bundlePath: String { Bundle.main.bundlePath }
 
-    static func apply(_ variant: AppIconVariant?) {
-        let image = variant.flatMap(image(for:))
-        NSApp.applicationIconImage = image
-        // Best effort: a bundle the person cannot write to keeps its icon outside the running Dock tile.
-        _ = NSWorkspace.shared.setIcon(image, forFile: bundlePath)
-        NSWorkspace.shared.noteFileSystemChanged(bundlePath)
-    }
-
-    /// At launch: the running Dock tile, and the bundle again when an update or a build replaced it.
-    static func restore(_ variant: AppIconVariant?) {
-        let isOnBundle = FileManager.default.fileExists(atPath: (bundlePath as NSString).appendingPathComponent(customIconFile))
-        guard let variant else {
-            if isOnBundle { apply(nil) }
-            return
-        }
-        if isOnBundle { NSApp.applicationIconImage = image(for: variant) } else { apply(variant) }
+    func apply(_ variant: AppIconVariant?) {
+        self.variant = variant
+        // Best effort: a read-only bundle keeps its original icon outside the running Dock tile.
+        _ = NSWorkspace.shared.setIcon(variant.flatMap(Self.image(for:)), forFile: Self.bundlePath)
+        renderedVariant = nil
+        updateRunningIcon()
     }
 
     /// The artwork masked and shadowed like a system icon, so it sits with the other icons.

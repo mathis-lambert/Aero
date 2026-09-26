@@ -26,11 +26,11 @@ enum BrowserAppearance: String, Identifiable {
     case system, light, dark
     var id: Self { self }
     /// `nil` follows the system.
-    var colorScheme: ColorScheme? {
+    var nativeAppearance: NSAppearance? {
         switch self {
         case .system: nil
-        case .light: .light
-        case .dark: .dark
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
         }
     }
     var label: LocalizedStringKey {
@@ -81,7 +81,7 @@ final class BrowserPreferences {
     var hibernation: HibernationSettings {
         didSet { storeHibernation() }
     }
-    /// `nil` is Automatic: the bundle icon, which follows the appearance.
+    /// `nil` is Automatic: the running icon follows the app’s effective appearance.
     var appIcon: AppIconVariant? {
         didSet { defaults.set(appIcon?.id, forKey: Key.appIcon) }
     }

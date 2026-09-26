@@ -39,7 +39,7 @@ private struct GeneralSettingsView: View {
                         .foregroundStyle(.secondary)
                         .accessibilityIdentifier("settings.languageRestart")
                 }
-                Picker("Appearance", selection: preferences.appearance) {
+                Picker("Appearance", selection: Binding(get: { browser.preferences.appearance }, set: browser.setAppearance)) {
                     ForEach([BrowserAppearance.light, .dark, .system]) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)

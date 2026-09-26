@@ -42,6 +42,25 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
                       "Automatic restores the system icon everywhere")
     }
 
+    /// Check actual WebKit appearance, including repeated removal of an explicit override.
+    func testSystemAppearanceRestoresAfterOverrides() {
+        open("appearance.html", expecting: "Appearance fixture")
+        XCTAssertTrue(poll { self.page("Page is dark").exists || self.page("Page is light").exists })
+        let systemScheme = page("Page is dark").exists ? "Page is dark" : "Page is light"
+        for choice in ["Dark", "Light", "Dark", "Light"] {
+            openGeneral()
+            theme(choice).click()
+            closeSettings()
+            XCTAssertTrue(page(choice == "Dark" ? "Page is dark" : "Page is light").waitForExistence(timeout: Self.renderTimeout))
+            attachScreenshot("explicit-\(choice)")
+            openGeneral()
+            theme(Self.system).click()
+            closeSettings()
+            XCTAssertTrue(page(systemScheme).waitForExistence(timeout: Self.renderTimeout), "System removes the explicit \(choice) override")
+        }
+        attachScreenshot("system-restored")
+    }
+
     private func openGeneral() {
         openSettings("General")
         XCTAssertTrue(app.buttons[Self.automatic].waitForExistence(timeout: Self.renderTimeout))

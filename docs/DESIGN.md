@@ -64,7 +64,7 @@ Verification: E2E `testTooltipsShowLabelAndShortcut` (hovering the sidebar toggl
 
 `App/Resources/AppIcon.icon` is the system icon: a Gilda Display capital A filled with the dithered wind. `swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>` regenerates it and, in `App/Resources/AppIcons`, the twenty alternates and a copy of the system icon's two for Settings (font not stored here).
 
-Settings › General shows Automatic apart, with the system icon in both of its appearances, then the alternates by mark. Every tile is drawn from its own artwork, never from the icon the system reports, which becomes the alternate once one is on the bundle. `AppIcon` puts the alternate on the app bundle, as the Finder's Get Info does, so the Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed; Automatic removes it. At launch Aero sets it again if an update or a build replaced the bundle. Aero is not sandboxed, which this needs; the build strips the icon file before signing, since `codesign` rejects it.
+Settings › General shows Automatic apart, with the system icon in both of its appearances, then the alternates by mark. Every tile is drawn from its own artwork, never from the icon the system reports, which becomes the alternate once one is on the bundle. `AppIcon` puts the alternate on the app bundle, as the Finder's Get Info does, so the Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed; Automatic removes it. In Automatic mode while Aero runs, its Dock icon explicitly follows the effective application appearance (including a forced Light or Dark theme); the bundle retains its native adaptive artwork. `NSApplication.appearance` owns the theme override, with `nil` restoring system inheritance for all windows and WebKit. An owned KVO observation updates the automatic Dock icon on appearance changes without polling or rewriting the bundle. At launch Aero reapplies the saved choice through the same path as a selection in Settings, replacing any stale custom icon. BrowserModel applies appearance changes; preferences only persist the choice. Aero is not sandboxed, which this needs; the build strips the icon file before signing, since `codesign` rejects it.
 
 Failure modes:
 
@@ -75,5 +75,7 @@ Failure modes:
 5. Test runs change the real preference.
 6. An update or a rebuild drops the icon, or a development build fails to sign because of it.
 7. Once an alternate is on the bundle, the Automatic tile shows it instead of the system icon.
+8. Returning from Light or Dark to System retains the previous override.
+9. The automatic running icon does not follow the effective app appearance.
 
-Verification: E2E `AppearanceE2ETests` (theme and variant survive a relaunch, the icon file appears on the bundle and Automatic removes it, test preferences are namespaced; 3–5). 7 holds by construction: tiles are drawn from the bundled artwork. How the Finder and the Dock draw it is checked by eye.
+Verification: E2E `AppearanceE2ETests` (WebKit follows repeated explicit-to-system transitions; theme and variant survive a relaunch, the icon file appears on the bundle and Automatic removes it, test preferences are namespaced; 3–5). 7 holds by construction: tiles are drawn from the bundled artwork. How the Finder and the Dock draw it is checked by eye.

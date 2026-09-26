@@ -108,7 +108,6 @@ struct BrowserWindowView: View {
         }
         .background(WindowConfiguration())
         .focusedSceneValue(\.browserModel, browser)
-        .preferredColorScheme(browser.preferences.appearance.colorScheme)
     }
 }
 

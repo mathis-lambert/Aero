@@ -21,7 +21,6 @@ struct AeroApp: App {
 
         Settings {
             SettingsView(browser: browser)
-                .preferredColorScheme(browser.preferences.appearance.colorScheme)
         }
     }
 }

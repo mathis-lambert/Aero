@@ -1,0 +1,8 @@
+<!doctype html><meta name="color-scheme" content="light dark"><title>Appearance fixture</title>
+<h1>Appearance fixture</h1><p id="scheme"></p>
+<script>
+const scheme = matchMedia('(prefers-color-scheme: dark)');
+function update() { document.querySelector('#scheme').textContent = scheme.matches ? 'Page is dark' : 'Page is light'; }
+scheme.addEventListener('change', update);
+update();
+</script>

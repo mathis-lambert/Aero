@@ -1,3 +1,4 @@
+import AppKit
 import BrowserCore
 import BrowserStorage
 import BrowserWebKit
@@ -16,6 +17,7 @@ final class BrowserModel {
     private(set) var isReady = false
     private(set) var loadFailed = false
     let window = BrowserWindowState()
+    private let appIcon: AppIcon
     let preferences: BrowserPreferences
     let favicons: FaviconCache
     let history: BrowserHistory
@@ -42,6 +44,8 @@ final class BrowserModel {
         let testing = environment["AERO_TEST_DATA"]
             .map { URL(fileURLWithPath: $0).lastPathComponent }
         preferences = BrowserPreferences(testNamespace: testing)
+        NSApp.appearance = preferences.appearance.nativeAppearance
+        appIcon = AppIcon(variant: preferences.appIcon)
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
         let folder: URL
         if let testing {
@@ -102,7 +106,7 @@ final class BrowserModel {
         }
         endLaunchInterval()
         // After the session, so neither delays the first tabs.
-        AppIcon.restore(preferences.appIcon)
+        appIcon.apply(preferences.appIcon)
         filterLists?.start()
         extensionsTask = Task { [weak self] in await self?.startExtensions() }
     }
@@ -272,9 +276,14 @@ final class BrowserModel {
         persist()
     }
 
+    func setAppearance(_ appearance: BrowserAppearance) {
+        preferences.appearance = appearance
+        NSApp.appearance = appearance.nativeAppearance
+    }
+
     func setAppIcon(_ variant: AppIconVariant?) {
         preferences.appIcon = variant
-        AppIcon.apply(variant)
+        appIcon.apply(variant)
     }
 
     func setHibernation(_ settings: HibernationSettings) {

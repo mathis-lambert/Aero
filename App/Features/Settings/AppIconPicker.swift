@@ -20,7 +20,7 @@ struct AppIconPicker: View {
                     HStack(spacing: 4) { ForEach(Self.automatic) { icon($0) } }.ring(selection == nil)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Automatic")
-                        Text("Light or dark, with the system").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
+                        Text("Light or dark, with Aero").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                     }
                 }
             }
