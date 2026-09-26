@@ -105,6 +105,7 @@ struct BrowserWindowView: View {
         .browserAnimation(value: browser.window.quitPromptPresented)
         .browserAnimation(value: browser.window.find.isPresented)
         .downloadsDockBadge(activeCount: browser.downloads.activeCount)
+        .downloadFlights(browser.downloads)
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
         .onChange(of: isOverlaid) { _, overlaid in if overlaid { sidebarRevealed = false } }
         .background(WindowConfiguration())

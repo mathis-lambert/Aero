@@ -5,7 +5,7 @@ extension BrowserModel {
     /// The Quit menu item: asks in the browser window, unless the person turned the prompt off or
     /// the window cannot show it. A second request while it is shown quits. See docs/BROWSING.md › Quitting.
     func requestQuit() {
-        guard preferences.confirmsQuit, !window.quitPromptPresented, let main = Self.mainWindow, main.isVisible || main.isMiniaturized else {
+        guard preferences.confirmsQuit, !window.quitPromptPresented, let main = WindowConfiguration.mainWindow, main.isVisible || main.isMiniaturized else {
             NSApp.terminate(nil)
             return
         }
@@ -16,10 +16,6 @@ extension BrowserModel {
         main.makeFirstResponder(nil)
         window.controlBar = nil
         window.quitPromptPresented = true
-    }
-
-    private static var mainWindow: NSWindow? {
-        NSApp.windows.first { $0.identifier?.rawValue == WindowConfiguration.mainWindowIdentifier }
     }
 }
 

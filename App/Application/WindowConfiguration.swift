@@ -6,6 +6,10 @@ import SwiftUI
 struct WindowConfiguration: NSViewRepresentable {
     static let mainWindowIdentifier = "aero.main"
 
+    static var mainWindow: NSWindow? {
+        NSApp.windows.first { $0.identifier?.rawValue == mainWindowIdentifier }
+    }
+
     func makeNSView(context: Context) -> NSView { WindowProbe() }
 
     func updateNSView(_ nsView: NSView, context: Context) {

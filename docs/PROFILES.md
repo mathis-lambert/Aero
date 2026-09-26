@@ -36,7 +36,13 @@ Failure modes:
 10. Clearing removes an active download.
 11. The popover shows a stale list, or cannot be reopened after it closes.
 
-Verification: E2E `testDownloadCompletesAndCanBeCleared` opens the popover, waits for the download and clears it (10–11). The ring updates in whole percents (9, `BrowserDownload.progressStep`).
+When a download starts, its file icon is thrown from the pointer (or the page's center when the pointer is elsewhere) in an arc into the downloads button, shrinking on the way, in about 0.6 s, and the button takes the hit: a small kick, then a damped wobble on its base. Nothing flies with Reduce Motion or while the sidebar is hidden; the flight never takes clicks.
+
+12. A retry, a clear, a relaunch or a progress update throws a file again.
+13. The file flies to the wrong place after the window is resized, or while the sidebar is hidden.
+14. The flight runs with Reduce Motion, blocks clicks, or stays on screen.
+
+Verification: E2E `testDownloadCompletesAndCanBeCleared` opens the popover, waits for the download and clears it (10–11). The ring updates in whole percents (9, `BrowserDownload.progressStep`). The flight is triggered only by `DownloadCoordinator.lastStarted`, which a new download sets (12), and is checked from the test's screen recording (13–14).
 
 ## Hover
 

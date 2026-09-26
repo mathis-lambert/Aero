@@ -11,12 +11,40 @@ struct DownloadsButton: View {
 
     let downloads: DownloadCoordinator
     @State private var presented = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         IconButton(symbol: "arrow.down.circle", label: "Downloads", size: BrowserDesign.navigationButtonSize) { presented.toggle() }
             .overlay { if let progress { ring(progress) } }
+            // Takes the hit as a new download's file lands: a kick, then a damped wobble on its base.
+            .keyframeAnimator(initialValue: Landing(), trigger: reduceMotion ? nil : downloads.lastStarted) { button, landing in
+                button
+                    .scaleEffect(landing.scale, anchor: .bottom)
+                    .rotationEffect(.degrees(landing.angle), anchor: .bottom)
+            } keyframes: { _ in
+                KeyframeTrack(\.scale) {
+                    LinearKeyframe(1, duration: DownloadFlight.duration * 0.92)
+                    SpringKeyframe(1.18, duration: 0.08)
+                    SpringKeyframe(1, duration: 0.3, spring: .snappy)
+                }
+                KeyframeTrack(\.angle) {
+                    LinearKeyframe(0, duration: DownloadFlight.duration * 0.92)
+                    CubicKeyframe(-11, duration: 0.06)
+                    CubicKeyframe(8, duration: 0.08)
+                    CubicKeyframe(-4, duration: 0.08)
+                    CubicKeyframe(1.5, duration: 0.08)
+                    CubicKeyframe(0, duration: 0.08)
+                }
+            }
+            .downloadsTarget()
             .accessibilityIdentifier("downloads.button")
             .popover(isPresented: $presented, arrowEdge: .top) { DownloadsList(downloads: downloads) }
+    }
+
+    private struct Landing {
+        var scale = 1.0
+        /// In degrees.
+        var angle = 0.0
     }
 
     /// The average progress of active downloads whose size is known.
@@ -139,13 +167,14 @@ private struct DownloadRow: View {
     }
 }
 
-/// Its own view, so progress updates of the row do not ask the system for the icon again.
-private struct FileIcon: View {
+/// A file type's Finder icon. Its own view, so progress updates of a row do not ask the system for it again.
+struct FileIcon: View {
     let filename: String
+    var size = BrowserDesign.downloadIconSize
 
     var body: some View {
         Image(nsImage: NSWorkspace.shared.icon(for: UTType(filenameExtension: (filename as NSString).pathExtension) ?? .data))
             .resizable()
-            .frame(width: BrowserDesign.downloadIconSize, height: BrowserDesign.downloadIconSize)
+            .frame(width: size, height: size)
     }
 }

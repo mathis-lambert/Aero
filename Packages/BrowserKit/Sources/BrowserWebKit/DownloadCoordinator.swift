@@ -11,6 +11,8 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
     private static let whereFromAttribute = "com.apple.metadata:kMDItemWhereFroms"
 
     public private(set) var downloads: [BrowserDownload] = []
+    /// The download started last this session; retries and clearing leave it unchanged.
+    public private(set) var lastStarted: BrowserDownload.ID?
     public var activeCount: Int { downloads.count { $0.state == .downloading } }
 
     @ObservationIgnored private let directory: URL
@@ -29,6 +31,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
     func track(_ download: WKDownload, from tabID: UUID) {
         let record = BrowserDownload(download: download, sourceTabID: tabID, fallbackFilename: fallbackFilename)
         downloads.insert(record, at: 0)
+        lastStarted = record.id
         attach(download, to: record)
     }
 
