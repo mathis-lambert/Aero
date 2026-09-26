@@ -48,6 +48,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         guard record.state == .failed || record.state == .cancelled, let store = record.dataStore else { return }
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
+        configuration.applicationNameForUserAgent = BrowserPage.userAgentName
         let view = WKWebView(frame: .zero, configuration: configuration)
         record.resumingView = view
         record.state = .downloading

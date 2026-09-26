@@ -3,9 +3,9 @@ import Foundation
 /// Where searches typed in the control bar go. Every engine offers an OpenSearch suggestion
 /// endpoint, so one parser reads them all.
 public enum SearchEngine: String, CaseIterable, Identifiable, Sendable {
-    case duckDuckGo, google, bing, brave
+    case google, duckDuckGo, bing, brave
 
-    public static let `default` = SearchEngine.duckDuckGo
+    public static let `default` = SearchEngine.google
 
     public var id: Self { self }
 

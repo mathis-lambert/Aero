@@ -35,9 +35,20 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private var visitedURL: URL?
     @ObservationIgnored private var firstFrameTimeout: Task<Void, Never>?
 
+    /// Safari's user agent suffix. Without it, sites such as Google see an unknown WebKit browser and
+    /// serve their basic, legacy pages. The installed Safari's version matches the system's engine.
+    static let userAgentName = "Version/\(safariVersion) Safari/605.1.15"
+
+    private static var safariVersion: String {
+        ["/System/Cryptexes/App/System/Applications/Safari.app", "/Applications/Safari.app"].lazy
+            .compactMap { Bundle(path: $0)?.infoDictionary?["CFBundleShortVersionString"] as? String }
+            .first ?? "27.0"
+    }
+
     static func configuration(store: WKWebsiteDataStore) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
+        configuration.applicationNameForUserAgent = userAgentName
         configuration.preferences.isElementFullscreenEnabled = true
         configuration.allowsAirPlayForMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = .audio

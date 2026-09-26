@@ -19,7 +19,7 @@ Arrows move the selection, as does the pointer once it moves (a bar opening unde
 
 ## Search engines
 
-Settings › General chooses the engine (DuckDuckGo by default, Google, Bing, Brave Search) and whether to show its suggestions (on by default). The engine builds both the search address and the suggestion request; both use the engines' public OpenSearch endpoints.
+Settings › General chooses the engine (Google by default, DuckDuckGo, Bing, Brave Search) and whether to show its suggestions (on by default). The engine builds both the search address and the suggestion request; both use the engines' public OpenSearch endpoints.
 
 Suggestion requests go through an ephemeral session without cookies, cache or credentials, so they never carry a profile's identity. Text that looks like an address (it contains a dot or a scheme, or names localhost) is never sent. Requests wait for a pause in typing, and a newer text cancels an older request.
 

@@ -47,8 +47,8 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(server.requests(for: Self.suggestions).isEmpty, "Nothing is sent while suggestions are off")
         XCTAssertEqual(items, ["aero"])
         app.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(poll(timeout: Self.pageTimeout) { self.labels(of: "sidebar.tab") == ["duckDuckGo: aero"] },
-                      "Searches use DuckDuckGo by default")
+        XCTAssertTrue(poll(timeout: Self.pageTimeout) { self.labels(of: "sidebar.tab") == ["google: aero"] },
+                      "Searches use Google by default")
     }
 
     func testLocationReplacesThePageAndThePaletteOpensATab() {
