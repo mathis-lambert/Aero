@@ -242,9 +242,9 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
     private static let trailingHalf = CGVector(dx: 0.75, dy: 0.5)
 
     private func drag(_ source: XCUIElement, to target: XCUIElement, at offset: CGVector) {
-        // With an empty grid, pickup reveals a 60-point target plus the section spacing.
+        // With an empty grid, pickup reveals a 44-point target plus the section spacing.
         // XCTest resolves the destination before pickup; follow the row's resulting position.
-        let expansion: CGFloat = tiles.count == 0 ? 64 : 0
+        let expansion: CGFloat = tiles.count == 0 ? 48 : 0
         let destination = target.coordinate(withNormalizedOffset: offset).withOffset(CGVector(dx: 0, dy: expansion))
         source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
             .click(forDuration: Self.dragHold, thenDragTo: destination)

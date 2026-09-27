@@ -4,7 +4,7 @@ The site in the selected tab (control center, site data, permissions, ad blockin
 
 ## Favicons
 
-After the main frame loads, `BrowserPage` reads the page's icon links in an isolated content world. The app ranks them with the origin's `/favicon.ico`, downloads the best through an anonymous session, downsamples it to a small PNG and caches it on disk per profile and host. Memory keeps the 256 most recently shown icons, each observed on its own. Restored tabs show the cached icon without loading.
+After the main frame loads, `BrowserPage` reads the page's icon links in an isolated content world. The app ranks them with the origin's `/favicon.ico`, downloads the best through an anonymous session, downsamples it to a small PNG and caches it on disk per profile and host. Memory keeps the 256 most recently shown icons, each observed on its own. Restored tabs show the cached icon without loading. Each decoded icon also carries a dominant color sampled once off the main actor from a 32 × 32 alpha-aware histogram. That derived color shares the icon’s bounded memory lifetime and is recomputed from the cached PNG on reload.
 
 Failure modes:
 
@@ -88,7 +88,7 @@ Verification: E2E `testDownloadCompletesAndCanBeCleared` opens the popover, wait
 
 A profile's sidebar has three ordered areas: a favorites grid, pinned favorite rows (optionally grouped), then a separator, New Tab and ordinary open tabs.
 
-- **Favorites** stay when closed: ⌘W, the close button or Close unloads the page and keeps the favorite in its place; clicking it loads its address again. A favorite shows as a tile in the grid (its favicon, three per row), or as a row under the grid, loose or in a group. A group opens and closes from its header, and remembers it; Ungroup keeps its favorites, as loose rows.
+- **Favorites** stay when closed: ⌘W, the close button or Close unloads the page and keeps the favorite in its place; clicking it loads its address again. A favorite shows as a tile in the grid (its favicon in a fixed-height tile, three per row at the default sidebar width and more as it widens), or as a row under the grid, loose or in a group. A group opens and closes from its header, and remembers it; Ungroup keeps its favorites, as loose rows.
 - **Favorite lifecycle**: an opened favorite row shows a minus; closing releases its page but retains its record. A closed row shows a remove cross on hover. Removing an open favorite from its menu makes it an ordinary tab; removing a closed favorite deletes it. Open/closed favorite state is runtime-only and independent of WebKit hibernation. Favorites start closed after relaunch. Placement and ordering remain in the versioned session JSON, with one `TabPlace` per record; no parallel favorites table or duplicated URL record.
 - **New Tab** is one permanent selectable row. Selecting it or pressing ⌘T highlights that row; entering an address creates an ordinary tab below it. There is no duplicate New Tab row or close control.
 - **Open tabs** close for good; Reopen Closed Tab brings them back.
@@ -110,6 +110,8 @@ Failure modes:
 11. An empty drop target remains visible while idle, or disappears before the chosen destination is committed.
 
 Verification: E2E `testTabsMoveByDraggingAndFavoritesStayWhenClosed` (reordering, the grid from both sides, a closed favorite, back to the open tabs; 1–2, 8), `testGroupsRenameAndDuplicateSurviveRelaunch` (a group from the menu, Move to Group, collapsing, Rename, Escape, Duplicate, relaunch, Ungroup; 5, 7–9) and `ProfilesE2ETests.testTabMovesToAnotherProfile` (6). Isolated `BrowserSessionTests` cover the session rules the UI cannot reach (4–5): moves across spaces and into foreign groups are refused, and a saved tab in an unknown group fails validation. Cancellation outside the sidebar is covered by `testTabsMoveByDraggingAndFavoritesStayWhenClosed`. Layout and selection transitions use `browserAnimation`; Reduce Motion and physical haptic feedback still require manual verification.
+
+`FavoritesGridE2ETests.testTileHeightStaysFixedWhileColumnsAdapt` checks constant tile height during a live sidebar resize and the change from three to four columns. `FavoriteSelectionE2ETests` checks favicon-derived selection colors, deselection and cached-icon restoration in light and dark appearances.
 
 Favorites interaction verification also includes `EssentialsE2ETests.testEmptyGridAndPinnedRowCloseThenRemove` for the empty grid, grid-to-list drop, minus/close/reopen/remove and deletion after relaunch. The permanent New Tab row is covered by `testNewTabIsOnePermanentSelectableRow`. Expanded French labels are exercised by `testFavoritesWithExpandedFrenchLabels`. Physical trackpad haptics and actual RTL rendering still require a manual check on supported hardware.
 

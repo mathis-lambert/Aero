@@ -28,7 +28,7 @@ struct SidebarDropTarget: NSViewRepresentable {
             guard let id = layout.draggedTabID, let tab = browser.tabs(in: space).first(where: { $0.id == id }) else { return nil }
             let palette = BrowserPalette(scheme: colorScheme)
             let icon = browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).image }
-            let width = layout.frames[.section(.open)]?.width ?? BrowserDesign.sidebarWidth
+            let width = layout.frames[.section(.open)]?.width ?? (BrowserDesign.sidebarWidth - 2 * BrowserDesign.rowInset)
             return (Self.preview(tab: tab, icon: icon, grid: false, width: width, palette: palette, rightToLeft: layoutDirection == .rightToLeft),
                     Self.preview(tab: tab, icon: icon, grid: true, width: width, palette: palette, rightToLeft: layoutDirection == .rightToLeft))
         }
@@ -37,9 +37,9 @@ struct SidebarDropTarget: NSViewRepresentable {
     /// Native drawing avoids starting a SwiftUI render inside AppKit's mouse tracking loop.
     private static func preview(tab: BrowserTab, icon: NSImage?, grid: Bool, width: CGFloat,
                                 palette: BrowserPalette, rightToLeft: Bool) -> NSImage {
-        let size = NSSize(width: grid ? FavoritesGrid.tileHeight : width,
+        let size = NSSize(width: grid ? FavoritesGrid.tileWidth(in: width) : width,
                           height: grid ? FavoritesGrid.tileHeight : BrowserDesign.tabRowHeight)
-        let fill = NSColor(palette.raised)
+        let fill = NSColor(grid ? palette.favoriteTileHover : palette.raised)
         let border = NSColor(palette.line)
         let ink = NSColor(palette.ink)
         let iconSize = grid ? BrowserDesign.pinnedIconSize : BrowserDesign.tabIconSize

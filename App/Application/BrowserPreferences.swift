@@ -47,6 +47,7 @@ enum BrowserAppearance: String, Identifiable {
 final class BrowserPreferences {
     private enum Key {
         static let testSuitePrefix = "app.getaero.browser.tests."
+        static let sidebarWidth = "browser.sidebarWidth"
         static let language = "browser.language"
         static let appearance = "browser.appearance"
         static let searchEngine = "browser.searchEngine"
@@ -66,6 +67,9 @@ final class BrowserPreferences {
     private let defaults: UserDefaults
     private let launchLanguage: BrowserLanguage
     private(set) var language: BrowserLanguage
+    var sidebarWidth: Double {
+        didSet { defaults.set(sidebarWidth, forKey: Key.sidebarWidth) }
+    }
     var appearance: BrowserAppearance {
         didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) }
     }
@@ -105,6 +109,8 @@ final class BrowserPreferences {
             guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
             defaults = suite
         } else { defaults = .standard }
+        let savedWidth = defaults.double(forKey: Key.sidebarWidth)
+        sidebarWidth = savedWidth.isFinite ? max(BrowserDesign.sidebarWidth, savedWidth) : BrowserDesign.sidebarWidth
         shortcuts = ShortcutPreferences(defaults: defaults)
         let language = defaults.string(forKey: Key.language).flatMap(BrowserLanguage.init(rawValue:)) ?? .system
         self.language = language

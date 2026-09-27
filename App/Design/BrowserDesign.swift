@@ -28,7 +28,7 @@ enum BrowserDesign {
         static let field = Font.system(size: 15)
     }
 
-    static let sidebarWidth: CGFloat = 224
+    static let sidebarWidth: CGFloat = 212
     static let sidebarHeaderHeight: CGFloat = 52
     static let windowControlsWidth: CGFloat = 96
     static let sidebarRevealEdgeWidth: CGFloat = 8
@@ -56,6 +56,10 @@ enum BrowserDesign {
 struct BrowserPalette {
     let scheme: ColorScheme
     var sidebar: Color { scheme == .dark ? Color(white: 0.13) : Color(white: 0.93) }
+    /// Favorites are recessed at rest and brighten above the sidebar on hover.
+    var favoriteTile: Color { scheme == .dark ? Color(white: 0.09) : Color(white: 0.87) }
+    var favoriteHighlightLightness: Double { scheme == .dark ? 0.20 : 0.97 }
+    var favoriteTileHover: Color { Color(white: favoriteHighlightLightness) }
     var canvas: Color { scheme == .dark ? Color(white: 0.085) : Color(white: 0.975) }
     /// Opaque, so it reads the same with Reduce Transparency.
     var raised: Color { scheme == .dark ? Color(white: 0.17) : .white }
@@ -79,12 +83,12 @@ extension EnvironmentValues {
 }
 
 extension View {
-    func browserSurface(fill: Color, border: Color, radius: CGFloat) -> some View {
+    func browserSurface(fill: Color, border: Color, radius: CGFloat, borderWidth: CGFloat = 1) -> some View {
         background(fill)
             .clipShape(RoundedRectangle(cornerRadius: radius))
             .overlay {
                 RoundedRectangle(cornerRadius: radius)
-                    .strokeBorder(border, lineWidth: 1)
+                    .strokeBorder(border, lineWidth: borderWidth)
             }
     }
 

@@ -25,9 +25,18 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 
 - The website fills the rounded page frame from its top edge; there is no top bar or native toolbar.
 - The sidebar's first row holds the window controls (standard AppKit buttons created through public API), sidebar toggle, back, forward and reload; the second holds the current address. Then one page per profile with its favorites, New Tab and its open tabs (`docs/BROWSING.md` › Favorites and open tabs), and a footer with the downloads button, the profiles and a button to add one (`docs/PROFILES.md`).
+- The sidebar starts at its minimum width of 212 pt. Drag its trailing edge up to one third of the window width; releasing below half the minimum folds it. Its preferred width is saved at the end of the drag and reused by the hover sidebar. A narrower window clamps the displayed width without overwriting the preference. Native haptics mark the minimum, maximum and fold, once per threshold per drag. VoiceOver exposes width adjustment and a hide action.
 - The hidden sidebar reappears over the page when the pointer reaches the left edge; its hover area includes its margin so it does not close on the way in.
 - The find bar floats over the page's top trailing corner; a miss shows text, the `miss` border and a short shake.
 - Settings is a fixed 960 × 620 native SwiftUI window with minimize, resize and full-screen interactions disabled: a native navigation sidebar (General, Tabs, Profiles, Extensions, Shortcuts), with native back/forward toolbar controls. Existing sections use grouped forms; Shortcuts uses a searchable categorized list and an inline detail editor. The detail’s gear menu contains priority and disable/restore actions; a separate reset icon beside search restores all shortcuts after confirmation. Profiles are edited in place there. ⌘, opens it and ⌘W closes it. Language changes apply at the next launch, and say so.
+
+Sidebar resizing verification: `SidebarResizeE2ETests` covers widening, both bounds, collapse/reopen, and width persistence. Check physical haptics with a Force Touch trackpad; automation cannot confirm their tactile strength.
+
+The favorites grid uses fixed 44 pt high tiles with three columns at the minimum sidebar width. Columns adapt as the sidebar widens; only tile width changes. The drop slots and native drag preview use the same dimensions.
+
+Favorite tiles are darker than the sidebar at rest and lighter on hover in both appearances; their opaque semantic colors also work with Reduce Transparency. Hover fades respect the shared motion policy.
+
+An active favorite uses its favicon’s dominant hue for the outline, a subtle shadow and a softly tinted hover-bright background. The background retains the hover surface’s HSL lightness in each appearance. Missing/transparent icons fall back to the profile accent; monochrome icons produce a neutral highlight. Selection is also exposed to accessibility.
 
 ## Prompts
 

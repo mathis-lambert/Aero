@@ -19,6 +19,12 @@ struct FaviconKey: Hashable {
 @MainActor @Observable
 final class Favicon {
     fileprivate(set) var image: NSImage?
+    fileprivate(set) var color: NSColor?
+
+    fileprivate func setImage(_ image: NSImage, color: FaviconColor?) {
+        self.image = image
+        self.color = color.map { NSColor(srgbRed: $0.red, green: $0.green, blue: $0.blue, alpha: 1) }
+    }
 }
 
 /// Site icons shown by the browser chrome: loaded from disk on first display, refreshed at most
@@ -50,7 +56,9 @@ final class FaviconCache {
         if recent.count > Self.capacity { entries[recent.removeFirst()] = nil }
         Task { [store] in
             guard let data = await store.icon(host: key.host, profileID: key.profileID), favicon.image == nil else { return }
-            favicon.image = NSImage(data: data)
+            let color = await FaviconColor.extract(from: data)
+            guard favicon.image == nil, let image = NSImage(data: data) else { return }
+            favicon.setImage(image, color: color)
         }
         return favicon
     }
@@ -60,7 +68,8 @@ final class FaviconCache {
         let candidates = FaviconCandidate.ranked(from: links, pageURL: url)
         Task {
             guard let data = await fetcher.icon(from: candidates), let image = NSImage(data: data) else { return }
-            favicon(for: key).image = image
+            let color = await FaviconColor.extract(from: data)
+            favicon(for: key).setImage(image, color: color)
             // Best effort: an icon that cannot be written is still shown and fetched again next launch.
             try? await store.save(data, host: key.host, profileID: key.profileID)
         }

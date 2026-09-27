@@ -53,9 +53,9 @@ final class TabDropLayout {
         // Resolve grid slots from geometry, not the tiles animating through them. Removing the
         // dragged item leaves a stable order, so a stationary pointer cannot oscillate slots.
         if let frame = frames[.section(.grid)], frame.contains(point), frame.width > 0 {
-            let columns = FavoritesGrid.columns
+            let columns = FavoritesGrid.columnCount(in: frame.width)
             let spacing = FavoritesGrid.spacing
-            let width = (frame.width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
+            let width = FavoritesGrid.tileWidth(in: frame.width)
             let x = rightToLeft ? frame.maxX - point.x : point.x - frame.minX
             let column = min(columns, max(0, Int((x + width / 2 + spacing) / (width + spacing))))
             let row = max(0, Int((point.y - frame.minY) / (FavoritesGrid.tileHeight + spacing)))
