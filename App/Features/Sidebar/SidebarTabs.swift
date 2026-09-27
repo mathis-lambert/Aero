@@ -19,11 +19,11 @@ struct SidebarTabs {
     init(session: BrowserSession, space: BrowserSpace, drop: TabDrop?) {
         var session = session
         if let drop { _ = session.move(id: drop.tabID, to: drop.destination.place, before: drop.destination.before) }
-        let tabs = session.tabs.filter { $0.spaceID == space.id }
-        grid = tabs.filter { $0.place == .grid }
-        groups = space.groups.map { group in (group, tabs.filter { $0.place == .list(group: group.id) }) }
-        loose = tabs.filter { $0.place == .list(group: nil) }
-        open = tabs.filter { $0.place == .open }
+        let tabs = Dictionary(grouping: session.tabs.lazy.filter { $0.spaceID == space.id }, by: \.place)
+        grid = tabs[.grid, default: []]
+        groups = space.groups.map { group in (group, tabs[.list(group: group.id), default: []]) }
+        loose = tabs[.list(group: nil), default: []]
+        open = tabs[.open, default: []]
     }
 
     /// The runs a drop can land in, top to bottom; a closed group's rows are not on screen.

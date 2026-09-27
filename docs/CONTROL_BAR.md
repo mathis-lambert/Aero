@@ -23,13 +23,19 @@ Settings › General chooses the engine (Google by default, DuckDuckGo, Bing, Br
 
 Suggestion requests go through an ephemeral session without cookies, cache or credentials, so they never carry a profile's identity. Text that looks like an address (it contains a dot or a scheme, or names localhost) is never sent. Requests wait for a pause in typing, and a newer text cancels an older request.
 
+History and network suggestions publish independently after that typing pause. A slow engine cannot
+hold back local history. Changing the query clears the old results; each completion checks both
+cancellation and the current query before publishing.
+
 ## New Tab page
 
 Each time the page appears, a gust rises from below its bottom edge (`WindArc`, `Wind.metal`). A soft light in the profile's accent travels with it to the control bar; as the gust passes the crescent of dithered dots, they grow in and the texture swings once and settles; when the light reaches the bar, a band crosses it from bottom to top and leaves a fine ring and halo. The gust, the light and the bar share one clock, so the impact lands on the bar at any window size. The timings are the constants at the top of `Wind.metal`, `WindArc` and `ControlBarGlow`.
 
-The dots are the app icon's wind field in the profile's accent (`light(in:)`), drawn antialiased on the GPU; the app only advances the time. The wind drifts at 30 frames per second while someone is there and rests 20 s after the page appears or the pointer last moved, resuming from the same shapes. It never drifts while the window is inactive, with Reduce Motion (the page then appears whole) or in Low Power Mode.
+The dots are the app icon's wind field in the profile's accent (`light(in:)`), drawn antialiased on the GPU; the app only advances the time. The entrance follows the display's cadence. The wind then drifts at 30 frames per second while someone is there and rests 20 s after the page appears or the pointer last moved, resuming from the same shapes. Both entrance and drift stop while the window is inactive, with Reduce Motion (the page then appears whole) or in Low Power Mode, including changes while the page is visible.
 
-Measured on the Release build (Apple silicon, pointer still): drifting costs about 0.2–0.8 s of CPU per 10 s; resting and background cost nothing. The compiled shader adds 12 KB.
+Earlier Release samples (Apple silicon, pointer still) measured about 0.2–0.8 s of CPU per 10 s
+of drift, with resting/background CPU below the sampler's resolution. These are reference samples,
+not a measurement of the display-paced entrance. Measure entrance, drift and rest separately.
 
 ## Failure modes
 
@@ -45,4 +51,4 @@ Measured on the Release build (Apple silicon, pointer still): drifting costs abo
 10. The wind or the intro keeps animating while nobody is there, while the window is inactive, with Reduce Motion or in Low Power Mode; the intro repeats without a new tab; resuming jumps to other shapes.
 11. Escape leaves the bar open, or closing it leaves keyboard focus nowhere.
 
-Verification: E2E `ControlBarE2ETests` covers 2, 6–9 and 11 against the fixture server, which serves the suggestion and search endpoints and records the requests it receives (`AERO_TEST_SEARCH` points the engines there in test runs only). Isolated `SearchEngineTests` cover 3 and the address rules of 2, which the fixtures cannot vary exhaustively. By construction: 1 and 4 (a newer text cancels the pending request task, off the main actor), 5 (the selection is clamped in `ControlBarModel`). The wind (10) is checked from the attached screenshots and by measuring the app's CPU time while drifting, resting and in the background, as above.
+Verification: E2E `ControlBarE2ETests` covers 1–2, 4, 6–9 and 11 against the fixture server, which serves the suggestion and search endpoints and records the requests it receives (`AERO_TEST_SEARCH` points the engines there in test runs only). The slow-suggestion test covers local history responsiveness and stale-query cancellation. Isolated `SearchEngineTests` cover 3 and the address rules of 2, which the fixtures cannot vary exhaustively. By construction: 5 (the selection is clamped in `ControlBarModel`). Check the wind (10) visually and measure the app's CPU time while entering, drifting, resting and in the background.

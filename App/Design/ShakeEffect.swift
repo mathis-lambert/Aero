@@ -15,12 +15,12 @@ private struct ShakeEffect: ViewModifier {
     private static let settleDuration: TimeInterval = 0.12
 
     let trigger: Int
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         let distance = reduceMotion ? 0 : Self.distance
-        return content.keyframeAnimator(initialValue: CGFloat.zero, trigger: trigger) { content, offset in
-            content.offset(x: offset)
+        return content.keyframeAnimator(initialValue: CGFloat.zero, trigger: reduceMotion ? nil : trigger) { [reduceMotion] content, offset in
+            content.offset(x: reduceMotion ? 0 : offset)
         } keyframes: { _ in
             KeyframeTrack {
                 SpringKeyframe(distance, duration: Self.outDuration)

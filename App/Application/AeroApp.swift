@@ -9,6 +9,7 @@ struct AeroApp: App {
     var body: some Scene {
         Window("Aero", id: BrowserWindowView.windowID) {
             BrowserWindowView(browser: browser)
+                .browserMotionPreferences()
                 .task {
                     delegate.browser = browser
                     await browser.start()
@@ -21,6 +22,7 @@ struct AeroApp: App {
 
         Window("Settings", id: SettingsView.windowID) {
             SettingsView(browser: browser)
+                .browserMotionPreferences()
         }
         .windowResizability(.contentSize)
         .windowToolbarStyle(.unifiedCompact)

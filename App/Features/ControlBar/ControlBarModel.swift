@@ -107,18 +107,25 @@ final class ControlBarModel {
     /// Runs for each text, from the view's task: a newer text cancels it before it updates anything.
     func refresh() async {
         let query = query
-        guard !query.isEmpty else {
-            suggestions = []
-            history = []
-            return
-        }
+        suggestions = []
+        history = []
+        guard !query.isEmpty else { return }
         do { try await Task.sleep(for: Self.typingPause) } catch { return }
-        async let suggested = suggestions(for: query)
-        async let visited = visits(matching: query)
-        let (newSuggestions, newHistory) = await (suggested, visited)
-        guard !Task.isCancelled else { return }
-        suggestions = newSuggestions
-        history = newHistory
+        async let suggested: Void = refreshSuggestions(for: query)
+        async let visited: Void = refreshHistory(for: query)
+        _ = await (suggested, visited)
+    }
+
+    private func refreshSuggestions(for query: String) async {
+        let results = await suggestions(for: query)
+        guard !Task.isCancelled, self.query == query else { return }
+        suggestions = results
+    }
+
+    private func refreshHistory(for query: String) async {
+        let results = await visits(matching: query)
+        guard !Task.isCancelled, self.query == query else { return }
+        history = results
     }
 
     /// Never sends text that looks like an address, and nothing while suggestions are off.

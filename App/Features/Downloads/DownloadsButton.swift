@@ -13,16 +13,16 @@ struct DownloadsButton: View {
     @Binding var presented: Bool
     let shortcut: KeyboardShortcut?
     let toggle: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     var body: some View {
         IconButton(symbol: "arrow.down.circle", label: "Downloads", size: BrowserDesign.navigationButtonSize, shortcut: shortcut, action: toggle)
             .overlay { if let progress { ring(progress) } }
             // Takes the hit as a new download's file lands: a kick, then a damped wobble on its base.
-            .keyframeAnimator(initialValue: Landing(), trigger: reduceMotion ? nil : downloads.lastStarted) { button, landing in
+            .keyframeAnimator(initialValue: Landing(), trigger: reduceMotion ? nil : downloads.lastStarted) { [reduceMotion] button, landing in
                 button
-                    .scaleEffect(landing.scale, anchor: .bottom)
-                    .rotationEffect(.degrees(landing.angle), anchor: .bottom)
+                    .scaleEffect(reduceMotion ? 1 : landing.scale, anchor: .bottom)
+                    .rotationEffect(.degrees(reduceMotion ? 0 : landing.angle), anchor: .bottom)
             } keyframes: { _ in
                 KeyframeTrack(\.scale) {
                     LinearKeyframe(1, duration: DownloadFlight.duration * 0.92)

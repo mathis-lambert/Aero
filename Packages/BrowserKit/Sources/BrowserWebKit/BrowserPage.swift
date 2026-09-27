@@ -67,6 +67,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         configuration.webExtensionController = extensions
         configuration.applicationNameForUserAgent = userAgentName
         configuration.preferences.isElementFullscreenEnabled = true
+        PageRendering.configure(configuration.preferences)
         configuration.allowsAirPlayForMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = .audio
         if configuration.preferences.responds(to: pictureInPictureSetter) {
@@ -90,7 +91,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         // WKWebView posts these on the main thread; applying them directly avoids a task per progress tick.
         let refresh: @Sendable (WKWebView, Any) -> Void = { [weak self] _, _ in MainActor.assumeIsolated { self?.refresh() } }
         observations = [
-            webView.observe(\.estimatedProgress, changeHandler: refresh),
+            webView.observe(\.estimatedProgress) { [weak self] webView, _ in
+                MainActor.assumeIsolated { self?.progress = webView.estimatedProgress }
+            },
             webView.observe(\.isLoading, changeHandler: refresh),
             webView.observe(\.canGoBack, changeHandler: refresh),
             webView.observe(\.canGoForward, changeHandler: refresh),

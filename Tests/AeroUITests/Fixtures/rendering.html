@@ -1,0 +1,50 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Rendering fixture</title>
+<style>
+  body { font: 18px system-ui; margin: 24px; }
+  header { position: sticky; top: 0; background: white; padding: 16px; z-index: 1; }
+  #sample { width: 32px; height: 32px; background: coral; border-radius: 8px; }
+  article { height: 160px; border-bottom: 1px solid #ddd; }
+  textarea { width: 100%; height: 120px; }
+</style>
+<header>
+  <h1>Rendering fixture</h1>
+  <button id="start">Measure frames</button>
+  <button id="scroll">Scroll down</button>
+  <div id="sample"></div>
+  <textarea aria-label="Frame report" readonly></textarea>
+</header>
+<main></main>
+<script>
+  const report = document.querySelector('textarea');
+  for (let i = 0; i < 100; i++) {
+    const row = document.createElement('article');
+    row.textContent = `Scroll row ${i}`;
+    document.querySelector('main').append(row);
+  }
+  document.querySelector('#scroll').onclick = () => window.scrollBy({top: 800, behavior: 'smooth'});
+  document.querySelector('#start').onclick = () => {
+    const deltas = [];
+    const sample = document.querySelector('#sample');
+    let start, previous;
+    report.value = '';
+    function frame(now) {
+      start ??= now;
+      if (previous !== undefined && now - start > 500) deltas.push(now - previous);
+      previous = now;
+      sample.style.transform = `translateX(${100 + 100 * Math.sin(now / 300)}px)`;
+      if (now - start < 3500) { requestAnimationFrame(frame); return; }
+      const sorted = [...deltas].sort((a, b) => a - b);
+      const median = sorted[Math.floor(sorted.length / 2)];
+      report.value = JSON.stringify({
+        samples: deltas.length, medianMs: median,
+        p95Ms: sorted[Math.floor(sorted.length * .95)],
+        meanFPS: 1000 * deltas.length / deltas.reduce((sum, delta) => sum + delta, 0),
+        scrollY, visibility: document.visibilityState,
+        scale: devicePixelRatio, userAgent: navigator.userAgent
+      });
+    }
+    requestAnimationFrame(frame);
+  };
+</script>

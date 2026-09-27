@@ -5,7 +5,7 @@ import SwiftUI
 /// the last `activity`, and holds still while the window is inactive, with Reduce Motion or in Low
 /// Power Mode.
 struct WindArc: View {
-    /// The drift is slow: 30 frames per second look as smooth as the display's rate, for less work.
+    /// Slow decorative drift has a lower budget; the brief entrance follows the display cadence.
     private static let frameInterval: TimeInterval = 1.0 / 30
     private static let restDelay = Duration.seconds(20)
     /// The gust's speed, in points per second: fast, so little separates the wind from the bar; what
@@ -33,7 +33,7 @@ struct WindArc: View {
     @State private var resting = false
     @Environment(\.displayScale) private var displayScale
     @Environment(\.controlActiveState) private var activeState
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     private static func origin(in size: CGSize) -> CGPoint {
         CGPoint(x: size.width / 2, y: size.height * (1 + originDrop))
@@ -45,14 +45,14 @@ struct WindArc: View {
         return hypot(point.x - origin.x, point.y - origin.y) / gustSpeed
     }
 
-    private var drifts: Bool {
-        !resting && !reduceMotion && activeState != .inactive && !ProcessInfo.processInfo.isLowPowerModeEnabled
-    }
+    private var allowsMotion: Bool { !reduceMotion && activeState != .inactive }
+    private var drifts: Bool { !resting && allowsMotion }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: Self.frameInterval, paused: !(drifts || rising))) { timeline in
+        TimelineView(.animation(minimumInterval: rising ? nil : Self.frameInterval,
+                                paused: !allowsMotion || !(drifts || rising))) { timeline in
             let time = Float(clock.time(at: timeline.date))
-            let intro = reduceMotion || !rising ? Self.spent : Float(timeline.date.timeIntervalSince(appeared))
+            let intro = !allowsMotion || !rising ? Self.spent : Float(timeline.date.timeIntervalSince(appeared))
             let pixel = Float(1 / displayScale)
             let origin = Self.origin(in: size)
             let speed = Float(Self.gustSpeed)
@@ -63,10 +63,11 @@ struct WindArc: View {
             }
         }
         .onChange(of: drifts, initial: true) { _, drifts in clock.setRunning(drifts) }
+        .onChange(of: allowsMotion) { _, allowed in if !allowed { rising = false } }
         .task {
             appeared = .now
             // With Reduce Motion the page appears whole, so no frame runs for the gust.
-            guard !reduceMotion else { rising = false; return }
+            guard allowsMotion else { rising = false; return }
             // Until the gust has crossed the whole page and every point has settled.
             let farthest = Self.arrival(at: .zero, in: size)
             do { try await Task.sleep(for: .seconds(farthest + Self.gustTail)) } catch { return }

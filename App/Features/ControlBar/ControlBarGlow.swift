@@ -16,13 +16,14 @@ private struct ControlBarGlow: ViewModifier {
     let cornerRadius: CGFloat
     let delay: TimeInterval
     @State private var progress = 0.0
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
             .modifier(GlowLight(progress: progress, accent: accent, cornerRadius: cornerRadius))
-            .task {
+            .task(id: reduceMotion) {
                 guard !reduceMotion else { progress = 1; return }
+                guard progress == 0 else { return }
                 do { try await Task.sleep(for: .seconds(delay)) } catch { return }
                 withAnimation(Self.crossing) { progress = 1 }
             }
@@ -41,6 +42,7 @@ private struct GlowLight: ViewModifier, @MainActor Animatable {
     /// Half the band's height, as a share of the bar's height.
     private static let band = 0.6
 
+    @Environment(\.browserReduceMotion) private var reduceMotion
     var progress: Double
     let accent: Color
     let cornerRadius: CGFloat
@@ -51,6 +53,7 @@ private struct GlowLight: ViewModifier, @MainActor Animatable {
     }
 
     func body(content: Content) -> some View {
+        let progress = reduceMotion ? 1 : progress
         let passing = sin(.pi * progress)
         // The settled light fades in behind the band, which travels from below the bar to above it.
         let settled = min(1, progress * 3)

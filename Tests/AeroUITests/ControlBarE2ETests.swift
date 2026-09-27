@@ -11,6 +11,23 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
     private var controlBarInputs: XCUIElementQuery { app.textFields.matching(identifier: "controlBar.input") }
     private var items: [String] { labels(of: Self.item) }
 
+    func testHistoryDoesNotWaitForSlowSuggestions() {
+        open("history-lake.html", expecting: "Alpine Lake fixture")
+        app.typeKey("w", modifierFlags: .command)
+        XCTAssertTrue(controlBarInput.waitForExistence(timeout: Self.renderTimeout))
+        server.delaySuggestions(by: 2.5)
+        controlBarInput.click()
+        controlBarInput.typeText("alpine")
+        XCTAssertTrue(poll(timeout: 1.5) { self.items.contains("Alpine Lake") },
+                      "Local history appears before the delayed engine response")
+        attachScreenshot("history-before-suggestions")
+        app.typeKey("a", modifierFlags: .command)
+        controlBarInput.typeText("zzzz")
+        XCTAssertTrue(poll { !self.items.contains("Alpine Lake") })
+        pause(3)
+        XCTAssertFalse(items.contains("Alpine Lake"), "A cancelled query cannot republish old history")
+    }
+
     func testSuggestionsSearchWithTheChosenEngine() {
         setSearchEngine("Google")
         controlBarInput.click()

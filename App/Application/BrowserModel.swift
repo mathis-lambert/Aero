@@ -89,7 +89,10 @@ final class BrowserModel {
     var accent: ProfileColor { profile?.color ?? .terracotta }
     var space: BrowserSpace? { window.selectedProfileID.flatMap(space(of:)) }
     var tabs: [BrowserTab] { space.map(tabs(in:)) ?? [] }
-    var selectedTab: BrowserTab? { tabs.first { $0.id == window.selectedTabID } }
+    var selectedTab: BrowserTab? {
+        guard let id = window.selectedTabID, let spaceID = space?.id else { return nil }
+        return session.tabs.first { $0.id == id && $0.spaceID == spaceID }
+    }
     var canReopen: Bool { closedTabs.contains { $0.spaceID == space?.id } }
     var downloads: DownloadCoordinator { pages.downloads }
     var webSearch: WebSearch { WebSearch(engine: preferences.searchEngine, testEndpoint: searchTestEndpoint) }

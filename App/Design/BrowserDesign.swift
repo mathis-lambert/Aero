@@ -47,7 +47,7 @@ enum BrowserDesign {
     static let downloadIconSize: CGFloat = 24
     static let faviconCornerRatio: CGFloat = 0.22
     static let motion = Animation.spring(duration: 0.28, bounce: 0.08)
-    /// Quick enough to follow the pointer; a fade, so it stays with Reduce Motion.
+    /// Quick enough to follow the pointer.
     static let hover = Animation.easeOut(duration: 0.12)
     /// Fades a page in once it has rendered; short so navigation never feels delayed.
     static let pageReveal = Animation.easeOut(duration: 0.18)
@@ -88,7 +88,7 @@ extension View {
             }
     }
 
-    /// The shell spring, or no animation with Reduce Motion.
+    /// The shell spring, or no animation when motion is reduced.
     func browserAnimation(value: some Equatable) -> some View {
         modifier(BrowserAnimation(animation: BrowserDesign.motion, value: value))
     }
@@ -111,7 +111,7 @@ extension View {
 private struct BrowserAnimation<Value: Equatable>: ViewModifier {
     let animation: Animation
     let value: Value
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content.animation(reduceMotion ? nil : animation, value: value)
@@ -215,6 +215,7 @@ private struct PointerFeedback<Label: View>: View {
     let radius: CGFloat
     @ViewBuilder let label: Label
     @State private var hovered = false
+    @Environment(\.browserReduceMotion) private var reduceMotion
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.palette) private var palette
 
@@ -226,7 +227,7 @@ private struct PointerFeedback<Label: View>: View {
             }
             .opacity(isEnabled ? 1 : 0.3)
             .onHover { hovered = $0 }
-            .animation(BrowserDesign.hover, value: hovered)
+            .animation(reduceMotion ? nil : BrowserDesign.hover, value: hovered)
     }
 }
 

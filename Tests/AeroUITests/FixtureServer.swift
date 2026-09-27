@@ -27,7 +27,7 @@ final class FixtureServer: Sendable {
         }
         listener.newConnectionHandler = { [queue, log] connection in
             connection.start(queue: queue)
-            Self.respond(on: connection, log: log)
+            Self.respond(on: connection, log: log, queue: queue)
         }
         listener.start(queue: queue)
         guard ready.wait(timeout: .now() + Self.readyTimeout) == .success, let port = listener.port?.rawValue else {
@@ -40,6 +40,9 @@ final class FixtureServer: Sendable {
     deinit { listener.cancel() }
 
     func stop() { listener.cancel() }
+
+    /// Simulates a slow engine without delaying local history or the other fixture requests.
+    func delaySuggestions(by seconds: TimeInterval) { log.suggestionDelay.withLock { $0 = seconds } }
 
     /// The requests received so far for `fixture`, with their query.
     func requests(for fixture: String) -> [URLComponents] {
@@ -61,7 +64,7 @@ final class FixtureServer: Sendable {
         return url
     }
 
-    private static func respond(on connection: NWConnection, log: RequestLog) {
+    private static func respond(on connection: NWConnection, log: RequestLog, queue: DispatchQueue) {
         connection.receive(minimumIncompleteLength: 1, maximumLength: maximumRequestLength) { data, _, _, _ in
             let request = data.map { String(decoding: $0, as: UTF8.self) } ?? ""
             let path = request.split(separator: " ").dropFirst().first.map(String.init) ?? "/"
@@ -75,7 +78,10 @@ final class FixtureServer: Sendable {
             } else {
                 response = header(status: "404 Not Found", type: "text/plain", length: 0, attachment: nil)
             }
-            connection.send(content: response, completion: .contentProcessed { _ in connection.cancel() })
+            let delay = name == "suggest.json" ? log.suggestionDelay.withLock { $0 } : 0
+            queue.asyncAfter(deadline: .now() + delay) {
+                connection.send(content: response, completion: .contentProcessed { _ in connection.cancel() })
+            }
         }
     }
 
@@ -96,6 +102,7 @@ final class FixtureServer: Sendable {
     /// Paths with their query, in the order they arrived.
     private final class RequestLog: Sendable {
         private let storage = Mutex<[String]>([])
+        let suggestionDelay = Mutex<TimeInterval>(0)
         var paths: [String] { storage.withLock { $0 } }
         func record(_ path: String) { storage.withLock { $0.append(path) } }
     }

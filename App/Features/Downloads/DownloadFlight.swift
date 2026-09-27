@@ -38,7 +38,7 @@ private struct DownloadFlights: ViewModifier {
 
     let downloads: DownloadCoordinator
     @State private var flights: [Flight] = []
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
@@ -53,6 +53,9 @@ private struct DownloadFlights: ViewModifier {
                 }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
+            }
+            .onChange(of: reduceMotion) { _, reduced in
+                if reduced { flights.removeAll() }
             }
             .onChange(of: downloads.lastStarted) { _, id in
                 guard let id, !reduceMotion, let download = downloads.downloads.first(where: { $0.id == id }) else { return }

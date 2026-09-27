@@ -14,7 +14,7 @@ struct ProfilePager: View {
     let browser: BrowserModel
     @State private var offset: CGFloat = 0
     @State private var width: CGFloat = 0
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     private var profiles: [BrowserProfile] { browser.session.profiles }
     private var index: Int { profiles.firstIndex { $0.id == browser.window.selectedProfileID } ?? 0 }
