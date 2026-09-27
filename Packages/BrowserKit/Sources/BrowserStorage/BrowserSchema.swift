@@ -1,15 +1,17 @@
 extension DatabaseSchema {
-    static let browser = DatabaseSchema(identifier: 0x4145524F, migrations: ["""
+    static let browser = DatabaseSchema(identifier: 0x41455232, migrations: ["""
         CREATE TABLE state (id INTEGER PRIMARY KEY CHECK(id = 1), initialized INTEGER NOT NULL CHECK(initialized IN (0,1)));
         INSERT INTO state VALUES (1, 0);
         CREATE TABLE profiles (
-            id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, color TEXT NOT NULL, emoji TEXT,
+            id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, removing INTEGER NOT NULL CHECK(removing IN (0,1)),
             position INTEGER NOT NULL CHECK(position >= 0)
         ) STRICT;
         CREATE TABLE spaces (
-            id TEXT PRIMARY KEY NOT NULL, profile_id TEXT NOT NULL UNIQUE REFERENCES profiles(id) ON DELETE CASCADE,
+            id TEXT PRIMARY KEY NOT NULL, profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+            name TEXT NOT NULL, color TEXT NOT NULL, emoji TEXT,
             position INTEGER NOT NULL CHECK(position >= 0)
         ) STRICT;
+        CREATE INDEX spaces_profile ON spaces(profile_id);
         CREATE TABLE tab_groups (
             id TEXT PRIMARY KEY NOT NULL, space_id TEXT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
             name TEXT NOT NULL, collapsed INTEGER NOT NULL CHECK(collapsed IN (0,1)), position INTEGER NOT NULL CHECK(position >= 0),

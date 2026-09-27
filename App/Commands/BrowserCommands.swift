@@ -3,6 +3,7 @@ import BrowserCore
 import SwiftUI
 
 struct BrowserMenuCommands: Commands {
+    let application: BrowserModel
     /// Quitting works from every window, so it does not wait for the browser window's focus.
     let quit: () -> Void
     @FocusedValue(\.browserModel) private var browser
@@ -10,7 +11,7 @@ struct BrowserMenuCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appSettings) {
-            Button("Settings…") { openWindow(id: SettingsView.windowID) }
+            Button("Settings…") { application.showSettings(.section(.general)); openWindow(id: SettingsView.windowID) }
                 .keyboardShortcut(",")
         }
         CommandGroup(replacing: .appTermination) {
@@ -48,6 +49,34 @@ struct BrowserMenuCommands: Commands {
                 if ![BrowserCommand.newTab, .closeTab, .reopenTab].contains(item) { command(item) }
             }
         }
+        CommandMenu("Profiles") {
+            command(.newProfile)
+            command(.profiles)
+            Divider()
+            let browser = application
+            ForEach(browser.profiles) { profile in
+                Menu(profile.name) {
+                    let spaces = browser.session.spaces.filter { $0.profileID == profile.id }
+                    ForEach(spaces) { space in
+                        Button(space.name) {
+                            browser.switchSpace(space.id)
+                            openWindow(id: BrowserWindowView.windowID)
+                        }
+                    }
+                    if spaces.isEmpty {
+                        Button("New space…") {
+                            browser.present(.space(profile.id))
+                            openWindow(id: BrowserWindowView.windowID)
+                        }
+                    }
+                }
+            }
+        }
+        CommandMenu("Spaces") {
+            command(.newSpace)
+            command(.nextSpace)
+            command(.previousSpace)
+        }
         CommandMenu("History") {
             command(.showHistory)
         }
@@ -61,9 +90,7 @@ struct BrowserMenuCommands: Commands {
             command(.commandPalette)
             command(.toggleSidebar)
             Divider()
-            command(.profiles)
-            command(.nextProfile)
-            command(.previousProfile)
+
         }
     }
 
@@ -78,9 +105,13 @@ struct BrowserMenuCommands: Commands {
     }
 
     private func command(_ command: BrowserCommand) -> some View {
-        Button(command.title) { browser?.perform(command) }
+        let owner = [.profiles, .newProfile].contains(command) ? application : browser
+        return Button(command.title) {
+            owner?.perform(command)
+            if command == .newProfile { openWindow(id: BrowserWindowView.windowID) }
+        }
             .keyboardShortcut(browser?.shortcuts.shortcut(for: command))
-            .disabled(browser?.isEnabled(command) != true)
+            .disabled(owner?.isEnabled(command) != true)
     }
 }
 

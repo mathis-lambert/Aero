@@ -2,7 +2,7 @@ import BrowserCore
 import SwiftUI
 
 /// The browser's only address, search and command field, on the New Tab page (`presentation`
-/// is `nil`) and over the selected tab. See docs/CONTROL_BAR.md.
+/// is `nil`) and over the selected tab. See docs/BROWSING.md.
 struct ControlBarView: View {
     static let fieldHeight: CGFloat = 44
     private static let width: CGFloat = 600
@@ -132,7 +132,7 @@ struct ControlBarView: View {
     }
 
     @ViewBuilder private func icon(for item: ControlBarItem) -> some View {
-        if let url = item.site, let profileID = browser.window.selectedProfileID {
+        if let url = item.site, let profileID = browser.profile?.id {
             FaviconView(cache: browser.favicons, key: FaviconKey(profileID: profileID, url: url), size: BrowserDesign.tabIconSize) {
                 Image(systemName: item.symbol).foregroundStyle(.secondary)
             }

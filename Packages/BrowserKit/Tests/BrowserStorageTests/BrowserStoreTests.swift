@@ -3,7 +3,7 @@ import BrowserCore
 import Foundation
 import Testing
 
-// Failure cases 1–5 in docs/STORAGE.md. SQL fault injection is unavailable through the UI.
+// Storage invariants in docs/STORAGE.md. SQL fault injection is unavailable through the UI.
 private func location() -> URL { FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString) }
 
 @Test func relationalStateRoundTripAndStaleRevision() async throws {
@@ -12,8 +12,8 @@ private func location() -> URL { FileManager.default.temporaryDirectory.appendin
     let store = BrowserStore(directory: folder)
     #expect(try await store.load() == nil)
     var session = BrowserSession(profileName: "Personal")
-    let work = try session.addProfile(name: "Work", color: .ocean, emoji: "🌊")
-    let space = try #require(session.spaces.first { $0.profileID == work.id })
+    let work = try session.addProfile(name: "Work")
+    let space = try session.addSpace(name: "Work", profileID: work.id, color: SpaceColor(0x0AB3FF), emoji: "🌊")
     let createdGroup = session.addGroup(named: "Research", in: space.id)
     let group = try #require(createdGroup)
     let opened = session.open(URL(string: "https://example.test/")!, in: space.id)
@@ -42,7 +42,7 @@ private func location() -> URL { FileManager.default.temporaryDirectory.appendin
     let database = try SQLiteDatabase(file: folder.appendingPathComponent("Browser.sqlite"))
     try database.execute("CREATE TRIGGER reject_tab BEFORE INSERT ON tabs BEGIN SELECT RAISE(ABORT, 'fixture'); END")
     var changed = original
-    try changed.editProfile(id: original.profiles[0].id, name: "Changed", color: .ocean, emoji: nil)
+    try changed.editProfile(id: original.profiles[0].id, name: "Changed")
     _ = changed.open(URL(string: "https://example.test")!, in: changed.spaces[0].id)
     await #expect(throws: (any Error).self) { try await store.save(changed, revision: 2) }
     #expect(try await store.load() == original)

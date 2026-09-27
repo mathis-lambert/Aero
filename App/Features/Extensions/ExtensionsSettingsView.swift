@@ -10,7 +10,7 @@ struct ExtensionsSettingsView: View {
     let browser: BrowserModel
 
     var body: some View {
-        if let profileID = browser.window.selectedProfileID {
+        if let profileID = browser.profile?.id {
             let extensions = browser.pages.extensionsIfMade(for: profileID)
             let installed = browser.session.profiles.first { $0.id == profileID }?.extensions ?? []
             Form {
@@ -45,7 +45,7 @@ struct ExtensionsSettingsView: View {
                 Button("Retry removal") { Task { await browser.removeExtension(record, inProfile: profileID) } }
             } else {
                 if record.pendingVersion != nil {
-                    Button("Review update") { Task { await browser.installFromWebStore(record.id, inSettings: true) } }.buttonStyle(PanelButtonStyle(prominent: true))
+                    Button("Review update") { Task { await browser.installFromWebStore(record.id, inProfile: profileID, inSettings: true) } }.buttonStyle(PanelButtonStyle(prominent: true))
                 }
                 if case .folder = record.source {
                     IconButton(symbol: "arrow.clockwise", label: "Reload") { Task { await browser.reloadExtension(record, inProfile: profileID) } }
@@ -69,14 +69,14 @@ struct ExtensionsSettingsView: View {
 
     /// A sheet on the Settings window, where the review that follows shows too.
     private func chooseFolder() {
-        guard let window = NSApp.keyWindow else { return }
+        guard let window = NSApp.keyWindow, let profileID = browser.profile?.id else { return }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.message = String(localized: "Choose the folder that holds the extension's manifest.json.")
         panel.beginSheetModal(for: window) { response in
             guard response == .OK, let folder = panel.url else { return }
-            Task { await browser.installFromFolder(folder) }
+            Task { await browser.installFromFolder(folder, inProfile: profileID) }
         }
     }
 }

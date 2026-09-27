@@ -13,7 +13,7 @@ final class BrowserModel {
     private static var saveFailureMessage: String {
         String(localized: "Changes could not be saved. Check that there is enough disk space and try again.")
     }
-    private(set) var session = BrowserSession(profileName: String(localized: "Personal"))
+    var session = BrowserSession(profileName: String(localized: "Personal"), spaceName: String(localized: "Main"))
     private(set) var isReady = false
     private(set) var loadFailed = false
     let window = BrowserWindowState()
@@ -26,24 +26,25 @@ final class BrowserModel {
     @ObservationIgnored var extensionsTask: Task<Void, Never>?
     var currentPage: BrowserPage?
     /// Explicitly opened favorites, including hibernated and internal pages. Runtime only.
-    private(set) var openedFavorites: Set<UUID> = []
+    var openedFavorites: Set<UUID> = []
 
     let pages: WebPageRegistry
-    private let store: BrowserStore
+    let store: BrowserStore
     private let storageLocation: StorageLocation
     private(set) var storageFailureMessage: String?
     private(set) var canRecoverStorage = false
     private(set) var isOpeningStorage = false
+    var isChangingStructure = false
     var extensionsReady = false
     var extensionOperations: Set<String> = []
-    private(set) var recoveryPackages: Set<UUID>?
-    @ObservationIgnored private var revision: UInt64 = 0
+    var recoveryPackages: Set<UUID>?
+    @ObservationIgnored var revision: UInt64 = 0
     @ObservationIgnored private var titleSaveTask: Task<Void, Never>?
     @ObservationIgnored private var saveTask: Task<Void, Never>?
     @ObservationIgnored private var needsSave = false
-    @ObservationIgnored private var closedTabs: [BrowserTab] = []
-    @ObservationIgnored private var lastSelection: [UUID: UUID] = [:]
-    @ObservationIgnored private var recentTabs: [UUID] = []
+    @ObservationIgnored var closedTabs: [BrowserTab] = []
+    @ObservationIgnored var lastSelection: [UUID: UUID] = [:]
+    @ObservationIgnored var recentTabs: [UUID] = []
     @ObservationIgnored private var cycleTabs: [UUID] = []
     @ObservationIgnored private var cycleIndex = 0
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
@@ -90,9 +91,9 @@ final class BrowserModel {
         saveTask?.cancel()
     }
 
-    var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
-    var accent: ProfileColor { profile?.color ?? .terracotta }
-    var space: BrowserSpace? { window.selectedProfileID.flatMap(space(of:)) }
+    var profile: BrowserProfile? { session.profiles.first { $0.id == space?.profileID } }
+    var accent: SpaceColor { space?.color ?? .initial }
+    var space: BrowserSpace? { session.spaces.first { $0.id == window.selectedSpaceID } }
     var tabs: [BrowserTab] { space.map(tabs(in:)) ?? [] }
     var selectedTab: BrowserTab? {
         guard let id = window.selectedTabID, let spaceID = space?.id else { return nil }
@@ -113,11 +114,12 @@ final class BrowserModel {
         do {
             if let saved = try await store.load() { session = saved }
             else { try await store.save(session, revision: revision) }
+            try await resumeProfileRemovals()
             // Recovery is useful only after validation. Failure never overwrites the old snapshot.
             do {
                 recoveryPackages = try await store.createRecoverySnapshot()
             } catch { present(.error(Self.saveFailureMessage)) }
-            window.selectedProfileID = session.profiles.first?.id
+            window.selectedSpaceID = session.spaces.first?.id
             isReady = true
         } catch {
             loadFailed = true
@@ -156,8 +158,9 @@ final class BrowserModel {
         self.launchInterval = nil
     }
 
-    func space(of profileID: UUID) -> BrowserSpace? {
-        session.spaces.first { $0.profileID == profileID }
+    func destinationSpace(for profileID: UUID) -> BrowserSpace? {
+        if let space, space.profileID == profileID { return space }
+        return session.spaces.first { $0.profileID == profileID }
     }
 
     func tabs(in space: BrowserSpace) -> [BrowserTab] {
@@ -173,10 +176,11 @@ final class BrowserModel {
         profileID(of: tab).flatMap { FaviconKey(profileID: $0, url: url ?? tab.url) }
     }
 
-    private func persist() {
+    func persist() {
         guard isReady else { return }
         revision += 1
         needsSave = true
+        guard !isChangingStructure else { return }
         guard saveTask == nil else { return }
         saveTask = Task { [weak self] in await self?.savePendingChanges() }
     }
@@ -193,8 +197,11 @@ final class BrowserModel {
         }
     }
 
+    func waitForPendingSave() async { await saveTask?.value }
+
     /// Termination waits for the latest snapshot rather than losing a pending asynchronous write.
     func flush() async -> Bool {
+        guard !isChangingStructure else { return false }
         guard isReady else { return true }
         titleSaveTask?.cancel(); titleSaveTask = nil
         await saveTask?.value
@@ -210,16 +217,21 @@ final class BrowserModel {
         }
     }
 
-    func switchProfile(_ id: UUID) {
-        guard id != window.selectedProfileID, session.profiles.contains(where: { $0.id == id }) else { return }
-        if let profileID = window.selectedProfileID { lastSelection[profileID] = window.selectedTabID }
-        window.selectedProfileID = id
+    func switchSpace(_ id: UUID) {
+        guard !isChangingStructure, id != window.selectedSpaceID, session.spaces.contains(where: { $0.id == id }) else { return }
+        if let spaceID = window.selectedSpaceID, session.spaces.contains(where: { $0.id == spaceID }) { lastSelection[spaceID] = window.selectedTabID }
+        window.selectedSpaceID = id
+        cycleTabs = []
+        cycleIndex = 0
         window.controlBar = nil
+        window.siteSettingsPresented = false
+        window.controlCenterPresented = false
+        window.renaming = nil
         selectTab(lastSelection[id])
     }
 
     func selectTab(_ id: UUID?, recordRecent: Bool = true) {
-        guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = window.selectedProfileID else {
+        guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = profile?.id else {
             window.find.dismiss()
             window.selectedTabID = nil
             currentPage = nil
@@ -242,7 +254,7 @@ final class BrowserModel {
 
     /// Selects a tab of any profile, switching to it first.
     func showTab(_ tab: BrowserTab) {
-        if let profileID = profileID(of: tab) { switchProfile(profileID) }
+        switchSpace(tab.spaceID)
         selectTab(tab.id)
     }
 
@@ -261,6 +273,7 @@ final class BrowserModel {
     /// Loads `url` in an existing tab. Moving to a browser page releases the tab's website;
     /// moving back to a website creates its page on selection.
     func navigate(_ id: UUID, to url: URL) {
+        guard !isChangingStructure else { return }
         guard let tab = tabs.first(where: { $0.id == id }), NavigationInput.isTabURL(url) else { return }
         session.updateTab(id: id, url: url, title: "")
         if InternalPage(url: url) != nil { pages.close(tabID: id) }
@@ -272,6 +285,7 @@ final class BrowserModel {
     /// Adds a tab record without selecting it.
     @discardableResult
     func addTab(_ url: URL, in spaceID: UUID) -> BrowserTab? {
+        guard !isChangingStructure else { return nil }
         guard NavigationInput.isTabURL(url), let tab = session.open(url, in: spaceID) else { return nil }
         persist()
         extensionsDidOpen(tab)
@@ -306,6 +320,7 @@ final class BrowserModel {
     /// Closing a favorite unloads its page and keeps it. An open tab is removed; popups closed by
     /// their page are not offered by Reopen Closed Tab.
     func closeTab(_ id: UUID, rememberForReopen: Bool = true) {
+        guard !isChangingStructure else { return }
         guard let tab = session.tabs.first(where: { $0.id == id }) else { return }
         let wasSelected = window.selectedTabID == id
         let next = wasSelected ? tabShown(afterRemoving: tab) : nil
@@ -330,6 +345,7 @@ final class BrowserModel {
 
     /// Removing a closed favorite deletes its record; an open one becomes an ordinary tab.
     func removeFavorite(_ id: UUID) {
+        guard !isChangingStructure else { return }
         guard let tab = session.tabs.first(where: { $0.id == id }), tab.isFavorite else { return }
         if isTabOpen(tab) {
             moveTab(id, to: .open, before: nil)
@@ -341,7 +357,7 @@ final class BrowserModel {
     }
 
     /// The open tab below a removed one, else above; after a favorite, the tab shown before it.
-    private func tabShown(afterRemoving tab: BrowserTab) -> UUID? {
+    func tabShown(afterRemoving tab: BrowserTab) -> UUID? {
         if tab.isFavorite {
             let ids = Set(tabs.map(\.id))
             return recentTabs.first { $0 != tab.id && ids.contains($0) }
@@ -353,6 +369,7 @@ final class BrowserModel {
     }
 
     func reopenTab() {
+        guard !isChangingStructure else { return }
         guard let index = closedTabs.lastIndex(where: { $0.spaceID == space?.id }) else { return }
         let tab = closedTabs.remove(at: index)
         session.restore(tab)
@@ -363,6 +380,7 @@ final class BrowserModel {
 
     /// Drops never move a tab into another space.
     func moveTab(_ id: UUID, to place: TabPlace, before targetID: UUID?) {
+        guard !isChangingStructure else { return }
         let wasFavorite = session.tabs.first { $0.id == id }?.isFavorite
         guard session.move(id: id, to: place, before: targetID) else { return }
         if wasFavorite == false, place.isFavorite { openedFavorites.insert(id) }
@@ -372,29 +390,16 @@ final class BrowserModel {
     }
 
     func duplicateTab(_ id: UUID) {
+        guard !isChangingStructure else { return }
         guard let copy = session.duplicate(id: id) else { return }
         extensionsDidOpen(copy)
         persist()
         selectTab(copy.id)
     }
 
-    /// The tab becomes a new one of the other profile, whose page loads with that profile's data.
-    func moveTab(_ id: UUID, toProfile profileID: UUID) {
-        guard let tab = session.tabs.first(where: { $0.id == id }), let spaceID = space(of: profileID)?.id else { return }
-        let wasSelected = window.selectedTabID == id
-        let next = wasSelected ? tabShown(afterRemoving: tab) : nil
-        guard let moved = session.transfer(id: id, to: spaceID) else { return }
-        pages.close(tabID: id)
-        openedFavorites.remove(id)
-        recentTabs.removeAll { $0 == id }
-        extensionsDidClose(tab)
-        extensionsDidOpen(moved)
-        persist()
-        if wasSelected { selectTab(next) }
-    }
-
     /// Giving back the shown title leaves the tab named by its page.
     func renameTab(_ id: UUID, to name: String) {
+        guard !isChangingStructure else { return }
         guard let tab = session.tabs.first(where: { $0.id == id }), tab.name != nil || name != tab.displayTitle else { return }
         session.rename(id: id, to: name)
         persist()
@@ -402,6 +407,7 @@ final class BrowserModel {
 
     /// The group asks for its name at once.
     func newGroup(with tabID: UUID) {
+        guard !isChangingStructure else { return }
         guard let spaceID = session.tabs.first(where: { $0.id == tabID })?.spaceID,
               let group = session.addGroup(named: String(localized: "New Group"), in: spaceID) else { return }
         moveTab(tabID, to: .list(group: group.id), before: nil)
@@ -409,16 +415,19 @@ final class BrowserModel {
     }
 
     func renameGroup(_ id: UUID, to name: String) {
+        guard !isChangingStructure else { return }
         session.renameGroup(id: id, to: name)
         persist()
     }
 
     func setGroupCollapsed(_ id: UUID, _ collapsed: Bool) {
+        guard !isChangingStructure else { return }
         session.setGroupCollapsed(id: id, collapsed)
         persist()
     }
 
     func removeGroup(_ id: UUID) {
+        guard !isChangingStructure else { return }
         session.removeGroup(id: id)
         persist()
     }
@@ -438,22 +447,6 @@ final class BrowserModel {
         pages.hibernationSettings = settings
     }
 
-    /// `emoji` is already validated by the profile editors.
-    func saveProfile(id: UUID?, name: String, color: ProfileColor, emoji: String?) -> Bool {
-        do {
-            if let id { try session.editProfile(id: id, name: name, color: color, emoji: emoji) }
-            else {
-                let created = try session.addProfile(name: name, color: color, emoji: emoji)
-                switchProfile(created.id)
-            }
-            persist()
-            return true
-        } catch {
-            present(.error(String(localized: "Choose a profile name between 1 and \(BrowserProfile.maximumNameLength) characters.")))
-            return false
-        }
-    }
-
     func setDecision(_ decision: SiteDecision?, for permission: SitePermission, at site: CurrentSite) {
         changeDecisions(at: site) { $0.setDecision(decision, for: permission, at: site.origin, profileID: site.profileID) }
     }
@@ -464,6 +457,7 @@ final class BrowserModel {
 
     /// A change to the site's blocking reloads its page, which then loads with or without the rules.
     private func changeDecisions(at site: CurrentSite, _ change: (inout BrowserSession) -> Void) {
+        guard !isChangingStructure else { return }
         let blocked = decision(for: .ads, at: site.origin, profileID: site.profileID)
         change(&session)
         persist()
@@ -472,11 +466,15 @@ final class BrowserModel {
 
     /// One prompt at a time: a new one replaces what is shown, refusing a pending extension request.
     func present(_ prompt: WindowPrompt) {
+        if isChangingStructure {
+            guard case .error = prompt else { return }
+        }
         dismissPrompt()
         window.prompt = prompt
     }
 
     func dismissPrompt() {
+        guard !isChangingStructure else { return }
         if case .extensionRequest(let request) = window.prompt { answer(request, accepted: false) }
         window.prompt = nil
     }

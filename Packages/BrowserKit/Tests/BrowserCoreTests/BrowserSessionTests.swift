@@ -16,36 +16,41 @@ import Testing
     #expect(session.tabs.count == 1)
 }
 
-// Failure modes 5 and 6 in docs/PROFILES.md.
-@Test func profileEmojiIsExactlyOneEmoji() {
+// Invalid emoji must not become a space icon (docs/SPACES.md).
+@Test func spaceEmojiIsExactlyOneEmoji() {
     for emoji in ["🚀", "❤️", "🇫🇷", "👩‍👩‍👧", "👍🏽", "1️⃣", " 🌿 "] {
-        #expect(BrowserProfile.emoji(from: emoji) == emoji.trimmingCharacters(in: .whitespaces), "\(emoji)")
+        #expect(BrowserSpace.emoji(from: emoji) == emoji.trimmingCharacters(in: .whitespaces), "\(emoji)")
     }
     for text in ["", " ", "a", "Work", "1", "#", "🚀🌿", "🚀a", "\u{1F3FD}", "\u{FE0F}", "❤"] {
-        #expect(BrowserProfile.emoji(from: text) == nil, "\(text)")
+        #expect(BrowserSpace.emoji(from: text) == nil, "\(text)")
     }
 }
 
-@Test func sessionsValidateProfileEmoji() throws {
+@Test func spacesValidateIdentityAndAppearance() throws {
     var session = BrowserSession(profileName: "Personal")
-    let work = try session.addProfile(name: "Work", color: .ocean, emoji: "🚀")
-    #expect(work.emoji == "🚀")
+    let profile = try session.addProfile(name: "Work")
+    let space = try session.addSpace(name: "Work", profileID: profile.id, color: .initial, emoji: "🚀")
     try session.validate()
-    try session.editProfile(id: work.id, name: "Work", color: .ocean, emoji: nil)
-    #expect(session.profiles.last?.emoji == nil)
-    #expect(throws: SessionError.invalidEmoji) { try session.editProfile(id: work.id, name: "Work", color: .ocean, emoji: "Work") }
-
-    var invalid = session.profiles
-    invalid[1].emoji = "ab"
-    let decoded = BrowserSession(profiles: invalid, spaces: session.spaces, tabs: session.tabs)
-    #expect(throws: SessionError.inconsistentData) { try decoded.validate() }
+    #expect(throws: SessionError.invalidEmoji) {
+        try session.editSpace(id: space.id, name: "Work", profileID: profile.id, color: .initial, emoji: "Work")
+    }
+    #expect(throws: SessionError.profileInUse) { try session.markProfileForRemoval(profile.id) }
+    let other = try session.addSpace(name: "Other", profileID: profile.id, color: .initial)
+    try session.removeSpace(space.id)
+    try session.removeSpace(other.id)
+    try session.markProfileForRemoval(profile.id)
+    try session.removeProfile(profile.id)
+    #expect(throws: SessionError.lastSpace) { try session.removeSpace(session.spaces[0].id) }
+    #expect(throws: SessionError.lastProfile) { try session.markProfileForRemoval(session.profiles[0].id) }
+    try session.validate()
 }
 
-// Failure modes 4 and 5 in docs/BROWSING.md › Favorites and open tabs.
+// Reject cross-space placement and references to foreign groups.
 @Test func tabsStayInTheirSpaceAndItsGroups() throws {
     var session = BrowserSession(profileName: "Personal")
     let personal = try #require(session.spaces.first)
-    try session.addProfile(name: "Work", color: .ocean)
+    let workProfile = try session.addProfile(name: "Work")
+    try session.addSpace(name: "Work", profileID: workProfile.id, color: .initial)
     let work = try #require(session.spaces.last)
     let url = try #require(URL(string: "https://example.com"))
     let opened = (session.open(url, in: personal.id), session.open(url, in: work.id), session.addGroup(named: "Reading", in: work.id))

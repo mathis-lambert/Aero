@@ -5,15 +5,16 @@ struct SettingsView: View {
     static let windowID = "settings"
     private static let historyLimit = 32
     let browser: BrowserModel
-    @State private var history: [SettingsSection] = [.general]
+    @State private var history: [SettingsRoute] = [.section(.general)]
     @State private var historyIndex = 0
 
-    private var section: SettingsSection { history[historyIndex] }
+    private var route: SettingsRoute { history[historyIndex] }
+    private var section: SettingsSection { route.section }
     private var prompt: WindowPrompt? { browser.window.prompt.flatMap { $0.isInSettings ? $0 : nil } }
 
     var body: some View {
         NavigationSplitView {
-            List(selection: Binding<SettingsSection?>(get: { section }, set: { if let section = $0 { navigate(to: section) } })) {
+            List(selection: Binding<SettingsSection?>(get: { section }, set: { if let section = $0 { navigate(to: .section(section)) } })) {
                 ForEach(SettingsSection.allCases) { section in
                     Label(section.title, systemImage: section.symbol)
                         .tag(section)
@@ -26,17 +27,24 @@ struct SettingsView: View {
             .accessibilityIdentifier("settings.sidebar")
         } detail: {
             Group {
-                switch section {
-                case .general: GeneralSettingsView(browser: browser)
-                case .tabs: PerformanceSettingsView(browser: browser)
-                case .profiles: ProfilesSettingsView(browser: browser)
-                case .extensions: ExtensionsSettingsView(browser: browser)
-                case .shortcuts: ShortcutSettingsView(shortcuts: browser.shortcuts)
+                switch route {
+                case .profile(let id): ProfileSettingsDetail(browser: browser, profileID: id, navigate: navigate)
+                case .space(let id): SpaceSettingsDetail(browser: browser, spaceID: id)
+                case .section(let section):
+                    switch section {
+                    case .general: GeneralSettingsView(browser: browser)
+                    case .tabs: PerformanceSettingsView(browser: browser)
+                    case .profiles: ProfilesSettingsView(browser: browser, navigate: navigate)
+                    case .spaces: SpacesSettingsView(browser: browser, navigate: navigate)
+                    case .extensions: ExtensionsSettingsView(browser: browser)
+                    case .shortcuts: ShortcutSettingsView(shortcuts: browser.shortcuts)
+                    }
                 }
             }
+            .id(route)
             .formStyle(.grouped)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle(section.title)
+            .navigationTitle(title)
             .toolbar {
                 ToolbarItemGroup(placement: .navigation) {
                     Button("Previous settings page", systemImage: "chevron.backward") { historyIndex -= 1 }
@@ -48,6 +56,11 @@ struct SettingsView: View {
                 }
             }
         }
+        .onAppear { navigate(to: browser.window.settingsRoute) }
+        .onChange(of: browser.window.settingsRequest) { navigate(to: browser.window.settingsRoute) }
+        .onChange(of: browser.session.spaces.map(\.id)) { pruneHistory() }
+        .onChange(of: browser.profiles.map(\.id)) { pruneHistory() }
+        .onChange(of: browser.window.settingsRoute) { _, route in navigate(to: route) }
         .navigationSplitViewStyle(.balanced)
         .frame(width: 960, height: 620)
         .windowMinimizeBehavior(.disabled)
@@ -56,34 +69,37 @@ struct SettingsView: View {
         .prompt(prompt, onCancel: browser.dismissPrompt) { WindowPromptView(browser: browser, prompt: $0) }
     }
 
-    private func navigate(to section: SettingsSection) {
-        guard section != self.section else { return }
+    private var title: String {
+        switch route {
+        case .section(let section): section.title
+        case .profile(let id): browser.profiles.first { $0.id == id }?.name ?? String(localized: "Profiles")
+        case .space(let id): browser.session.spaces.first { $0.id == id }?.name ?? String(localized: "Spaces")
+        }
+    }
+
+    /// Deleted records must not leave empty detail pages in Back/Forward history.
+    private func pruneHistory() {
+        let current = route
+        let precedingCount = history.prefix(historyIndex + 1).filter(isValid).count
+        history = history.filter(isValid)
+        if history.isEmpty { history = [.section(current.section)] }
+        historyIndex = max(0, precedingCount - 1)
+        if !isValid(current) { navigate(to: .section(current.section)) }
+    }
+
+    private func isValid(_ route: SettingsRoute) -> Bool {
+        switch route {
+        case .section: true
+        case .profile(let id): browser.profiles.contains { $0.id == id }
+        case .space(let id): browser.session.spaces.contains { $0.id == id }
+        }
+    }
+
+    private func navigate(to route: SettingsRoute) {
+        guard route != self.route else { return }
         history = Array(history.prefix(historyIndex + 1))
-        history.append(section)
+        history.append(route)
         if history.count > Self.historyLimit { history.removeFirst() }
         historyIndex = history.count - 1
-    }
-}
-
-private enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, tabs, profiles, extensions, shortcuts
-    var id: Self { self }
-    var title: String {
-        switch self {
-        case .general: String(localized: "General")
-        case .tabs: String(localized: "Tabs")
-        case .profiles: String(localized: "Profiles")
-        case .extensions: String(localized: "Extensions")
-        case .shortcuts: String(localized: "Shortcuts")
-        }
-    }
-    var symbol: String {
-        switch self {
-        case .general: "gearshape"
-        case .tabs: "square.on.square"
-        case .profiles: "person.crop.circle"
-        case .extensions: "puzzlepiece.extension"
-        case .shortcuts: "keyboard"
-        }
     }
 }

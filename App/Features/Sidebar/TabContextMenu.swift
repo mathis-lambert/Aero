@@ -34,11 +34,11 @@ struct TabContextMenu: View {
                 }
             }
         }
-        let profiles = browser.session.profiles.filter { $0.id != browser.profileID(of: tab) }
-        if !profiles.isEmpty {
-            Menu("Move to Profile", systemImage: "person") {
-                ForEach(profiles) { profile in
-                    Button { browser.moveTab(tab.id, toProfile: profile.id) } label: { Text(verbatim: profile.name) }
+        let spaces = browser.session.spaces.filter { $0.id != tab.spaceID }
+        if !spaces.isEmpty {
+            Menu("Move to Space", systemImage: "square.stack") {
+                ForEach(spaces) { space in
+                    Button { browser.moveTab(tab.id, toSpace: space.id) } label: { Text(verbatim: space.name) }
                 }
             }
         }

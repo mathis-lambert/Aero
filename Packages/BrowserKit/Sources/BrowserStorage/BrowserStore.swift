@@ -125,9 +125,10 @@ public actor BrowserStore {
     private static func read(_ db: SQLiteDatabase) throws -> BrowserSession? {
         let initialized = try db.query("SELECT initialized FROM state WHERE id = 1") { $0.integer(0) }
         guard initialized == [0] || initialized == [1] else { throw StorageError.invalidData }
-        var profiles = try db.query("SELECT id, name, color, emoji FROM profiles ORDER BY position") { row -> BrowserProfile in
-            guard let color = ProfileColor(rawValue: row.text(2)) else { throw StorageError.invalidData }
-            return try BrowserProfile(id: row.uuid(0), name: row.text(1), color: color, emoji: row.optionalText(3))
+        var profiles = try db.query("SELECT id, name, removing FROM profiles ORDER BY position") { row -> BrowserProfile in
+            var profile = try BrowserProfile(id: row.uuid(0), name: row.text(1))
+            profile.isRemoving = row.integer(2) != 0
+            return profile
         }
         if initialized == [0] {
             guard profiles.isEmpty else { throw StorageError.invalidData }
@@ -156,7 +157,10 @@ public actor BrowserStore {
                 return record
             }
         }
-        var spaces = try db.query("SELECT id, profile_id FROM spaces ORDER BY position") { try BrowserSpace(id: $0.uuid(0), profileID: $0.uuid(1)) }
+        var spaces = try db.query("SELECT id, profile_id, name, color, emoji FROM spaces ORDER BY position") { row -> BrowserSpace in
+            guard let color = SpaceColor(hex: row.text(3)) else { throw StorageError.invalidData }
+            return try BrowserSpace(id: row.uuid(0), profileID: row.uuid(1), name: row.text(2), color: color, emoji: row.optionalText(4))
+        }
         for index in spaces.indices {
             spaces[index].groups = try db.query("SELECT id, name, collapsed FROM tab_groups WHERE space_id = ? ORDER BY position", [.text(spaces[index].id.uuidString)]) {
                 try TabGroup(id: $0.uuid(0), name: $0.text(1), isCollapsed: $0.integer(2) != 0)
@@ -200,8 +204,8 @@ public actor BrowserStore {
             let old = oldProfiles[profile.id]
             let id = SQLiteDatabase.Value.text(profile.id.uuidString)
             if old != profile || previous?.profiles.indices.contains(position) != true || previous?.profiles[position].id != profile.id {
-                try db.run("INSERT INTO profiles (id,name,color,emoji,position) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,color=excluded.color,emoji=excluded.emoji,position=excluded.position",
-                           [id, .text(profile.name), .text(profile.color.rawValue), text(profile.emoji), .integer(Int64(position))])
+                try db.run("INSERT INTO profiles (id,name,removing,position) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,removing=excluded.removing,position=excluded.position",
+                           [id, .text(profile.name), .integer(profile.isRemoving ? 1 : 0), .integer(Int64(position))])
             }
             if old?.sitePermissions != profile.sitePermissions {
                 try db.run("DELETE FROM site_permissions WHERE profile_id = ?", [id])
@@ -225,7 +229,7 @@ public actor BrowserStore {
         let oldSpaces = Dictionary(uniqueKeysWithValues: (previous?.spaces ?? []).map { ($0.id, $0) })
         for (position, space) in session.spaces.enumerated() {
             if oldSpaces[space.id] != space || previous?.spaces.indices.contains(position) != true || previous?.spaces[position].id != space.id {
-                try db.run("INSERT INTO spaces (id,profile_id,position) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET position=excluded.position", [.text(space.id.uuidString), .text(space.profileID.uuidString), .integer(Int64(position))])
+                try db.run("INSERT INTO spaces (id,profile_id,name,color,emoji,position) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET profile_id=excluded.profile_id,name=excluded.name,color=excluded.color,emoji=excluded.emoji,position=excluded.position", [.text(space.id.uuidString), .text(space.profileID.uuidString), .text(space.name), .text(space.color.hex), text(space.emoji), .integer(Int64(position))])
                 for (index, group) in space.groups.enumerated() {
                     try db.run("INSERT INTO tab_groups (id,space_id,name,collapsed,position) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,collapsed=excluded.collapsed,position=excluded.position",
                                [.text(group.id.uuidString), .text(space.id.uuidString), .text(group.name), .integer(group.isCollapsed ? 1 : 0), .integer(Int64(index))])

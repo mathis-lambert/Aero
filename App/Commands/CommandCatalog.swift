@@ -31,9 +31,9 @@ extension BrowserCommand {
         case .closeFollowingTabs: String(localized: "Close following tabs")
         case .newGroup: String(localized: "New group with tab")
         case .moveToGroup: String(localized: "Move tab to group…")
-        case .moveToProfile: String(localized: "Move tab to profile…")
-        case .nextProfile: String(localized: "Next profile")
-        case .previousProfile: String(localized: "Previous profile")
+        case .moveToSpace: String(localized: "Move tab to space…")
+        case .nextSpace: String(localized: "Next space")
+        case .previousSpace: String(localized: "Previous space")
         case .newTab: String(localized: "New tab")
         case .openLocation: String(localized: "Open location")
         case .commandPalette: String(localized: "Commands")
@@ -43,6 +43,8 @@ extension BrowserCommand {
         case .closeTab: String(localized: "Close tab")
         case .reopenTab: String(localized: "Reopen closed tab")
         case .toggleSidebar: String(localized: "Toggle sidebar")
+        case .newProfile: String(localized: "New profile")
+        case .newSpace: String(localized: "New space")
         case .profiles: String(localized: "Manage profiles")
         case .showHistory: String(localized: "Show all history")
         case .findInPage: String(localized: "Find…")
@@ -58,7 +60,7 @@ extension BrowserCommand {
 
     var summary: String {
         switch self {
-        case .newTab: String(localized: "Open a new tab in the current profile.")
+        case .newTab: String(localized: "Open a new tab in the current space.")
         case .openLocation: String(localized: "Focus the current address to enter a URL or search.")
         case .commandPalette: String(localized: "Search tabs, history, and browser commands.")
         case .back: String(localized: "Return to the previous page in this tab.")
@@ -69,7 +71,9 @@ extension BrowserCommand {
         case .closeTab: String(localized: "Close the current tab. Favorites remain available in the sidebar.")
         case .reopenTab: String(localized: "Restore the most recently closed tab.")
         case .toggleSidebar: String(localized: "Show or hide the browser sidebar.")
-        case .profiles: String(localized: "Edit the current browsing profile.")
+        case .newProfile: String(localized: "Create a separate browsing identity.")
+        case .newSpace: String(localized: "Create a space for your tabs.")
+        case .profiles: String(localized: "Manage browsing identities and their spaces.")
         case .showHistory: String(localized: "Open browsing history for the current profile.")
         case .findInPage: String(localized: "Find text on the current page.")
         case .findNext: String(localized: "Select the next matching text on the page.")
@@ -89,14 +93,14 @@ extension BrowserCommand {
         case .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8: String(localized: "Select this position in sidebar order, with favorites first.")
         case .lastTab: String(localized: "Select the last tab in sidebar order.")
         case .toggleFavorite: String(localized: "Add the current tab to favorites or return it to open tabs.")
-        case .duplicateTab: String(localized: "Open a copy of the current tab in this profile.")
+        case .duplicateTab: String(localized: "Open a copy of the current tab in this space.")
         case .renameTab: String(localized: "Give the current tab a custom name.")
-        case .closeOtherTabs: String(localized: "Close the other tabs in this profile. Favorite records are kept.")
+        case .closeOtherTabs: String(localized: "Close the other tabs in this space. Favorite records are kept.")
         case .closeFollowingTabs: String(localized: "Close tabs after the current tab in sidebar order. Favorite records are kept.")
         case .newGroup: String(localized: "Create a group containing the current tab and choose its name.")
         case .moveToGroup: String(localized: "Choose a group for the current tab.")
-        case .moveToProfile: String(localized: "Move the current tab to another browsing profile.")
-        case .nextProfile, .previousProfile: String(localized: "Switch browsing profiles in their listed order.")
+        case .moveToSpace: String(localized: "Move the current tab to another space.")
+        case .nextSpace, .previousSpace: String(localized: "Switch spaces in their listed order.")
         }
     }
 
@@ -129,9 +133,9 @@ extension BrowserCommand {
         case .closeFollowingTabs: "xmark"
         case .newGroup: "folder.badge.plus"
         case .moveToGroup: "folder"
-        case .moveToProfile: "person"
-        case .nextProfile: "person"
-        case .previousProfile: "person"
+        case .moveToSpace: "square.stack"
+        case .nextSpace: "chevron.forward"
+        case .previousSpace: "chevron.backward"
         case .newTab: "plus"
         case .openLocation: "magnifyingglass"
         case .commandPalette: "command"
@@ -141,6 +145,8 @@ extension BrowserCommand {
         case .closeTab: "xmark"
         case .reopenTab: "arrow.uturn.backward"
         case .toggleSidebar: "sidebar.left"
+        case .newProfile: "person.badge.plus"
+        case .newSpace: "plus.square"
         case .profiles: "person.crop.circle"
         case .showHistory: "clock"
         case .findInPage: "text.magnifyingglass"
@@ -159,13 +165,14 @@ extension BrowserCommand {
 
 extension BrowserCommand {
     enum Category: String, CaseIterable, Identifiable {
-        case navigation, tabs, page, profiles
+        case navigation, tabs, page, spaces, profiles
         var id: Self { self }
         var title: String {
             switch self {
             case .navigation: String(localized: "Navigation")
             case .tabs: String(localized: "Tabs")
             case .page: String(localized: "Page")
+            case .spaces: String(localized: "Spaces")
             case .profiles: String(localized: "Profiles")
             }
         }
@@ -175,8 +182,9 @@ extension BrowserCommand {
         switch self {
         case .newTab, .closeTab, .reopenTab, .nextTab, .previousTab, .recentTab, .previousRecentTab,
              .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab,
-             .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToProfile: .tabs
-        case .profiles, .nextProfile, .previousProfile: .profiles
+             .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace: .tabs
+        case .profiles, .newProfile: .profiles
+        case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
              .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: .page
         default: .navigation

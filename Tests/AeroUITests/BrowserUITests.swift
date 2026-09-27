@@ -62,7 +62,7 @@ final class BrowserUITests: BrowserE2ETestCase {
     func testSidebarNavigationAndWindowControls() {
         let window = app.windows["aero.main"]
         let sidebarToggle = app.buttons["sidebar.toggle"]
-        let profile = app.buttons.matching(identifier: "sidebar.profile").firstMatch
+        let profile = app.buttons.matching(identifier: "sidebar.space").firstMatch
         let address = app.buttons["sidebar.location"]
         let navigation = ["sidebar.back", "sidebar.forward", "sidebar.reload"].map { app.buttons[$0] }
         let lights = ["window.close", "window.minimize", "window.fullScreen"]

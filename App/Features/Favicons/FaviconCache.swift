@@ -40,10 +40,24 @@ final class FaviconCache {
     private var entries: [FaviconKey: Favicon] = [:]
     /// Least recently shown first.
     private var recent: [FaviconKey] = []
+    private var refreshTasks: [FaviconKey: Task<Void, Never>] = [:]
     private var refreshed: Set<FaviconKey> = []
 
     init(store: FaviconStore) {
         self.store = store
+    }
+
+    isolated deinit { refreshTasks.values.forEach { $0.cancel() } }
+
+    func removeProfile(_ id: UUID) async throws {
+        let pending = refreshTasks.filter { $0.key.profileID == id }.map(\.value)
+        pending.forEach { $0.cancel() }
+        // Drain any cache write already submitted before removing the profile directory.
+        for task in pending { await task.value }
+        entries = entries.filter { $0.key.profileID != id }
+        recent.removeAll { $0.profileID == id }
+        refreshed = refreshed.filter { $0.profileID != id }
+        try await store.removeProfile(id)
     }
 
     /// Looking an icon up starts reading it from disk the first time.
@@ -66,10 +80,12 @@ final class FaviconCache {
     func refresh(_ key: FaviconKey, declaredIcons links: [FaviconLink], at url: URL) {
         guard refreshed.insert(key).inserted else { return }
         let candidates = FaviconCandidate.ranked(from: links, pageURL: url)
-        Task {
-            guard let data = await fetcher.icon(from: candidates), let image = NSImage(data: data) else { return }
+        refreshTasks[key] = Task { [weak self, fetcher, store] in
+            defer { self?.refreshTasks[key] = nil }
+            guard let data = await fetcher.icon(from: candidates), let image = NSImage(data: data), !Task.isCancelled else { return }
             let color = await FaviconColor.extract(from: data)
-            favicon(for: key).setImage(image, color: color)
+            guard !Task.isCancelled else { return }
+            self?.favicon(for: key).setImage(image, color: color)
             // Best effort: an icon that cannot be written is still shown and fetched again next launch.
             try? await store.save(data, host: key.host, profileID: key.profileID)
         }

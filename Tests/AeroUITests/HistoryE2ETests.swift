@@ -2,7 +2,7 @@ import SQLite3
 import XCTest
 
 /// The History page in a tab: recording, search, opening, deletion, clearing and persistence.
-/// See docs/HISTORY.md.
+/// See docs/STORAGE.md.
 @MainActor
 final class HistoryE2ETests: BrowserE2ETestCase {
     private static let historyTitle = "History"
@@ -35,18 +35,15 @@ final class HistoryE2ETests: BrowserE2ETestCase {
         showHistory()
         search.typeText("alpine")
         XCTAssertTrue(poll { self.labels(of: "history.row") == ["Alpine Lake"] })
-        app.buttons["sidebar.addProfile"].click()
-        app.textFields["profiles.name"].click()
-        app.typeText("Work")
-        app.buttons["profiles.save"].click()
+        createSpace("Work", newProfile: "Work")
         open("history-city.html", expecting: "Été à Lyon fixture")
         showHistory()
         XCTAssertTrue(poll { self.labels(of: "history.row") == ["Été à Lyon"] })
         search.typeText("lyon")
-        for name in ["Personal", "Work"] {
-            app.buttons.matching(identifier: "sidebar.profile").matching(NSPredicate(format: "label == %@", name)).firstMatch.click()
+        for name in ["Main", "Work"] {
+            app.buttons.matching(identifier: "sidebar.space").matching(NSPredicate(format: "label == %@", name)).firstMatch.click()
             XCTAssertEqual(search.value as? String, "", "The profile does not inherit another profile's search state")
-            let expected = name == "Personal" ? "Alpine Lake" : "Été à Lyon"
+            let expected = name == "Main" ? "Alpine Lake" : "Été à Lyon"
             XCTAssertTrue(poll { self.labels(of: "history.row") == [expected] })
         }
         attachScreenshot("history-profile-state-isolated")

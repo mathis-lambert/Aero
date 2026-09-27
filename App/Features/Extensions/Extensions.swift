@@ -42,23 +42,22 @@ extension BrowserModel: WebExtensionHost {
 
     /// Reconcile durable removal intents before loading enabled extensions.
     private func restoreExtensions() async {
-        for profile in session.profiles {
-            let owner = pages.extensions(for: profile.id)
+        for profile in session.profiles where !profile.isRemoving {
             for record in profile.extensions {
                 if record.isRemoving { await finishRemoving(record, inProfile: profile.id) }
                 else if record.isEnabled { await load(record, inProfile: profile.id) }
             }
             if let recoveryPackages {
                 let retained = Set((session.profiles.first { $0.id == profile.id }?.extensions ?? []).map(\.packageID)).union(recoveryPackages)
-                do { try await owner.removeUnusedPackages(keeping: retained) }
+                do { try await pages.removeUnusedExtensionPackages(inProfile: profile.id, keeping: retained) }
                 catch { Self.logger.error("Could not clean unused extension packages") }
             }
         }
         extensionsReady = true
     }
 
-    func installFromWebStore(_ identifier: String, inSettings: Bool = false) async {
-        guard let profileID = window.selectedProfileID, beginExtensionOperation(identifier, profileID: profileID) else { return }
+    func installFromWebStore(_ identifier: String, inProfile profileID: UUID, inSettings: Bool = false) async {
+        guard beginExtensionOperation(identifier, profileID: profileID) else { return }
         defer { endExtensionOperation(identifier, profileID: profileID) }
         do {
             let package = try await WebStore.package(identifier)
@@ -77,12 +76,14 @@ extension BrowserModel: WebExtensionHost {
     }
 
     func page(_ tabID: UUID, didPressWebStoreButtonAt url: URL) async {
-        guard let identifier = WebStore.extensionID(on: url) else { return }
-        await installFromWebStore(identifier)
+        guard let identifier = WebStore.extensionID(on: url), let tab = tab(tabID),
+              let profileID = profileID(of: tab) else { return }
+        await installFromWebStore(identifier, inProfile: profileID)
     }
 
-    func installFromFolder(_ folder: URL) async {
-        guard extensionsReady, let profileID = window.selectedProfileID else { return }
+    func installFromFolder(_ folder: URL, inProfile profileID: UUID) async {
+        guard beginExtensionOperation("folder-import", profileID: profileID) else { return }
+        defer { endExtensionOperation("folder-import", profileID: profileID) }
         do {
             let candidate = try await pages.extensions(for: profileID).prepare(folder: folder)
             guard beginExtensionOperation(candidate.identifier, profileID: profileID) else {
@@ -213,7 +214,7 @@ extension BrowserModel: WebExtensionHost {
     }
 
     private func beginExtensionOperation(_ id: String, profileID: UUID, allowsRemovalRetry: Bool = false) -> Bool {
-        guard extensionsReady else { return false }
+        guard extensionsReady, !isChangingStructure, session.profiles.contains(where: { $0.id == profileID && !$0.isRemoving }) else { return false }
         let removing = session.profiles.first { $0.id == profileID }?.extensions.contains { $0.id == id && $0.isRemoving } == true
         guard !removing || allowsRemovalRetry else { return false }
         return extensionOperations.insert(profileID.uuidString + ":" + id).inserted
@@ -262,21 +263,24 @@ extension BrowserModel: WebExtensionHost {
 
     // MARK: - WebExtensionHost
 
-    func tabIDs(inProfile profileID: UUID) -> [UUID] { space(of: profileID).map(tabs(in:))?.map(\.id) ?? [] }
+    func tabIDs(inProfile profileID: UUID) -> [UUID] {
+        let spaces = Set(session.spaces.filter { $0.profileID == profileID }.map(\.id))
+        return session.tabs.filter { spaces.contains($0.spaceID) }.map(\.id)
+    }
 
-    func selectedTabID(inProfile profileID: UUID) -> UUID? { window.selectedProfileID == profileID ? window.selectedTabID : nil }
+    func selectedTabID(inProfile profileID: UUID) -> UUID? { profile?.id == profileID ? window.selectedTabID : nil }
 
     func tab(_ tabID: UUID) -> BrowserTab? { session.tabs.first { $0.id == tabID } }
 
     func openTab(_ url: URL, inProfile profileID: UUID, selected: Bool) -> UUID? {
-        guard let space = space(of: profileID), let tab = addTab(url, in: space.id) else { return nil }
-        if selected, window.selectedProfileID == profileID { selectTab(tab.id) }
+        guard !isChangingStructure, let space = destinationSpace(for: profileID), let tab = addTab(url, in: space.id) else { return nil }
+        if selected, profile?.id == profileID { selectTab(tab.id) }
         return tab.id
     }
 
     func activate(tabID: UUID) {
-        guard let tab = tab(tabID), tab.spaceID == space?.id else { return }
-        selectTab(tabID)
+        guard let tab = tab(tabID), !isChangingStructure else { return }
+        showTab(tab)
     }
 
     func close(tabID: UUID) { closeTab(tabID) }

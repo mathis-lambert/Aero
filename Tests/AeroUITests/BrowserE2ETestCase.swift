@@ -114,3 +114,24 @@ class BrowserE2ETestCase: XCTestCase {
         add(attachment)
     }
 }
+
+extension BrowserE2ETestCase {
+    func space(_ name: String) -> XCUIElement {
+        app.buttons.matching(identifier: "sidebar.space").matching(NSPredicate(format: "label == %@", name)).firstMatch
+    }
+
+    func createSpace(_ name: String, newProfile: String? = nil) {
+        app.buttons["sidebar.addSpace"].click()
+        let field = app.textFields["spaces.name"]
+        XCTAssertTrue(field.waitForExistence(timeout: Self.renderTimeout))
+        field.click()
+        field.typeText(name)
+        if let newProfile {
+            app.buttons["spaces.newProfile"].click()
+            app.textFields["spaces.profileName"].click()
+            app.typeText(newProfile)
+        }
+        app.buttons["spaces.save"].click()
+        XCTAssertTrue(poll { self.space(name).isSelected && !self.app.buttons["spaces.save"].exists && self.space(name).isEnabled })
+    }
+}

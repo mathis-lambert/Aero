@@ -18,7 +18,7 @@ struct AeroApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1180, height: 780)
         .windowResizability(.contentMinSize)
-        .commands { BrowserMenuCommands(quit: browser.requestQuit) }
+        .commands { BrowserMenuCommands(application: browser, quit: browser.requestQuit) }
 
         Window("Settings", id: SettingsView.windowID) {
             SettingsView(browser: browser)

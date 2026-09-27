@@ -1,3 +1,4 @@
+import AppKit
 import BrowserCore
 import SwiftUI
 
@@ -128,38 +129,45 @@ struct Hairline: View {
     var body: some View { Rectangle().fill(palette.line).frame(height: 1) }
 }
 
-extension ProfileColor {
-    var tint: Color {
-        switch self {
-        case .terracotta: Color(red: 0.70, green: 0.32, blue: 0.21)
-        case .moss: Color(red: 0.31, green: 0.46, blue: 0.34)
-        case .ocean: Color(red: 0.24, green: 0.43, blue: 0.63)
-        case .plum: Color(red: 0.54, green: 0.35, blue: 0.53)
-        case .graphite: Color(red: 0.43, green: 0.46, blue: 0.47)
-        }
-    }
+extension SpaceColor {
+    /// Offered before a custom color, in order; the first is the initial color.
+    static let presets: [(color: SpaceColor, name: LocalizedStringResource)] = [
+        (.initial, "Terracotta"),
+        (SpaceColor(0xB37D21), "Amber"),
+        (SpaceColor(0x4F7557), "Moss"),
+        (SpaceColor(0x26787A), "Teal"),
+        (SpaceColor(0x3D6EA1), "Ocean"),
+        (SpaceColor(0x5C5CA8), "Indigo"),
+        (SpaceColor(0x8A5987), "Plum"),
+        (SpaceColor(0xB04D6B), "Rose"),
+        (SpaceColor(0x6E7578), "Graphite"),
+    ]
+
+    var isPreset: Bool { Self.presets.contains { $0.color == self } }
+
+    var name: LocalizedStringResource { Self.presets.first { $0.color == self }?.name ?? "Custom color" }
+
+    var tint: Color { Color(nsColor) }
+
     /// Brighter than the tint, which turns dull as a light on the dark canvas.
     var luminous: Color {
-        switch self {
-        case .terracotta: Color(red: 1, green: 0.48, blue: 0.32)
-        case .moss: Color(red: 0.45, green: 0.82, blue: 0.56)
-        case .ocean: Color(red: 0.38, green: 0.66, blue: 1)
-        case .plum: Color(red: 0.82, green: 0.5, blue: 0.9)
-        case .graphite: Color(red: 0.68, green: 0.73, blue: 0.76)
-        }
+        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+        nsColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+        return Color(hue: hue, saturation: saturation, brightness: min(1, brightness + 0.34))
     }
 
     /// The accent of light effects: luminous on the dark canvas, the tint on the light one.
     func light(in scheme: ColorScheme) -> Color { scheme == .dark ? luminous : tint }
 
-    var label: LocalizedStringKey {
-        switch self {
-        case .terracotta: "Terracotta"
-        case .moss: "Moss"
-        case .ocean: "Ocean"
-        case .plum: "Plum"
-        case .graphite: "Graphite"
-        }
+    /// The nearest color in sRGB, which is how a space color is stored.
+    init?(_ color: NSColor) {
+        guard let rgb = color.usingColorSpace(.sRGB) else { return nil }
+        func byte(_ component: CGFloat) -> UInt8 { UInt8((min(max(component, 0), 1) * 255).rounded()) }
+        self.init(red: byte(rgb.redComponent), green: byte(rgb.greenComponent), blue: byte(rgb.blueComponent))
+    }
+
+    var nsColor: NSColor {
+        NSColor(srgbRed: CGFloat(red) / 255, green: CGFloat(green) / 255, blue: CGFloat(blue) / 255, alpha: 1)
     }
 }
 
@@ -232,20 +240,5 @@ private struct PointerFeedback<Label: View>: View {
             .opacity(isEnabled ? 1 : 0.3)
             .onHover { hovered = $0 }
             .animation(reduceMotion ? nil : BrowserDesign.hover, value: hovered)
-    }
-}
-
-/// The profile's emoji, or its initial, on its color.
-struct ProfileBadge: View {
-    private let size: CGFloat = 30
-    let profile: BrowserProfile
-
-    var body: some View {
-        Text(verbatim: profile.emoji ?? String(profile.name.prefix(1)).uppercased())
-            .font(.system(size: size * (profile.emoji == nil ? 0.43 : 0.5), weight: .semibold, design: .rounded))
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(profile.color.tint, in: RoundedRectangle(cornerRadius: size * 0.3))
-            .accessibilityHidden(true)
     }
 }

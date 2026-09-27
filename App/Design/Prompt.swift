@@ -9,11 +9,24 @@ struct Prompt<Content: View, Actions: View>: View {
     let title: Text
     var message: Text?
     var icon: Image?
+    var usesSheetBackground = false
     @ViewBuilder var content: Content
     @ViewBuilder var actions: Actions
     @Environment(\.palette) private var palette
 
     var body: some View {
+        Group {
+            if usesSheetBackground { layout }
+            else {
+                layout
+                    .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.window)
+                    .panelShadow()
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var layout: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let icon { icon.resizable().frame(width: 56, height: 56).accessibilityHidden(true) }
             VStack(alignment: .leading, spacing: 6) {
@@ -29,9 +42,6 @@ struct Prompt<Content: View, Actions: View>: View {
         .padding(24)
         .frame(minWidth: Self.minimumWidth, alignment: .leading)
         .fixedSize()
-        .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.window)
-        .panelShadow()
-        .accessibilityElement(children: .contain)
     }
 }
 

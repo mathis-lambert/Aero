@@ -2,13 +2,13 @@ import AppKit
 import BrowserCore
 import SwiftUI
 
-/// One profile's tabs in the sidebar: its favorites (the grid, its groups and loose rows), a line,
+/// One space's tabs in the sidebar: its favorites (the grid, its groups and loose rows), a line,
 /// then New Tab and its open tabs. A tab dragged over the page is shown where it would land.
-/// Pages of other profiles are records only; choosing a tab there switches to its profile.
+/// Neighboring sidebars render records without creating website pages.
 /// See docs/BROWSING.md › Favorites and open tabs.
-struct ProfilePage: View {
+struct SpacePage: View, @MainActor Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.browser === rhs.browser && lhs.space == rhs.space }
     let browser: BrowserModel
-    let profile: BrowserProfile
     let space: BrowserSpace
     @Namespace private var selection
     @State private var drop: TabDrop?
@@ -17,11 +17,26 @@ struct ProfilePage: View {
 
     var body: some View {
         let tabs = SidebarTabs(session: browser.session, space: space, drop: drop)
-        let isCurrent = profile.id == browser.window.selectedProfileID
+        let isCurrent = space.id == browser.window.selectedSpaceID
         let selectedTabID = isCurrent ? browser.window.selectedTabID : nil
         let lifted = drop?.tabID
         ScrollView {
             VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
+                HStack(alignment: .firstTextBaseline) {
+                    Button { browser.showSettings(.space(space.id)) } label: {
+                        HStack(spacing: 8) {
+                            SpaceIcon(space: space, size: 13)
+                            Text(verbatim: space.name).font(.headline).lineLimit(1)
+                        }
+                    }.buttonStyle(.plain)
+                        .layoutPriority(1)
+                    Spacer(minLength: 8)
+                    Text(verbatim: browser.session.profiles.first { $0.id == space.profileID }?.name ?? "")
+                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+                .padding(.horizontal, BrowserDesign.rowInset)
+                .padding(.bottom, 8)
+
                 FavoritesGrid(browser: browser, tabs: tabs.grid, selectedTabID: selectedTabID, lifted: lifted, layout: layout)
                     .dropFrame(.section(.grid), in: layout)
 
@@ -52,8 +67,8 @@ struct ProfilePage: View {
             .padding(.horizontal, BrowserDesign.rowInset)
             .padding(.top, 12)
         }
-        .tint(profile.color.tint)
-        .accentColor(profile.color.tint)
+        .tint(space.color.tint)
+        .accentColor(space.color.tint)
         .scrollIndicators(.hidden)
         .coordinateSpace(.named(TabDropLayout.space))
         .overlay(SidebarDropTarget(browser: browser, space: space, layout: layout,
@@ -84,7 +99,7 @@ struct ProfilePage: View {
 
     private func newTabButton(selected: Bool) -> some View {
         Button {
-            browser.switchProfile(profile.id)
+            browser.switchSpace(space.id)
             browser.perform(.newTab)
         } label: {
             HStack(spacing: BrowserDesign.rowInset) {

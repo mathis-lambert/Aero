@@ -16,7 +16,7 @@ struct ControlBarPresentation {
     let initialText: String
 }
 
-/// One row of results. See docs/CONTROL_BAR.md › Behavior for their order.
+/// One row of results. See docs/BROWSING.md › Control bar for their order.
 enum ControlBarItem {
     case open(URL)
     case search(String)
@@ -137,7 +137,7 @@ final class ControlBarModel {
 
     /// Asks for extra entries so that pages already open can be left out.
     private func visits(matching query: String) async -> [HistoryEntry] {
-        guard let profileID = browser.window.selectedProfileID else { return [] }
+        guard let profileID = browser.profile?.id else { return [] }
         let limit = Self.maximumHistory + Self.maximumTabs
         // Best effort: an unavailable history only leaves its rows out.
         return (try? await browser.history.entries(profileID: profileID, matching: query, limit: limit)) ?? []

@@ -1,8 +1,8 @@
 import BrowserCore
 import SwiftUI
 
-/// Navigation and the address on top, one page of tabs per profile, and a footer with the downloads
-/// and the profiles. See docs/PROFILES.md.
+/// Navigation and the address on top, one page of tabs per space, and a footer with the downloads
+/// and the spaces. See docs/SPACES.md.
 struct SidebarView: View {
     private static let footerHeight: CGFloat = 44
 
@@ -21,22 +21,22 @@ struct SidebarView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 4)
 
-            ProfilePager(browser: browser)
+            SpacePager(browser: browser)
             footer
         }
-        .disabled(!browser.isReady)
+        .disabled(!browser.isReady || browser.isChangingStructure)
     }
 
     private var footer: some View {
         HStack(spacing: 0) {
             DownloadsButton(downloads: browser.downloads, presented: Bindable(browser.window).downloadsPresented, shortcut: browser.shortcuts.shortcut(for: .showDownloads)) { browser.perform(.showDownloads) }
             Spacer(minLength: 4)
-            ProfileBar(browser: browser)
+            SpaceBar(browser: browser)
             Spacer(minLength: 4)
-            IconButton(symbol: "plus", label: "New profile", size: BrowserDesign.navigationButtonSize) {
-                browser.present(.profile(.create))
+            IconButton(symbol: "plus", label: "New space", size: BrowserDesign.navigationButtonSize) {
+                browser.present(.space(nil))
             }
-            .accessibilityIdentifier("sidebar.addProfile")
+            .accessibilityIdentifier("sidebar.addSpace")
         }
         .padding(.horizontal, BrowserDesign.rowInset)
         .frame(height: Self.footerHeight)

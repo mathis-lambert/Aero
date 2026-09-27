@@ -32,10 +32,7 @@ final class ExtensionsE2ETests: BrowserE2ETestCase {
         tabRows.firstMatch.click()
         XCTAssertTrue(page("Extension ran").waitForExistence(timeout: Self.pageTimeout), "The extension is back after a relaunch")
 
-        app.buttons["sidebar.addProfile"].click()
-        app.textFields["profiles.name"].click()
-        app.typeText("Work")
-        app.buttons["profiles.save"].click()
+        createSpace("Work", newProfile: "Work")
         open("site.html", expecting: "No cookie")
         XCTAssertFalse(page("Extension ran").waitForExistence(timeout: 2), "Another profile does not run it")
         XCTAssertFalse(app.buttons.matching(identifier: "extension.button").firstMatch.exists)

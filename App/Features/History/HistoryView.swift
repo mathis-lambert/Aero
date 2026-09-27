@@ -27,7 +27,7 @@ struct HistoryView: View {
         let query: String
     }
 
-    private var profileID: UUID? { browser.window.selectedProfileID }
+    private var profileID: UUID? { browser.profile?.id }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

@@ -30,7 +30,10 @@ public final class WebPageRegistry {
     var activeTabID: UUID?
     var policy: HibernationPolicy
     var evaluation: Task<Void, Never>?
-    private var hibernatedStates: [UUID: Any] = [:]
+    private static let maximumStateBytes = 16 * 1024 * 1024
+    private static let maximumStates = 32
+    private var hibernatedStates: [UUID: Data] = [:]
+    private var stateOrder: [UUID] = []
     private var stores: [UUID: WKWebsiteDataStore] = [:]
     private var extensions: [UUID: ProfileExtensions] = [:]
     private var pressureMonitor: MemoryPressureMonitor?
@@ -112,15 +115,29 @@ public final class WebPageRegistry {
 
     public func close(tabID: UUID) {
         if activeTabID == tabID { activeTabID = nil }
-        hibernatedStates[tabID] = nil
+        discardState(tabID)
         livePages.removeValue(forKey: tabID)?.page.dispose()
     }
 
     func hibernate(_ tabID: UUID) {
         guard tabID != activeTabID, let live = livePages.removeValue(forKey: tabID) else { return }
-        hibernatedStates[tabID] = live.page.webView.interactionState
+        discardState(tabID)
+        if let state = live.page.webView.interactionState as? Data, state.count <= Self.maximumStateBytes {
+            hibernatedStates[tabID] = state
+            stateOrder.append(tabID)
+            var bytes = hibernatedStates.values.reduce(0) { $0 + $1.count }
+            while stateOrder.count > Self.maximumStates || bytes > Self.maximumStateBytes {
+                let oldest = stateOrder.removeFirst()
+                bytes -= hibernatedStates.removeValue(forKey: oldest)?.count ?? 0
+            }
+        }
         live.page.dispose()
         Self.signposter.emitEvent(Diagnostics.Signpost.pageHibernated)
+    }
+
+    private func discardState(_ id: UUID) {
+        hibernatedStates[id] = nil
+        stateOrder.removeAll { $0 == id }
     }
 
     /// Pages take the setting from their next load; a site's own switch reloads it instead.
@@ -146,7 +163,8 @@ public final class WebPageRegistry {
         let configuration = NavigationInput.isExtensionURL(tab.url) ? extensions.configuration(for: tab.url) : nil
         let page = BrowserPage(configuration: configuration ?? BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions.controller))
         connect(page, to: tab.id)
-        if let state = hibernatedStates.removeValue(forKey: tab.id) {
+        if let state = hibernatedStates[tab.id] {
+            discardState(tab.id)
             page.restore(state, url: tab.url)
             Self.signposter.emitEvent(Diagnostics.Signpost.pageRestored)
         } else {
@@ -197,5 +215,34 @@ public final class WebPageRegistry {
     private func markPreviousActiveAsIdle() {
         guard let activeTabID else { return }
         livePages[activeTabID]?.lastActive = .now
+    }
+}
+
+extension WebPageRegistry {
+    /// Only unreferenced package directories are disposable; recovery references also retain packages.
+    public func removeUnusedExtensionPackages(inProfile profileID: UUID, keeping identifiers: Set<UUID>) async throws {
+        let folder = extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true)
+        try await Task.detached {
+            guard FileManager.default.fileExists(atPath: folder.path) else { return }
+            for child in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
+                if let id = UUID(uuidString: child.lastPathComponent), identifiers.contains(id) { continue }
+                try FileManager.default.removeItem(at: child)
+            }
+        }.value
+    }
+
+    /// Called only after all spaces have left the profile and the deletion intent has committed.
+    public func removeProfile(_ profileID: UUID, extensions records: [InstalledExtension]) async throws {
+        if !records.isEmpty {
+            let owner = extensions(for: profileID)
+            for record in records { try await owner.remove(record) }
+        }
+        extensions[profileID] = nil
+        stores[profileID] = nil
+        if !ephemeral { try await WKWebsiteDataStore.remove(forIdentifier: profileID) }
+        let folder = extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true)
+        try await Task.detached {
+            if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) }
+        }.value
     }
 }

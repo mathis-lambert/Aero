@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TabMovePresentation: Identifiable {
     let tabID: UUID
-    let isProfile: Bool
+    let isSpace: Bool
     var id: UUID { tabID }
 }
 
@@ -13,12 +13,12 @@ struct TabDestinationSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(destination.isProfile ? "Move tab to profile…" : "Move tab to group…").font(.headline)
-            if destination.isProfile {
-                ForEach(browser.session.profiles.filter { $0.id != browser.session.tabs.first(where: { $0.id == destination.tabID }).flatMap(browser.profileID(of:)) }) { profile in
-                    Button(profile.name) {
-                        browser.moveTab(destination.tabID, toProfile: profile.id)
+            Text(destination.isSpace ? "Move tab to space…" : "Move tab to group…").font(.headline)
+            if destination.isSpace {
+                ForEach(browser.session.spaces.filter { $0.id != browser.session.tabs.first(where: { $0.id == destination.tabID })?.spaceID }) { space in
+                    Button(space.name) {
                         dismiss()
+                        browser.moveTab(destination.tabID, toSpace: space.id)
                     }
                 }
             } else {

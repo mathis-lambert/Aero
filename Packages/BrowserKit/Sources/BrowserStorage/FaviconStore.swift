@@ -36,6 +36,11 @@ public actor FaviconStore {
         if writesUntilMaintenance <= 0 { try prune() }
     }
 
+    public func removeProfile(_ profileID: UUID) throws {
+        let folder = directory.appendingPathComponent(profileID.uuidString, isDirectory: true)
+        if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) }
+    }
+
     /// At most 64 new writes between scans: 4 MiB / 64 files of bounded headroom.
     private func prune() throws {
         // A missing directory or failed scan must not repeat I/O on every cache lookup.

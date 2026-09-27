@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Runs the UI (E2E) tests into a unique result bundle and records how to reproduce the run.
 # Usage: Scripts/run-e2e.sh [test-identifier …]   e.g. AeroUITests/BrowsingE2ETests
-# Without identifiers it runs every E2E test except the launch measurement (docs/PERFORMANCE.md).
+# Without identifiers it runs every E2E test except performance measurements (docs/PERFORMANCE.md).
 set -euo pipefail
 
 cd "${0:A:h}/.."
@@ -14,11 +14,13 @@ git diff --binary HEAD > "$patch"
 while IFS= read -r -d '' file; do
     git diff --no-index --binary -- /dev/null "$file" >> "$patch" || [[ $? == 1 ]]
 done < <(git ls-files --others --exclude-standard -z)
-command=(xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Debug
-    -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived
+configuration="${AERO_E2E_CONFIGURATION:-Debug}"
+derived_data="${AERO_E2E_DERIVED_DATA:-/tmp/aero-derived}"
+command=(xcodebuild -project Aero.xcodeproj -scheme Aero -configuration "$configuration"
+    -destination 'platform=macOS,arch=arm64' -derivedDataPath "$derived_data"
     -resultBundlePath "$result")
 for test in "$@"; do command+=(-only-testing:"$test"); done
-(( $# )) || command+=(-skip-testing:AeroUITests/LaunchPerformanceTests)
+(( $# )) || command+=(-skip-testing:AeroUITests/LaunchPerformanceTests -skip-testing:AeroUITests/SpacesPerformanceTests)
 command+=(test)
 
 {

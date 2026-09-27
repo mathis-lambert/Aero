@@ -4,7 +4,7 @@ import Observation
 /// Transient presentation only; never serialized into the durable session.
 @MainActor @Observable
 final class BrowserWindowState {
-    var selectedProfileID: UUID?
+    var selectedSpaceID: UUID?
     var selectedTabID: UUID?
     var sidebarPinned = true
     var zoomFeedback: PageZoomFeedback?
@@ -33,6 +33,8 @@ final class BrowserWindowState {
     var holdsSidebarOpen: Bool { siteSettingsPresented || controlCenterPresented || downloadsPresented || renaming != nil }
     /// Changes when the New Tab page or a browser page should focus its search field.
     var inputFocusRequest = UUID()
+    var settingsRoute = SettingsRoute.section(.general)
+    var settingsRequest = UUID()
     let find = FindInPage()
 }
 
@@ -45,7 +47,10 @@ enum RenameTarget: Equatable {
 /// See docs/DESIGN.md › Prompts.
 enum WindowPrompt: Identifiable {
     case quit
-    case profile(ProfileTarget)
+    case profile
+    case space(UUID?)
+    case removeSpace(UUID)
+    case transferTab(UUID, UUID)
     /// Carries the History page's own clearing, which then reloads it.
     case clearHistory((HistoryClearRange) -> Void)
     /// Shown in the Settings window when asked from there.
@@ -55,7 +60,10 @@ enum WindowPrompt: Identifiable {
     var id: String {
         switch self {
         case .quit: "quit"
-        case .profile(let target): "profile.\(target)"
+        case .space(let target): "space.\(target?.uuidString ?? "new")"
+        case .removeSpace(let id): "removeSpace.\(id)"
+        case .transferTab(let id, _): "transferTab.\(id)"
+        case .profile: "profile"
         case .clearHistory: "clearHistory"
         case .extensionRequest(let request): "extension.\(request.id)"
         case .error(let message): "error.\(message)"

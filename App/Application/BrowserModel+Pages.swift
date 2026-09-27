@@ -26,7 +26,7 @@ extension BrowserModel: WebPageRegistryDelegate {
     /// Popups stay in the opener's space, even after the user switched profiles. A popup without
     /// a web address yet (`about:blank`) starts with the opener's address until it navigates.
     func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab? {
-        guard let opener = session.tabs.first(where: { $0.id == openerTabID }) else { return nil }
+        guard !isChangingStructure, let opener = session.tabs.first(where: { $0.id == openerTabID }) else { return nil }
         let address = url.flatMap { NavigationInput.isWebURL($0) ? $0 : nil } ?? opener.url
         return addTab(address, in: opener.spaceID)
     }
@@ -39,6 +39,7 @@ extension BrowserModel: WebPageRegistryDelegate {
     }
 
     func pageDidRequestClose(_ tabID: UUID, openerTabID: UUID) {
+        guard !isChangingStructure else { return }
         let wasSelected = window.selectedTabID == tabID
         closeTab(tabID, rememberForReopen: false)
         if wasSelected, tabs.contains(where: { $0.id == openerTabID }) { selectTab(openerTabID) }

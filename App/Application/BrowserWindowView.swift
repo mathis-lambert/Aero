@@ -9,6 +9,7 @@ struct BrowserWindowView: View {
     let browser: BrowserModel
     @State private var sidebarRevealed = false
     @State private var resizingSidebarWidth: CGFloat?
+    @Environment(\.openWindow) private var openWindow
     @Environment(\.palette) private var palette
 
     /// The prompt shown in this window; an extension request asked from Settings shows there.
@@ -24,7 +25,7 @@ struct BrowserWindowView: View {
                 HStack(spacing: 0) {
                     if browser.window.sidebarPinned {
                         SidebarView(browser: browser)
-                            .disabled(!browser.isReady)
+                            .disabled(!browser.isReady || browser.isChangingStructure)
                             .frame(width: sidebarWidth)
                             .overlay(alignment: .trailing) {
                                 resizeHandle(width: sidebarWidth, maximum: maximumWidth)
@@ -38,7 +39,7 @@ struct BrowserWindowView: View {
                             } else { ProgressView().controlSize(.small) }
                         } else if let internalPage = browser.internalPage {
                             InternalPageView(page: internalPage, browser: browser)
-                                .id(browser.window.selectedProfileID)
+                                .id(browser.window.selectedTabID)
                         } else if let page = browser.currentPage {
                             BrowserContentView(page: page)
                                 .overlay(alignment: .topTrailing) {
@@ -62,7 +63,7 @@ struct BrowserWindowView: View {
                                 }
                         } else {
                             NewTabView(browser: browser)
-                                .id(browser.window.selectedProfileID)
+                                .id([browser.window.selectedSpaceID, browser.profile?.id])
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -81,7 +82,7 @@ struct BrowserWindowView: View {
                         .allowsHitTesting(!sidebarRevealed && !isOverlaid)
                     if sidebarRevealed || browser.window.holdsSidebarOpen {
                         SidebarView(browser: browser)
-                            .disabled(!browser.isReady)
+                            .disabled(!browser.isReady || browser.isChangingStructure)
                             .frame(width: sidebarWidth)
                             .frame(maxHeight: .infinity)
                             .browserSurface(fill: palette.sidebar, border: palette.line, radius: BrowserDesign.Radius.floatingSidebar)
@@ -123,6 +124,7 @@ struct BrowserWindowView: View {
         .browserAnimation(value: browser.window.find.isPresented)
         .downloadsDockBadge(activeCount: browser.downloads.activeCount)
         .downloadFlights(browser.downloads)
+        .onChange(of: browser.window.settingsRequest) { openWindow(id: SettingsView.windowID) }
         .prompt(prompt, onCancel: browser.dismissPrompt) { WindowPromptView(browser: browser, prompt: $0) }
         .onChange(of: browser.window.sidebarPinned) { _, _ in
             sidebarRevealed = false
@@ -172,7 +174,10 @@ struct WindowPromptView: View {
     var body: some View {
         switch prompt {
         case .quit: QuitPrompt(browser: browser)
-        case .profile(let target): ProfilePrompt(browser: browser, target: target)
+        case .space(let target): SpacePrompt(browser: browser, profileID: target)
+        case .removeSpace(let id): SpaceRemovalPrompt(browser: browser, spaceID: id)
+        case .transferTab(let id, let destination): TabTransferPrompt(browser: browser, tabID: id, spaceID: destination)
+        case .profile: ProfilePrompt(browser: browser)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)
         case .extensionRequest(let request): ExtensionRequestPrompt(browser: browser, request: request)
         case .error(let message):

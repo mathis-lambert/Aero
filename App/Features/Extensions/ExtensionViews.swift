@@ -69,7 +69,7 @@ struct ExtensionMenu: View {
     let record: InstalledExtension
 
     var body: some View {
-        if let profileID = browser.window.selectedProfileID {
+        if let profileID = browser.profile?.id {
             Button(record.isPinned ? "Unpin" : "Pin") { Task { await browser.setPinned(!record.isPinned, record, inProfile: profileID) } }
             if let options = extensions.contexts[record.id]?.optionsPageURL {
                 Button("Options") { _ = browser.openTab(options, inProfile: profileID, selected: true) }

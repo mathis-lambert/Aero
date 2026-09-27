@@ -93,18 +93,6 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
         try await Task.detached { try FileManager.default.removeItem(at: directory) }.value
     }
 
-    /// Only unreferenced package directories are disposable; recovery references also retain packages.
-    public func removeUnusedPackages(keeping identifiers: Set<UUID>) async throws {
-        let folder = folder
-        try await Task.detached {
-            guard FileManager.default.fileExists(atPath: folder.path) else { return }
-            for child in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
-                if let id = UUID(uuidString: child.lastPathComponent), identifiers.contains(id) { continue }
-                try FileManager.default.removeItem(at: child)
-            }
-        }.value
-    }
-
     private func packageFolder(_ id: UUID) -> URL { folder.appendingPathComponent(id.uuidString, isDirectory: true) }
 
     /// A persisted uninstall intent remains until runtime storage and package cleanup finish.

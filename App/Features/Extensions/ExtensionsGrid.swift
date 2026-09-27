@@ -10,7 +10,7 @@ struct ExtensionsGrid: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        if let profileID = browser.window.selectedProfileID {
+        if let profileID = browser.profile?.id {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 8)], alignment: .leading, spacing: 8) {
                 if let extensions = browser.pages.extensionsIfMade(for: profileID) {
                     ForEach(browser.installedExtensions(inProfile: profileID).filter(\.isEnabled)) { record in

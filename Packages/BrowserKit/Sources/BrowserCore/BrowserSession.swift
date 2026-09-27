@@ -1,102 +1,8 @@
 import Foundation
 
-public enum ProfileColor: String, CaseIterable, Sendable {
-    case terracotta, moss, ocean, plum, graphite
-}
-
-public struct BrowserProfile: Identifiable, Equatable, Sendable {
-    public static let maximumNameLength = 40
-    public let id: UUID
-    public var name: String
-    public var color: ProfileColor
-    /// Stands for the profile in the sidebar; without one, its color does.
-    public var emoji: String?
-    /// Saved answers by origin; an origin without one is left out.
-    public package(set) var sitePermissions: [SiteOrigin: [SitePermission: SiteDecision]]
-    public package(set) var extensions: [InstalledExtension]
-
-    public init(id: UUID = UUID(), name: String, color: ProfileColor = .terracotta, emoji: String? = nil) {
-        self.id = id
-        self.name = name
-        self.color = color
-        self.emoji = emoji
-        sitePermissions = [:]
-        extensions = []
-    }
-
-    public func decision(for permission: SitePermission, at origin: SiteOrigin) -> SiteDecision? {
-        sitePermissions[origin]?[permission]
-    }
-
-    /// The single emoji `text` holds, ignoring surrounding spaces, or `nil`. Sequences (flags, skin
-    /// tones, families, keycaps) count as one; digits and symbols that only have an emoji form with
-    /// a variation selector need it.
-    public static func emoji(from text: String) -> String? {
-        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        let scalars = value.unicodeScalars
-        guard value.count == 1, let first = scalars.first, first.properties.isEmoji, !first.properties.isEmojiModifier else { return nil }
-        return scalars.contains(where: \.properties.isEmojiPresentation) || scalars.count > 1 ? value : nil
-    }
-}
-
-public struct BrowserSpace: Identifiable, Equatable, Sendable {
-    public let id: UUID
-    public let profileID: UUID
-    /// Groups of favorites, in the sidebar's order.
-    public package(set) var groups: [TabGroup]
-
-    public init(id: UUID = UUID(), profileID: UUID) {
-        self.id = id
-        self.profileID = profileID
-        groups = []
-    }
-}
-
-/// A folder of favorites in the sidebar.
-public struct TabGroup: Identifiable, Equatable, Sendable {
-    public let id: UUID
-    public var name: String
-    public var isCollapsed: Bool
-    package init(id: UUID, name: String, isCollapsed: Bool) {
-        self.id = id; self.name = name; self.isCollapsed = isCollapsed
-    }
-}
-
-/// Where a tab shows in its profile's sidebar.
-public enum TabPlace: Hashable, Sendable {
-    /// A favorite, as a tile in the grid.
-    case grid
-    /// A favorite, as a row under the grid: loose, or in a group of its space.
-    case list(group: UUID?)
-    /// An open tab: closing it removes it.
-    case open
-
-    public var isFavorite: Bool { self != .open }
-}
-
-public struct BrowserTab: Identifiable, Equatable, Sendable {
-    public let id: UUID
-    public let spaceID: UUID
-    public var url: URL
-    public var title: String
-    /// The name given in the sidebar, which the page's title never replaces.
-    public var name: String?
-    public var place: TabPlace
-
-    public init(id: UUID = UUID(), spaceID: UUID, url: URL, title: String = "", name: String? = nil, place: TabPlace = .open) {
-        self.id = id
-        self.spaceID = spaceID
-        self.url = url
-        self.title = title
-        self.name = name
-        self.place = place
-    }
-
-    public var isFavorite: Bool { place.isFavorite }
-}
-
 public enum SessionError: Error, Equatable {
-    case invalidProfileName, invalidEmoji, missingProfile, inconsistentData
+    case invalidName, invalidEmoji, missingProfile, inconsistentData
+    case missingSpace, lastSpace, lastProfile, profileInUse
 }
 
 /// Durable state only. Window selection and loaded web pages have separate owners.
@@ -105,28 +11,77 @@ public struct BrowserSession: Equatable, Sendable {
     public private(set) var spaces: [BrowserSpace]
     public private(set) var tabs: [BrowserTab]
 
-    public init(profileName: String) {
+    public init(profileName: String, spaceName: String = "Main") {
         let profile = BrowserProfile(name: profileName)
         profiles = [profile]
-        spaces = [BrowserSpace(profileID: profile.id)]
+        spaces = [BrowserSpace(profileID: profile.id, name: spaceName)]
         tabs = []
     }
 
     @discardableResult
-    public mutating func addProfile(name: String, color: ProfileColor, emoji: String? = nil) throws -> BrowserProfile {
-        let profile = BrowserProfile(name: try Self.validName(name), color: color, emoji: try Self.validEmoji(emoji))
+    public mutating func addProfile(name: String) throws -> BrowserProfile {
+        let profile = BrowserProfile(name: try Self.validName(name))
         profiles.append(profile)
-        spaces.append(BrowserSpace(profileID: profile.id))
         return profile
     }
 
-    public mutating func editProfile(id: UUID, name: String, color: ProfileColor, emoji: String?) throws {
+    public mutating func editProfile(id: UUID, name: String) throws {
+        guard let index = profiles.firstIndex(where: { $0.id == id && !$0.isRemoving }) else { throw SessionError.missingProfile }
+        profiles[index].name = try Self.validName(name)
+    }
+
+    @discardableResult
+    public mutating func addSpace(name: String, profileID: UUID, color: SpaceColor, emoji: String? = nil) throws -> BrowserSpace {
+        guard profiles.contains(where: { $0.id == profileID && !$0.isRemoving }) else { throw SessionError.missingProfile }
+        let space = BrowserSpace(profileID: profileID, name: try Self.validName(name), color: color, emoji: try Self.validEmoji(emoji))
+        spaces.append(space)
+        return space
+    }
+
+    public mutating func editSpace(id: UUID, name: String, profileID: UUID, color: SpaceColor, emoji: String?) throws {
+        guard let index = spaces.firstIndex(where: { $0.id == id }) else { throw SessionError.missingSpace }
+        guard profiles.contains(where: { $0.id == profileID && !$0.isRemoving }) else { throw SessionError.missingProfile }
+        let name = try Self.validName(name), emoji = try Self.validEmoji(emoji)
+        spaces[index].name = name; spaces[index].color = color; spaces[index].emoji = emoji
+        if spaces[index].profileID != profileID {
+            // Old extension handles and page callbacks must never address the new identity.
+            for tabIndex in tabs.indices where tabs[tabIndex].spaceID == id {
+                let tab = tabs[tabIndex]
+                tabs[tabIndex] = BrowserTab(spaceID: id, url: tab.url, title: tab.title, name: tab.name, place: tab.place)
+            }
+        }
+        spaces[index].profileID = profileID
+    }
+
+    public mutating func removeSpace(_ id: UUID) throws {
+        guard spaces.contains(where: { $0.id == id }) else { throw SessionError.missingSpace }
+        guard spaces.count > 1 else { throw SessionError.lastSpace }
+        spaces.removeAll { $0.id == id }
+        tabs.removeAll { $0.spaceID == id }
+    }
+
+    /// Destination is an insertion boundary in the original order, as used by native lists.
+    public mutating func moveSpaces(from offsets: IndexSet, to destination: Int) {
+        guard !offsets.isEmpty, offsets.allSatisfy(spaces.indices.contains),
+              (0...spaces.count).contains(destination) else { return }
+        let moving = offsets.map { spaces[$0] }
+        let insertion = destination - offsets.filter { $0 < destination }.count
+        for index in offsets.reversed() { spaces.remove(at: index) }
+        spaces.insert(contentsOf: moving, at: insertion)
+    }
+
+    public mutating func markProfileForRemoval(_ id: UUID) throws {
         guard let index = profiles.firstIndex(where: { $0.id == id }) else { throw SessionError.missingProfile }
-        let name = try Self.validName(name)
-        let emoji = try Self.validEmoji(emoji)
-        profiles[index].name = name
-        profiles[index].color = color
-        profiles[index].emoji = emoji
+        if profiles[index].isRemoving { return }
+        guard profiles.filter({ !$0.isRemoving }).count > 1 else { throw SessionError.lastProfile }
+        guard !spaces.contains(where: { $0.profileID == id }) else { throw SessionError.profileInUse }
+        profiles[index].isRemoving = true
+    }
+
+    public mutating func removeProfile(_ id: UUID) throws {
+        guard let profile = profiles.first(where: { $0.id == id }), profile.isRemoving,
+              !spaces.contains(where: { $0.profileID == id }) else { throw SessionError.profileInUse }
+        profiles.removeAll { $0.id == id }
     }
 
     package init(profiles: [BrowserProfile], spaces: [BrowserSpace], tabs: [BrowserTab]) {
@@ -202,8 +157,8 @@ public struct BrowserSession: Equatable, Sendable {
         return copy
     }
 
-    /// Replaces the tab with a new one at the end of another space, so nothing of the first
-    /// profile's page carries over. A favorite stays one, outside any group.
+    /// Same-profile transfers keep the tab identity and its live page. Crossing profiles gives
+    /// the tab a new identity. A favorite stays one, outside any group.
     public mutating func transfer(id: UUID, to spaceID: UUID) -> BrowserTab? {
         guard spaces.contains(where: { $0.id == spaceID }), let index = tabs.firstIndex(where: { $0.id == id }),
               tabs[index].spaceID != spaceID else { return nil }
@@ -213,7 +168,8 @@ public struct BrowserSession: Equatable, Sendable {
         case .list: .list(group: nil)
         case .open: .open
         }
-        let tab = BrowserTab(spaceID: spaceID, url: original.url, title: original.title, name: original.name, place: place)
+        let sameProfile = spaces.first { $0.id == original.spaceID }?.profileID == spaces.first { $0.id == spaceID }?.profileID
+        let tab = BrowserTab(id: sameProfile ? original.id : UUID(), spaceID: spaceID, url: original.url, title: original.title, name: original.name, place: place)
         tabs.append(tab)
         return tab
     }
@@ -263,17 +219,27 @@ public struct BrowserSession: Equatable, Sendable {
         tabs.append(tab)
     }
 
+    /// Reconcile page events received during a structural commit, only for surviving identities.
+    public mutating func mergePageMetadata(from current: BrowserSession) {
+        let records = Dictionary(uniqueKeysWithValues: current.tabs.map { ($0.id, $0) })
+        for index in tabs.indices {
+            guard let latest = records[tabs[index].id] else { continue }
+            tabs[index].url = latest.url
+            tabs[index].title = latest.title
+        }
+    }
+
     public func validate() throws {
         let profileIDs = Set(profiles.map(\.id))
         let spaceIDs = Set(spaces.map(\.id))
-        guard !profiles.isEmpty,
+        guard profiles.contains(where: { !$0.isRemoving }), !spaces.isEmpty,
               profileIDs.count == profiles.count,
               spaceIDs.count == spaces.count,
-              Set(spaces.map(\.profileID)).count == spaces.count,
               profiles.allSatisfy({ Set($0.extensions.map(\.id)).count == $0.extensions.count && $0.extensions.allSatisfy(\.isValid) }),
               Set(tabs.map(\.id)).count == tabs.count,
-              profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name && (try? Self.validEmoji($0.emoji)) == $0.emoji }),
-              profiles.allSatisfy({ profile in spaces.contains { $0.profileID == profile.id } }),
+              profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name }),
+              spaces.allSatisfy({ (try? Self.validName($0.name)) == $0.name && (try? Self.validEmoji($0.emoji)) == $0.emoji }),
+              profiles.filter(\.isRemoving).allSatisfy({ profile in !spaces.contains { $0.profileID == profile.id } }),
               spaces.allSatisfy({ profileIDs.contains($0.profileID) }),
               Set(spaces.flatMap(\.groups).map(\.id)).count == spaces.flatMap(\.groups).count,
               spaces.allSatisfy({ $0.groups.allSatisfy { Self.trimmed($0.name) == $0.name } }),
@@ -289,13 +255,13 @@ public struct BrowserSession: Equatable, Sendable {
 
     private static func validEmoji(_ value: String?) throws -> String? {
         guard let value else { return nil }
-        guard let emoji = BrowserProfile.emoji(from: value) else { throw SessionError.invalidEmoji }
+        guard let emoji = BrowserSpace.emoji(from: value) else { throw SessionError.invalidEmoji }
         return emoji
     }
 
     private static func validName(_ value: String) throws -> String {
         let value = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty, value.count <= BrowserProfile.maximumNameLength else { throw SessionError.invalidProfileName }
+        guard !value.isEmpty, value.count <= BrowserProfile.maximumNameLength else { throw SessionError.invalidName }
         return value
     }
 }
