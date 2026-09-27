@@ -10,7 +10,7 @@ final class BrowserUITests: BrowserE2ETestCase {
         XCTAssertTrue(tooltip.waitForExistence(timeout: Self.renderTimeout), "Resting on a control shows its tooltip")
         XCTAssertTrue(tooltip.staticTexts["Toggle sidebar"].exists)
         let caps = tooltip.staticTexts.matching(identifier: "keycap")
-        XCTAssertEqual((0..<caps.count).map { caps.element(boundBy: $0).value as? String }, ["⇧", "⌘", "S"],
+        XCTAssertEqual((0..<caps.count).map { caps.element(boundBy: $0).value as? String }, ["⌘", "S"],
                        "The keys of the menu's shortcut")
         attachScreenshot("tooltip", of: app)
         app.buttons["sidebar.back"].hover()
@@ -87,14 +87,14 @@ final class BrowserUITests: BrowserE2ETestCase {
         }
 
         verifyVisibleLayout()
-        app.typeKey("s", modifierFlags: [.command, .shift])
+        app.typeKey("s", modifierFlags: .command)
         XCTAssertFalse(sidebarToggle.exists)
         XCTAssertFalse(address.exists)
         for light in lights { XCTAssertFalse(light.exists) }
         controlBarInput.typeText(server.url("solid.html").absoluteString + "\n")
         XCTAssertTrue(app.webViews.staticTexts["Solid fixture"].waitForExistence(timeout: Self.pageTimeout))
         XCTAssertFalse(sidebarToggle.exists, "A loaded page adds no control while the sidebar is hidden")
-        app.typeKey("s", modifierFlags: [.command, .shift])
+        app.typeKey("s", modifierFlags: .command)
         verifyVisibleLayout()
 
         let originalFrame = window.frame
@@ -106,7 +106,7 @@ final class BrowserUITests: BrowserE2ETestCase {
 
     func testHiddenSidebarRevealsAtLeftEdge() {
         let pinnedAddress = app.buttons["sidebar.location"].frame
-        app.typeKey("s", modifierFlags: [.command, .shift])
+        app.typeKey("s", modifierFlags: .command)
         XCTAssertFalse(app.buttons["sidebar.toggle"].exists)
         let window = app.windows["aero.main"]
         window.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
@@ -129,10 +129,10 @@ final class BrowserUITests: BrowserE2ETestCase {
         XCTAssertTrue(app.staticTexts["settings.languageRestart"].waitForExistence(timeout: 3))
         app.radioButtons["Light"].click()
         attachScreenshot("settings-general-light", of: app)
-        app.toolbars.buttons["Tabs"].click()
+        selectSettingsSection("Tabs")
         XCTAssertTrue(app.switches["settings.hibernation.enabled"].waitForExistence(timeout: 3))
         attachScreenshot("settings-tabs", of: app)
-        app.toolbars.buttons["Profiles"].click()
+        selectSettingsSection("Profiles")
         XCTAssertTrue(app.buttons["profiles.add"].waitForExistence(timeout: 3), "Settings edits profiles in place")
         attachScreenshot("settings-profiles", of: app)
 
@@ -140,7 +140,7 @@ final class BrowserUITests: BrowserE2ETestCase {
         app.launchArguments = TestApplication.launchArguments(language: "fr", locale: "fr_FR")
         app.launch()
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
-        openSettings("Général")
+        openSettings("General")
         XCTAssertTrue(app.popUpButtons["settings.language"].waitForExistence(timeout: 3), "Settings is in French")
         attachScreenshot("settings-general-french", of: app)
         closeSettings()

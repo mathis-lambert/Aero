@@ -72,13 +72,16 @@ class BrowserE2ETestCase: XCTestCase {
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: TestApplication.launchTimeout))
     }
 
-    /// Opens the native Settings window, on the tab titled `section` when given.
+    /// Opens the native Settings window and selects a stable, language-independent section.
     func openSettings(_ section: String? = nil) {
         app.typeKey(",", modifierFlags: .command)
-        guard let section else { return }
-        let tab = app.toolbars.buttons[section]
-        XCTAssertTrue(tab.waitForExistence(timeout: Self.renderTimeout), "Settings shows its \(section) tab")
-        tab.click()
+        if let section { selectSettingsSection(section) }
+    }
+
+    func selectSettingsSection(_ section: String) {
+        let row = app.descendants(matching: .any).matching(identifier: "settings.section.\(section.lowercased())").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: Self.renderTimeout))
+        row.click()
     }
 
     func closeSettings() {

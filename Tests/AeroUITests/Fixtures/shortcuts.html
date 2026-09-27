@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Shortcuts fixture</title>
+<h1>Shortcuts fixture</h1><button style="width:200px;height:60px">Zoom target</button>
+<input aria-label="Editor"><p id="status">No page shortcut</p>
+<script>
+document.addEventListener('keydown', event => {
+  if (event.metaKey) {
+    event.preventDefault();
+    document.querySelector('#status').textContent = 'Page handled ' + event.key.toUpperCase();
+  }
+});
+</script></html>

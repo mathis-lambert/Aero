@@ -7,11 +7,14 @@ final class BrowserWindowState {
     var selectedProfileID: UUID?
     var selectedTabID: UUID?
     var sidebarPinned = true
+    var zoomFeedback: PageZoomFeedback?
     /// The control bar over the selected tab; the New Tab page shows its own.
     var controlBar: ControlBarPresentation?
     /// The question the window asks; one at a time.
     var prompt: WindowPrompt?
     /// Popovers on the sidebar's reload button and address; the sidebar appears for them when hidden.
+    var downloadsPresented = false
+    var tabDestination: TabMovePresentation?
     var siteSettingsPresented = false
     var controlCenterPresented = false
     /// The tab or group whose name is being edited in the sidebar.
@@ -27,7 +30,7 @@ final class BrowserWindowState {
         if renaming == target { renaming = nil }
     }
 
-    var holdsSidebarOpen: Bool { siteSettingsPresented || controlCenterPresented }
+    var holdsSidebarOpen: Bool { siteSettingsPresented || controlCenterPresented || downloadsPresented || renaming != nil }
     /// Changes when the New Tab page or a browser page should focus its search field.
     var inputFocusRequest = UUID()
     let find = FindInPage()

@@ -108,7 +108,7 @@ struct ControlBarView: View {
                     }
                 }
                 Spacer(minLength: 8)
-                if let shortcut = item.shortcut { Keycaps(shortcut) }
+                if let shortcut = item.shortcut(using: browser.shortcuts) { Keycaps(shortcut) }
                 else if selected { Keycaps(.defaultAction) }
             }
             .padding(.horizontal, BrowserDesign.rowInset)
@@ -184,7 +184,7 @@ private extension ControlBarItem {
         }
     }
 
-    var shortcut: KeyboardShortcut? {
-        if case .command(let command) = self { command.shortcut } else { nil }
+    @MainActor func shortcut(using shortcuts: ShortcutPreferences) -> KeyboardShortcut? {
+        if case .command(let command) = self { shortcuts.shortcut(for: command) } else { nil }
     }
 }

@@ -19,9 +19,13 @@ struct AeroApp: App {
         .windowResizability(.contentMinSize)
         .commands { BrowserMenuCommands(quit: browser.requestQuit) }
 
-        Settings {
+        Window("Settings", id: SettingsView.windowID) {
             SettingsView(browser: browser)
         }
+        .windowResizability(.contentSize)
+        .windowToolbarStyle(.unifiedCompact)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
     }
 }
 

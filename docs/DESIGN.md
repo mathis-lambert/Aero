@@ -27,13 +27,13 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 - The sidebar's first row holds the window controls (standard AppKit buttons created through public API), sidebar toggle, back, forward and reload; the second holds the current address. Then one page per profile with its favorites, New Tab and its open tabs (`docs/BROWSING.md` › Favorites and open tabs), and a footer with the downloads button, the profiles and a button to add one (`docs/PROFILES.md`).
 - The hidden sidebar reappears over the page when the pointer reaches the left edge; its hover area includes its margin so it does not close on the way in.
 - The find bar floats over the page's top trailing corner; a miss shows text, the `miss` border and a short shake.
-- Settings is the system's Settings window: a toolbar tab per section (General, Tabs, Profiles, Extensions), each a grouped form of working options only, with native controls. Profiles are edited in place there. ⌘, opens it and ⌘W closes it. Language changes apply at the next launch, and say so.
+- Settings is a fixed 960 × 620 native SwiftUI window with minimize, resize and full-screen interactions disabled: a native navigation sidebar (General, Tabs, Profiles, Extensions, Shortcuts), with native back/forward toolbar controls. Existing sections use grouped forms; Shortcuts uses a searchable categorized list and an inline detail editor. The detail’s gear menu contains priority and disable/restore actions; a separate reset icon beside search restores all shortcuts after confirmation. Profiles are edited in place there. ⌘, opens it and ⌘W closes it. Language changes apply at the next launch, and say so.
 
 ## Prompts
 
 Every question the browser asks is a `Prompt`: a `raised` card with the panel shadow over the window, which is dimmed and takes no clicks. It holds an optional icon, the question, an optional explanation, any fields, and its actions on the trailing side. `PromptCancelButton` answers Escape and shows its keycap; `PromptConfirmButton`, the accent-filled default, answers Return. A click outside the card cancels.
 
-The window shows one prompt at a time, from `BrowserWindowState.prompt`: quitting, creating or editing a profile, clearing history, an extension's request and errors. `present(_:)` replaces what is shown; `dismissPrompt()` cancels it. `.prompt(_:onCancel:)` presents it, and takes the keyboard from the focused page or field so Return and Escape reach the card. An extension request asked from Settings shows in the Settings window, through the same modifier. The browser shows no sheets or alerts of its own; only the system's open and certificate panels attach as sheets.
+The window shows one prompt at a time, from `BrowserWindowState.prompt`: quitting, creating or editing a profile, clearing history, an extension's request and errors. `present(_:)` replaces what is shown; `dismissPrompt()` cancels it. `.prompt(_:onCancel:)` presents it, and takes the keyboard from the focused page or field so Return and Escape reach the card. An extension request asked from Settings shows in the Settings window, through the same modifier. Group/profile tab moves use a native destination sheet; printing, open and certificate panels also attach as native sheets.
 
 Failure modes:
 
@@ -48,7 +48,7 @@ Verification: E2E `testQuitAsksFirst` (Escape and Return with a page focused; 1,
 
 `.tooltip(_:shortcut:)` replaces the system help tag on every chrome control: a small `raised` plate with a `line` border and its panel's shadow, the label, and the command's keycaps when it has a shortcut. It appears 0.5 s after the pointer rests on the control, then follows it at once to a neighbour for a moment, like the system's. It lives in its own borderless panel, so the sidebar or the window edge never clips it, and it takes the window's appearance. The pointer leaving, a click, a key or a scroll hides it. Only a hovered control has a timer; nothing runs otherwise.
 
-`Keycaps` draws a shortcut as keys: one cap per modifier and key, in the system face at 11 pt medium, on a `raised` face with a hairline border and a darker bottom edge. Shortcuts come from the command catalog (`BrowserCommand.shortcut`), so a tooltip, the control bar and the menu always agree. Return shows ↵ and Escape reads "esc".
+`Keycaps` draws a shortcut as keys: one cap per modifier and key, in the system face at 11 pt medium, on a `raised` face with a hairline border and a darker bottom edge. Shortcuts come from the resolved command preferences (`ShortcutPreferences.shortcut(for:)`), so a tooltip, the control bar and the menu always agree. Return shows ↵ and Escape reads "esc".
 
 Failure modes:
 

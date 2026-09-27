@@ -62,6 +62,7 @@ final class BrowserPreferences {
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
     }
 
+    let shortcuts: ShortcutPreferences
     private let defaults: UserDefaults
     private let launchLanguage: BrowserLanguage
     private(set) var language: BrowserLanguage
@@ -104,6 +105,7 @@ final class BrowserPreferences {
             guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
             defaults = suite
         } else { defaults = .standard }
+        shortcuts = ShortcutPreferences(defaults: defaults)
         let language = defaults.string(forKey: Key.language).flatMap(BrowserLanguage.init(rawValue:)) ?? .system
         self.language = language
         launchLanguage = language

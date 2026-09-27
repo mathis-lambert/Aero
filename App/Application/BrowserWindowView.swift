@@ -33,11 +33,23 @@ struct BrowserWindowView: View {
                     } else if let page = browser.currentPage {
                         BrowserContentView(page: page)
                             .overlay(alignment: .topTrailing) {
-                                if browser.window.find.isPresented {
-                                    FindBar(find: browser.window.find, page: page)
-                                        .padding(BrowserDesign.floatingInset)
-                                        .transition(.move(edge: .top).combined(with: .opacity))
+                                VStack(alignment: .trailing, spacing: 8) {
+                                    if browser.window.find.isPresented {
+                                        FindBar(find: browser.window.find, page: page, shortcuts: browser.shortcuts)
+                                            .transition(.move(edge: .top).combined(with: .opacity))
+                                    }
+                                    if let feedback = browser.window.zoomFeedback, feedback.tabID == browser.window.selectedTabID {
+                                        PageZoomIndicator(feedback: feedback) {
+                                            if browser.window.zoomFeedback?.id == feedback.id { browser.window.zoomFeedback = nil }
+                                        }
+                                        .transition(.asymmetric(
+                                            insertion: .scale(scale: 0.88, anchor: .topTrailing).combined(with: .opacity),
+                                            removal: .opacity
+                                        ))
+                                    }
                                 }
+                                .padding(BrowserDesign.floatingInset)
+                                .browserAnimation(value: browser.window.zoomFeedback != nil)
                             }
                     } else {
                         NewTabView(browser: browser)
@@ -103,8 +115,20 @@ struct BrowserWindowView: View {
         .onChange(of: browser.window.sidebarPinned) { _, _ in sidebarRevealed = false }
         .onChange(of: isOverlaid) { _, overlaid in if overlaid { sidebarRevealed = false } }
         .onChange(of: browser.window.selectedTabID) { _, _ in
+            browser.window.zoomFeedback = nil
             browser.window.siteSettingsPresented = false
             browser.window.controlCenterPresented = false
+        }
+        .sheet(item: Bindable(browser.window).tabDestination) { destination in
+            TabDestinationSheet(browser: browser, destination: destination)
+        }
+        .onExitCommand {
+            // Escape reaches here only after focused controls have had their dismissal opportunity.
+            if browser.window.controlBar == nil, browser.window.prompt == nil,
+               !browser.window.find.isPresented, browser.window.renaming == nil,
+               !browser.window.holdsSidebarOpen, browser.isEnabled(.stopLoading) {
+                browser.perform(.stopLoading)
+            }
         }
         .background(WindowConfiguration())
         .focusedSceneValue(\.browserModel, browser)

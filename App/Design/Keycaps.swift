@@ -52,6 +52,12 @@ extension KeyboardShortcut {
 private extension KeyEquivalent {
     var symbol: String {
         switch self {
+        case .tab: "⇥"
+        case .leftArrow: "←"
+        case .rightArrow: "→"
+        case .upArrow: "↑"
+        case .downArrow: "↓"
+        case .delete: "⌫"
         case .return: "↵"
         case .escape: "esc"
         default: String(character).uppercased()

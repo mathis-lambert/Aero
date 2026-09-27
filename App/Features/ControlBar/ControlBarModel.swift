@@ -150,7 +150,7 @@ final class ControlBarModel {
         BrowserCommand.allCases
             .filter { command in
                 command != .commandPalette && browser.isEnabled(command)
-                    && (query.map(command.title.localizedStandardContains) ?? true)
+                    && (query.map(command.matchesSearch) ?? true)
             }
             .map(ControlBarItem.command)
     }

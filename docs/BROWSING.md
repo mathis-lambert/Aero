@@ -44,6 +44,8 @@ Verification: E2E `testPopupTalksToOpenerAndClosesItself`.
 
 ## Keyboard routing
 
+Effective bindings come from the shared resolver described in [Keyboard shortcuts](SHORTCUTS.md). Settings, menus, tooltips and the control bar share its results.
+
 Each catalog command is **reserved** (the browser always acts, like ⌘T, ⌘W, ⌘L) or **page-first** (a focused page may handle it; the browser acts otherwise).
 
 Failure modes: a page traps a reserved shortcut; the browser steals a page-first shortcut the page handled, or never gets one the page ignored; text entry or IME composition is intercepted; the menu, the shortcut and the control bar behave differently.

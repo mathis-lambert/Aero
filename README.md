@@ -31,7 +31,7 @@ UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`)
 - Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder, with native messaging to the apps they pair with (`docs/EXTENSIONS.md`).
 - Light, dark and system appearance, alternate app icons, English and French.
 
-Not implemented yet: onboarding, import, passkeys, separate popup windows, editable shortcuts and profile deletion.
+Not implemented yet: onboarding, import, passkeys, separate popup windows and profile deletion.
 
 ## Shortcuts
 
@@ -43,11 +43,18 @@ Not implemented yet: onboarding, import, passkeys, separate popup windows, edita
 | ⌘W / ⇧⌘T | Close / reopen tab |
 | ⌃Tab / ⌃⇧Tab | Recent tabs; release Control to choose |
 | ⌘[ / ⌘] / ⌘R | Back / forward / reload |
-| ⇧⌘S | Toggle sidebar |
+| ⌘S | Toggle sidebar |
+| ⌘+ / ⌘− / ⌘0 | Zoom in / out / actual size |
+| ⌥⌘→ / ⌥⌘← | Next / previous tab in sidebar order |
+| ⌘1…⌘8 / ⌘9 | Select tab / last tab |
+| ⇧⌘R / ⌘. | Reload without cache / stop loading |
+| ⇧⌘J / ⌘P / ⌘D | Downloads / print / toggle favorite |
 | ⇧⌘C | Copy link |
 | ⌘F / ⌘G / ⇧⌘G | Find in page / next / previous |
 | ⌘Y | History |
 
-⌘K, ⇧⌘S, ⇧⌘C, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
+⌘K, ⇧⌘C, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
+
+Settings uses native sidebar navigation. Settings › Shortcuts groups commands in a searchable list, records custom bindings inline, detects conflicts, sets Aero/website priority, and restores defaults. User choices survive catalog updates; see `docs/SHORTCUTS.md` for storage and routing details.
 
 Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`.

@@ -51,7 +51,7 @@ struct AddressBar: View {
                         }
                     }
                     IconButton(symbol: showsCopied ? "checkmark" : BrowserCommand.copyLink.symbol, label: showsCopied ? "Link copied" : "Copy link",
-                               size: Self.buttonSize, shortcut: BrowserCommand.copyLink.shortcut) { browser.perform(.copyLink) }
+                               size: Self.buttonSize, shortcut: browser.shortcuts.shortcut(for: .copyLink)) { browser.perform(.copyLink) }
                         .contentTransition(.symbolEffect(.replace))
                         .accessibilityIdentifier("address.copyLink")
                     IconButton(symbol: BrowserCommand.controlCenter.symbol, label: "Site controls", size: Self.buttonSize) {

@@ -10,11 +10,13 @@ struct DownloadsButton: View {
     private static let ringInset: CGFloat = 5
 
     let downloads: DownloadCoordinator
-    @State private var presented = false
+    @Binding var presented: Bool
+    let shortcut: KeyboardShortcut?
+    let toggle: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        IconButton(symbol: "arrow.down.circle", label: "Downloads", size: BrowserDesign.navigationButtonSize) { presented.toggle() }
+        IconButton(symbol: "arrow.down.circle", label: "Downloads", size: BrowserDesign.navigationButtonSize, shortcut: shortcut, action: toggle)
             .overlay { if let progress { ring(progress) } }
             // Takes the hit as a new download's file lands: a kick, then a damped wobble on its base.
             .keyframeAnimator(initialValue: Landing(), trigger: reduceMotion ? nil : downloads.lastStarted) { button, landing in
