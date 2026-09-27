@@ -55,7 +55,7 @@ final class BrowserPreferences {
         static let appleLanguages = "AppleLanguages"
         static let hibernationEnabled = "browser.hibernation.enabled"
         static let hibernationIdleMinutes = "browser.hibernation.idleMinutes"
-        static let hibernationKeepsPinned = "browser.hibernation.keepsPinnedTabsLoaded"
+        static let hibernationKeepsFavorites = "browser.hibernation.keepsFavoritesLoaded"
         static let appIcon = "browser.appIcon"
         static let blocksAds = "browser.blocksAds"
         static let automaticPictureInPicture = "browser.automaticPictureInPicture"
@@ -134,13 +134,13 @@ final class BrowserPreferences {
         }
         let limit = HibernationSettings.minute * defaults.integer(forKey: Key.hibernationIdleMinutes)
         if HibernationSettings.idleLimitOptions.contains(limit) { settings.idleLimit = limit }
-        settings.keepsPinnedTabsLoaded = defaults.bool(forKey: Key.hibernationKeepsPinned)
+        settings.keepsFavoritesLoaded = defaults.bool(forKey: Key.hibernationKeepsFavorites)
         return settings
     }
 
     private func storeHibernation() {
         defaults.set(hibernation.isEnabled, forKey: Key.hibernationEnabled)
         defaults.set(Int(hibernation.idleLimit / HibernationSettings.minute), forKey: Key.hibernationIdleMinutes)
-        defaults.set(hibernation.keepsPinnedTabsLoaded, forKey: Key.hibernationKeepsPinned)
+        defaults.set(hibernation.keepsFavoritesLoaded, forKey: Key.hibernationKeepsFavorites)
     }
 }

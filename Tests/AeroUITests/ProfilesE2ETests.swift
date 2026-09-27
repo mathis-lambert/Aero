@@ -59,6 +59,28 @@ final class ProfilesE2ETests: BrowserE2ETestCase {
         XCTAssertEqual(app.textFields["profiles.emoji"].value as? String ?? "", "", "Only an emoji is kept")
     }
 
+    func testTabMovesToAnotherProfile() {
+        open("solid.html", expecting: "Solid fixture")
+        open("keys.html", expecting: "No shortcut yet")
+        app.buttons["sidebar.addProfile"].click()
+        app.textFields["profiles.name"].click()
+        app.typeText("Work")
+        app.buttons["profiles.save"].click()
+        XCTAssertTrue(poll { self.isSelected("Work") })
+        profile("Personal").click()
+        XCTAssertTrue(page("No shortcut yet").waitForExistence(timeout: Self.pageTimeout))
+
+        tabRows.matching(NSPredicate(format: "label == %@", "Keys fixture")).firstMatch.rightClick()
+        chooseInSubmenu("Move to Profile", "Work")
+        XCTAssertTrue(poll { self.labels(of: "sidebar.tab") == ["Solid fixture"] }, "The tab leaves its profile")
+        XCTAssertTrue(page("Solid fixture").waitForExistence(timeout: Self.pageTimeout), "Its neighbour is shown instead of its page")
+
+        profile("Work").click()
+        XCTAssertTrue(poll { self.isSelected("Work") && self.labels(of: "sidebar.tab") == ["Keys fixture"] })
+        tabRows.firstMatch.click()
+        XCTAssertTrue(page("No shortcut yet").waitForExistence(timeout: Self.pageTimeout), "It loads in its new profile")
+    }
+
     private func profile(_ name: String) -> XCUIElement {
         app.buttons.matching(identifier: "sidebar.profile").matching(NSPredicate(format: "label == %@", name)).firstMatch
     }

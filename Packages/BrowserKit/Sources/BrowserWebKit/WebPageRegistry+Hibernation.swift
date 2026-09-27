@@ -29,7 +29,7 @@ extension WebPageRegistry {
 
     func hibernationPlan() -> HibernationPlan {
         let candidates = livePages.map { tabID, live in
-            HibernationCandidate(tabID: tabID, isActive: tabID == activeTabID, isPinned: delegate?.isPinned(tabID) == true,
+            HibernationCandidate(tabID: tabID, isActive: tabID == activeTabID, isFavorite: delegate?.isFavorite(tabID) == true,
                                  lastActive: live.lastActive, lastExemption: live.lastExemption)
         }
         return policy.plan(for: candidates, now: .now)

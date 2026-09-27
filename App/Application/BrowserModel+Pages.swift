@@ -4,8 +4,8 @@ import Foundation
 
 /// Live page events, applied to the session only while their tab still exists.
 extension BrowserModel: WebPageRegistryDelegate {
-    func isPinned(_ tabID: UUID) -> Bool {
-        session.tabs.first { $0.id == tabID }?.isPinned == true
+    func isFavorite(_ tabID: UUID) -> Bool {
+        session.tabs.first { $0.id == tabID }?.isFavorite == true
     }
 
     func page(_ tabID: UUID, didUpdateURL url: URL, title: String) {

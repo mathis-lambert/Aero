@@ -42,11 +42,33 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
 public struct BrowserSpace: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
     public let profileID: UUID
+    /// Groups of favorites, in the sidebar's order.
+    public internal(set) var groups: [TabGroup]
 
     public init(id: UUID = UUID(), profileID: UUID) {
         self.id = id
         self.profileID = profileID
+        groups = []
     }
+}
+
+/// A folder of favorites in the sidebar.
+public struct TabGroup: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public var name: String
+    public var isCollapsed: Bool
+}
+
+/// Where a tab shows in its profile's sidebar.
+public enum TabPlace: Codable, Hashable, Sendable {
+    /// A favorite, as a tile in the grid.
+    case grid
+    /// A favorite, as a row under the grid: loose, or in a group of its space.
+    case list(group: UUID?)
+    /// An open tab: closing it removes it.
+    case open
+
+    public var isFavorite: Bool { self != .open }
 }
 
 public struct BrowserTab: Identifiable, Codable, Equatable, Sendable {
@@ -54,15 +76,20 @@ public struct BrowserTab: Identifiable, Codable, Equatable, Sendable {
     public let spaceID: UUID
     public var url: URL
     public var title: String
-    public var isPinned: Bool
+    /// The name given in the sidebar, which the page's title never replaces.
+    public var name: String?
+    public var place: TabPlace
 
-    public init(id: UUID = UUID(), spaceID: UUID, url: URL, title: String = "", isPinned: Bool = false) {
+    public init(id: UUID = UUID(), spaceID: UUID, url: URL, title: String = "", name: String? = nil, place: TabPlace = .open) {
         self.id = id
         self.spaceID = spaceID
         self.url = url
         self.title = title
-        self.isPinned = isPinned
+        self.name = name
+        self.place = place
     }
+
+    public var isFavorite: Bool { place.isFavorite }
 }
 
 public enum SessionError: Error, Equatable {
@@ -136,21 +163,84 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         tabs[index].title = title
     }
 
-    public mutating func togglePin(id: UUID) {
-        guard let index = tabs.firstIndex(where: { $0.id == id }) else { return }
-        tabs[index].isPinned.toggle()
-    }
-
-    /// Moves a tab before another tab of its space, or to the end, and sets its pin state.
-    /// Tabs never change space this way.
-    public mutating func moveTab(id: UUID, before targetID: UUID?, pinned: Bool) -> Bool {
+    /// Moves a tab before another tab of its space, or to the end, into `place`. Tabs never change
+    /// space this way, and only enter a group of their own space.
+    public mutating func move(id: UUID, to place: TabPlace, before targetID: UUID?) -> Bool {
         guard id != targetID, let index = tabs.firstIndex(where: { $0.id == id }) else { return false }
-        if let targetID, tabs.first(where: { $0.id == targetID })?.spaceID != tabs[index].spaceID { return false }
+        let spaceID = tabs[index].spaceID
+        if let targetID, tabs.first(where: { $0.id == targetID })?.spaceID != spaceID { return false }
+        guard isValid(place, in: spaceID) else { return false }
         var tab = tabs.remove(at: index)
-        tab.isPinned = pinned
+        tab.place = place
         let destination = targetID.flatMap { target in tabs.firstIndex { $0.id == target } } ?? tabs.endIndex
         tabs.insert(tab, at: destination)
         return true
+    }
+
+    /// A blank name gives back the page's title.
+    public mutating func rename(id: UUID, to name: String) {
+        guard let index = tabs.firstIndex(where: { $0.id == id }) else { return }
+        tabs[index].name = Self.trimmed(name)
+    }
+
+    /// An open tab with the original's address and name: after it, or after the open tabs when
+    /// the original is a favorite.
+    public mutating func duplicate(id: UUID) -> BrowserTab? {
+        guard let index = tabs.firstIndex(where: { $0.id == id }) else { return nil }
+        let original = tabs[index]
+        let copy = BrowserTab(spaceID: original.spaceID, url: original.url, title: original.title, name: original.name)
+        tabs.insert(copy, at: original.isFavorite ? tabs.endIndex : index + 1)
+        return copy
+    }
+
+    /// Replaces the tab with a new one at the end of another space, so nothing of the first
+    /// profile's page carries over. A favorite stays one, outside any group.
+    public mutating func transfer(id: UUID, to spaceID: UUID) -> BrowserTab? {
+        guard spaces.contains(where: { $0.id == spaceID }), let index = tabs.firstIndex(where: { $0.id == id }),
+              tabs[index].spaceID != spaceID else { return nil }
+        let original = tabs.remove(at: index)
+        let place: TabPlace = switch original.place {
+        case .grid: .grid
+        case .list: .list(group: nil)
+        case .open: .open
+        }
+        let tab = BrowserTab(spaceID: spaceID, url: original.url, title: original.title, name: original.name, place: place)
+        tabs.append(tab)
+        return tab
+    }
+
+    public mutating func addGroup(named name: String, in spaceID: UUID) -> TabGroup? {
+        guard let index = spaces.firstIndex(where: { $0.id == spaceID }), let name = Self.trimmed(name) else { return nil }
+        let group = TabGroup(id: UUID(), name: name, isCollapsed: false)
+        spaces[index].groups.append(group)
+        return group
+    }
+
+    /// A blank name keeps the current one.
+    public mutating func renameGroup(id: UUID, to name: String) {
+        guard let name = Self.trimmed(name) else { return }
+        updateGroup(id) { $0.name = name }
+    }
+
+    public mutating func setGroupCollapsed(id: UUID, _ collapsed: Bool) {
+        updateGroup(id) { $0.isCollapsed = collapsed }
+    }
+
+    /// Its favorites stay, as loose rows.
+    public mutating func removeGroup(id: UUID) {
+        for index in spaces.indices { spaces[index].groups.removeAll { $0.id == id } }
+        for index in tabs.indices where tabs[index].place == .list(group: id) { tabs[index].place = .list(group: nil) }
+    }
+
+    private mutating func updateGroup(_ id: UUID, _ change: (inout TabGroup) -> Void) {
+        for space in spaces.indices {
+            if let group = spaces[space].groups.firstIndex(where: { $0.id == id }) { change(&spaces[space].groups[group]) }
+        }
+    }
+
+    private func isValid(_ place: TabPlace, in spaceID: UUID) -> Bool {
+        guard case .list(let group?) = place else { return true }
+        return spaces.first { $0.id == spaceID }?.groups.contains { $0.id == group } == true
     }
 
     @discardableResult
@@ -174,8 +264,16 @@ public struct BrowserSession: Codable, Equatable, Sendable {
               profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name && (try? Self.validEmoji($0.emoji)) == $0.emoji }),
               profiles.allSatisfy({ profile in spaces.contains { $0.profileID == profile.id } }),
               spaces.allSatisfy({ profileIDs.contains($0.profileID) }),
-              tabs.allSatisfy({ spaceIDs.contains($0.spaceID) && NavigationInput.isTabURL($0.url) })
+              Set(spaces.flatMap(\.groups).map(\.id)).count == spaces.flatMap(\.groups).count,
+              spaces.allSatisfy({ $0.groups.allSatisfy { Self.trimmed($0.name) == $0.name } }),
+              tabs.allSatisfy({ spaceIDs.contains($0.spaceID) && NavigationInput.isTabURL($0.url) && isValid($0.place, in: $0.spaceID) }),
+              tabs.allSatisfy({ $0.name.map { Self.trimmed($0) == $0 } ?? true })
         else { throw SessionError.inconsistentData }
+    }
+
+    private static func trimmed(_ value: String) -> String? {
+        let value = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? nil : value
     }
 
     private static func validEmoji(_ value: String?) throws -> String? {

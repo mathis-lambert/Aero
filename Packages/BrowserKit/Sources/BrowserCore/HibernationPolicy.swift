@@ -3,14 +3,14 @@ import Foundation
 package struct HibernationCandidate: Sendable {
     package let tabID: UUID
     package let isActive: Bool
-    package let isPinned: Bool
+    package let isFavorite: Bool
     package let lastActive: ContinuousClock.Instant
     package let lastExemption: ContinuousClock.Instant?
 
-    package init(tabID: UUID, isActive: Bool, isPinned: Bool, lastActive: ContinuousClock.Instant, lastExemption: ContinuousClock.Instant?) {
+    package init(tabID: UUID, isActive: Bool, isFavorite: Bool, lastActive: ContinuousClock.Instant, lastExemption: ContinuousClock.Instant?) {
         self.tabID = tabID
         self.isActive = isActive
-        self.isPinned = isPinned
+        self.isFavorite = isFavorite
         self.lastActive = lastActive
         self.lastExemption = lastExemption
     }
@@ -58,7 +58,7 @@ package struct HibernationPolicy: Sendable {
         guard settings.isEnabled else { return HibernationPlan(dueTabIDs: [], nextEvaluation: nil) }
         let background = candidates.filter { !$0.isActive }
         let eligible = background
-            .filter { !(settings.keepsPinnedTabsLoaded && $0.isPinned) }
+            .filter { !(settings.keepsFavoritesLoaded && $0.isFavorite) }
             .sorted { $0.lastActive < $1.lastActive }
         var overflow = background.count - liveBackgroundPageLimit
         var due: [UUID] = []

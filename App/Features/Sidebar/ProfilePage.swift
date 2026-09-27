@@ -1,96 +1,131 @@
+import AppKit
 import BrowserCore
 import SwiftUI
 
-/// One profile's tabs in the sidebar: pinned tiles, New Tab and the tab list. Pages of other
-/// profiles are records only; choosing a tab there switches to its profile.
+/// One profile's tabs in the sidebar: its favorites (the grid, its groups and loose rows), a line,
+/// then New Tab and its open tabs. A tab dragged over the page is shown where it would land.
+/// Pages of other profiles are records only; choosing a tab there switches to its profile.
+/// See docs/BROWSING.md › Favorites and open tabs.
 struct ProfilePage: View {
     let browser: BrowserModel
     let profile: BrowserProfile
     let space: BrowserSpace
     @Namespace private var selection
-    @State private var targetedTabID: UUID?
-    @State private var endTargeted = false
+    @State private var drop: TabDrop?
+    @State private var dragSessionID: DragSession.ID?
+    @State private var layout = TabDropLayout()
 
     var body: some View {
-        let tabs = browser.tabs(in: space)
+        let tabs = SidebarTabs(session: browser.session, space: space, drop: drop)
         let isCurrent = profile.id == browser.window.selectedProfileID
         let selectedTabID = isCurrent ? browser.window.selectedTabID : nil
+        let lifted = drop?.tabID
         ScrollView {
-            VStack(alignment: .leading, spacing: 4) {
-                PinnedTabsGrid(browser: browser, pinned: tabs.filter(\.isPinned), selectedTabID: selectedTabID, select: select)
+            VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
+                FavoritesGrid(browser: browser, tabs: tabs.grid, selectedTabID: selectedTabID, lifted: lifted, layout: layout)
+                    .dropFrame(.section(.grid), in: layout)
 
-                Button { newTab() } label: {
-                    HStack(spacing: BrowserDesign.rowInset) {
-                        Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
-                        Text("New tab")
-                        Spacer()
-                    }
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, BrowserDesign.rowInset)
-                    .frame(height: BrowserDesign.controlHeight)
-                    .contentShape(Rectangle())
+                ForEach(tabs.groups, id: \.group.id) { group, tabs in
+                    TabGroupSection(browser: browser, group: group, tabs: tabs, selectedTabID: selectedTabID, lifted: lifted, selection: selection, layout: layout)
+                        .dropFrame(.section(.list(group: group.id)), in: layout)
                 }
-                .buttonStyle(QuietButtonStyle())
-                .accessibilityIdentifier("sidebar.newTab")
 
-                if isCurrent, selectedTabID == nil {
-                    HStack(spacing: BrowserDesign.rowInset) {
-                        Image(systemName: "magnifyingglass").font(BrowserDesign.Typography.label).frame(width: BrowserDesign.rowIconWidth)
-                        Text("New tab")
-                        Spacer()
-                    }
-                    .padding(.horizontal, BrowserDesign.rowInset)
-                    .frame(height: BrowserDesign.tabRowHeight)
-                    .background { SelectionHighlight(namespace: selection) }
-                    .accessibilityAddTraits(.isSelected)
+                // The line takes drops for the loose favorites above it, which may be none.
+                VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
+                    ForEach(tabs.loose) { row($0, selectedTabID: selectedTabID, lifted: lifted) }
+                    Hairline().padding(.vertical, 6)
+                        .frame(minHeight: tabs.loose.isEmpty ? 30 : nil)
+                        .accessibilityIdentifier("sidebar.pinnedDropZone")
                 }
-                ForEach(tabs.filter { !$0.isPinned }) { tab in
-                    TabRow(tab: tab, selected: selectedTabID == tab.id, selection: selection,
-                           select: { select(tab) }, close: { browser.closeTab(tab.id) }) {
-                        FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
-                            Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe")
-                                .font(BrowserDesign.Typography.chrome).foregroundStyle(.secondary)
-                        }
-                    }
-                    .contextMenu { TabContextMenu(tab: tab, browser: browser) }
-                    .draggable(tab.dragItem)
-                    .dropDestination(for: TabDragItem.self) { items, _ in
-                        drop(items, before: tab.id)
-                    } isTargeted: { targetedTabID = $0 ? tab.id : (targetedTabID == tab.id ? nil : targetedTabID) }
-                    .overlay(alignment: .top) { if targetedTabID == tab.id { DropIndicator() } }
+                .dropFrame(.section(.list(group: nil)), in: layout)
+
+                VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
+                    newTabButton(selected: isCurrent && selectedTabID == nil)
+                    ForEach(tabs.open) { row($0, selectedTabID: selectedTabID, lifted: lifted) }
                 }
-                // The rest of the list accepts drops at the end.
-                Color.clear
-                    .frame(height: BrowserDesign.tabRowHeight)
-                    .contentShape(Rectangle())
-                    .dropDestination(for: TabDragItem.self) { items, _ in
-                        drop(items, before: nil)
-                    } isTargeted: { endTargeted = $0 }
-                    .overlay(alignment: .top) { if endTargeted { DropIndicator() } }
-                    .accessibilityHidden(true)
+                .dropFrame(.section(.open), in: layout)
             }
             .browserAnimation(value: selectedTabID)
-            .browserAnimation(value: tabs.map(\.id))
-            .browserAnimation(value: tabs.map(\.isPinned))
+            .browserAnimation(value: tabs.order)
+            .browserAnimation(value: layout.draggedTabID != nil)
+            .browserAnimation(value: space.groups)
             .padding(.horizontal, BrowserDesign.rowInset)
             .padding(.top, 12)
         }
+        .tint(profile.color.tint)
+        .accentColor(profile.color.tint)
         .scrollIndicators(.hidden)
+        .coordinateSpace(.named(TabDropLayout.space))
+        .overlay(SidebarDropTarget(browser: browser, space: space, layout: layout,
+                                   onMove: { update(at: $0, tabs: tabs) }, onDrop: performDrop))
+        .onDragSessionUpdated { session in
+            switch session.phase {
+            case .initial, .active:
+                guard session.id != dragSessionID,
+                      let id = session.draggedItemIDs(for: UUID.self).first,
+                      browser.tabs(in: space).contains(where: { $0.id == id }) else { return }
+                dragSessionID = session.id
+                layout.draggedTabID = id
+                NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
+            case .ended:
+                if session.id == dragSessionID { layout.draggedTabID = nil }
+            default: break
+            }
+        }
+        .onChange(of: tabs.frameTargets, initial: true) { _, targets in
+            layout.frames = layout.frames.filter { targets.contains($0.key) }
+        }
+        .onChange(of: layout.draggedTabID) { _, id in if id == nil { drop = nil } }
     }
 
-    private func select(_ tab: BrowserTab) {
-        browser.switchProfile(profile.id)
-        browser.selectTab(tab.id)
+    private func row(_ tab: BrowserTab, selectedTabID: UUID?, lifted: UUID?) -> some View {
+        TabRow(browser: browser, tab: tab, selected: selectedTabID == tab.id, lifted: lifted == tab.id, selection: selection, layout: layout)
     }
 
-    private func newTab() {
-        browser.switchProfile(profile.id)
-        browser.perform(.newTab)
+    private func newTabButton(selected: Bool) -> some View {
+        Button {
+            browser.switchProfile(profile.id)
+            browser.perform(.newTab)
+        } label: {
+            HStack(spacing: BrowserDesign.rowInset) {
+                Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
+                Text("New tab")
+                Spacer()
+            }
+            .foregroundStyle(selected ? .primary : .secondary)
+            .padding(.horizontal, BrowserDesign.rowInset)
+            .frame(height: BrowserDesign.tabRowHeight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(QuietButtonStyle())
+        .background { if selected { SelectionHighlight(namespace: selection) } }
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("sidebar.newTab")
     }
 
-    private func drop(_ items: [TabDragItem], before targetID: UUID?) -> Bool {
-        guard let item = items.first else { return false }
-        browser.moveTab(item.tabID, before: targetID, pinned: false)
+    /// Native tracking also reports leaving the page and keeps the preview in sync with the gap.
+    private func update(at point: CGPoint?, tabs: SidebarTabs) -> TabPlace? {
+        guard let point, let tabID = layout.draggedTabID,
+              browser.tabs(in: space).contains(where: { $0.id == tabID }) else {
+            drop = nil
+            return nil
+        }
+        let next = layout.destination(at: point, for: tabID, in: tabs, current: drop?.destination)
+            .map { TabDrop(tabID: tabID, destination: $0) }
+        if next != drop {
+            if next != nil { NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now) }
+            drop = next
+        }
+        return next?.destination.place
+    }
+
+    /// This local drop commits synchronously, before AppKit ends the drag and the target folds.
+    private func performDrop() -> Bool {
+        defer { drop = nil; layout.draggedTabID = nil }
+        guard let drop, layout.draggedTabID == drop.tabID,
+              browser.tabs(in: space).contains(where: { $0.id == drop.tabID }) else { return false }
+        browser.moveTab(drop.tabID, to: drop.destination.place, before: drop.destination.before)
+        NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
         return true
     }
 }

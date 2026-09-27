@@ -1,7 +1,7 @@
 import BrowserCore
 import Foundation
 
-/// How the chrome names pages: by their title, or by their site when they have none.
+/// How the chrome names pages: by the name given to their tab, their title, or their site.
 extension URL {
     /// The host as people say it, without `www.` (`www.youtube.com` reads `youtube.com`), or the
     /// whole address when it has none.
@@ -13,6 +13,7 @@ extension URL {
 
 extension BrowserTab {
     var displayTitle: String {
+        if let name { return name }
         if let page = InternalPage(url: url) { return page.title }
         return title.isEmpty ? url.siteName : title
     }

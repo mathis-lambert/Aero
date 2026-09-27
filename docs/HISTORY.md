@@ -28,7 +28,7 @@ The store opens lazily on first use, so launching the browser never waits for it
 
 ## Internal pages
 
-Browser pages use the `aero` scheme and are drawn natively in the page surface: no `WKWebView` and no web process is created for them. They are ordinary tab records, so they are restored after a relaunch, reordered, pinned and closed like other tabs. Typing `aero://history` in the address field opens the page.
+Browser pages use the `aero` scheme and are drawn natively in the page surface: no `WKWebView` and no web process is created for them. They are ordinary tab records, so they are restored after a relaunch, reordered, made favorites and closed like other tabs. Typing `aero://history` in the address field opens the page.
 
 Failure modes:
 

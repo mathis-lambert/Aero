@@ -4,16 +4,16 @@ import Testing
 
 private let now = ContinuousClock.now
 private let minute = HibernationSettings.minute
-private let settings = HibernationSettings(isEnabled: true, idleLimit: minute * 30, keepsPinnedTabsLoaded: false)
+private let settings = HibernationSettings(isEnabled: true, idleLimit: minute * 30, keepsFavoritesLoaded: false)
 
 private func candidate(
     idle: Duration,
     active: Bool = false,
-    pinned: Bool = false,
+    favorite: Bool = false,
     exemptedAgo: Duration? = nil,
     id: UUID = UUID()
 ) -> HibernationCandidate {
-    HibernationCandidate(tabID: id, isActive: active, isPinned: pinned, lastActive: now - idle,
+    HibernationCandidate(tabID: id, isActive: active, isFavorite: favorite, lastActive: now - idle,
                          lastExemption: exemptedAgo.map { now - $0 })
 }
 
@@ -27,12 +27,12 @@ private func candidate(
     #expect(plan.nextEvaluation == recent.lastActive + settings.idleLimit)
 }
 
-@Test func pinnedPagesStayLoadedOnlyWhenRequested() {
-    let pinned = candidate(idle: minute * 60, pinned: true)
-    var keepPinned = settings
-    keepPinned.keepsPinnedTabsLoaded = true
-    #expect(HibernationPolicy(settings: settings, liveBackgroundPageLimit: 10).plan(for: [pinned], now: now).dueTabIDs == [pinned.tabID])
-    #expect(HibernationPolicy(settings: keepPinned, liveBackgroundPageLimit: 10).plan(for: [pinned], now: now).dueTabIDs.isEmpty)
+@Test func favoritesStayLoadedOnlyWhenRequested() {
+    let favorite = candidate(idle: minute * 60, favorite: true)
+    var keepFavorites = settings
+    keepFavorites.keepsFavoritesLoaded = true
+    #expect(HibernationPolicy(settings: settings, liveBackgroundPageLimit: 10).plan(for: [favorite], now: now).dueTabIDs == [favorite.tabID])
+    #expect(HibernationPolicy(settings: keepFavorites, liveBackgroundPageLimit: 10).plan(for: [favorite], now: now).dueTabIDs.isEmpty)
 }
 
 @Test func memoryPressureShortensTheIdleLimit() {

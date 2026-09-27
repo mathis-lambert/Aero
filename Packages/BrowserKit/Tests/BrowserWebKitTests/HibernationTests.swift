@@ -3,7 +3,7 @@ import Foundation
 import Testing
 @testable import BrowserWebKit
 
-private let immediate = HibernationSettings(isEnabled: true, idleLimit: .zero, keepsPinnedTabsLoaded: false)
+private let immediate = HibernationSettings(isEnabled: true, idleLimit: .zero, keepsFavoritesLoaded: false)
 private let pollInterval = Duration.milliseconds(20)
 private let loadTimeout = Duration.seconds(10)
 

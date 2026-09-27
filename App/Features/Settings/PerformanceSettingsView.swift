@@ -21,9 +21,9 @@ struct PerformanceSettingsView: View {
                 }
                 .disabled(!settings.isEnabled)
                 .accessibilityIdentifier("settings.hibernation.idleLimit")
-                Toggle("Keep pinned tabs awake", isOn: binding(\.keepsPinnedTabsLoaded))
+                Toggle("Keep favorites awake", isOn: binding(\.keepsFavoritesLoaded))
                     .disabled(!settings.isEnabled)
-                    .accessibilityIdentifier("settings.hibernation.keepsPinned")
+                    .accessibilityIdentifier("settings.hibernation.keepsFavorites")
             } footer: {
                 Text("Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner.")
             }

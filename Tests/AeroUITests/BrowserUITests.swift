@@ -157,7 +157,7 @@ final class BrowserUITests: BrowserE2ETestCase {
         XCTAssertTrue(idleLimit.isEnabled)
         enabled.click()
         XCTAssertFalse(idleLimit.isEnabled)
-        XCTAssertFalse(app.switches["settings.hibernation.keepsPinned"].isEnabled)
+        XCTAssertFalse(app.switches["settings.hibernation.keepsFavorites"].isEnabled)
 
         relaunch()
         openSettings("Tabs")

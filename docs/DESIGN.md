@@ -24,7 +24,7 @@ Tokens and shared components live in `App/Design/BrowserDesign.swift`: `BrowserD
 ## Layout
 
 - The website fills the rounded page frame from its top edge; there is no top bar or native toolbar.
-- The sidebar's first row holds the window controls (standard AppKit buttons created through public API), sidebar toggle, back, forward and reload; the second holds the current address. Then one page per profile with pinned tiles, New Tab and the tab list, and a footer with the downloads button, the profiles and a button to add one (`docs/PROFILES.md`).
+- The sidebar's first row holds the window controls (standard AppKit buttons created through public API), sidebar toggle, back, forward and reload; the second holds the current address. Then one page per profile with its favorites, New Tab and its open tabs (`docs/BROWSING.md` › Favorites and open tabs), and a footer with the downloads button, the profiles and a button to add one (`docs/PROFILES.md`).
 - The hidden sidebar reappears over the page when the pointer reaches the left edge; its hover area includes its margin so it does not close on the way in.
 - The find bar floats over the page's top trailing corner; a miss shows text, the `miss` border and a short shake.
 - Settings is the system's Settings window: a toolbar tab per section (General, Tabs, Profiles, Extensions), each a grouped form of working options only, with native controls. Profiles are edited in place there. ⌘, opens it and ⌘W closes it. Language changes apply at the next launch, and say so.

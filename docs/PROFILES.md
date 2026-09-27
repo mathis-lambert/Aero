@@ -4,7 +4,7 @@ A profile owns a browsing identity: its website store, its history and one space
 
 ## Sidebar
 
-- The sidebar's tab area (pinned tiles, New Tab and the tab list) is one page per profile, side by side (`ProfilePager`). A horizontal two-finger swipe drags the pages and, released past a quarter of the width, moves to the neighbouring profile; otherwise they spring back. A gesture that starts vertically scrolls the tab list. Only the selected page and its neighbours are built.
+- The sidebar's tab area (favorites, New Tab and the open tabs) is one page per profile, side by side (`ProfilePager`). A horizontal two-finger swipe drags the pages and, released past a quarter of the width, moves to the neighbouring profile; otherwise they spring back. A gesture that starts vertically scrolls the tab list. Only the selected page and its neighbours are built.
 - The footer shows the downloads button on the leading side, one icon per profile in the middle, and a button to add a profile on the trailing side. A profile's icon is its emoji, or a dot in its color when it has none; the selected profile's icon is highlighted, and every icon names the profile in its tooltip and accessibility label.
 - Clicking a profile's icon slides to its page. The icon's context menu edits the profile.
 - Switching profiles, by either means, selects the tab the profile last showed (or its New Tab page) and closes the control bar and the find bar. Pages of other profiles are records only: sliding past them never loads a website.

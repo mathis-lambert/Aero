@@ -82,13 +82,34 @@ Failure modes:
 
 Verification: E2E `testDownloadCompletesAndCanBeCleared` opens the popover, waits for the download and clears it once finished (8). Isolated `DownloadFilenameTests` cover 1–2. By construction: 3 (the ring updates in whole percents, `BrowserDownload.progressStep`), 7 (Clear removes only downloads that stopped, `clearInactive`), 9 (the flight is triggered only by `DownloadCoordinator.lastStarted`, which a new download sets). 10 and 11 are checked by hand.
 
-## Reordering and pinning
+## Favorites and open tabs
 
-Tabs drag within the list, onto the pinned grid to pin and back to unpin, with an insertion line. Dragged to another app, a tab exports its address.
+A profile's sidebar has three ordered areas: a favorites grid, pinned favorite rows (optionally grouped), then a separator, New Tab and ordinary open tabs.
 
-Failure modes: a drop lands in the wrong place or loses the tab; a tab changes space; text or files from other apps are taken for a tab.
+- **Favorites** stay when closed: ⌘W, the close button or Close unloads the page and keeps the favorite in its place; clicking it loads its address again. A favorite shows as a tile in the grid (its favicon, three per row), or as a row under the grid, loose or in a group. A group opens and closes from its header, and remembers it; Ungroup keeps its favorites, as loose rows.
+- **Favorite lifecycle**: an opened favorite row shows a minus; closing releases its page but retains its record. A closed row shows a remove cross on hover. Removing an open favorite from its menu makes it an ordinary tab; removing a closed favorite deletes it. Open/closed favorite state is runtime-only and independent of WebKit hibernation. Favorites start closed after relaunch. Placement and ordering remain in the versioned session JSON, with one `TabPlace` per record; no parallel favorites table or duplicated URL record.
+- **New Tab** is one permanent selectable row. Selecting it or pressing ⌘T highlights that row; entering an address creates an ordinary tab below it. There is no duplicate New Tab row or close control.
+- **Open tabs** close for good; Reopen Closed Tab brings them back.
+- **Dragging** moves a tab or a favorite anywhere in its profile's page: into the grid, where the tiles part where it will land, between rows, into a group (onto its header, or between its rows when it is open) or among the open tabs. The gap follows the pointer; releasing lands the tab in it. Only during a drag, an empty grid reveals a profile-colored dashed target with a plus. It animates in on pickup and out on drop or cancellation, respecting Reduce Motion. An idle or populated grid has no extra target. The two native preview images are cached while the drag is over the sidebar. Haptic feedback marks pickup, a changed insertion position and drop. SwiftUI owns pickup and cancellation. A profile-local AppKit drop target changes the preview and commits the chosen position synchronously; it does not intercept ordinary clicks. Dragged to another app, a tab exports its address. Tabs from another profile, text and files are refused.
+- **Context menu**: Add to Favorites or Remove from Favorites, Duplicate (an open tab with the same address, after it), New Group with Tab, Move to Group, Move to Profile (a new tab in that profile, loaded with its website data; a favorite stays a favorite, outside any group), Rename… (in place; an empty name gives back the page's title) and Close. A group's menu has Rename… and Ungroup.
 
-Verification: E2E `testTabsReorderAndPinByDragging`.
+Failure modes:
+
+1. A closed favorite disappears, or its page keeps running.
+2. A drop lands somewhere other than the gap shown, or the gap jumps back and forth under a still pointer because the tiles moved under it.
+3. A drag that ends outside the sidebar or in another app leaves a gap, a hidden tab or a changed order.
+4. A tab changes profile through a drag, a tab from another profile's page is taken, or text and files are taken for a tab.
+5. A tab points to a group that does not exist (removed, in another space, or a tampered session), or ungrouping loses favorites.
+6. A tab moved to another profile keeps its live page, and so the first profile's cookies, or a late event of that page updates it.
+7. A blank name is saved, the page's later titles replace the given name, or Escape saves the edit.
+8. Closing a selected favorite leaves a closed page on screen; a duplicate or a move selects the wrong tab.
+9. Favorites, groups, names and their order are lost on relaunch.
+10. Animated transitions ignore Reduce Motion, or decorative animations continue while idle.
+11. An empty drop target remains visible while idle, or disappears before the chosen destination is committed.
+
+Verification: E2E `testTabsMoveByDraggingAndFavoritesStayWhenClosed` (reordering, the grid from both sides, a closed favorite, back to the open tabs; 1–2, 8), `testGroupsRenameAndDuplicateSurviveRelaunch` (a group from the menu, Move to Group, collapsing, Rename, Escape, Duplicate, relaunch, Ungroup; 5, 7–9) and `ProfilesE2ETests.testTabMovesToAnotherProfile` (6). Isolated `BrowserSessionTests` cover the session rules the UI cannot reach (4–5): moves across spaces and into foreign groups are refused, and a saved tab in an unknown group fails validation. Cancellation outside the sidebar is covered by `testTabsMoveByDraggingAndFavoritesStayWhenClosed`. Layout and selection transitions use `browserAnimation`; Reduce Motion and physical haptic feedback still require manual verification.
+
+Favorites interaction verification also includes `EssentialsE2ETests.testEmptyGridAndPinnedRowCloseThenRemove` for the empty grid, grid-to-list drop, minus/close/reopen/remove and deletion after relaunch. The permanent New Tab row is covered by `testNewTabIsOnePermanentSelectableRow`. Expanded French labels are exercised by `testFavoritesWithExpandedFrenchLabels`. Physical trackpad haptics and actual RTL rendering still require a manual check on supported hardware.
 
 ## Quitting
 

@@ -24,8 +24,10 @@ struct ProfilePager: View {
         ZStack {
             ForEach(Array(profiles.enumerated()), id: \.element.id) { position, profile in
                 if abs(position - index) <= 1, let space = browser.space(of: profile.id) {
+                    // Neighbours are off screen, so VoiceOver skips them too.
                     ProfilePage(browser: browser, profile: profile, space: space)
                         .offset(x: CGFloat(position - index) * width + offset)
+                        .accessibilityHidden(position != index)
                 }
             }
         }

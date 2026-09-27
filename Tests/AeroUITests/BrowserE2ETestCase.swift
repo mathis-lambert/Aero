@@ -58,6 +58,14 @@ class BrowserE2ETestCase: XCTestCase {
         XCTAssertTrue(app.webViews.staticTexts[text].waitForExistence(timeout: Self.pageTimeout), "\(fixture) loaded")
     }
 
+    /// Chooses `item` in the submenu `submenu` of the open menu, queried within that submenu.
+    func chooseInSubmenu(_ submenu: String, _ item: String) {
+        app.menuItems[submenu].click()
+        let choice = app.menuItems[submenu].menuItems[item]
+        XCTAssertTrue(choice.waitForExistence(timeout: Self.renderTimeout), "\(submenu) shows \(item)")
+        choice.click()
+    }
+
     func relaunch() {
         app.terminate()
         app.launch()

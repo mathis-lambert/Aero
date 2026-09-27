@@ -286,7 +286,7 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
         func indexInWindow(for context: WKWebExtensionContext) -> Int { owner.host?.tabIDs(inProfile: owner.profileID).firstIndex(of: id) ?? NSNotFound }
         func title(for context: WKWebExtensionContext) -> String? { owner.host?.tab(id)?.title }
         func url(for context: WKWebExtensionContext) -> URL? { owner.host?.tab(id)?.url }
-        func isPinned(for context: WKWebExtensionContext) -> Bool { owner.host?.tab(id)?.isPinned == true }
+        func isPinned(for context: WKWebExtensionContext) -> Bool { owner.host?.tab(id)?.isFavorite == true }
         func isSelected(for context: WKWebExtensionContext) -> Bool { owner.host?.selectedTabID(inProfile: owner.profileID) == id }
         /// A hibernated tab has no view; WebKit then reports it without one.
         func webView(for context: WKWebExtensionContext) -> WKWebView? { owner.pages(id)?.webView }

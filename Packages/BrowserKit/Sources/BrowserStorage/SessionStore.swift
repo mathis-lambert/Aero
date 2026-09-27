@@ -6,7 +6,7 @@ public actor SessionStore {
     package enum Failure: Error { case unsupportedVersion }
 
     private struct Document: Codable {
-        static let currentVersion = 1
+        static let currentVersion = 2
         var version = currentVersion
         let session: BrowserSession
     }

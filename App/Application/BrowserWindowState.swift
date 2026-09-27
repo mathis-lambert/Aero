@@ -14,16 +14,28 @@ final class BrowserWindowState {
     /// Popovers on the sidebar's reload button and address; the sidebar appears for them when hidden.
     var siteSettingsPresented = false
     var controlCenterPresented = false
+    /// The tab or group whose name is being edited in the sidebar.
+    var renaming: RenameTarget?
     /// Counts copies, so the address can confirm each one.
     var linkCopies = 0
 
     /// Extension buttons on screen, for popups to hang from; keyed by extension, or `ExtensionAnchor.controlCenter`.
     @ObservationIgnored let extensionAnchors = NSMapTable<NSString, NSView>.strongToWeakObjects()
 
+    /// Ends the edit of `target` only, so a newer one started meanwhile stays open.
+    func endRenaming(_ target: RenameTarget) {
+        if renaming == target { renaming = nil }
+    }
+
     var holdsSidebarOpen: Bool { siteSettingsPresented || controlCenterPresented }
     /// Changes when the New Tab page or a browser page should focus its search field.
     var inputFocusRequest = UUID()
     let find = FindInPage()
+}
+
+enum RenameTarget: Equatable {
+    case tab(UUID)
+    case group(UUID)
 }
 
 /// Everything the browser asks the person, each shown by one `Prompt` over the window.

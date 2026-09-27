@@ -25,6 +25,8 @@ final class BrowserModel {
     private let filterLists: FilterListUpdater?
     @ObservationIgnored private var extensionsTask: Task<Void, Never>?
     var currentPage: BrowserPage?
+    /// Explicitly opened favorites, including hibernated and internal pages. Runtime only.
+    private(set) var openedFavorites: Set<UUID> = []
 
     let pages: WebPageRegistry
     private let store: SessionStore
@@ -172,6 +174,7 @@ final class BrowserModel {
             pages.deactivate()
             return
         }
+        if tab.isFavorite { openedFavorites.insert(id) }
         let previous = window.selectedTabID
         if previous != id { window.find.dismiss() }
         window.selectedTabID = id
@@ -183,6 +186,12 @@ final class BrowserModel {
         } else {
             currentPage = pages.activate(tab, profileID: profileID)
         }
+    }
+
+    /// Selects a tab of any profile, switching to it first.
+    func showTab(_ tab: BrowserTab) {
+        if let profileID = profileID(of: tab) { switchProfile(profileID) }
+        selectTab(tab.id)
     }
 
     func open(_ url: URL) {
@@ -229,13 +238,6 @@ final class BrowserModel {
         if existing.url != url { persist() }
     }
 
-    /// Drops never move a tab into another space.
-    func moveTab(_ id: UUID, before targetID: UUID?, pinned: Bool) {
-        guard tabs.contains(where: { $0.id == id }), session.moveTab(id: id, before: targetID, pinned: pinned) else { return }
-        pages.refreshHibernationSchedule()
-        persist()
-    }
-
     /// Opens what the control bar chose, then closes the bar over the tab.
     func load(_ url: URL, in target: ControlBarTarget) {
         if target == .currentTab, let id = window.selectedTabID { navigate(id, to: url) }
@@ -243,22 +245,53 @@ final class BrowserModel {
         window.controlBar = nil
     }
 
-    /// Popups closed by their page are not offered by Reopen Closed Tab.
+    /// Closing a favorite unloads its page and keeps it. An open tab is removed; popups closed by
+    /// their page are not offered by Reopen Closed Tab.
     func closeTab(_ id: UUID, rememberForReopen: Bool = true) {
-        let oldTabs = tabs
-        guard let tab = session.close(id: id) else { return }
+        guard let tab = session.tabs.first(where: { $0.id == id }) else { return }
+        let wasSelected = window.selectedTabID == id
+        let next = wasSelected ? tabShown(afterRemoving: tab) : nil
         pages.close(tabID: id)
-        extensionsDidClose(tab)
-        if rememberForReopen {
-            closedTabs.append(tab)
-            if closedTabs.count > Self.maximumClosedTabs { closedTabs.removeFirst() }
-        }
+        openedFavorites.remove(id)
         recentTabs.removeAll { $0 == id }
-        if window.selectedTabID == id {
-            let index = oldTabs.firstIndex(where: { $0.id == id }) ?? 0
-            selectTab(tabs.isEmpty ? nil : tabs[min(index, tabs.count - 1)].id)
+        if !tab.isFavorite {
+            session.close(id: id)
+            extensionsDidClose(tab)
+            if rememberForReopen {
+                closedTabs.append(tab)
+                if closedTabs.count > Self.maximumClosedTabs { closedTabs.removeFirst() }
+            }
+            persist()
         }
-        persist()
+        if wasSelected { selectTab(next) }
+    }
+
+    func isTabOpen(_ tab: BrowserTab) -> Bool {
+        !tab.isFavorite || openedFavorites.contains(tab.id)
+    }
+
+    /// Removing a closed favorite deletes its record; an open one becomes an ordinary tab.
+    func removeFavorite(_ id: UUID) {
+        guard let tab = session.tabs.first(where: { $0.id == id }), tab.isFavorite else { return }
+        if isTabOpen(tab) {
+            moveTab(id, to: .open, before: nil)
+        } else {
+            session.close(id: id)
+            extensionsDidClose(tab)
+            persist()
+        }
+    }
+
+    /// The open tab below a removed one, else above; after a favorite, the tab shown before it.
+    private func tabShown(afterRemoving tab: BrowserTab) -> UUID? {
+        if tab.isFavorite {
+            let ids = Set(tabs.map(\.id))
+            return recentTabs.first { $0 != tab.id && ids.contains($0) }
+        }
+        let open = tabs.filter { !$0.isFavorite }
+        guard let index = open.firstIndex(where: { $0.id == tab.id }) else { return nil }
+        if open.indices.contains(index + 1) { return open[index + 1].id }
+        return index > 0 ? open[index - 1].id : nil
     }
 
     func reopenTab() {
@@ -270,9 +303,65 @@ final class BrowserModel {
         persist()
     }
 
-    func togglePin(_ id: UUID) {
-        session.togglePin(id: id)
-        pages.refreshHibernationSchedule()
+    /// Drops never move a tab into another space.
+    func moveTab(_ id: UUID, to place: TabPlace, before targetID: UUID?) {
+        let wasFavorite = session.tabs.first { $0.id == id }?.isFavorite
+        guard session.move(id: id, to: place, before: targetID) else { return }
+        if wasFavorite == false, place.isFavorite { openedFavorites.insert(id) }
+        if !place.isFavorite { openedFavorites.remove(id) }
+        if wasFavorite != place.isFavorite { pages.refreshHibernationSchedule() }
+        persist()
+    }
+
+    func duplicateTab(_ id: UUID) {
+        guard let copy = session.duplicate(id: id) else { return }
+        extensionsDidOpen(copy)
+        persist()
+        selectTab(copy.id)
+    }
+
+    /// The tab becomes a new one of the other profile, whose page loads with that profile's data.
+    func moveTab(_ id: UUID, toProfile profileID: UUID) {
+        guard let tab = session.tabs.first(where: { $0.id == id }), let spaceID = space(of: profileID)?.id else { return }
+        let wasSelected = window.selectedTabID == id
+        let next = wasSelected ? tabShown(afterRemoving: tab) : nil
+        guard let moved = session.transfer(id: id, to: spaceID) else { return }
+        pages.close(tabID: id)
+        openedFavorites.remove(id)
+        recentTabs.removeAll { $0 == id }
+        extensionsDidClose(tab)
+        extensionsDidOpen(moved)
+        persist()
+        if wasSelected { selectTab(next) }
+    }
+
+    /// Giving back the shown title leaves the tab named by its page.
+    func renameTab(_ id: UUID, to name: String) {
+        guard let tab = session.tabs.first(where: { $0.id == id }), tab.name != nil || name != tab.displayTitle else { return }
+        session.rename(id: id, to: name)
+        persist()
+    }
+
+    /// The group asks for its name at once.
+    func newGroup(with tabID: UUID) {
+        guard let spaceID = session.tabs.first(where: { $0.id == tabID })?.spaceID,
+              let group = session.addGroup(named: String(localized: "New Group"), in: spaceID) else { return }
+        moveTab(tabID, to: .list(group: group.id), before: nil)
+        window.renaming = .group(group.id)
+    }
+
+    func renameGroup(_ id: UUID, to name: String) {
+        session.renameGroup(id: id, to: name)
+        persist()
+    }
+
+    func setGroupCollapsed(_ id: UUID, _ collapsed: Bool) {
+        session.setGroupCollapsed(id: id, collapsed)
+        persist()
+    }
+
+    func removeGroup(_ id: UUID) {
+        session.removeGroup(id: id)
         persist()
     }
 

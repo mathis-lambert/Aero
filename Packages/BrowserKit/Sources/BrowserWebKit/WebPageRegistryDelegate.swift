@@ -5,7 +5,7 @@ import Foundation
 /// delegate ignores tabs it no longer has, so late events cannot resurrect closed tabs.
 @MainActor
 public protocol WebPageRegistryDelegate: AnyObject {
-    func isPinned(_ tabID: UUID) -> Bool
+    func isFavorite(_ tabID: UUID) -> Bool
     func page(_ tabID: UUID, didUpdateURL url: URL, title: String)
     /// The page committed a new address; reloads and hibernation restores are not reported.
     func page(_ tabID: UUID, didVisit url: URL)
