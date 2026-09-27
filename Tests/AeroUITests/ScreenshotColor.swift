@@ -14,6 +14,7 @@ struct ScreenshotColor {
     }
 
     /// Whether the pixel at `point` (in the element's coordinates, points) shows the expected color.
+    @MainActor
     func isShown(in element: XCUIElement, at point: CGPoint) -> Bool {
         let frame = element.frame
         guard frame.width > 0, frame.height > 0,

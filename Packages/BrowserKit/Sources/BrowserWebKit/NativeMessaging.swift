@@ -34,7 +34,7 @@ public struct NativeMessagingHost: Sendable {
 
 /// Chrome's framing: a 4-byte length in native byte order, then UTF-8 JSON.
 enum NativeMessage {
-    enum Failure: Error, Equatable { case tooLarge, invalid }
+    enum Failure: Error, Equatable { case tooLarge, invalid, closed }
 
     /// Chrome's limit for a message from the program.
     static let maximumIncomingLength = 1024 * 1024
@@ -72,6 +72,10 @@ final class NativeMessagingConnection {
     private let process = Process()
     private let input = Pipe()
     private let output = Pipe()
+    private static let maximumPendingBytes = 4 * 1024 * 1024
+    private var pendingBytes = 0
+    private var isClosed = false
+    private let writer = DispatchQueue(label: "Aero.NativeMessaging.writer", qos: .utility)
     private var reader = NativeMessage.Reader()
     private var onMessage: ((Any) -> Void)?
     private var onClose: (() -> Void)?
@@ -87,7 +91,9 @@ final class NativeMessagingConnection {
         process.standardOutput = output
         process.standardError = FileHandle.nullDevice
         // A write to a program that stopped reading fails instead of ending Aero with SIGPIPE.
-        fcntl(input.fileHandleForWriting.fileDescriptor, F_SETNOSIGPIPE, 1)
+        guard fcntl(input.fileHandleForWriting.fileDescriptor, F_SETNOSIGPIPE, 1) != -1 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
         output.fileHandleForReading.readabilityHandler = { [weak self] handle in
             let data = handle.availableData
             DispatchQueue.main.async { MainActor.assumeIsolated { self?.receive(data) } }
@@ -96,21 +102,46 @@ final class NativeMessagingConnection {
             DispatchQueue.main.async { MainActor.assumeIsolated { self?.finish() } }
         }
         try process.run()
+        // Only the child reads stdin and writes stdout. Keeping these ends open in Aero
+        // would hide EOF and broken-pipe errors when the host stops reading.
+        do {
+            try input.fileHandleForReading.close()
+            try output.fileHandleForWriting.close()
+        } catch {
+            close()
+            throw error
+        }
     }
 
+    isolated deinit { close() }
+
     func send(_ message: Any) throws {
-        guard process.isRunning else { return }
+        guard !isClosed, process.isRunning else { throw NativeMessage.Failure.closed }
         let frame = try NativeMessage.frame(message)
-        do {
-            try input.fileHandleForWriting.write(contentsOf: frame)
-        } catch {
+        guard frame.count <= Self.maximumPendingBytes - pendingBytes else {
             finish()
-            throw error
+            throw NativeMessage.Failure.tooLarge
+        }
+        pendingBytes += frame.count
+        let handle = input.fileHandleForWriting
+        // A host that stops reading must not block the UI. The serial queue preserves message order.
+        writer.async { [weak self] in
+            do {
+                try handle.write(contentsOf: frame)
+                DispatchQueue.main.async { self?.pendingBytes -= frame.count }
+            } catch {
+                DispatchQueue.main.async {
+                    self?.pendingBytes -= frame.count
+                    self?.finish()
+                }
+            }
         }
     }
 
     /// Ends the program from Aero's side, which reports nothing back.
     func close() {
+        guard !isClosed else { return }
+        isClosed = true
         onMessage = nil
         onClose = nil
         output.fileHandleForReading.readabilityHandler = nil

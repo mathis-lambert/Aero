@@ -24,7 +24,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         self.fallbackFilename = fallbackFilename
     }
 
-    func isDownloading(from tabID: UUID) -> Bool {
+    public func isDownloading(from tabID: UUID) -> Bool {
         downloads.contains { $0.sourceTabID == tabID && $0.state == .downloading }
     }
 
@@ -45,7 +45,8 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
 
     /// Resumes from where the transfer stopped when WebKit kept resume data, otherwise starts over.
     public func retry(_ record: BrowserDownload) {
-        guard record.state == .failed || record.state == .cancelled, let store = record.dataStore else { return }
+        guard record.state == .failed || record.state == .cancelled,
+              record.resumeData != nil || record.sourceURL != nil, let store = record.dataStore else { return }
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
         configuration.applicationNameForUserAgent = BrowserPage.userAgentName
@@ -53,16 +54,23 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         record.resumingView = view
         record.state = .downloading
         record.fractionCompleted = 0
+        record.completedBytes = 0
+        record.totalBytes = nil
         // WebKit calls these completion handlers on the main thread.
+        let started: @Sendable (WKDownload) -> Void = { [weak self] download in
+            MainActor.assumeIsolated {
+                guard let self, record.state == .downloading, record.resumingView === view else {
+                    download.cancel { _ in }
+                    return
+                }
+                self.attach(download, to: record)
+            }
+        }
         if let resumeData = record.resumeData {
             record.resumeData = nil
-            view.resumeDownload(fromResumeData: resumeData) { [weak self] download in
-                MainActor.assumeIsolated { self?.attach(download, to: record) }
-            }
+            view.resumeDownload(fromResumeData: resumeData, completionHandler: started)
         } else if let source = record.sourceURL {
-            view.startDownload(using: URLRequest(url: source)) { [weak self] download in
-                MainActor.assumeIsolated { self?.attach(download, to: record) }
-            }
+            view.startDownload(using: URLRequest(url: source), completionHandler: started)
         }
     }
 
@@ -114,7 +122,9 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
             return nil
         }
         let name = DownloadFilename.available(suggested: suggestedFilename, fallback: fallbackFilename) { candidate in
-            FileManager.default.fileExists(atPath: directory.appendingPathComponent(candidate).path)
+            let url = directory.appendingPathComponent(candidate)
+            return FileManager.default.fileExists(atPath: url.path)
+                || downloads.contains { $0 !== record && $0.state == .downloading && $0.destination == url }
         }
         let destination = directory.appendingPathComponent(name, isDirectory: false)
         record.filename = name
@@ -127,6 +137,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         record.completedBytes = download.progress.completedUnitCount
         record.fractionCompleted = 1
         record.state = .finished
+        record.resumeData = nil
         recordSource(of: record)
         finish(record)
     }

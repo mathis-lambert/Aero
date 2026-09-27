@@ -16,7 +16,13 @@ final class FindInPage {
 
     /// Prefills with the page's selection, like Safari, then focuses the field.
     func present(on page: BrowserPage) async {
-        if !isPresented, let selection = await page.selectedText() { query = selection }
+        generation += 1
+        let current = generation
+        if !isPresented {
+            let selection = await page.selectedText()
+            guard current == generation, !Task.isCancelled else { return }
+            if let selection { query = selection }
+        }
         isPresented = true
         focusRequest = UUID()
     }
@@ -29,13 +35,12 @@ final class FindInPage {
             return
         }
         let found = await page.find(query, backwards: backwards)
-        guard current == generation, isPresented else { return }
+        guard current == generation, isPresented, !Task.isCancelled else { return }
         if !found, !hasNoMatches { missCount += 1 }
         hasNoMatches = !found
     }
 
     func dismiss(returningFocusTo page: BrowserPage? = nil) {
-        guard isPresented else { return }
         generation += 1
         isPresented = false
         hasNoMatches = false

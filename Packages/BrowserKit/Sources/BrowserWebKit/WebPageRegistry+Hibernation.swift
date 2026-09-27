@@ -47,8 +47,8 @@ extension WebPageRegistry {
             let interval = Self.signposter.beginInterval(Diagnostics.Signpost.hibernationCheck)
             let blocker = await page.hibernationBlocker()
             Self.signposter.endInterval(Diagnostics.Signpost.hibernationCheck, interval)
-            guard livePages[tabID]?.page === page, tabID != activeTabID else { continue }
-            if blocker == nil { hibernate(tabID) }
+            guard !Task.isCancelled, livePages[tabID]?.page === page, tabID != activeTabID else { continue }
+            if blocker == nil, !hasPopupRelationship(tabID), !downloads.isDownloading(from: tabID) { hibernate(tabID) }
             else { livePages[tabID]?.lastExemption = .now }
         }
     }

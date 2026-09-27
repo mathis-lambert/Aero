@@ -2,8 +2,7 @@ import Foundation
 import Testing
 @testable import BrowserWebKit
 
-// Failure modes 1–4, 7 and 8 in docs/EXTENSIONS.md › Native messaging. The echo host passes every frame
-// back, which is the protocol's round trip.
+// The echo host returns each framed message to exercise the native messaging protocol.
 
 private let extensionID = String(repeating: "a", count: 32)
 
@@ -92,13 +91,22 @@ private func echoProgram() throws -> String {
 @Test func aMessageNoOneReadsClosesInsteadOfEndingAero() async throws {
     // Still running, but gone from the other end of the pipe, as a program is the moment macOS kills it.
     let file = FileManager.default.temporaryDirectory.appendingPathComponent("aero-deaf-\(UUID().uuidString)")
-    try Data("#!/bin/sh\nexec 0<&-\nexec /bin/sleep 5\n".utf8).write(to: file)
+    let ready = file.appendingPathExtension("ready")
+    defer {
+        try? FileManager.default.removeItem(at: ready)
+        try? FileManager.default.removeItem(at: file)
+    }
+    try Data("#!/bin/sh\nexec 0<&-\n/usr/bin/touch '\(ready.path)'\nexec /bin/sleep 5\n".utf8).write(to: file)
     try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: file.path)
     let host = try #require(NativeMessagingHost.named("app.test.deaf", in: [try folder(with: ["app.test.deaf": manifest(name: "app.test.deaf", path: file.path)])]))
     var closed = false
     let connection = try NativeMessagingConnection(host: host, extensionID: extensionID, onMessage: { _ in }, onClose: { closed = true })
-    try await Task.sleep(for: .milliseconds(200))
+    for _ in 0..<250 where !FileManager.default.fileExists(atPath: ready.path) {
+        try await Task.sleep(for: .milliseconds(20))
+    }
+    try #require(FileManager.default.fileExists(atPath: ready.path), "The fixture has closed its input")
     try? connection.send(["ping": 1])
+    for _ in 0..<50 where !closed { try await Task.sleep(for: .milliseconds(20)) }
     #expect(closed, "The connection ends and reports it")
     for _ in 0..<50 where connection.isRunning { try await Task.sleep(for: .milliseconds(20)) }
     #expect(!connection.isRunning)

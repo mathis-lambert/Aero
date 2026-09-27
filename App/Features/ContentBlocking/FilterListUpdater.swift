@@ -48,19 +48,20 @@ final class FilterListUpdater {
 
     func start() {
         guard task == nil else { return }
-        task = Task { [weak self] in await self?.run() }
-    }
-
-    private func run() async {
-        await installSavedLists()
-        while !Task.isCancelled {
-            if let checked = preferences.filterListsCheckedAt, Date.now.timeIntervalSince(checked) < Self.checkInterval {
+        task = Task { [weak self] in
+            await self?.installSavedLists()
+            while !Task.isCancelled {
+                guard self != nil else { return }
+                let checked = self?.preferences.filterListsCheckedAt ?? .distantPast
                 let remaining = Self.checkInterval - Date.now.timeIntervalSince(checked)
-                do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
-                continue
+                if remaining > 0 {
+                    do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
+                    continue
+                }
+                guard let updated = await self?.update() else { return }
+                if updated { self?.preferences.filterListsCheckedAt = .now }
+                else { do { try await Task.sleep(for: Self.retryDelay) } catch { return } }
             }
-            if await update() { preferences.filterListsCheckedAt = .now }
-            else { do { try await Task.sleep(for: Self.retryDelay) } catch { return } }
         }
     }
 

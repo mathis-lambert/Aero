@@ -34,7 +34,7 @@ public final class ContentBlocker {
         let previous = installation
         let task = Task { [store] in
             _ = try? await previous?.value
-            let stamp = Self.stamp(of: sources)
+            let stamp = await Self.stamp(of: sources)
             if let installed = try await Self.lookUp(stamp: stamp, in: store) { self.lists = installed }
             else { self.lists = try await Self.compile(sources, stamp: stamp, in: store) }
             self.onInstall?()
@@ -87,7 +87,8 @@ public final class ContentBlocker {
     }
 
     /// The sources and the converter's version, so either changing rebuilds the lists.
-    private static func stamp(of sources: [FilterList]) -> String {
+    @concurrent
+    private static func stamp(of sources: [FilterList]) async -> String {
         var hash = SHA256()
         hash.update(data: Data("\(FilterListConverter.version)".utf8))
         for source in sources { hash.update(data: Data(source.text.utf8)) }
