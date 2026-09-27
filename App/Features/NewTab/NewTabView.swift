@@ -1,7 +1,7 @@
 import BrowserCore
 import SwiftUI
 
-/// The control bar above the dithered wind. See docs/CONTROL_BAR.md › New Tab page.
+/// The control bar above the dithered wind. See docs/PERFORMANCE.md › Display cadence and responsiveness.
 struct NewTabView: View {
     /// The bar's top edge, as a share of the page height: a little above the middle.
     private static let barPosition: CGFloat = 0.4

@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import BrowserCore
 
-// Failure modes 1 and 2 in docs/BROWSING.md › Favicons.
+// Validate untrusted icon declarations and deterministic candidate ranking.
 
 private let page = URL(string: "https://example.com/articles/1")!
 private let target = FaviconCandidate.targetPixelSize

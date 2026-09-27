@@ -25,13 +25,13 @@ struct TabDestination: Equatable {
     let before: UUID?
 }
 
-/// A tab dragged over a profile's page, which shows it where it would land.
+/// A tab dragged over a space's page, which shows it where it would land.
 struct TabDrop: Equatable {
     let tabID: UUID
     let destination: TabDestination
 }
 
-/// Where a profile's page shows its tabs and groups, in the page's coordinate space. Layout writes
+/// Where a space's page shows its tabs and groups, in the page's coordinate space. Layout writes
 /// the frames and drops read them, so a frame changing never redraws the page.
 @MainActor @Observable
 final class TabDropLayout {

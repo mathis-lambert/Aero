@@ -2,8 +2,7 @@ import Foundation
 import Testing
 @testable import BrowserCore
 
-// Failure modes 1–5 in docs/SITE_CONTROLS.md › Ad and tracker blocking. Patterns are checked by what
-// they match, through the same regular expression grammar WebKit reads.
+// Check patterns by what they match, using the regular expression grammar WebKit reads.
 
 private func rules(_ list: String) -> FilterRules { FilterRules(list: list) }
 

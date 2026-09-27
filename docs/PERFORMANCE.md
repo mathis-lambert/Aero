@@ -9,7 +9,7 @@ Both stop with Reduce Motion, an inactive window or Low Power Mode, including a 
 while the page is visible.
 
 Each window supplies `browserReduceMotion` from the native Reduce Motion setting and Low Power
-Mode notifications. Shell transitions, hover feedback, zoom, profile paging, shakes, the control-bar
+Mode notifications. Shell transitions, hover feedback, zoom, space paging, shakes, the control-bar
 glow and download effects use that shared policy. No polling or separate animation scheduler is
 needed. This does not override website `prefers-reduced-motion`, which remains a system accessibility
 preference rather than a battery-mode signal.
@@ -23,10 +23,6 @@ it with a public API when available. It does not replace scrolling, force an FPS
 display settings, or disable WebKit's background, power or thermal throttling. Higher web frame rates
 can increase energy use. See [WebKit's API request](https://bugs.webkit.org/show_bug.cgi?id=294338) and
 the [SPI declaration](https://github.com/WebKit/WebKit/blob/main/Source/WebKit/UIProcess/API/Cocoa/WKPreferencesPrivate.h).
-
-Sidebar tabs are grouped in one pass, retaining their session order. Progress notifications update only progress; they do not republish page metadata.
-The control bar publishes local history independently of network suggestions, with cancellation
-for both when the query changes.
 
 `RenderingE2ETests/testPageFrameCadenceAndSmoothScroll` records a bounded local page's median and
 p95 `requestAnimationFrame` interval, display capabilities, window geometry and power state. It also
@@ -68,10 +64,6 @@ Scheduling uses one owned task that sleeps until the next deadline, with a 1 min
 
 Limits: only the main frame is inspected for unsent text.
 
-## Session writes
-
-`BrowserStore.save` commits changed rows in a SQLite transaction, using revision ordering to reject stale snapshots. Browser actions queue immediate saves; title-only updates are batched over two seconds. The store compares the last committed snapshot, so unchanged tabs do not generate SQL writes. Quit saves the latest snapshot and drains history writes/titles. This is asynchronous persistence: a process crash may lose work still queued, while a completed browser-state transaction uses WAL with `synchronous=FULL`. See `docs/STORAGE.md` for recovery and migration behavior.
-
 ## Measuring
 
 Report the build configuration, hardware, and scenario (idle, navigation, many tabs, media) with any number.
@@ -84,3 +76,24 @@ Report the build configuration, hardware, and scenario (idle, navigation, many t
     -only-testing:AeroUITests/LaunchPerformanceTests test
   ```
 - **Memory:** `swift Scripts/measure-memory.swift` reports the footprint of the running app plus the WebKit processes attributed to it. Add `--sample 1` to sample over time and `--detailed` for per-category memory. WebKit processes of other apps, such as Safari, are excluded.
+
+## Spaces
+
+Only the current sidebar and its two neighbors are constructed. Equatable sidebar content is independent of the gesture offset; model observation still invalidates changed records. Gestures only update a translation until committing selection. No neighbor preloads WebKit. The one global hibernation owner and RAM-derived page budget cover every space/profile; active media, captures, unsaved input and downloads remain exempt, so this is not a hard cap on total memory. Unused profiles do not instantiate extension controllers at startup.
+
+Opaque WebKit interaction data is retained only when represented as Data, within a global 32-entry/16-MiB budget. Evicted or unsupported interaction state falls back to the saved URL. Arbitrary web-app state is not promised to survive hibernation. Same-profile tab moves keep their live page and identity. Cross-profile transitions discard interaction state.
+
+`SpacesPerformanceTests/testManySpacesKeepLazyPagesAndStableSwitching` seeds 4 profiles,
+13 spaces and 240 tab records in the isolated test database. It checks lazy startup, loads local
+pages across spaces, records application CPU/memory metrics during repeated switching, then
+checks a playing video survives a background-space round trip. Run it explicitly in Release:
+
+```sh
+AERO_E2E_CONFIGURATION=Release AERO_E2E_DERIVED_DATA=/tmp/aero-release-audit \
+  Scripts/run-e2e.sh AeroUITests/SpacesPerformanceTests
+```
+
+The test emits `AERO_SPACES_STAGE` markers with eight-second observation windows for an external
+sampler to include the app's WebKit processes. XCTest's CPU/memory metrics cover Aero itself;
+menu-driven wall-clock durations include accessibility automation and do not measure swipe frame
+pacing. Keep the `.xcresult`, reproduction manifest and working-tree patch written by the runner.

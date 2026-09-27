@@ -30,10 +30,7 @@ pinned tabs and open tabs; Command-9 selects the last one.
 | Recent / reverse recent | Control-Tab / Shift-Control-Tab |
 | Tabs 1–8 / last | Command-1…8 / Command-9 |
 
-Other catalog actions are assignable without speculative default combinations. Zoom belongs to
-the live WebKit page (25–500%, reset to 100%); it is not a persistent per-site setting. Each zoom command shows the resulting percentage in a non-interactive glass notice at the page’s top trailing corner for two seconds. The notice appears with the shell’s subtle spring and its digits use SwiftUI’s directional numeric transition; Reduce Motion disables these animations. Repeated commands renew the notice; changing tabs dismisses it. Its view owns and cancels the dismissal task. Printing
-uses WebKit's native print operation. Closing favorites retains their records, as a normal tab
-close does. Group/profile move commands show a destination sheet.
+Other catalog actions can be assigned without a default binding. Zoom is live-page state, not a persistent site setting.
 
 ## Persistence and resolution
 
@@ -74,10 +71,9 @@ Reserved browser shortcuts run only in the main browser window, outside modal sh
 text composition. Find, the command bar and copy URL default to page-first through native menu handling. Each command can override website precedence with Default, Aero first, or Website first. The optional `priorities` dictionary persists only explicit choices by command ID; restoring defaults clears both binding and priority overrides. Recent-tab gestures always remain with Aero because they require modifier-release handling.
 The MRU gesture commits when its configured non-Shift modifiers are released, not a hardcoded
 Control key. Opening another window/sheet also ends the gesture on the next keyboard event.
-Settings uses a fixed-size native window and sidebar with back/forward navigation. Shortcuts are grouped in a searchable list, with an inline editor for the selected command. Priority and disable/restore actions live in its native gear menu; the search header contains a global reset button with confirmation. The recorder is a first responder owned by that detail view, never a global event monitor. Changing selection discards unfinished capture. Escape cancels
-recording. The recorder and resolver use the same binding representation and conflict rules.
+The Settings recorder is a local first responder, not a global event monitor. Escape or changing selection cancels unfinished capture.
 
-## Failure modes and verification
+## Verification
 
 The focused `ShortcutE2ETests` exercise page interception vs reserved commands, both plus/equals
 zoom inputs, sequential vs recent tab selection, favorite order, conflicting capture, protected

@@ -2,7 +2,7 @@ import BrowserCore
 import Foundation
 import Testing
 
-// docs/CONTROL_BAR.md, failure modes 2 and 3.
+// Address privacy and malformed suggestion responses; see docs/BROWSING.md.
 
 private func payload(_ json: String) -> Data { Data(json.utf8) }
 

@@ -1,7 +1,7 @@
 import BrowserCore
 import Foundation
 
-/// A profile's tabs in the order the sidebar shows them, with a dragged tab already where it
+/// A space's tabs in the order the sidebar shows them, with a dragged tab already where it
 /// would land, so the page shows exactly what a drop does.
 struct SidebarTabs {
     static let rowSpacing: CGFloat = 4

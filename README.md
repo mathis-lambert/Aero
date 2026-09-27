@@ -21,40 +21,25 @@ UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`)
 
 ## Features
 
-- Profiles, each with its own website store, tabs and history, switched from the sidebar footer or with a two-finger swipe (`docs/PROFILES.md`).
-- One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K), with the chosen engine's suggestions (`docs/CONTROL_BAR.md`).
+- Spaces with independent tabs and favorites, switched from the sidebar or with a two-finger swipe. Spaces share cookies, history and extensions when assigned to the same profile.
+- One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K), with the chosen engine's suggestions.
 - Favorites that stay when closed, as tiles or in groups; tabs dragged anywhere in the sidebar, a full tab context menu, reopen closed tabs, recent-tab switching (⌃Tab).
-- Transactional SQLite state, versioned schema migrations and explicit recovery (`docs/STORAGE.md`), session restoration without loading pages, and tab hibernation (`docs/PERFORMANCE.md`).
-- History in a browser tab (`aero://history`, ⌘Y) with full-text search (`docs/HISTORY.md`).
-- Find in page, downloads, popups, favicons (`docs/BROWSING.md`).
-- Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture (`docs/SITE_CONTROLS.md`).
-- Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder, with native messaging to the apps they pair with (`docs/EXTENSIONS.md`).
+- Transactional SQLite state, versioned schema migrations and explicit recovery ([Storage](docs/STORAGE.md)), session restoration without loading pages, and tab hibernation ([Performance](docs/PERFORMANCE.md)).
+- History in a browser tab (`aero://history`, ⌘Y) with full-text search.
+- Find in page, downloads, popups, favicons ([Browsing](docs/BROWSING.md)).
+- Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture ([Site Controls](docs/SITE_CONTROLS.md)).
+- Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder, with native messaging to the apps they pair with ([Extensions](docs/EXTENSIONS.md)).
 - Light, dark and system appearance, alternate app icons, English and French.
 
-Not implemented yet: onboarding, import, passkeys, separate popup windows and profile deletion.
+Not implemented yet: onboarding, import, passkeys, separate popup windows.
 
-## Shortcuts
+## Documentation
 
-| Shortcut | Action |
-| --- | --- |
-| ⌘T | New tab |
-| ⌘K | Control bar, results in a new tab; lists every command |
-| ⌘L | Control bar on the current address |
-| ⌘W / ⇧⌘T | Close / reopen tab |
-| ⌃Tab / ⌃⇧Tab | Recent tabs; release Control to choose |
-| ⌘[ / ⌘] / ⌘R | Back / forward / reload |
-| ⌘S | Toggle sidebar |
-| ⌘+ / ⌘− / ⌘0 | Zoom in / out / actual size |
-| ⌥⌘→ / ⌥⌘← | Next / previous tab in sidebar order |
-| ⌘1…⌘8 / ⌘9 | Select tab / last tab |
-| ⇧⌘R / ⌘. | Reload without cache / stop loading |
-| ⇧⌘J / ⌘P / ⌘D | Downloads / print / toggle favorite |
-| ⇧⌘C | Copy link |
-| ⌘F / ⌘G / ⇧⌘G | Find in page / next / previous |
-| ⌘Y | History |
-
-⌘K, ⇧⌘C, ⌘F, ⌘G and ⇧⌘G reach a focused web page first; the others always stay with the browser.
-
-Settings uses native sidebar navigation. Settings › Shortcuts groups commands in a searchable list, records custom bindings inline, detects conflicts, sets Aero/website priority, and restores defaults. User choices survive catalog updates; see `docs/SHORTCUTS.md` for storage and routing details.
-
-Contributor conventions are in `AGENTS.md`, appearance rules in `docs/DESIGN.md`.
+- [Browsing](docs/BROWSING.md): navigation behavior, limits and local E2E fixtures.
+- [Profiles and spaces](docs/SPACES.md): ownership, settings and identity transitions.
+- [Storage](docs/STORAGE.md): locations, schema changes and recovery.
+- [Performance](docs/PERFORMANCE.md): page budgets, hibernation and measurement commands.
+- [Shortcuts](docs/SHORTCUTS.md): defaults, overrides and keyboard routing.
+- [Site controls](docs/SITE_CONTROLS.md): permissions, blocking and picture in picture.
+- [Extensions](docs/EXTENSIONS.md): installation, WebKit limits and native messaging.
+- [Design](docs/DESIGN.md) and [contributor rules](AGENTS.md).

@@ -1,6 +1,6 @@
 import XCTest
 
-/// The control bar on the New Tab page and over tabs. See docs/CONTROL_BAR.md.
+/// The control bar on the New Tab page and over tabs. See docs/BROWSING.md.
 @MainActor
 final class ControlBarE2ETests: BrowserE2ETestCase {
     private static let item = "controlBar.item"

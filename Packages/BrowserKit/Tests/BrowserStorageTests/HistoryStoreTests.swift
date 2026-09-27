@@ -4,7 +4,7 @@ import Foundation
 import SQLite3
 import Testing
 
-// Failure modes 1–7 and 9 in docs/HISTORY.md.
+// Exercise profile isolation, search syntax, retention and damaged database preservation.
 
 private let day: TimeInterval = 24 * 60 * 60
 
@@ -134,7 +134,7 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     #expect(try await store.entries(profileID: profile).isEmpty)
 }
 
-// Failure case 6 in docs/STORAGE.md: deterministic fixture dates and SQL contention.
+// Storage invariants in docs/STORAGE.md: deterministic fixture dates and SQL contention.
 @Test func equalTimestampHistoryPagesStayReachable() async throws {
     let fixture = Fixture()
     defer { fixture.remove() }

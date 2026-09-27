@@ -5,8 +5,7 @@ import Security
 import Testing
 @testable import BrowserWebKit
 
-// Failure modes 1, 2 and 9 in docs/EXTENSIONS.md. Packages are signed here the way the Chrome Web Store
-// signs them, with a fresh RSA key.
+// Sign fixture packages with a fresh RSA key using the Chrome Web Store CRX format.
 
 private struct SignedPackage {
     let crx: Data

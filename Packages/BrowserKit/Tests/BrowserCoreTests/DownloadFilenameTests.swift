@@ -1,7 +1,7 @@
 import Testing
 @testable import BrowserCore
 
-// Failure modes 1 and 2 in docs/BROWSING.md › Downloads.
+// Suggested names must stay inside Downloads and preserve existing files.
 
 private let fallback = "Download"
 

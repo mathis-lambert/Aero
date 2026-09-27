@@ -1,29 +1,15 @@
 # Storage
 
-Implementation contract (2026-09-27): a fresh SQLite baseline, with no JSON importer or legacy reader. Previous files are preserved outside the new `Storage` directory. Future compatible releases evolve this baseline through ordered transactional migrations.
-
-## Failure cases specified before implementation
-
-1. A schema upgrade fails halfway or is interrupted: its data and version changes roll back together; a verified SQLite snapshot remains available. Rebuilding a referenced table must preserve its child rows, and a migration leaving broken references must roll back.
-2. A newer/foreign/corrupt database is opened: no reset, schema creation or maintenance writes; report the failure and retain bytes.
-3. Two app processes open the same browser state: the second cannot overwrite the first. A stale asynchronous save cannot replace a newer revision.
-4. A relational snapshot loses identities, order, optional values, grants or profile boundaries on reload; a group in another space or duplicate extension identity must be rejected.
-5. A write fails after some rows change: all changes roll back, in-memory committed state stays unchanged, retry succeeds.
-6. Equal history timestamps cross a page boundary: every row remains reachable exactly once. A temporary lock cannot permanently disable the store; explicit clear/delete failures reach the caller.
-7. A candidate extension is rejected or preparation fails: the active package and saved grants remain unchanged. Crash between file staging and registry commit leaves only an unused candidate. Uninstallation is repeatable after interruption.
-8. Cache eviction removes durable data, crosses profiles or grows without a bound; caches must be expendable and separate from Application Support records.
-9. Quit overtakes queued history writes or titles; shutdown must drain accepted work and surface failures.
-
-Existing profile/session/history/site-control/extension E2E tests exercise real browser integration. Focused storage tests cover arbitrary SQLite faults, schema versions, equal timestamps and transactional invariants that the UI cannot deterministically drive.
+Browser state and history use SQLite; preferences use UserDefaults; caches are disposable files. The browser baseline is application ID `0x41455232`, version 1, with no legacy reader or importer. Future shipped schemas evolve through ordered transactional migrations.
 
 ## Ownership and layout
 
 `StorageLocation` assembles locations once. Production uses `~/Library/Application Support/Aero/Storage`, Debug uses `Aero Development/Storage`, and tests use `Storage` inside the temporary directory supplied by `AERO_TEST_DATA`. The test runner owns this directory so it can inject startup faults while the app is stopped. App preferences remain in the bundle's UserDefaults domain (a unique suite for each test). Regenerable assets use `~/Library/Caches/<bundle identifier>`; tests get their own Caches directory.
 
-The new directory intentionally starts with fresh profiles; the previous JSON, history and packages remain outside it, untouched and unused. There is no import, compatibility alias, dual write or old-format decoder. This is a one-time pre-release reset authorized for this refactor, not the policy for future releases.
+The baseline starts with fresh profiles. There is no import, compatibility alias, dual write or old-format decoder. Obsolete pre-release files outside `Storage` are disposable after stopping the old app; cleanup is an explicit development operation, not an application startup fallback. Unknown or corrupt current databases still use recovery rather than silent data deletion.
 
-- `Browser.sqlite`: profiles, one space per profile, groups, tabs/favorites, site decisions, extension registrations and grants. Explicit SQL columns, foreign keys, placement checks and domain validation own the format. BrowserStorage owns the schema mapping; BrowserCore contains the domain records.
-- `History.sqlite`: separate high-volume history/FTS tables, logically scoped per profile. Failure does not stop browsing. No cross-database foreign key is claimed; future profile deletion must coordinate both stores and WebKit through a recoverable intent.
+- `Browser.sqlite`: profiles, multiple spaces per profile, groups, tabs/favorites, site decisions, extension registrations and grants. Explicit SQL columns, foreign keys, placement checks and domain validation own the format. BrowserStorage owns the schema mapping; BrowserCore contains the domain records.
+- `History.sqlite`: separate high-volume history/FTS tables, logically scoped per profile. Failure does not stop browsing. No cross-database foreign key is claimed; profile deletion coordinates both stores and WebKit through a recoverable intent.
 - `Extensions/<profile UUID>/<package UUID>`: immutable prepared packages; the registry chooses the active package. WebKit extension context IDs remain stable extension IDs.
 - Website and extension runtime databases are owned by WebKit's public APIs, never copied or migrated by BrowserStorage.
 - Favicons, downloaded filter lists and compiled rules are disposable. Favicon maintenance retains at most 512 files / 32 MiB / 30 days at a scan, with at most 64 writes (4 MiB) between scans. No idle timer is added. Filter resources have fixed identifiers and bounded downloaded input sizes.
@@ -49,8 +35,6 @@ Browser mutations save asynchronously through one owned task. While one snapshot
 
 The runner disables foreign-key actions only around the migration transaction and checks all references before commit, then reenables enforcement, including after failure. This permits table rebuilds without cascading deletion of their children. Follow SQLite's [table reconstruction procedure](https://www.sqlite.org/lang_altertable.html#making_other_kinds_of_table_schema_changes) and recreate affected indexes, triggers and views in the migration.
 
-The baseline has one migration; there is deliberately no speculative v2. Tests exercise the actual runner with a separate miniature schema and a failing second migration, proving rollback and retry mechanics without adding fake production migrations.
-
 UserDefaults keys keep small independent preferences. Shortcut overrides have their own document version and preserve unreadable bytes. Any future change to key meanings or shortcut representation must add an explicit conversion in its owner. Neither app release numbers nor display language define storage identity.
 
 ## Recovery
@@ -69,14 +53,8 @@ Preparation creates a candidate directory. Review rejection discards only that c
 
 Uninstall first persists `isRemoving`, unloads the extension, uses WebKit data-record APIs to clear runtime storage without running the removed extension, checks reported errors, and then removes the registration. Startup completes interrupted removals. Unreferenced directories are collected after startup reconciliation, with recovery references retained. A tombstone whose cleanup fails remains durable; Settings offers Retry removal and restarting also retries it. There is no claim of a transaction spanning SQLite, the filesystem and WebKit.
 
-## Validation
+## History
 
-Validation artifacts include each E2E run's `.xcresult`, adjacent command/environment manifest and working-tree patch under `/tmp/aero-e2e-*`. Audit reproductions and measurements are retained under `/tmp/aero-final-audit/`.
+`HistoryStore` opens lazily on its actor. One database contains profile-scoped pages and visits, plus an FTS5 title/address index maintained by triggers. Every operation requires a profile; cursor pagination uses `(last_visit, id)` to preserve equal-timestamp entries.
 
-Focused package tests cover state round-trip, stale revisions, transaction rollback on SQL failure, single-writer exclusion, future/corrupt preservation, migration rollback/retry, history isolation, deletion, FTS, retention and equal-timestamp pagination. Existing E2E suites cover browser/session/profile/permission integration. `ExtensionsE2ETests` additionally rejects a different package version, relaunches, verifies the original script still runs, removes it and verifies removal after another relaunch.
-
-Performance claims require measurements; this change does not claim a faster startup or lower energy consumption. Immediate critical-state transactions trade write latency for a smaller crash-loss window; only changed rows are written, and animated titles are batched.
-
-## Audit regression cases specified before corrections
-
-A failed history write must retry after its cause is removed, preserve its original visit time, and never replay across a later clear; switching between two History profiles must reset rows, selection and search; cursor pagination must seek into the date/id index; a failed snapshot replacement must preserve the prior snapshot; bursts of browser changes must retain only one in-flight save and the latest pending state, and quit must persist that final state. Existing SQL fault tests and recovery E2E cover snapshot durability; history UI regressions use E2E with temporary databases.
+Failed writes retry in order with their original timestamps, before a later clear can commit. Pending writes are memory-only and cannot survive forced termination. Read failures can retry without disabling browsing. Visits older than a year are pruned in batches of 500 on store activity, at most hourly when caught up and once a minute while catching up.

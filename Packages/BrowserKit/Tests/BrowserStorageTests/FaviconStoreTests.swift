@@ -2,7 +2,7 @@ import BrowserStorage
 import Foundation
 import Testing
 
-// Failure modes 5 and 7 in docs/BROWSING.md › Favicons.
+// Isolate profile caches and constrain untrusted hosts and image sizes.
 
 private func makeFolder() -> URL {
     FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
