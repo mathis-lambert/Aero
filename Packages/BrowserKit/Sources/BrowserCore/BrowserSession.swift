@@ -1,10 +1,10 @@
 import Foundation
 
-public enum ProfileColor: String, Codable, CaseIterable, Sendable {
+public enum ProfileColor: String, CaseIterable, Sendable {
     case terracotta, moss, ocean, plum, graphite
 }
 
-public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
+public struct BrowserProfile: Identifiable, Equatable, Sendable {
     public static let maximumNameLength = 40
     public let id: UUID
     public var name: String
@@ -12,8 +12,8 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
     /// Stands for the profile in the sidebar; without one, its color does.
     public var emoji: String?
     /// Saved answers by origin; an origin without one is left out.
-    public internal(set) var sitePermissions: [SiteOrigin: [SitePermission: SiteDecision]]
-    public internal(set) var extensions: [InstalledExtension]
+    public package(set) var sitePermissions: [SiteOrigin: [SitePermission: SiteDecision]]
+    public package(set) var extensions: [InstalledExtension]
 
     public init(id: UUID = UUID(), name: String, color: ProfileColor = .terracotta, emoji: String? = nil) {
         self.id = id
@@ -39,11 +39,11 @@ public struct BrowserProfile: Identifiable, Codable, Equatable, Sendable {
     }
 }
 
-public struct BrowserSpace: Identifiable, Codable, Equatable, Sendable {
+public struct BrowserSpace: Identifiable, Equatable, Sendable {
     public let id: UUID
     public let profileID: UUID
     /// Groups of favorites, in the sidebar's order.
-    public internal(set) var groups: [TabGroup]
+    public package(set) var groups: [TabGroup]
 
     public init(id: UUID = UUID(), profileID: UUID) {
         self.id = id
@@ -53,14 +53,17 @@ public struct BrowserSpace: Identifiable, Codable, Equatable, Sendable {
 }
 
 /// A folder of favorites in the sidebar.
-public struct TabGroup: Identifiable, Codable, Equatable, Sendable {
+public struct TabGroup: Identifiable, Equatable, Sendable {
     public let id: UUID
     public var name: String
     public var isCollapsed: Bool
+    package init(id: UUID, name: String, isCollapsed: Bool) {
+        self.id = id; self.name = name; self.isCollapsed = isCollapsed
+    }
 }
 
 /// Where a tab shows in its profile's sidebar.
-public enum TabPlace: Codable, Hashable, Sendable {
+public enum TabPlace: Hashable, Sendable {
     /// A favorite, as a tile in the grid.
     case grid
     /// A favorite, as a row under the grid: loose, or in a group of its space.
@@ -71,7 +74,7 @@ public enum TabPlace: Codable, Hashable, Sendable {
     public var isFavorite: Bool { self != .open }
 }
 
-public struct BrowserTab: Identifiable, Codable, Equatable, Sendable {
+public struct BrowserTab: Identifiable, Equatable, Sendable {
     public let id: UUID
     public let spaceID: UUID
     public var url: URL
@@ -97,7 +100,7 @@ public enum SessionError: Error, Equatable {
 }
 
 /// Durable state only. Window selection and loaded web pages have separate owners.
-public struct BrowserSession: Codable, Equatable, Sendable {
+public struct BrowserSession: Equatable, Sendable {
     public private(set) var profiles: [BrowserProfile]
     public private(set) var spaces: [BrowserSpace]
     public private(set) var tabs: [BrowserTab]
@@ -124,6 +127,12 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         profiles[index].name = name
         profiles[index].color = color
         profiles[index].emoji = emoji
+    }
+
+    package init(profiles: [BrowserProfile], spaces: [BrowserSpace], tabs: [BrowserTab]) {
+        self.profiles = profiles
+        self.spaces = spaces
+        self.tabs = tabs
     }
 
     /// Saves `decision` for the profile, or forgets the saved one when it is `nil`.
@@ -260,6 +269,8 @@ public struct BrowserSession: Codable, Equatable, Sendable {
         guard !profiles.isEmpty,
               profileIDs.count == profiles.count,
               spaceIDs.count == spaces.count,
+              Set(spaces.map(\.profileID)).count == spaces.count,
+              profiles.allSatisfy({ Set($0.extensions.map(\.id)).count == $0.extensions.count && $0.extensions.allSatisfy(\.isValid) }),
               Set(tabs.map(\.id)).count == tabs.count,
               profiles.allSatisfy({ (try? Self.validName($0.name)) == $0.name && (try? Self.validEmoji($0.emoji)) == $0.emoji }),
               profiles.allSatisfy({ profile in spaces.contains { $0.profileID == profile.id } }),

@@ -8,6 +8,12 @@ cd "${0:A:h}/.."
 run_id="$(date +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)"
 result="/tmp/aero-e2e-${run_id}.xcresult"
 manifest="/tmp/aero-e2e-${run_id}.txt"
+patch="/tmp/aero-e2e-${run_id}.patch"
+# Preserve the tested working tree, including new fixtures and sources.
+git diff --binary HEAD > "$patch"
+while IFS= read -r -d '' file; do
+    git diff --no-index --binary -- /dev/null "$file" >> "$patch" || [[ $? == 1 ]]
+done < <(git ls-files --others --exclude-standard -z)
 command=(xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Debug
     -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived
     -resultBundlePath "$result")
@@ -18,6 +24,8 @@ command+=(test)
 {
     print "command: ${(q)command[@]}"
     print "revision: $(git rev-parse HEAD)"
+    print "working-tree patch: $patch"
+    print "patch SHA-256: $(shasum -a 256 "$patch")"
     print "working tree:"; git status --short | sed 's/^/  /'
     print "xcode: $(xcodebuild -version | tr '\n' ' ')"
     print "macos: $(sw_vers -productVersion) ($(sw_vers -buildVersion)) $(uname -m)"

@@ -23,14 +23,24 @@ final class BrowserModel {
     let history: BrowserHistory
     let suggestionFetcher = SuggestionFetcher()
     private let filterLists: FilterListUpdater?
-    @ObservationIgnored private var extensionsTask: Task<Void, Never>?
+    @ObservationIgnored var extensionsTask: Task<Void, Never>?
     var currentPage: BrowserPage?
     /// Explicitly opened favorites, including hibernated and internal pages. Runtime only.
     private(set) var openedFavorites: Set<UUID> = []
 
     let pages: WebPageRegistry
-    private let store: SessionStore
+    private let store: BrowserStore
+    private let storageLocation: StorageLocation
+    private(set) var storageFailureMessage: String?
+    private(set) var canRecoverStorage = false
+    private(set) var isOpeningStorage = false
+    var extensionsReady = false
+    var extensionOperations: Set<String> = []
+    private(set) var recoveryPackages: Set<UUID>?
     @ObservationIgnored private var revision: UInt64 = 0
+    @ObservationIgnored private var titleSaveTask: Task<Void, Never>?
+    @ObservationIgnored private var saveTask: Task<Void, Never>?
+    @ObservationIgnored private var needsSave = false
     @ObservationIgnored private var closedTabs: [BrowserTab] = []
     @ObservationIgnored private var lastSelection: [UUID: UUID] = [:]
     @ObservationIgnored private var recentTabs: [UUID] = []
@@ -43,33 +53,22 @@ final class BrowserModel {
     init() {
         launchInterval = Self.signposter.beginInterval(Diagnostics.Signpost.launch)
         let environment = ProcessInfo.processInfo.environment
-        let testing = environment["AERO_TEST_DATA"]
-            .map { URL(fileURLWithPath: $0).lastPathComponent }
+        let testDirectory = environment["AERO_TEST_DATA"].map { URL(fileURLWithPath: $0, isDirectory: true) }
+        let testing = testDirectory?.lastPathComponent
         preferences = BrowserPreferences(testNamespace: testing)
         NSApp.appearance = preferences.appearance.nativeAppearance
         appIcon = AppIcon(variant: preferences.appIcon)
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
-        let folder: URL
-        if let testing {
-            // Only the namespace comes from the test runner, whose temporary folder is its own.
-            folder = URL.temporaryDirectory.appendingPathComponent("AeroTests", isDirectory: true)
-                .appendingPathComponent(testing, isDirectory: true)
-        }
-        else {
-            let support = URL.applicationSupportDirectory
-            #if DEBUG
-            folder = support.appendingPathComponent("Aero Development", isDirectory: true)
-            #else
-            folder = support.appendingPathComponent("Aero", isDirectory: true)
-            #endif
-        }
-        store = SessionStore(directory: folder)
-        favicons = FaviconCache(store: FaviconStore(directory: folder.appendingPathComponent("Favicons", isDirectory: true)))
+        let location = StorageLocation(testDirectory: testDirectory)
+        storageLocation = location
+        let folder = location.data
+        store = BrowserStore(directory: folder)
+        favicons = FaviconCache(store: FaviconStore(directory: location.caches.appendingPathComponent("Favicons", isDirectory: true)))
         history = BrowserHistory(store: HistoryStore(file: folder.appendingPathComponent("History.sqlite")))
         // Test runs must never write into the user's Downloads folder.
         let downloadsFolder = testing == nil ? URL.downloadsDirectory : folder.appendingPathComponent("Downloads", isDirectory: true)
         let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
-        let contentBlocker = ContentBlocker(directory: folder.appendingPathComponent("Content Rules", isDirectory: true))
+        let contentBlocker = ContentBlocker(directory: location.caches.appendingPathComponent("Content Rules", isDirectory: true))
         // Test runs reach only the hosts a test provides, never the Mac's own.
         let nativeHosts = testing == nil ? NativeMessagingHost.chromeFolders
             : environment["AERO_TEST_NATIVE_HOSTS"].map { [URL(fileURLWithPath: $0, isDirectory: true)] } ?? []
@@ -78,11 +77,17 @@ final class BrowserModel {
         // Test runs never download from the internet: only the fixture list, when a test provides one.
         let testFilterList = testing == nil ? nil : environment["AERO_TEST_FILTERS"].flatMap(URL.init(string:))
         if let contentBlocker, testing == nil || testFilterList != nil {
-            filterLists = FilterListUpdater(blocker: contentBlocker, store: FilterListStore(directory: folder.appendingPathComponent("Filter Lists", isDirectory: true)),
+            filterLists = FilterListUpdater(blocker: contentBlocker, store: FilterListStore(directory: location.caches.appendingPathComponent("Filter Lists", isDirectory: true)),
                                             preferences: preferences, testSource: testFilterList)
         } else { filterLists = nil }
         pages.delegate = self
         pages.extensionHost = self
+    }
+
+    isolated deinit {
+        extensionsTask?.cancel()
+        titleSaveTask?.cancel()
+        saveTask?.cancel()
     }
 
     var profile: BrowserProfile? { session.profiles.first { $0.id == window.selectedProfileID } }
@@ -100,21 +105,50 @@ final class BrowserModel {
     var internalPage: InternalPage? { selectedTab.flatMap { InternalPage(url: $0.url) } }
 
     func start() async {
-        guard !isReady, !loadFailed else { return }
+        guard !isReady, !isOpeningStorage else { return }
+        isOpeningStorage = true
+        defer { isOpeningStorage = false; endLaunchInterval() }
+        loadFailed = false
+        storageFailureMessage = nil
         do {
             if let saved = try await store.load() { session = saved }
+            else { try await store.save(session, revision: revision) }
+            // Recovery is useful only after validation. Failure never overwrites the old snapshot.
+            do {
+                recoveryPackages = try await store.createRecoverySnapshot()
+            } catch { present(.error(Self.saveFailureMessage)) }
             window.selectedProfileID = session.profiles.first?.id
             isReady = true
         } catch {
             loadFailed = true
-            present(.error(String(localized: "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it.")))
+            let hasRecovery = await store.hasRecoverySnapshot()
+            canRecoverStorage = (error as? StorageError) != .newerVersion && (error as? StorageError) != .inUse && hasRecovery
+            switch error as? StorageError {
+            case .newerVersion: storageFailureMessage = String(localized: "This data requires a newer version of Aero. Your files have been kept unchanged.")
+            case .inUse: storageFailureMessage = String(localized: "Another Aero process is using this data. Quit it, then retry.")
+            default: storageFailureMessage = String(localized: "Your saved data could not be opened. Your files have been kept for recovery.")
+            }
+            return
         }
-        endLaunchInterval()
-        // After the session, so neither delays the first tabs.
         appIcon.apply(preferences.appIcon)
         filterLists?.start()
-        extensionsTask = Task { [weak self] in await self?.startExtensions() }
+        startExtensions()
     }
+
+    func restoreStorage() async {
+        guard !isReady, !isOpeningStorage, canRecoverStorage else { return }
+        isOpeningStorage = true
+        do {
+            try await store.restoreRecoverySnapshot()
+            isOpeningStorage = false
+            await start()
+        } catch {
+            isOpeningStorage = false
+            storageFailureMessage = Self.saveFailureMessage
+        }
+    }
+
+    func revealStorage() { NSWorkspace.shared.open(storageLocation.data) }
 
     private func endLaunchInterval() {
         guard let launchInterval else { return }
@@ -142,19 +176,34 @@ final class BrowserModel {
     private func persist() {
         guard isReady else { return }
         revision += 1
-        let snapshot = session
-        let number = revision
-        Task {
-            do { try await store.scheduleSave(snapshot, revision: number) }
-            catch { present(.error(Self.saveFailureMessage)) }
+        needsSave = true
+        guard saveTask == nil else { return }
+        saveTask = Task { [weak self] in await self?.savePendingChanges() }
+    }
+
+    /// One in-flight snapshot; mutations during I/O collapse into the current session.
+    private func savePendingChanges() async {
+        defer { saveTask = nil }
+        while needsSave {
+            needsSave = false
+            do { try await store.save(session, revision: revision) }
+            catch {
+                if !needsSave { present(.error(Self.saveFailureMessage)) }
+            }
         }
     }
 
     /// Termination waits for the latest snapshot rather than losing a pending asynchronous write.
     func flush() async -> Bool {
         guard isReady else { return true }
+        titleSaveTask?.cancel(); titleSaveTask = nil
+        await saveTask?.value
         revision += 1
-        do { try await store.save(session, revision: revision); return true }
+        do {
+            try await store.save(session, revision: revision)
+            try await history.flush()
+            return true
+        }
         catch {
             present(.error(Self.saveFailureMessage))
             return false
@@ -229,8 +278,7 @@ final class BrowserModel {
         return tab
     }
 
-    /// Late metadata for a closed tab is ignored. A title alone is saved with the next change or on
-    /// quit, so a page that animates its title does not rewrite the session.
+    /// Late metadata for a closed tab is ignored. Title-only updates are batched separately.
     func updateTab(_ id: UUID, url: URL, title: String) {
         guard let existing = session.tabs.first(where: { $0.id == id }), existing.url != url || existing.title != title else { return }
         session.updateTab(id: id, url: url, title: title)
@@ -239,6 +287,13 @@ final class BrowserModel {
             history.updateTitle(title, for: url, profileID: profileID)
         }
         if existing.url != url { persist() }
+        else if titleSaveTask == nil {
+            titleSaveTask = Task { [weak self] in
+                do { try await Task.sleep(for: .seconds(2)) } catch { return }
+                self?.titleSaveTask = nil
+                self?.persist()
+            }
+        }
     }
 
     /// Opens what the control bar chose, then closes the bar over the tab.
@@ -426,14 +481,23 @@ final class BrowserModel {
         window.prompt = nil
     }
 
-    func saveExtension(_ record: InstalledExtension, inProfile profileID: UUID) {
-        session.setExtension(record, profileID: profileID)
-        persist()
-    }
-
-    func deleteExtension(_ extensionID: String, inProfile profileID: UUID) {
-        session.removeExtension(extensionID, profileID: profileID)
-        persist()
+    @discardableResult
+    func commitExtension(_ record: InstalledExtension?, id: String, inProfile profileID: UUID) async -> Bool {
+        guard isReady else { return false }
+        let previous = session.profiles.first { $0.id == profileID }?.extensions.first { $0.id == id }
+        if let record { session.setExtension(record, profileID: profileID) }
+        else { session.removeExtension(id, profileID: profileID) }
+        revision += 1
+        do {
+            try await store.save(session, revision: revision)
+            return true
+        } catch {
+            if let previous { session.setExtension(previous, profileID: profileID) }
+            else { session.removeExtension(id, profileID: profileID) }
+            persist()
+            present(.error(Self.saveFailureMessage))
+            return false
+        }
     }
 
     func cycleTab(backwards: Bool) {

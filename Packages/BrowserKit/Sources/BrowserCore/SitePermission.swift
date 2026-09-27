@@ -2,7 +2,7 @@ import Foundation
 
 /// What a site may do: use a device, show ads and trackers, or have its video moved to picture in
 /// picture. See docs/SITE_CONTROLS.md › Site data and permissions.
-public enum SitePermission: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
+public enum SitePermission: String, CaseIterable, Sendable {
     case camera, microphone, location, ads, automaticPictureInPicture
 
     /// Devices ask every time without a decision; the others follow a browser-wide setting.
@@ -14,13 +14,13 @@ public enum SitePermission: String, CaseIterable, Codable, CodingKeyRepresentabl
     }
 }
 
-public enum SiteDecision: String, Codable, Sendable {
+public enum SiteDecision: String, Sendable {
     case allow, block
 }
 
 /// A web origin in one form, `scheme://host[:port]`: lowercased, without the scheme's default
 /// port, so a decision matches however the address was written.
-public struct SiteOrigin: RawRepresentable, Hashable, Codable, CodingKeyRepresentable, Sendable {
+public struct SiteOrigin: RawRepresentable, Hashable, Sendable {
     private static let defaultPorts = ["http": 80, "https": 443]
 
     public let rawValue: String

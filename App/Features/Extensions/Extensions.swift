@@ -25,33 +25,46 @@ extension BrowserModel: WebExtensionHost {
     private static let updateInterval = Duration.seconds(24 * 60 * 60)
     private static let logger = Logger(subsystem: Diagnostics.subsystem, category: Diagnostics.Category.extensions)
     private static let reviewIconSize = CGSize(width: 64, height: 64)
-    private static var notAnExtension: String { String(localized: "This folder does not hold an extension Aero can load.") }
 
     func installedExtensions(inProfile profileID: UUID) -> [InstalledExtension] {
-        session.profiles.first { $0.id == profileID }?.extensions ?? []
+        session.profiles.first { $0.id == profileID }?.extensions.filter { !$0.isRemoving } ?? []
     }
 
-    /// Loads every enabled extension, then checks the store's for updates once a day.
-    func startExtensions() async {
+    func startExtensions() {
+        extensionsTask = Task { [weak self] in
+            await self?.restoreExtensions()
+            while !Task.isCancelled {
+                await self?.updateExtensions()
+                do { try await Task.sleep(for: Self.updateInterval) } catch { return }
+            }
+        }
+    }
+
+    /// Reconcile durable removal intents before loading enabled extensions.
+    private func restoreExtensions() async {
         for profile in session.profiles {
-            for record in profile.extensions where record.isEnabled { await load(record, inProfile: profile.id) }
+            let owner = pages.extensions(for: profile.id)
+            for record in profile.extensions {
+                if record.isRemoving { await finishRemoving(record, inProfile: profile.id) }
+                else if record.isEnabled { await load(record, inProfile: profile.id) }
+            }
+            if let recoveryPackages {
+                let retained = Set((session.profiles.first { $0.id == profile.id }?.extensions ?? []).map(\.packageID)).union(recoveryPackages)
+                do { try await owner.removeUnusedPackages(keeping: retained) }
+                catch { Self.logger.error("Could not clean unused extension packages") }
+            }
         }
-        while !Task.isCancelled {
-            await updateExtensions()
-            do { try await Task.sleep(for: Self.updateInterval) } catch { return }
-        }
+        extensionsReady = true
     }
 
-    /// `inSettings` shows the review in the Settings window it was asked from.
     func installFromWebStore(_ identifier: String, inSettings: Bool = false) async {
-        guard let profileID = window.selectedProfileID else { return }
+        guard let profileID = window.selectedProfileID, beginExtensionOperation(identifier, profileID: profileID) else { return }
+        defer { endExtensionOperation(identifier, profileID: profileID) }
         do {
             let package = try await WebStore.package(identifier)
-            let webExtension = try await pages.extensions(for: profileID).prepare(crx: package, identifier: identifier)
-            await review(webExtension, identifier: identifier, source: .webStore, inProfile: profileID, inSettings: inSettings)
-        } catch {
-            present(.error(String(localized: "The extension could not be installed. Check your connection and try again.")))
-        }
+            let candidate = try await pages.extensions(for: profileID).prepare(crx: package, identifier: identifier)
+            await review(candidate, source: .webStore, inProfile: profileID, inSettings: inSettings)
+        } catch { extensionFailure() }
     }
 
     /// The store page's own button, in place of its grey Add to Chrome.
@@ -69,92 +82,153 @@ extension BrowserModel: WebExtensionHost {
     }
 
     func installFromFolder(_ folder: URL) async {
-        guard let profileID = window.selectedProfileID else { return }
+        guard extensionsReady, let profileID = window.selectedProfileID else { return }
         do {
-            let (identifier, webExtension) = try await pages.extensions(for: profileID).prepare(folder: folder)
-            await review(webExtension, identifier: identifier, source: .folder(folder), inProfile: profileID, inSettings: true)
-        } catch {
-            present(.error(Self.notAnExtension))
-        }
+            let candidate = try await pages.extensions(for: profileID).prepare(folder: folder)
+            guard beginExtensionOperation(candidate.identifier, profileID: profileID) else {
+                await discard(candidate, inProfile: profileID)
+                return
+            }
+            defer { endExtensionOperation(candidate.identifier, profileID: profileID) }
+            await review(candidate, source: .folder(folder), inProfile: profileID, inSettings: true)
+        } catch { extensionFailure() }
     }
 
-    /// Reads a folder extension again, keeping what was granted.
+    /// Folder reloads are reviewed too: their permissions may have changed.
     func reloadExtension(_ record: InstalledExtension, inProfile profileID: UUID) async {
-        guard case .folder(let folder) = record.source else { return }
+        guard case .folder(let folder) = record.source, beginExtensionOperation(record.id, profileID: profileID) else { return }
+        defer { endExtensionOperation(record.id, profileID: profileID) }
         do {
-            _ = try await pages.extensions(for: profileID).prepare(folder: folder)
-            await load(record, inProfile: profileID)
-        } catch {
-            present(.error(Self.notAnExtension))
-        }
+            let candidate = try await pages.extensions(for: profileID).prepare(folder: folder)
+            await review(candidate, source: record.source, inProfile: profileID, inSettings: true)
+        } catch { extensionFailure() }
     }
 
     func setEnabled(_ enabled: Bool, _ record: InstalledExtension, inProfile profileID: UUID) async {
+        guard beginExtensionOperation(record.id, profileID: profileID) else { return }
+        defer { endExtensionOperation(record.id, profileID: profileID) }
+        let previous = record
         var record = record
         record.isEnabled = enabled
-        saveExtension(record, inProfile: profileID)
-        if enabled { await load(record, inProfile: profileID) } else { pages.extensions(for: profileID).unload(record.id) }
+        guard await commitExtension(record, id: record.id, inProfile: profileID) else { return }
+        do {
+            if enabled { try await pages.extensions(for: profileID).load(record) }
+            else { try pages.extensions(for: profileID).unload(record.id) }
+        } catch {
+            await commitExtension(previous, id: record.id, inProfile: profileID)
+            extensionFailure()
+        }
     }
 
-    func setPinned(_ pinned: Bool, _ record: InstalledExtension, inProfile profileID: UUID) {
+    func setPinned(_ pinned: Bool, _ record: InstalledExtension, inProfile profileID: UUID) async {
+        guard beginExtensionOperation(record.id, profileID: profileID) else { return }
+        defer { endExtensionOperation(record.id, profileID: profileID) }
         var record = record
         record.isPinned = pinned
-        saveExtension(record, inProfile: profileID)
+        await commitExtension(record, id: record.id, inProfile: profileID)
     }
 
     func removeExtension(_ record: InstalledExtension, inProfile profileID: UUID) async {
-        deleteExtension(record.id, inProfile: profileID)
-        await pages.extensions(for: profileID).remove(record.id)
+        guard beginExtensionOperation(record.id, profileID: profileID, allowsRemovalRetry: true) else { return }
+        defer { endExtensionOperation(record.id, profileID: profileID) }
+        var removing = record
+        removing.isRemoving = true
+        guard await commitExtension(removing, id: record.id, inProfile: profileID) else { return }
+        await finishRemoving(removing, inProfile: profileID)
     }
 
-    /// Shows what the extension asks for; accepting grants exactly that and loads it.
-    private func review(_ webExtension: WKWebExtension, identifier: String, source: InstalledExtension.Source, inProfile profileID: UUID,
+    private func finishRemoving(_ record: InstalledExtension, inProfile profileID: UUID) async {
+        do {
+            try await pages.extensions(for: profileID).remove(record)
+            await commitExtension(nil, id: record.id, inProfile: profileID)
+        } catch { extensionFailure() }
+    }
+
+    private func review(_ candidate: ProfileExtensions.Candidate, source: InstalledExtension.Source, inProfile profileID: UUID,
                         inSettings: Bool) async {
+        let webExtension = candidate.webExtension
         let permissions = webExtension.requestedPermissions.map(\.rawValue).sorted()
         let sites = webExtension.allRequestedMatchPatterns.map(\.string).sorted()
-        let isUpdate = installedExtensions(inProfile: profileID).contains { $0.id == identifier }
-        let accepted = await ask(isUpdate ? .update : .installation, name: webExtension.displayName ?? identifier, icon: webExtension.icon(for: Self.reviewIconSize),
-                                 permissions: permissions, sites: sites, inSettings: inSettings)
-        let extensions = pages.extensions(for: profileID)
-        guard accepted else {
-            if !installedExtensions(inProfile: profileID).contains(where: { $0.id == identifier }) { await extensions.remove(identifier) }
-            return
-        }
-        var record = installedExtensions(inProfile: profileID).first { $0.id == identifier }
-            ?? InstalledExtension(id: identifier, version: "", source: source, grantedPermissions: [], grantedSites: [])
+        let previous = installedExtensions(inProfile: profileID).first { $0.id == candidate.identifier }
+        let accepted = await ask(previous == nil ? .installation : .update, name: webExtension.displayName ?? candidate.identifier,
+                                 icon: webExtension.icon(for: Self.reviewIconSize), permissions: permissions, sites: sites, inSettings: inSettings)
+        guard accepted else { await discard(candidate, inProfile: profileID); return }
+        var record = previous ?? InstalledExtension(id: candidate.identifier, version: "", source: source, grantedPermissions: [], grantedSites: [])
+        record.source = source
         record.version = webExtension.version ?? ""
+        record.packageID = candidate.packageID
         record.grantedPermissions = permissions
         record.grantedSites = sites
         record.pendingVersion = nil
-        saveExtension(record, inProfile: profileID)
-        await load(record, inProfile: profileID)
+        await activate(record, previous: previous, inProfile: profileID)
+    }
+
+    private func activate(_ record: InstalledExtension, previous: InstalledExtension?, inProfile profileID: UUID) async {
+        guard await commitExtension(record, id: record.id, inProfile: profileID) else { return }
+        guard record.isEnabled else { return }
+        do { try await pages.extensions(for: profileID).load(record) }
+        catch {
+            // Keep the previous immutable package available and restore its committed registration.
+            if await commitExtension(previous, id: record.id, inProfile: profileID), let previous, previous.isEnabled {
+                await load(previous, inProfile: profileID)
+            }
+            extensionFailure()
+        }
     }
 
     private func load(_ record: InstalledExtension, inProfile profileID: UUID) async {
         do { try await pages.extensions(for: profileID).load(record) }
-        catch { Self.logger.error("Could not load extension \(record.id, privacy: .public): \(error.localizedDescription, privacy: .public)") }
+        catch { extensionFailure() }
     }
 
-    /// An update asking for nothing more is installed; one that asks for more waits for the person.
     private func updateExtensions() async {
         for profile in session.profiles {
-            for record in profile.extensions where record.source == .webStore && record.pendingVersion == nil {
-                let extensions = pages.extensions(for: profile.id)
+            for saved in profile.extensions {
+                guard let record = installedExtensions(inProfile: profile.id).first(where: { $0.id == saved.id }),
+                      record.source == .webStore, record.pendingVersion == nil,
+                      beginExtensionOperation(record.id, profileID: profile.id) else { continue }
+                defer { endExtensionOperation(record.id, profileID: profile.id) }
+                let owner = pages.extensions(for: profile.id)
+                // Automatic checks are best effort; unavailable updates retry on the next cycle.
                 guard let version = try? await WebStore.newerVersion(of: record.id, than: record.version),
                       let package = try? await WebStore.package(record.id),
-                      let update = try? await extensions.inspect(crx: package, identifier: record.id) else { continue }
+                      let candidate = try? await owner.prepare(crx: package, identifier: record.id) else { continue }
                 var updated = record
-                if Set(update.requestedPermissions.map(\.rawValue)).isSubset(of: record.grantedPermissions),
-                   Set(update.allRequestedMatchPatterns.map(\.string)).isSubset(of: record.grantedSites),
-                   (try? await extensions.prepare(crx: package, identifier: record.id)) != nil {
-                    updated.version = update.version ?? version
-                    if updated.isEnabled { await load(updated, inProfile: profile.id) }
+                if Set(candidate.webExtension.requestedPermissions.map(\.rawValue)).isSubset(of: record.grantedPermissions),
+                   Set(candidate.webExtension.allRequestedMatchPatterns.map(\.string)).isSubset(of: record.grantedSites) {
+                    updated.version = candidate.webExtension.version ?? version
+                    updated.packageID = candidate.packageID
+                    await activate(updated, previous: record, inProfile: profile.id)
                 } else {
+                    await discard(candidate, inProfile: profile.id)
                     updated.pendingVersion = version
+                    await commitExtension(updated, id: record.id, inProfile: profile.id)
                 }
-                saveExtension(updated, inProfile: profile.id)
             }
         }
+    }
+
+    func extensionOperationInProgress(_ id: String, profileID: UUID) -> Bool {
+        extensionOperations.contains(profileID.uuidString + ":" + id)
+    }
+
+    private func beginExtensionOperation(_ id: String, profileID: UUID, allowsRemovalRetry: Bool = false) -> Bool {
+        guard extensionsReady else { return false }
+        let removing = session.profiles.first { $0.id == profileID }?.extensions.contains { $0.id == id && $0.isRemoving } == true
+        guard !removing || allowsRemovalRetry else { return false }
+        return extensionOperations.insert(profileID.uuidString + ":" + id).inserted
+    }
+
+    private func endExtensionOperation(_ id: String, profileID: UUID) { extensionOperations.remove(profileID.uuidString + ":" + id) }
+
+    private func discard(_ candidate: ProfileExtensions.Candidate, inProfile profileID: UUID) async {
+        // Unreferenced candidates are also collected on the next launch.
+        do { try await pages.extensions(for: profileID).discard(candidate) }
+        catch { Self.logger.error("Could not remove unused extension candidate") }
+    }
+
+    private func extensionFailure() {
+        present(.error(String(localized: "The extension operation could not be completed. Your saved files have been kept. Try again.")))
     }
 
     private func ask(_ kind: ExtensionRequest.Kind, name: String, icon: NSImage?, permissions: [String], sites: [String], inSettings: Bool = false) async -> Bool {
@@ -209,16 +283,16 @@ extension BrowserModel: WebExtensionHost {
 
     var windowFrame: CGRect { WindowConfiguration.mainWindow?.frame ?? .null }
 
-    func requestPermissions(_ permissions: Set<String>, sites: Set<String>, for extensionID: String) async -> Bool {
-        guard let profileID = window.selectedProfileID,
-              var record = installedExtensions(inProfile: profileID).first(where: { $0.id == extensionID }) else { return false }
+    func requestPermissions(_ permissions: Set<String>, sites: Set<String>, for extensionID: String, inProfile profileID: UUID) async -> Bool {
+        guard var record = installedExtensions(inProfile: profileID).first(where: { $0.id == extensionID }) else { return false }
+        guard beginExtensionOperation(extensionID, profileID: profileID) else { return false }
+        defer { endExtensionOperation(extensionID, profileID: profileID) }
         let webExtension = pages.extensions(for: profileID).contexts[extensionID]?.webExtension
         guard await ask(.permissions, name: webExtension?.displayName ?? extensionID, icon: webExtension?.icon(for: Self.reviewIconSize),
                         permissions: permissions.sorted(), sites: sites.sorted()) else { return false }
         record.grantedPermissions = Array(Set(record.grantedPermissions).union(permissions)).sorted()
         record.grantedSites = Array(Set(record.grantedSites).union(sites)).sorted()
-        saveExtension(record, inProfile: profileID)
-        return true
+        return await commitExtension(record, id: record.id, inProfile: profileID)
     }
 
     /// Anchored to the extension's button when it shows, otherwise to the control center's.

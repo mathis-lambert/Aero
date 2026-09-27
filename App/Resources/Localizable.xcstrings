@@ -1,6 +1,230 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Retry removal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry removal"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réessayer la suppression"
+          }
+        }
+      }
+    },
+    "Some history changes could not be saved. Try the action again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some history changes could not be saved. Try the action again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certaines modifications de l’historique n’ont pas pu être enregistrées. Réessayez l’action."
+          }
+        }
+      }
+    },
+    "History could not be changed. Check available disk space and try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History could not be changed. Check available disk space and try again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’historique n’a pas pu être modifié. Vérifiez l’espace disque disponible et réessayez."
+          }
+        }
+      }
+    },
+    "Retry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réessayer"
+          }
+        }
+      }
+    },
+    "This data requires a newer version of Aero. Your files have been kept unchanged.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This data requires a newer version of Aero. Your files have been kept unchanged."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces données nécessitent une version plus récente d’Aero. Vos fichiers ont été conservés sans modification."
+          }
+        }
+      }
+    },
+    "Another Aero process is using this data. Quit it, then retry.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another Aero process is using this data. Quit it, then retry."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un autre processus Aero utilise ces données. Quittez-le, puis réessayez."
+          }
+        }
+      }
+    },
+    "Your saved data could not be opened. Your files have been kept for recovery.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your saved data could not be opened. Your files have been kept for recovery."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vos données enregistrées n’ont pas pu être ouvertes. Vos fichiers ont été conservés pour leur récupération."
+          }
+        }
+      }
+    },
+    "Saved data unavailable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved data unavailable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données enregistrées indisponibles"
+          }
+        }
+      }
+    },
+    "Show files": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show files"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher les fichiers"
+          }
+        }
+      }
+    },
+    "Restore previous state…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore previous state…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer l’état précédent…"
+          }
+        }
+      }
+    },
+    "Restore the previous browser state?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore the previous browser state?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer l’état précédent du navigateur ?"
+          }
+        }
+      }
+    },
+    "Restore previous state": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore previous state"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer l’état précédent"
+          }
+        }
+      }
+    },
+    "Changes since that snapshot will be replaced, including tabs, permissions and extension settings. Current files will be preserved separately. Browsing history is not restored.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes since that snapshot will be replaced, including tabs, permissions and extension settings. Current files will be preserved separately. Browsing history is not restored."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les modifications effectuées depuis cette sauvegarde seront remplacées, notamment les onglets, les autorisations et les réglages des extensions. Les fichiers actuels seront conservés séparément. L’historique de navigation ne sera pas restauré."
+          }
+        }
+      }
+    },
+    "The extension operation could not be completed. Your saved files have been kept. Try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The extension operation could not be completed. Your saved files have been kept. Try again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’opération sur l’extension n’a pas pu être terminée. Vos fichiers enregistrés ont été conservés. Réessayez."
+          }
+        }
+      }
+    },
     "Resize sidebar": {
       "localizations": {
         "en": {
@@ -2637,22 +2861,6 @@
         }
       }
     },
-    "Session unavailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Session unavailable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Session indisponible"
-          }
-        }
-      }
-    },
     "Share" : {
       "localizations" : {
         "en" : {
@@ -2973,38 +3181,6 @@
         }
       }
     },
-    "The extension could not be installed. Check your connection and try again." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The extension could not be installed. Check your connection and try again."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’extension n’a pas pu être installée. Vérifiez votre connexion et réessayez."
-          }
-        }
-      }
-    },
-    "This folder does not hold an extension Aero can load." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This folder does not hold an extension Aero can load."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ce dossier ne contient pas d’extension qu’Aero peut charger."
-          }
-        }
-      }
-    },
     "This page could not be opened" : {
       "localizations" : {
         "en" : {
@@ -3305,38 +3481,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vos profils"
-          }
-        }
-      }
-    },
-    "Your saved data has been kept unchanged." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your saved data has been kept unchanged."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vos données enregistrées ont été conservées intactes."
-          }
-        }
-      }
-    },
-    "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your saved session could not be opened. It has been kept unchanged. Quit the app to inspect or recover it."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre session enregistrée n’a pas pu être ouverte. Elle a été conservée intacte. Quittez l’application pour l’examiner ou la récupérer."
           }
         }
       }

@@ -1,25 +1,17 @@
 import BrowserCore
 import Foundation
 
-/// Per-profile browsing history in a SQLite database with a full-text index.
+/// Profile-scoped history in one SQLite database with a full-text index.
 /// The database opens on first use; a file it cannot read is left untouched.
 public actor HistoryStore {
-    package enum Failure: Error, Equatable { case unavailable }
 
     package static let retention: TimeInterval = 365 * 24 * 60 * 60
     package static let maximumTitleLength = 512
     package static let maximumURLLength = 2048
     public static let pageSize = 200
-    private static let schemaVersion: Int64 = 1
-
-    private enum State {
-        case closed
-        case open(SQLiteDatabase)
-        case unavailable
-    }
-
+    private var database: SQLiteDatabase?
     private let file: URL
-    private var state = State.closed
+    private var nextMaintenance = Date.distantPast
 
     public init(file: URL) {
         self.file = file
@@ -55,19 +47,23 @@ public actor HistoryStore {
 
     /// Most recent first. `query` matches word prefixes in titles and addresses; FTS syntax in it
     /// is treated as text.
-    public func entries(profileID: UUID, matching query: String = "", before: Date? = nil, limit: Int = pageSize) throws -> [HistoryEntry] {
+    public func entries(profileID: UUID, matching query: String = "", before: HistoryEntry.Cursor? = nil, limit: Int = pageSize) throws -> [HistoryEntry] {
         let database = try open()
-        let before: SQLiteDatabase.Value = before.map { .real($0.timeIntervalSinceReferenceDate) } ?? .null
-        let bindings: [SQLiteDatabase.Value] = [.text(profileID.uuidString), before, .integer(Int64(limit))]
+        var bindings: [SQLiteDatabase.Value] = [.text(profileID.uuidString)]
         let columns = "pages.id, pages.url, pages.title, pages.last_visit"
-        let filter = "pages.profile_id = ?1 AND (?2 IS NULL OR pages.last_visit < ?2)"
-        if let match = Self.matchExpression(query) {
-            return try database.query("""
-                SELECT \(columns) FROM pages_fts JOIN pages ON pages.id = pages_fts.rowid
-                WHERE pages_fts MATCH ?4 AND \(filter) ORDER BY pages.last_visit DESC LIMIT ?3
-                """, bindings + [.text(match)], row: Self.entry)
+        var source = "pages"
+        var filter = "pages.profile_id = ?"
+        if let before {
+            filter += " AND (pages.last_visit, pages.id) < (?, ?)"
+            bindings += [.real(before.date.timeIntervalSinceReferenceDate), .integer(before.id)]
         }
-        return try database.query("SELECT \(columns) FROM pages WHERE \(filter) ORDER BY last_visit DESC LIMIT ?3",
+        if let match = Self.matchExpression(query) {
+            source = "pages_fts JOIN pages ON pages.id = pages_fts.rowid"
+            filter += " AND pages_fts MATCH ?"
+            bindings.append(.text(match))
+        }
+        bindings.append(.integer(Int64(max(1, min(limit, 1000)))))
+        return try database.query("SELECT \(columns) FROM \(source) WHERE \(filter) ORDER BY pages.last_visit DESC, pages.id DESC LIMIT ?",
                                   bindings, row: Self.entry)
     }
 
@@ -104,41 +100,31 @@ public actor HistoryStore {
     // MARK: - Database
 
     private func open() throws -> SQLiteDatabase {
-        switch state {
-        case .open(let database): return database
-        case .unavailable: throw Failure.unavailable
-        case .closed:
+        let db: SQLiteDatabase
+        if let database { db = database }
+        else {
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            db = try SQLiteDatabase(file: file)
+            try Self.schema.prepare(db, file: file)
+            try db.execute("PRAGMA synchronous = NORMAL")
+            database = db
+        }
+        if Date.now >= nextMaintenance {
+            // Maintenance is bounded and best effort. Contention must not disable reads.
             do {
-                let database = try Self.prepare(file)
-                state = .open(database)
-                return database
-            } catch {
-                state = .unavailable
-                throw Failure.unavailable
-            }
+                let cutoff = Date.now.addingTimeInterval(-Self.retention).timeIntervalSinceReferenceDate
+                try db.transaction {
+                    try db.run("DELETE FROM visits WHERE id IN (SELECT id FROM visits WHERE visited_at < ? LIMIT 500)", [.real(cutoff)])
+                    try db.run("DELETE FROM pages WHERE id IN (SELECT id FROM pages WHERE last_visit < ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id) LIMIT 500)", [.real(cutoff)])
+                }
+                let more = try db.query("SELECT 1 FROM visits WHERE visited_at < ? LIMIT 1", [.real(cutoff)]) { $0.integer(0) }
+                nextMaintenance = .now.addingTimeInterval(more.isEmpty ? 3600 : 60)
+            } catch { nextMaintenance = .now.addingTimeInterval(60) }
         }
+        return db
     }
 
-    /// Reads the schema version before anything writes, so an unreadable or newer file is never modified.
-    private static func prepare(_ file: URL) throws -> SQLiteDatabase {
-        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-        let database = try SQLiteDatabase(file: file)
-        let version = try database.query("PRAGMA user_version") { $0.integer(0) }.first ?? 0
-        guard version <= schemaVersion else { throw Failure.unavailable }
-        try database.execute("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON")
-        if version == 0 { try createSchema(database) }
-        let cutoff = Date.now.addingTimeInterval(-retention).timeIntervalSinceReferenceDate
-        try database.transaction {
-            try database.run("DELETE FROM visits WHERE visited_at < ?", [.real(cutoff)])
-            try database.run("DELETE FROM pages WHERE last_visit < ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id)",
-                             [.real(cutoff)])
-        }
-        return database
-    }
-
-    private static func createSchema(_ database: SQLiteDatabase) throws {
-        try database.transaction {
-            try database.execute("""
+    private static let schema = DatabaseSchema(identifier: 0x41454849, migrations: ["""
                 CREATE TABLE pages (
                     id INTEGER PRIMARY KEY,
                     profile_id TEXT NOT NULL,
@@ -147,7 +133,7 @@ public actor HistoryStore {
                     last_visit REAL NOT NULL,
                     UNIQUE (profile_id, url)
                 );
-                CREATE INDEX pages_recent ON pages (profile_id, last_visit DESC);
+                CREATE INDEX pages_recent ON pages (profile_id, last_visit DESC, id DESC);
                 CREATE TABLE visits (
                     id INTEGER PRIMARY KEY,
                     page_id INTEGER NOT NULL REFERENCES pages (id) ON DELETE CASCADE,
@@ -168,10 +154,7 @@ public actor HistoryStore {
                     INSERT INTO pages_fts (pages_fts, rowid, title, url) VALUES ('delete', old.id, old.title, old.url);
                     INSERT INTO pages_fts (rowid, title, url) VALUES (new.id, new.title, new.url);
                 END;
-                """)
-            try database.execute("PRAGMA user_version = \(schemaVersion)")
-        }
-    }
+                """])
 
     // MARK: - Values
 

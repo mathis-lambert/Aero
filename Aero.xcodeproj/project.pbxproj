@@ -39,6 +39,7 @@
 		};
 		6F99D0E977B61988ED22843D /* Tests/AeroUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFolders = (Fixtures,);
 			path = Tests/AeroUITests;
 			sourceTree = "<group>";
 		};

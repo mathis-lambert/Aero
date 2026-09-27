@@ -40,7 +40,10 @@ struct DownloadsButton: View {
             }
             .downloadsTarget()
             .accessibilityIdentifier("downloads.button")
-            .popover(isPresented: $presented, arrowEdge: .top) { DownloadsList(downloads: downloads) }
+            .popover(isPresented: $presented, arrowEdge: .top) {
+                DownloadsList(downloads: downloads)
+                    .onExitCommand { presented = false }
+            }
     }
 
     private struct Landing {
@@ -72,6 +75,7 @@ private struct DownloadsList: View {
     private static let rowHeight: CGFloat = 44
 
     let downloads: DownloadCoordinator
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -79,7 +83,11 @@ private struct DownloadsList: View {
                 Text("Downloads").font(BrowserDesign.Typography.label).foregroundStyle(.secondary)
                 Spacer()
                 if downloads.downloads.contains(where: { $0.state != .downloading }) {
-                    Button { downloads.clearInactive() } label: {
+                    Button {
+                        downloads.clearInactive()
+                        // The Clear button disappears with the last row; retain an Escape responder.
+                        isFocused = true
+                    } label: {
                         Text("Clear").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
                             .padding(.horizontal, 6).padding(.vertical, 3)
                     }
@@ -110,6 +118,10 @@ private struct DownloadsList: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 4)
         .frame(width: Self.width)
+        .focusable()
+        .focusEffectDisabled()
+        .focused($isFocused)
+        .onAppear { isFocused = true }
         .browserAnimation(value: downloads.downloads.map(\.id))
     }
 }

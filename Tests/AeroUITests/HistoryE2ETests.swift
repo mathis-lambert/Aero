@@ -1,3 +1,4 @@
+import SQLite3
 import XCTest
 
 /// The History page in a tab: recording, search, opening, deletion, clearing and persistence.
@@ -8,6 +9,48 @@ final class HistoryE2ETests: BrowserE2ETestCase {
 
     private var historyRows: XCUIElementQuery { app.descendants(matching: .any).matching(identifier: "history.row") }
     private var search: XCUIElement { app.textFields["history.search"] }
+
+    func testFailedHistoryWriteRetriesOnQuitWithoutAnotherVisit() throws {
+        showHistory() // Opens the isolated history database before fault injection.
+        XCTAssertTrue(app.staticTexts["No history"].waitForExistence(timeout: Self.renderTimeout))
+        let root = try XCTUnwrap(app.launchEnvironment[TestApplication.testDataKey])
+        let file = URL(fileURLWithPath: root).appendingPathComponent("Storage/History.sqlite")
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(file.path, &handle), SQLITE_OK)
+        let database = try XCTUnwrap(handle)
+        defer { sqlite3_close(database) }
+        XCTAssertEqual(sqlite3_exec(database, "CREATE TRIGGER fail_visit BEFORE INSERT ON visits BEGIN SELECT RAISE(ABORT, 'fixture'); END", nil, nil, nil), SQLITE_OK)
+        open("history-lake.html", expecting: "Alpine Lake fixture")
+        showHistory()
+        XCTAssertTrue(app.staticTexts["Some history changes could not be saved. Try the action again."].waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertEqual(sqlite3_exec(database, "DROP TRIGGER fail_visit", nil, nil, nil), SQLITE_OK)
+        quitAndRelaunch()
+        showHistory()
+        XCTAssertTrue(poll { self.historyRows.count == 1 }, "Quit retries the failed visit without a new navigation")
+        attachScreenshot("history-write-retried-on-quit")
+    }
+
+    func testHistoryStateIsIsolatedWhenSwitchingProfiles() {
+        open("history-lake.html", expecting: "Alpine Lake fixture")
+        showHistory()
+        search.typeText("alpine")
+        XCTAssertTrue(poll { self.labels(of: "history.row") == ["Alpine Lake"] })
+        app.buttons["sidebar.addProfile"].click()
+        app.textFields["profiles.name"].click()
+        app.typeText("Work")
+        app.buttons["profiles.save"].click()
+        open("history-city.html", expecting: "Été à Lyon fixture")
+        showHistory()
+        XCTAssertTrue(poll { self.labels(of: "history.row") == ["Été à Lyon"] })
+        search.typeText("lyon")
+        for name in ["Personal", "Work"] {
+            app.buttons.matching(identifier: "sidebar.profile").matching(NSPredicate(format: "label == %@", name)).firstMatch.click()
+            XCTAssertEqual(search.value as? String, "", "The profile does not inherit another profile's search state")
+            let expected = name == "Personal" ? "Alpine Lake" : "Été à Lyon"
+            XCTAssertTrue(poll { self.labels(of: "history.row") == [expected] })
+        }
+        attachScreenshot("history-profile-state-isolated")
+    }
 
     func testHistoryTabRecordsSearchesAndOpensVisitsInPlace() {
         open("history-lake.html", expecting: "Alpine Lake fixture")

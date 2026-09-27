@@ -66,7 +66,7 @@ to produce punctuation/digits as part of that character. Plus/equals have one no
 - Unreadable or unsupported-version bytes are retained, editing is blocked, and built-in defaults
   remain usable. Explicit reset saves the original bytes under `browser.shortcuts.recovery` first.
 - Each edit encodes and replaces one complete preferences value. There is no migration framework
-  or persisted copy of defaults; format changes before release remain a hard cut.
+  or persisted copy of defaults. Future format changes must explicitly convert supported versions before replacing the blob; unknown versions remain preserved and blocked.
 
 ## Routing and lifetime
 

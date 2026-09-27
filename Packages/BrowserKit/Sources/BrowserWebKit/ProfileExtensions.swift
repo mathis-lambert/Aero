@@ -16,7 +16,7 @@ public protocol WebExtensionHost: AnyObject {
     func close(tabID: UUID)
     var windowFrame: CGRect { get }
     /// Whether the person grants an extension what it asks for beyond its installation.
-    func requestPermissions(_ permissions: Set<String>, sites: Set<String>, for extensionID: String) async -> Bool
+    func requestPermissions(_ permissions: Set<String>, sites: Set<String>, for extensionID: String, inProfile profileID: UUID) async -> Bool
     func presentPopup(_ popover: NSPopover, for extensionID: String)
 }
 
@@ -61,68 +61,87 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
 
     // MARK: - Installation
 
-    /// What a Chrome Web Store package asks for, read from its checked archive without installing it.
-    public func inspect(crx: Data, identifier: String) async throws -> WKWebExtension {
-        let archive = FileManager.default.temporaryDirectory.appendingPathComponent("aero-\(UUID().uuidString).zip")
-        defer { try? FileManager.default.removeItem(at: archive) }
-        try await Task.detached(priority: .userInitiated) {
-            try ExtensionPackage.archive(ofCRX: crx, identifier: identifier).write(to: archive)
-        }.value
-        return try await WKWebExtension(resourceBaseURL: archive)
+    /// A candidate has its own immutable directory, never the active extension's path.
+    public struct Candidate {
+        public let identifier: String
+        public let packageID: UUID
+        public let webExtension: WKWebExtension
     }
 
-    /// Checks a Chrome Web Store package and prepares it, for the person to review before it is loaded.
-    public func prepare(crx: Data, identifier: String) async throws -> WKWebExtension {
-        let destination = folder.appendingPathComponent(identifier, isDirectory: true)
+    public func prepare(crx: Data, identifier: String) async throws -> Candidate {
+        let packageID = UUID()
+        let destination = packageFolder(packageID)
         try await Task.detached(priority: .userInitiated) {
             try ExtensionPackage.install(.archive(ExtensionPackage.archive(ofCRX: crx, identifier: identifier)), at: destination)
         }.value
-        return try await WKWebExtension(resourceBaseURL: destination)
+        return Candidate(identifier: identifier, packageID: packageID, webExtension: try await WKWebExtension(resourceBaseURL: destination))
     }
 
-    /// Copies and prepares an unpacked extension. As in Chrome, its identifier comes from its manifest's
-    /// `key` when it has one, and otherwise from the folder's path.
-    public func prepare(folder source: URL) async throws -> (identifier: String, extension: WKWebExtension) {
-        let identifier = ExtensionPackage.identifier(ofFolder: source)
-        let destination = folder.appendingPathComponent(identifier, isDirectory: true)
-        try await Task.detached(priority: .userInitiated) { try ExtensionPackage.install(.folder(source), at: destination) }.value
-        return (identifier, try await WKWebExtension(resourceBaseURL: destination))
+    public func prepare(folder source: URL) async throws -> Candidate {
+        let packageID = UUID()
+        let destination = packageFolder(packageID)
+        let identifier = try await Task.detached(priority: .userInitiated) {
+            let identifier = ExtensionPackage.identifier(ofFolder: source)
+            try ExtensionPackage.install(.folder(source), at: destination)
+            return identifier
+        }.value
+        return Candidate(identifier: identifier, packageID: packageID, webExtension: try await WKWebExtension(resourceBaseURL: destination))
     }
 
-    /// Unloads the extension and deletes its files and its storage, as uninstalling does in Chrome.
-    public func remove(_ extensionID: String) async {
+    public func discard(_ candidate: Candidate) async throws {
+        let directory = packageFolder(candidate.packageID)
+        try await Task.detached { try FileManager.default.removeItem(at: directory) }.value
+    }
+
+    /// Only unreferenced package directories are disposable; recovery references also retain packages.
+    public func removeUnusedPackages(keeping identifiers: Set<UUID>) async throws {
+        let folder = folder
+        try await Task.detached {
+            guard FileManager.default.fileExists(atPath: folder.path) else { return }
+            for child in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
+                if let id = UUID(uuidString: child.lastPathComponent), identifiers.contains(id) { continue }
+                try FileManager.default.removeItem(at: child)
+            }
+        }.value
+    }
+
+    private func packageFolder(_ id: UUID) -> URL { folder.appendingPathComponent(id.uuidString, isDirectory: true) }
+
+    /// A persisted uninstall intent remains until runtime storage and package cleanup finish.
+    public func remove(_ record: InstalledExtension) async throws {
+        try unload(record.id)
         let types: Set<WKWebExtension.DataType> = [.local, .session, .synchronized]
-        if let context = contexts[extensionID], let record = await controller.dataRecord(ofTypes: types, for: context) {
-            await controller.removeData(ofTypes: types, from: [record])
-        }
-        unload(extensionID)
-        // Best effort: files left behind are replaced by the next installation of the same extension.
-        try? FileManager.default.removeItem(at: folder.appendingPathComponent(extensionID, isDirectory: true))
+        let records = await controller.dataRecords(ofTypes: types).filter { $0.uniqueIdentifier == record.id }
+        for data in records { if let error = data.errors.first { throw error } }
+        await controller.removeData(ofTypes: types, from: records)
+        for data in records { if let error = data.errors.first { throw error } }
+        // Keep the package until registry removal commits; launch cleanup removes it afterwards.
     }
 
     /// Loads a prepared extension with the permissions the person granted. The identifier names its storage,
     /// so it must stay the same across launches.
     public func load(_ record: InstalledExtension) async throws {
-        unload(record.id)
-        let webExtension = try await WKWebExtension(resourceBaseURL: folder.appendingPathComponent(record.id, isDirectory: true))
+        try unload(record.id)
+        let webExtension = try await WKWebExtension(resourceBaseURL: packageFolder(record.packageID))
         let context = WKWebExtensionContext(for: webExtension)
         context.uniqueIdentifier = record.id
         #if DEBUG
         context.isInspectable = true
         #endif
-        for permission in record.grantedPermissions { context.setPermissionStatus(.grantedExplicitly, for: WKWebExtension.Permission(permission)) }
-        for site in record.grantedSites {
-            if let pattern = try? WKWebExtension.MatchPattern(string: site) { context.setPermissionStatus(.grantedExplicitly, for: pattern) }
-        }
+        context.grantedPermissions = Dictionary(uniqueKeysWithValues: record.grantedPermissions.map { (WKWebExtension.Permission($0), Date.distantFuture) })
+        var patterns: [WKWebExtension.MatchPattern: Date] = [:]
+        for site in record.grantedSites { patterns[try WKWebExtension.MatchPattern(string: site)] = .distantFuture }
+        context.grantedPermissionMatchPatterns = patterns
         // The context reads the open tabs from the window the delegate returns.
         try controller.load(context)
         contexts[record.id] = context
     }
 
-    public func unload(_ extensionID: String) {
+    public func unload(_ extensionID: String) throws {
+        guard let context = contexts[extensionID] else { return }
+        try controller.unload(context)
+        contexts.removeValue(forKey: extensionID)
         for session in nativeSessions.removeValue(forKey: extensionID) ?? [] { session.connection.close() }
-        guard let context = contexts.removeValue(forKey: extensionID) else { return }
-        try? controller.unload(context)
     }
 
     /// The configuration an extension's own page, such as its options, needs to load in a tab.
@@ -192,19 +211,25 @@ public final class ProfileExtensions: NSObject, WKWebExtensionControllerDelegate
 
     public func webExtensionController(_ controller: WKWebExtensionController, promptForPermissions permissions: Set<WKWebExtension.Permission>,
                                        in tab: (any WKWebExtensionTab)?, for extensionContext: WKWebExtensionContext) async -> (Set<WKWebExtension.Permission>, Date?) {
-        let granted = await host?.requestPermissions(Set(permissions.map(\.rawValue)), sites: [], for: extensionContext.uniqueIdentifier) == true
+        let granted = await host?.requestPermissions(Set(permissions.map(\.rawValue)), sites: [], for: extensionContext.uniqueIdentifier, inProfile: profileID) == true
         return (granted ? permissions : [], nil)
     }
 
     public func webExtensionController(_ controller: WKWebExtensionController, promptForPermissionMatchPatterns matchPatterns: Set<WKWebExtension.MatchPattern>,
                                        in tab: (any WKWebExtensionTab)?, for extensionContext: WKWebExtensionContext) async -> (Set<WKWebExtension.MatchPattern>, Date?) {
-        let granted = await host?.requestPermissions([], sites: Set(matchPatterns.map(\.string)), for: extensionContext.uniqueIdentifier) == true
+        let granted = await host?.requestPermissions([], sites: Set(matchPatterns.map(\.string)), for: extensionContext.uniqueIdentifier, inProfile: profileID) == true
         return (granted ? matchPatterns : [], nil)
     }
 
     public func webExtensionController(_ controller: WKWebExtensionController, promptForPermissionToAccess urls: Set<URL>,
                                        in tab: (any WKWebExtensionTab)?, for extensionContext: WKWebExtensionContext) async -> (Set<URL>, Date?) {
-        let granted = await host?.requestPermissions([], sites: Set(urls.compactMap { $0.host() }), for: extensionContext.uniqueIdentifier) == true
+        let patterns = urls.compactMap { url -> String? in
+            guard let scheme = url.scheme, let host = url.host(),
+                  let pattern = try? WKWebExtension.MatchPattern(scheme: scheme, host: host, path: "/*") else { return nil }
+            return pattern.string
+        }
+        guard patterns.count == urls.count else { return ([], nil) }
+        let granted = await host?.requestPermissions([], sites: Set(patterns), for: extensionContext.uniqueIdentifier, inProfile: profileID) == true
         return (granted ? urls : [], nil)
     }
 

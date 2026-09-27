@@ -15,7 +15,7 @@ swift test --package-path Packages/BrowserKit
 Scripts/run-e2e.sh [AeroUITests/<TestClass>…]
 ```
 
-UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`), ephemeral website stores and local fixtures. Debug and Release builds keep separate data (`Application Support/Aero Development` and `Aero`).
+UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`), ephemeral website stores and local fixtures. Debug and Release builds keep separate data (`Application Support/Aero Development/Storage` and `Aero/Storage`).
 
 `Scripts/release.sh` builds the notarized Release app, signed with Developer ID, into `/tmp/aero-release`. Its notary credentials are stored once in the keychain; the script says how.
 
@@ -24,7 +24,7 @@ UI tests need a logged-in GUI session. They use isolated data (`AERO_TEST_DATA`)
 - Profiles, each with its own website store, tabs and history, switched from the sidebar footer or with a two-finger swipe (`docs/PROFILES.md`).
 - One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K), with the chosen engine's suggestions (`docs/CONTROL_BAR.md`).
 - Favorites that stay when closed, as tiles or in groups; tabs dragged anywhere in the sidebar, a full tab context menu, reopen closed tabs, recent-tab switching (⌃Tab).
-- Session restoration without loading pages, and tab hibernation (`docs/PERFORMANCE.md`).
+- Transactional SQLite state, versioned schema migrations and explicit recovery (`docs/STORAGE.md`), session restoration without loading pages, and tab hibernation (`docs/PERFORMANCE.md`).
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search (`docs/HISTORY.md`).
 - Find in page, downloads, popups, favicons (`docs/BROWSING.md`).
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture (`docs/SITE_CONTROLS.md`).

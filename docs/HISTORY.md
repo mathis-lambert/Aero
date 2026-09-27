@@ -6,13 +6,15 @@
 - Titles arrive after the visit and update the entry. They are written together after a short delay, or before the History page reads, so a page that keeps changing its title writes once per delay with its latest title.
 - History belongs to a profile. Every query is scoped to one profile.
 - History is a browser page shown in a tab (`aero://history`). ⌘Y selects the space's History tab, or opens one. The page lists pages by their most recent visit, grouped by day, newest first. Search matches words in titles and addresses, ignoring case and diacritics ("ete" finds "Été"), with prefix matching. Return or double-click opens the entry in the same tab; the context menu opens it in a new tab; Delete removes it. Clear History removes the last hour, today, today and yesterday, or everything, for the current profile. The page reads history when it appears, when the search changes and after clearing; visits made meanwhile in other tabs appear the next time it is shown.
-- Visits older than a year are pruned when the store opens.
+- Visits older than a year are pruned in batches of 500 on store activity, at most hourly when caught up and once a minute while catching up. Maintenance failure never disables reads.
 
 ## Storage
 
-`HistoryStore` (BrowserStorage) is an actor over the system SQLite library, with no external dependency. Pages are unique per profile and address; visits reference pages; an FTS5 index over titles and addresses is kept in sync by triggers. The database uses WAL journaling, writes in transactions, and records its schema in `user_version`.
+`HistoryStore` (BrowserStorage) is an actor over the system SQLite library, with no external dependency. Pages are unique per profile and address; visits reference pages; an FTS5 index over titles and addresses is kept in sync by triggers. The database uses WAL journaling, writes in transactions, and records its schema in `user_version`, identifies the database with `application_id`, and shares the ordered migration runner with browser state. One database holds all profiles; every public operation scopes its rows by profile.
 
-The store opens lazily on first use, so launching the browser never waits for it. If the file cannot be opened or has a newer schema, it is left untouched and history is unavailable for the session; the History page says so.
+The store opens lazily on first use, so launching the browser never waits for it. If opening fails, the next operation can retry. Newer/foreign/corrupt files are never reset. The History page offers Retry; failed recording is visible, and explicit clear/delete waits for commit and surfaces errors. Pagination uses `(last_visit, id)` so equal timestamps do not skip rows.
+
+Failed writes remain queued in memory and retry in order on the next mutation or normal quit, with the original visit timestamp. A later clear runs after earlier retained writes so retry cannot resurrect erased history. Pending operations are not a disk journal and cannot survive forced termination. First-page and cursor queries use separate predicates so subsequent pages seek into the date/id index. History view state belongs to the selected profile; switching profiles resets rows, selection and search immediately.
 
 ## Failure modes
 

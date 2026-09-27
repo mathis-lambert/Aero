@@ -7,6 +7,12 @@ public struct HistoryEntry: Identifiable, Equatable, Sendable {
     public let title: String
     public let lastVisit: Date
 
+    public struct Cursor: Sendable {
+        public let date: Date
+        public let id: Int64
+    }
+    public var cursor: Cursor { Cursor(date: lastVisit, id: id) }
+
     package init(id: Int64, url: URL, title: String, lastVisit: Date) {
         self.id = id
         self.url = url

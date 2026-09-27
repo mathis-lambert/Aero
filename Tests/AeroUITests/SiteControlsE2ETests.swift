@@ -21,7 +21,7 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         attachScreenshot("control-center")
         app.menuButtons["controlCenter.more"].click()
         XCTAssertTrue(app.menuItems["Clear cache"].exists && app.menuItems["Clear cookies"].exists)
-        app.menuItems["Site settings…"].click()
+        app.windows.menuItems["Site settings…"].click()
         XCTAssertTrue(app.popUpButtons["siteSettings.camera"].waitForExistence(timeout: Self.renderTimeout),
                       "Site settings opens inside the control center")
         app.typeKey(.escape, modifierFlags: [])
@@ -120,7 +120,7 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
 
     private func siteMenu(_ item: String) {
         app.buttons["sidebar.reload"].rightClick()
-        app.menuItems[item].click()
+        app.windows.menus["sidebar.reload"].menuItems[item].click()
     }
 
     private func choose(_ decision: String, for permission: String) {

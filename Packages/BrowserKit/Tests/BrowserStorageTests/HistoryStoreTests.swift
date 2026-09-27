@@ -82,7 +82,7 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     try FileManager.default.createDirectory(at: fixture.folder, withIntermediateDirectories: true)
     let garbage = Data("not a database".utf8)
     try garbage.write(to: fixture.file)
-    await #expect(throws: HistoryStore.Failure.unavailable) {
+    await #expect(throws: (any Error).self) {
         try await fixture.store().recordVisit(to: url("https://example.com"), title: nil, profileID: UUID())
     }
     #expect(try Data(contentsOf: fixture.file) == garbage)
@@ -93,7 +93,7 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     #expect(sqlite3_exec(database, "PRAGMA user_version = 99", nil, nil, nil) == SQLITE_OK)
     sqlite3_close(database)
     let future = try Data(contentsOf: fixture.file)
-    await #expect(throws: HistoryStore.Failure.unavailable) { try await fixture.store().entries(profileID: UUID()) }
+    await #expect(throws: (any Error).self) { try await fixture.store().entries(profileID: UUID()) }
     #expect(try Data(contentsOf: fixture.file) == future)
 }
 
@@ -131,5 +131,36 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     try await store.recordVisit(to: page, title: nil, profileID: profile)
     try await store.clear(profileID: profile, since: nil)
     try await store.updateTitles([page: "Late"], profileID: profile)
+    #expect(try await store.entries(profileID: profile).isEmpty)
+}
+
+// Failure case 6 in docs/STORAGE.md: deterministic fixture dates and SQL contention.
+@Test func equalTimestampHistoryPagesStayReachable() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let store = fixture.store()
+    let profile = UUID()
+    let date = Date.now
+    for n in 0..<201 { try await store.recordVisit(to: url("https://example.test/\(n)"), title: nil, profileID: profile, at: date) }
+    let first = try await store.entries(profileID: profile)
+    let second = try await store.entries(profileID: profile, before: try #require(first.last).cursor)
+    #expect(first.count == 200 && second.count == 1)
+    #expect(Set((first + second).map(\.id)).count == 201)
+}
+
+@Test func historyCanRetryAfterTemporaryOpenFailure() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let profile = UUID()
+    try await fixture.store().recordVisit(to: url("https://example.test"), title: nil, profileID: profile)
+    var lock: OpaquePointer?
+    #expect(sqlite3_open(fixture.file.path, &lock) == SQLITE_OK)
+    defer { sqlite3_close(lock) }
+    #expect(sqlite3_exec(lock, "BEGIN IMMEDIATE", nil, nil, nil) == SQLITE_OK)
+    let store = fixture.store()
+    // Reads may work under WAL contention; an explicit deletion must fail, not disappear.
+    await #expect(throws: (any Error).self) { try await store.clear(profileID: profile, since: nil) }
+    #expect(sqlite3_exec(lock, "ROLLBACK", nil, nil, nil) == SQLITE_OK)
+    try await store.clear(profileID: profile, since: nil)
     #expect(try await store.entries(profileID: profile).isEmpty)
 }

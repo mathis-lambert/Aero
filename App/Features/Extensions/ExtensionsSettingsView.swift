@@ -12,7 +12,7 @@ struct ExtensionsSettingsView: View {
     var body: some View {
         if let profileID = browser.window.selectedProfileID {
             let extensions = browser.pages.extensionsIfMade(for: profileID)
-            let installed = browser.installedExtensions(inProfile: profileID)
+            let installed = browser.session.profiles.first { $0.id == profileID }?.extensions ?? []
             Form {
                 Section {
                     if installed.isEmpty {
@@ -26,6 +26,7 @@ struct ExtensionsSettingsView: View {
                         Spacer()
                         Button("Add from folder…", action: chooseFolder)
                             .accessibilityIdentifier("extensions.addFromFolder")
+                            .disabled(!browser.extensionsReady)
                     }
                 }
             }
@@ -40,23 +41,28 @@ struct ExtensionsSettingsView: View {
                 Text(verbatim: record.version).font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
-            if record.pendingVersion != nil {
-                Button("Review update") { Task { await browser.installFromWebStore(record.id, inSettings: true) } }.buttonStyle(PanelButtonStyle(prominent: true))
+            if record.isRemoving {
+                Button("Retry removal") { Task { await browser.removeExtension(record, inProfile: profileID) } }
+            } else {
+                if record.pendingVersion != nil {
+                    Button("Review update") { Task { await browser.installFromWebStore(record.id, inSettings: true) } }.buttonStyle(PanelButtonStyle(prominent: true))
+                }
+                if case .folder = record.source {
+                    IconButton(symbol: "arrow.clockwise", label: "Reload") { Task { await browser.reloadExtension(record, inProfile: profileID) } }
+                }
+                IconButton(symbol: record.isPinned ? "pin.fill" : "pin", label: record.isPinned ? "Unpin" : "Pin") {
+                    Task { await browser.setPinned(!record.isPinned, record, inProfile: profileID) }
+                }
+                .accessibilityIdentifier("extensions.pin")
+                IconButton(symbol: "trash", label: "Remove") { Task { await browser.removeExtension(record, inProfile: profileID) } }
+                    .accessibilityIdentifier("extensions.remove")
+                Toggle("Enabled", isOn: Binding(get: { record.isEnabled }, set: { enabled in Task { await browser.setEnabled(enabled, record, inProfile: profileID) } }))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .accessibilityIdentifier("extensions.enabled")
             }
-            if case .folder = record.source {
-                IconButton(symbol: "arrow.clockwise", label: "Reload") { Task { await browser.reloadExtension(record, inProfile: profileID) } }
-            }
-            IconButton(symbol: record.isPinned ? "pin.fill" : "pin", label: record.isPinned ? "Unpin" : "Pin") {
-                browser.setPinned(!record.isPinned, record, inProfile: profileID)
-            }
-            .accessibilityIdentifier("extensions.pin")
-            IconButton(symbol: "trash", label: "Remove") { Task { await browser.removeExtension(record, inProfile: profileID) } }
-                .accessibilityIdentifier("extensions.remove")
-            Toggle("Enabled", isOn: Binding(get: { record.isEnabled }, set: { enabled in Task { await browser.setEnabled(enabled, record, inProfile: profileID) } }))
-                .toggleStyle(.switch)
-                .labelsHidden()
-                .accessibilityIdentifier("extensions.enabled")
         }
+        .disabled(browser.extensionOperationInProgress(record.id, profileID: profileID))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("extensions.row")
     }

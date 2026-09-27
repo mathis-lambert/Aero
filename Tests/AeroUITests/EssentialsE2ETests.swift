@@ -39,6 +39,7 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
         app.buttons["downloads.clear"].click()
         XCTAssertTrue(app.staticTexts["downloads.empty"].waitForExistence(timeout: Self.renderTimeout), "Clearing removes finished downloads")
         app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(poll { !self.app.staticTexts["downloads.empty"].exists }, "Escape dismisses the empty popover")
         app.buttons["downloads.button"].click()
         XCTAssertTrue(app.staticTexts["downloads.empty"].waitForExistence(timeout: Self.renderTimeout), "The popover reopens with the current list")
     }

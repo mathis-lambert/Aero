@@ -70,7 +70,7 @@ Limits: only the main frame is inspected for unsent text.
 
 ## Session writes
 
-`SessionStore.scheduleSave` coalesces a burst of changes into at most one atomic write per second, always with the latest snapshot. Termination calls `save` directly, which supersedes any pending write. A title change alone schedules no write: it is saved with the next change or at termination, so a page that animates its title (a timer, an unread count) never rewrites the session. History coalesces titles the same way (`docs/HISTORY.md`).
+`BrowserStore.save` commits changed rows in a SQLite transaction, using revision ordering to reject stale snapshots. Browser actions queue immediate saves; title-only updates are batched over two seconds. The store compares the last committed snapshot, so unchanged tabs do not generate SQL writes. Quit saves the latest snapshot and drains history writes/titles. This is asynchronous persistence: a process crash may lose work still queued, while a completed browser-state transaction uses WAL with `synchronous=FULL`. See `docs/STORAGE.md` for recovery and migration behavior.
 
 ## Measuring
 

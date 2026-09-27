@@ -14,6 +14,8 @@ struct HistoryView: View {
     @State private var entries: [HistoryEntry] = []
     @State private var hasMore = false
     @State private var isUnavailable = false
+    @State private var loadingMore = false
+    @State private var loadRevision = 0
     @State private var selection: Set<HistoryEntry.ID> = []
     @FocusState private var focus: Focus?
     @Environment(\.palette) private var palette
@@ -31,6 +33,9 @@ struct HistoryView: View {
         VStack(alignment: .leading, spacing: 16) {
             header
             searchField
+            if browser.history.writeFailed {
+                Text("Some history changes could not be saved. Try the action again.").foregroundStyle(.secondary)
+            }
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: Self.contentWidth)
@@ -86,8 +91,13 @@ struct HistoryView: View {
 
     @ViewBuilder private var content: some View {
         if isUnavailable {
-            ContentUnavailableView("History unavailable", systemImage: "exclamationmark.triangle",
-                                   description: Text("History could not be opened. It has been kept unchanged."))
+            ContentUnavailableView {
+                Label("History unavailable", systemImage: "exclamationmark.triangle")
+            } description: {
+                Text("History could not be opened. It has been kept unchanged.")
+            } actions: {
+                Button("Retry") { Task { await load(appending: false) } }
+            }
         } else if entries.isEmpty, query.isEmpty {
             ContentUnavailableView("No history", systemImage: "clock", description: Text("Pages you visit appear here."))
         } else if entries.isEmpty {
@@ -133,20 +143,28 @@ struct HistoryView: View {
 
     /// Fetches the next page when the last loaded entry scrolls into view.
     private func loadMoreIfLast(_ entry: HistoryEntry) {
-        guard hasMore, entry.id == entries.last?.id else { return }
+        guard hasMore, !loadingMore, entry.id == entries.last?.id else { return }
         Task { await load(appending: true) }
     }
 
     private func load(appending: Bool) async {
         guard let profileID else { return }
+        if appending && loadingMore { return }
+        loadRevision += 1
+        let revision = loadRevision
+        let search = query
+        loadingMore = appending
+        defer { if revision == loadRevision { loadingMore = false } }
         do {
             let page = try await browser.history.entries(profileID: profileID, matching: query,
-                                                         before: appending ? entries.last?.lastVisit : nil)
+                                                         before: appending ? entries.last?.cursor : nil)
+            guard revision == loadRevision, profileID == self.profileID, search == query, !Task.isCancelled else { return }
+            isUnavailable = false
             entries = appending ? entries + page : page
             hasMore = page.count == HistoryStore.pageSize
             selection.formIntersection(entries.map(\.id))
         } catch {
-            isUnavailable = true
+            if revision == loadRevision, profileID == self.profileID, search == query, !Task.isCancelled { isUnavailable = true }
         }
     }
 
@@ -171,14 +189,25 @@ struct HistoryView: View {
 
     private func delete(_ ids: Set<HistoryEntry.ID>) {
         guard let profileID, !ids.isEmpty else { return }
-        entries.removeAll { ids.contains($0.id) }
-        selection.subtract(ids)
-        browser.history.delete(ids, profileID: profileID)
+        Task {
+            do {
+                try await browser.history.delete(ids, profileID: profileID)
+                if profileID == self.profileID { await load(appending: false) }
+            } catch { showWriteError() }
+        }
+    }
+
+    private func showWriteError() {
+        browser.present(.error(String(localized: "History could not be changed. Check available disk space and try again.")))
     }
 
     private func clear(_ range: HistoryClearRange) {
         guard let profileID else { return }
-        browser.history.clear(profileID: profileID, since: range.start())
-        Task { await load(appending: false) }
+        Task {
+            do {
+                try await browser.history.clear(profileID: profileID, since: range.start())
+                if profileID == self.profileID { await load(appending: false) }
+            } catch { showWriteError() }
+        }
     }
 }

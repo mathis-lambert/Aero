@@ -35,9 +35,9 @@ import Testing
     #expect(session.profiles.last?.emoji == nil)
     #expect(throws: SessionError.invalidEmoji) { try session.editProfile(id: work.id, name: "Work", color: .ocean, emoji: "Work") }
 
-    let data = try JSONEncoder().encode(session)
-    let tampered = try #require(String(data: data, encoding: .utf8)?.replacingOccurrences(of: "\"name\":\"Work\"", with: "\"name\":\"Work\",\"emoji\":\"ab\""))
-    let decoded = try JSONDecoder().decode(BrowserSession.self, from: Data(tampered.utf8))
+    var invalid = session.profiles
+    invalid[1].emoji = "ab"
+    let decoded = BrowserSession(profiles: invalid, spaces: session.spaces, tabs: session.tabs)
     #expect(throws: SessionError.inconsistentData) { try decoded.validate() }
 }
 
@@ -60,13 +60,9 @@ import Testing
     // Into another space's group, before another space's tab, into a group that does not exist.
     #expect(moves == [false, false, false, true])
 
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .sortedKeys
-    let saved = try #require(String(data: try encoder.encode(session), encoding: .utf8))
-    // Spaces sort before tabs, so the first mention is the group's own record.
-    let range = try #require(saved.range(of: group.id.uuidString))
-    let tampered = saved.replacingCharacters(in: range, with: UUID().uuidString)
-    let decoded = try JSONDecoder().decode(BrowserSession.self, from: Data(tampered.utf8))
+    var invalid = session.spaces
+    invalid[1].groups = []
+    let decoded = BrowserSession(profiles: session.profiles, spaces: invalid, tabs: session.tabs)
     #expect(throws: SessionError.inconsistentData) { try decoded.validate() }
 
     session.removeGroup(id: group.id)

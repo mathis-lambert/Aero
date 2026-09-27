@@ -89,8 +89,7 @@ enum ExtensionPackage {
 
     // MARK: - Preparation
 
-    /// Unpacks, prepares and puts an extension in `destination`, replacing what is there only once all of
-    /// it succeeded, so a failure never leaves half an extension.
+    /// Prepares a candidate in staging, then promotes it to a new immutable directory.
     enum Source { case archive(Data), folder(URL) }
 
     static func install(_ source: Source, at destination: URL) throws {
@@ -113,11 +112,8 @@ enum ExtensionPackage {
             guard ditto.terminationStatus == 0 else { throw Failure.unsafeEntry }
         }
         try prepare(staging)
-        if FileManager.default.fileExists(atPath: destination.path) {
-            _ = try FileManager.default.replaceItemAt(destination, withItemAt: staging)
-        } else {
-            try FileManager.default.moveItem(at: staging, to: destination)
-        }
+        // Every candidate has a new UUID directory. Never replace a loaded package.
+        try FileManager.default.moveItem(at: staging, to: destination)
     }
 
     /// Puts the inert declarations first in the service worker, through a worker that imports them and

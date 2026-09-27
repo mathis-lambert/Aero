@@ -24,6 +24,7 @@ struct BrowserWindowView: View {
                 HStack(spacing: 0) {
                     if browser.window.sidebarPinned {
                         SidebarView(browser: browser)
+                            .disabled(!browser.isReady)
                             .frame(width: sidebarWidth)
                             .overlay(alignment: .trailing) {
                                 resizeHandle(width: sidebarWidth, maximum: maximumWidth)
@@ -33,10 +34,11 @@ struct BrowserWindowView: View {
                     ZStack {
                         if !browser.isReady {
                             if browser.loadFailed {
-                                ContentUnavailableView("Session unavailable", systemImage: "externaldrive.badge.exclamationmark", description: Text("Your saved data has been kept unchanged."))
+                                StorageRecoveryView(browser: browser)
                             } else { ProgressView().controlSize(.small) }
                         } else if let internalPage = browser.internalPage {
                             InternalPageView(page: internalPage, browser: browser)
+                                .id(browser.window.selectedProfileID)
                         } else if let page = browser.currentPage {
                             BrowserContentView(page: page)
                                 .overlay(alignment: .topTrailing) {
@@ -79,6 +81,7 @@ struct BrowserWindowView: View {
                         .allowsHitTesting(!sidebarRevealed && !isOverlaid)
                     if sidebarRevealed || browser.window.holdsSidebarOpen {
                         SidebarView(browser: browser)
+                            .disabled(!browser.isReady)
                             .frame(width: sidebarWidth)
                             .frame(maxHeight: .infinity)
                             .browserSurface(fill: palette.sidebar, border: palette.line, radius: BrowserDesign.Radius.floatingSidebar)

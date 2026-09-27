@@ -4,14 +4,14 @@ Aero runs Chrome and Safari web extensions on WebKit's own engine, `WKWebExtensi
 
 ## Profiles
 
-Each profile has its own extensions: its own `WKWebExtensionController`, persistent under the profile's identifier, with the profile's website data store. An extension installed twice keeps two separate sets of data, so a work and a personal password manager never meet. The installed list is part of the profile in the session; the prepared files live in `Extensions/<profile>/<extension>/` under the app's data folder. A profile's controller is made when its first page is, and holds nothing until an extension is installed.
+Each profile has its own extensions: its own `WKWebExtensionController`, persistent under the profile's identifier, with the profile's website data store. An extension installed twice keeps two separate sets of data, so a work and a personal password manager never meet. The installed list is part of the profile in the session; the prepared files live in `Extensions/<profile>/<extension>/` under the app's data folder. A profile's controller reconciles saved extensions on launch; controllers also attach to the profile's pages. Packages use immutable UUID directories selected by the SQLite registry. See `docs/STORAGE.md` for commit, recovery and removal behavior.
 
 ## Installing
 
 - **Chrome Web Store.** On an extension's page in the store, Aero puts its own Add to Aero button in place of the store's grey Add to Chrome; nothing else of the page changes. The button's script runs in Aero's own script world, which the page cannot post to, and only a click by the person counts; the extension installed is read from the tab's address, never from the page. Aero downloads the CRX3 package from the store's update service, checks that its signature was made with the key the extension's identifier derives from, and unpacks it.
-- **Folder.** Settings › Extensions › Add from folder… loads an unpacked extension, for developers. Reload reads the folder again.
+- **Folder.** Settings › Extensions › Add from folder… loads an unpacked extension, for developers. Reload prepares the folder again and asks for approval before changing the active package.
 
-Installing shows what the extension asks for: its permissions, and the sites it may read and change. Accepting grants them; optional permissions are asked for when the extension requests them. The Web Store's extensions are checked for updates once a day; an update that asks for more is held until the person accepts it.
+Preparing a candidate never replaces the active package. Refusing an update leaves the active version unchanged across relaunch. Installing shows what the extension asks for: its permissions, and the sites it may read and change. Accepting grants them; optional permissions are asked for when the extension requests them. The Web Store's extensions are checked for updates once a day; an update that asks for more is held until the person accepts it.
 
 ## Button, popup and options
 
