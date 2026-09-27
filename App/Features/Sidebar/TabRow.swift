@@ -27,7 +27,8 @@ struct TabRow: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        HStack(spacing: 0) {
+        let removesFavorite = tab.isFavorite && !browser.isTabOpen(tab)
+        HStack(spacing: 4) {
             if browser.window.renaming == .tab(tab.id) {
                 label {
                     RenameField(name: tab.displayTitle) { browser.renameTab(tab.id, to: $0) } end: { browser.window.endRenaming(.tab(tab.id)) }
@@ -41,16 +42,20 @@ struct TabRow: View {
                 .accessibilityIdentifier(tab.isFavorite ? "sidebar.favorite" : "sidebar.tab")
             }
             Button {
-                if tab.isFavorite && !browser.isTabOpen(tab) { browser.removeFavorite(tab.id) }
+                if removesFavorite { browser.removeFavorite(tab.id) }
                 else { browser.closeTab(tab.id) }
             } label: {
-                Image(systemName: tab.isFavorite && browser.isTabOpen(tab) ? "minus" : "xmark").font(BrowserDesign.Typography.glyph)
-                    .frame(width: 26, height: 30).contentShape(Rectangle())
+                Image(systemName: tab.isFavorite && !removesFavorite ? "minus" : "xmark")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(palette.ink)
+                    .frame(width: 24, height: 24)
+                    .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
             }
             .buttonStyle(QuietButtonStyle())
+            .padding(.trailing, 5)
             .opacity(hovered || selected ? 1 : 0)
-            .accessibilityLabel(tab.isFavorite && !browser.isTabOpen(tab) ? Text("Remove from Favorites") : Text("Close tab"))
-            .accessibilityIdentifier(tab.isFavorite && !browser.isTabOpen(tab) ? "sidebar.removeFavorite" : "sidebar.closeTab")
+            .accessibilityLabel(removesFavorite ? Text("Remove from Favorites") : Text("Close tab"))
+            .accessibilityIdentifier(removesFavorite ? "sidebar.removeFavorite" : "sidebar.closeTab")
         }
         .opacity(lifted ? 0 : 1)
         .background {
