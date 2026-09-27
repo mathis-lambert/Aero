@@ -8,3 +8,7 @@ xcuserdata/
 *.xcresult
 # Worktrees of local agent tools
 .kilo/
+
+# Signing credentials are machine-local, never source files.
+*.p12
+*.p8

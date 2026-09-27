@@ -14,7 +14,7 @@ final class AppearanceE2ETests: BrowserE2ETestCase {
     private var customIconFile: URL {
         Bundle(for: Self.self).bundleURL
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appending(path: "Aero.app").appending(path: Self.customIcon)
+            .appending(path: "Aero Dev.app").appending(path: Self.customIcon)
     }
 
     func testAppearanceChoicesPersistAcrossLaunches() {

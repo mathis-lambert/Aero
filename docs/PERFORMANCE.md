@@ -71,11 +71,11 @@ Report the build configuration, hardware, and scenario (idle, navigation, many t
 - **Signposts:** subsystem `app.getaero.browser`; categories `Launch`, `PageLifecycle`, `Storage`. Record with Instruments' os_signpost or Points of Interest instruments to see launch-to-session-ready, session load/write, and page creation, restoration and hibernation.
 - **Cold launch:** `LaunchPerformanceTests` measures launch until the window is responsive. Use the Release configuration:
   ```sh
-  xcodebuild -project Aero.xcodeproj -scheme Aero -configuration Release \
-    -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/aero-derived \
+  xcodebuild -project Aero.xcodeproj -scheme 'Aero Dev' -configuration Release \
+    -destination 'platform=macOS,arch=arm64' -derivedDataPath build/DerivedData \
     -only-testing:AeroUITests/LaunchPerformanceTests test
   ```
-- **Memory:** `swift Scripts/measure-memory.swift` reports the footprint of the running app plus the WebKit processes attributed to it. Add `--sample 1` to sample over time and `--detailed` for per-category memory. WebKit processes of other apps, such as Safari, are excluded.
+- **Memory:** `swift Scripts/measure-memory.swift` reports the footprint of Aero Dev by default (pass `Aero` to inspect stable), plus the WebKit processes attributed to it. Add `--sample 1` to sample over time and `--detailed` for per-category memory. WebKit processes of other apps, such as Safari, are excluded.
 
 ## Spaces
 

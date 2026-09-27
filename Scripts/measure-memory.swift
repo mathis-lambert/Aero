@@ -9,7 +9,7 @@
 import Darwin
 import Foundation
 
-let defaultProcessName = "Aero"
+let defaultProcessName = "Aero Dev"
 let webKitProcessPattern = "com.apple.WebKit"
 
 func run(_ tool: String, _ arguments: [String]) -> String {

@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+#include "Optimized.xcconfig"
+PRODUCT_NAME = Aero
+PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser
+AERO_CHANNEL = stable
+AERO_DATA_DIRECTORY = Aero

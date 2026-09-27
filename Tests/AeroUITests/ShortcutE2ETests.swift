@@ -220,7 +220,7 @@ final class ShortcutE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(page("Page handled S").waitForExistence(timeout: Self.renderTimeout), "Website priority survives relaunch")
         XCTAssertTrue(app.buttons["sidebar.toggle"].exists)
         // This fixture claims every Command key, including comma; use the native menu with page focus.
-        app.menuBars.menuBarItems["Aero"].click()
+        app.menuBars.menuBarItems["Aero Dev"].click()
         app.menuItems["Settings…"].click()
         selectSettingsSection("Shortcuts")
         search("Toggle sidebar")

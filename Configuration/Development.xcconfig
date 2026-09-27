@@ -1,0 +1,4 @@
+PRODUCT_NAME = Aero Dev
+PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.debug
+AERO_CHANNEL = dev
+AERO_DATA_DIRECTORY = Aero Development

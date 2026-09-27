@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+#include "Optimized.xcconfig"
+PRODUCT_NAME = Aero Nightly
+PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.nightly
+AERO_CHANNEL = nightly
+AERO_DATA_DIRECTORY = Aero Nightly

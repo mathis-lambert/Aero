@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+#include "Optimized.xcconfig"
+PRODUCT_NAME = Aero Beta
+PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.beta
+AERO_CHANNEL = beta
+AERO_DATA_DIRECTORY = Aero Beta

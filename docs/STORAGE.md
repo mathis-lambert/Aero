@@ -4,7 +4,7 @@ Browser state and history use SQLite; preferences use UserDefaults; caches are d
 
 ## Ownership and layout
 
-`StorageLocation` assembles locations once. Production uses `~/Library/Application Support/Aero/Storage`, Debug uses `Aero Development/Storage`, and tests use `Storage` inside the temporary directory supplied by `AERO_TEST_DATA`. The test runner owns this directory so it can inject startup faults while the app is stopped. App preferences remain in the bundle's UserDefaults domain (a unique suite for each test). Regenerable assets use `~/Library/Caches/<bundle identifier>`; tests get their own Caches directory.
+`StorageLocation` assembles locations once. The build channel selects `~/Library/Application Support/<channel directory>/Storage`: stable uses `Aero`, dev uses `Aero Development` in both Debug and Release, nightly uses `Aero Nightly`, beta uses `Aero Beta`. See `BUILD_AND_RELEASE.md`. Tests use `Storage` inside the temporary directory supplied by `AERO_TEST_DATA`. The test runner owns this directory so it can inject startup faults while the app is stopped. App preferences remain in the bundle's UserDefaults domain (a unique suite for each test). Regenerable assets use `~/Library/Caches/<bundle identifier>`; tests get their own Caches directory.
 
 The baseline starts with fresh profiles. There is no import, compatibility alias, dual write or old-format decoder. Obsolete pre-release files outside `Storage` are disposable after stopping the old app; cleanup is an explicit development operation, not an application startup fallback. Unknown or corrupt current databases still use recovery rather than silent data deletion.
 

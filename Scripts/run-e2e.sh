@@ -14,9 +14,11 @@ git diff --binary HEAD > "$patch"
 while IFS= read -r -d '' file; do
     git diff --no-index --binary -- /dev/null "$file" >> "$patch" || [[ $? == 1 ]]
 done < <(git ls-files --others --exclude-standard -z)
+Scripts/check-toolchain.sh
 configuration="${AERO_E2E_CONFIGURATION:-Debug}"
-derived_data="${AERO_E2E_DERIVED_DATA:-/tmp/aero-derived}"
-command=(xcodebuild -project Aero.xcodeproj -scheme Aero -configuration "$configuration"
+[[ "$configuration" == Debug || "$configuration" == Release ]] || { print -u2 'E2E uses Aero Dev (Debug or Release).'; exit 1; }
+derived_data="${AERO_E2E_DERIVED_DATA:-$PWD/build/DerivedData}"
+command=(xcodebuild ARCHS=arm64 -project Aero.xcodeproj -scheme 'Aero Dev' -configuration "$configuration"
     -destination 'platform=macOS,arch=arm64' -derivedDataPath "$derived_data"
     -resultBundlePath "$result")
 for test in "$@"; do command+=(-only-testing:"$test"); done

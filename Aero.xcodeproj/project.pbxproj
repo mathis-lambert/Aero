@@ -29,6 +29,11 @@
 		77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AeroUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Release.xcconfig; sourceTree = "<group>"; };
 		C2B6AF95E5FB6AF04547C8EA /* Aero.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Aero.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EC4E951146DD278F85F64B7 /* Configuration/Nightly.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Nightly.xcconfig; sourceTree = "<group>"; };
+		23308572369B06294EF05C8A /* Configuration/Beta.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Beta.xcconfig; sourceTree = "<group>"; };
+		069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Stable.xcconfig; sourceTree = "<group>"; };
+		A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Platform.xcconfig; sourceTree = "<group>"; };
+		09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/UITests.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +85,11 @@
 				754164850F38C1ECDAF6B8ED /* Configuration */,
 				379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */,
 				77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */,
+				7EC4E951146DD278F85F64B7 /* Configuration/Nightly.xcconfig */,
+				23308572369B06294EF05C8A /* Configuration/Beta.xcconfig */,
+				069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */,
+				A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */,
+				09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */,
 				68A4194227BE4AB74BC3D323 /* docs */,
 				FE0A091FDBFB3E9C31B7A1BD /* Products */,
 			);
@@ -125,7 +135,7 @@
 				6805EC6AFDAFDBE18E2FF355 /* Sources */,
 				0F91A57B11B30F1A7980649D /* Frameworks */,
 				2AC7AB26953A78AD46B49603 /* Resources */,
-				4E1A8C2B9D3F47E6A0B5C7D1 /* Remove Custom Icon */,
+				4E1A8C2B9D3F47E6A0B5C7D1 /* Prepare Build */,
 			);
 			buildRules = (
 			);
@@ -204,7 +214,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		4E1A8C2B9D3F47E6A0B5C7D1 /* Remove Custom Icon */ = {
+		4E1A8C2B9D3F47E6A0B5C7D1 /* Prepare Build */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -214,14 +224,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Remove Custom Icon";
+			name = "Prepare Build";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# codesign rejects the custom icon that Settings puts on the app bundle; Aero sets it again at launch.\nrm -f \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Icon\"$(printf '\\r')\nxattr -d com.apple.FinderInfo \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\" 2>/dev/null || true\n";
+			shellScript = "\"${SRCROOT}/Scripts/check-toolchain.sh\"\n# codesign rejects the custom icon that Settings puts on the app bundle; Aero sets it again at launch.\nrm -f \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Icon\"$(printf '\\r')\nxattr -d com.apple.FinderInfo \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\" 2>/dev/null || true\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -255,18 +265,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */;
 			buildSettings = {
-				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO;
 			};
 			name = Release;
 		};
 		1D8C0C6B1D22EA8C7669B263 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
 			buildSettings = {
-				ARCHS = arm64;
-				CLANG_ENABLE_MODULES = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				SDKROOT = macosx;
-				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -274,51 +279,94 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */;
 			buildSettings = {
-				ENABLE_TESTABILITY = YES;
-				SWIFT_GENERATE_LOCALIZATION_SYMBOLS = NO;
 			};
 			name = Debug;
 		};
 		7BD7682982285BB9BBB9EA6A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Configuration/AeroUITests.entitlements;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
-				GENERATE_INFOPLIST_FILE = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 6.0;
-				TEST_TARGET_NAME = Aero;
 			};
 			name = Debug;
 		};
 		BFD315016DE16320F7E2120C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
 			buildSettings = {
-				ARCHS = arm64;
-				CLANG_ENABLE_MODULES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				SDKROOT = macosx;
-				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
 		EE6A2E9A9B1D3B003A794EA3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Configuration/AeroUITests.entitlements;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
-				GENERATE_INFOPLIST_FILE = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.uitests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 6.0;
-				TEST_TARGET_NAME = Aero;
 			};
 			name = Release;
+		};
+		5FC5D667D183010270AA8BD4 /* Nightly */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7EC4E951146DD278F85F64B7 /* Configuration/Nightly.xcconfig */;
+			buildSettings = {
+			};
+			name = Nightly;
+		};
+		EE75006DB0F92A49877347D2 /* Nightly */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
+			buildSettings = {
+			};
+			name = Nightly;
+		};
+		766AE0443EE837EB61FF3F86 /* Nightly */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Nightly;
+		};
+		C3F30ABE591AEA641DA1A090 /* Beta */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 23308572369B06294EF05C8A /* Configuration/Beta.xcconfig */;
+			buildSettings = {
+			};
+			name = Beta;
+		};
+		384F7AB81D2A73780203BAF9 /* Beta */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
+			buildSettings = {
+			};
+			name = Beta;
+		};
+		E27F79B50AC4B3BA7A8CFCC2 /* Beta */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Beta;
+		};
+		444FD8C6406D4758FDFEFD5D /* Stable */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */;
+			buildSettings = {
+			};
+			name = Stable;
+		};
+		0AC2C0C5598024004C6233B5 /* Stable */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
+			buildSettings = {
+			};
+			name = Stable;
+		};
+		C062ABC1E43448F4F6D04317 /* Stable */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Stable;
 		};
 /* End XCBuildConfiguration section */
 
@@ -328,27 +376,36 @@
 			buildConfigurations = (
 				BFD315016DE16320F7E2120C /* Debug */,
 				1D8C0C6B1D22EA8C7669B263 /* Release */,
+				0AC2C0C5598024004C6233B5 /* Stable */,
+				384F7AB81D2A73780203BAF9 /* Beta */,
+				EE75006DB0F92A49877347D2 /* Nightly */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		A5E93B15A02AA3025AC88070 /* Build configuration list for PBXNativeTarget "AeroUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7BD7682982285BB9BBB9EA6A /* Debug */,
 				EE6A2E9A9B1D3B003A794EA3 /* Release */,
+				C062ABC1E43448F4F6D04317 /* Stable */,
+				E27F79B50AC4B3BA7A8CFCC2 /* Beta */,
+				766AE0443EE837EB61FF3F86 /* Nightly */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		B5E4F9F7C53A9A6AF99DBCE3 /* Build configuration list for PBXNativeTarget "Aero" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3A77CD648711364E9A877D62 /* Debug */,
 				066776A1C212750E8BE506A2 /* Release */,
+				444FD8C6406D4758FDFEFD5D /* Stable */,
+				C3F30ABE591AEA641DA1A090 /* Beta */,
+				5FC5D667D183010270AA8BD4 /* Nightly */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
