@@ -58,7 +58,7 @@ struct FavoritesGrid: View {
         let highlight = isActive ? selectionColors(for: tab) : (fill: palette.favoriteTileHover, border: palette.line)
         let fill = isLifted ? palette.fill : isActive ? highlight.fill : hoveredTabID == tab.id ? palette.favoriteTileHover : palette.favoriteTile
         return Button { browser.showTab(tab) } label: {
-            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize) {
+            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize, fetchingMissing: tab.url) {
                 if let page = InternalPage(url: tab.url) {
                     Image(systemName: page.symbol).font(.system(size: Self.placeholderSize)).foregroundStyle(.secondary)
                 } else {

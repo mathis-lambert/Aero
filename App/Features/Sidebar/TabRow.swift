@@ -72,7 +72,7 @@ struct TabRow: View {
 
     private func label(@ViewBuilder _ title: () -> some View) -> some View {
         HStack(spacing: BrowserDesign.rowInset) {
-            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
+            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize, fetchingMissing: tab.isFavorite ? tab.url : nil) {
                 Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe")
                     .font(BrowserDesign.Typography.chrome).foregroundStyle(.secondary)
             }
