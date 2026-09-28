@@ -12,12 +12,11 @@ if [[ "$tag" =~ '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-beta\.([1-9
     channel=beta; configuration=Beta; product='Aero Beta'
 elif [[ "$tag" =~ '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' ]]; then
     channel=stable; configuration=Stable; product=Aero
-elif [[ "$tag" =~ '^nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}$' ]]; then
-    nightly_date="${tag#nightly-}"
-    [[ "$(date -j -u -f '%Y-%m-%d' "$nightly_date" '+%Y-%m-%d' 2>/dev/null)" == "$nightly_date" ]] || fail 'Invalid nightly date.'
+elif [[ "$tag" =~ '^nightly-[0-9a-f]{40}$' ]]; then
+    [[ "${tag#nightly-}" == "$(git rev-parse HEAD)" ]] || fail 'Nightly tag must identify HEAD.'
     channel=nightly; configuration=Nightly; product='Aero Nightly'
 else
-    fail 'Expected vX.Y.Z, vX.Y.Z-beta.N or nightly-YYYY-MM-DD.'
+    fail 'Expected vX.Y.Z, vX.Y.Z-beta.N or nightly-<full-commit-SHA>.'
 fi
 : "${APPLE_TEAM_ID:?Set APPLE_TEAM_ID}"
 [[ "$APPLE_TEAM_ID" =~ '^[A-Z0-9]{10}$' ]] || fail 'Invalid Apple Team ID.'

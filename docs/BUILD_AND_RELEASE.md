@@ -52,7 +52,7 @@ Preferences and caches are scoped to the bundle identifier. Profile records and 
 
 Accepted tags:
 
-- `nightly-YYYY-MM-DD`: one immutable nightly per UTC date, from main.
+- `nightly-<full-commit-SHA>`: one immutable nightly per pushed main commit.
 - `vX.Y.Z-beta.N`: numbered beta, N starts at 1.
 - `vX.Y.Z`: stable.
 
@@ -80,9 +80,9 @@ Each notarization waits at most 30 minutes. Failure or timeout stops publication
 
 `ci.yml` builds Debug and packages a local Release DMG on main and pull requests. It has read-only repository access and no Apple secrets. It retains outputs for 7 days. UI tests run through `Scripts/run-e2e.sh` in a logged-in GUI session; the hosted build workflow does not claim E2E coverage.
 
-`distribution.yml` handles tag pushes, a daily 02:17 UTC schedule, and manual dispatch. A schedule skips main if its commit already has a published nightly. A failed nightly can be retried without moving its tag. A second distinct commit on the same UTC date waits for the next nightly. Manual dispatch accepts an existing tag; leave it empty to follow the nightly rule.
+`distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release is a no-op; failed builds reuse their immutable tag.
 
-Preparation checks the tag and main ancestry before credentials are loaded. Scheduled tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Distribution is serialized; do not enqueue multiple manual publications at once because GitHub concurrency retains only a limited pending queue.
+Preparation checks the tag and main ancestry before credentials are loaded. Automatically created nightly tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Concurrency is scoped to the ref and commit/tag: different main pushes can build independently without replacing each other in the pending queue.
 
 The `distribution` GitHub environment contains:
 

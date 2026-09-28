@@ -1,9 +1,8 @@
 name: Distribute
 on:
   push:
+    branches: [main]
     tags: ['v*', 'nightly-*']
-  schedule:
-    - cron: '17 2 * * *'
   workflow_dispatch:
     inputs:
       tag:
@@ -13,7 +12,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: aero-distribution
+  group: aero-distribution-${{ github.ref }}-${{ inputs.tag || github.sha }}
   cancel-in-progress: false
 jobs:
   prepare:
@@ -26,44 +25,39 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: main
+          ref: ${{ github.event_name == 'push' && github.sha || 'main' }}
           fetch-depth: 0
       - id: select
         env:
           EVENT_NAME: ${{ github.event_name }}
           PUSH_TAG: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
           REQUESTED_TAG: ${{ inputs.tag }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           tag="$REQUESTED_TAG"
-          if [[ "$EVENT_NAME" == push ]]; then tag="$PUSH_TAG"; fi
+          if [[ "$EVENT_NAME" == push && "$REF_TYPE" == tag ]]; then tag="$PUSH_TAG"; fi
           if [[ -z "$tag" ]]; then
-            latest=$(git tag --list 'nightly-*' --sort=-refname | sed -n '1p')
-            if [[ -n "$latest" ]] && [[ "$(git rev-parse "$latest^{commit}")" == "$(git rev-parse HEAD)" ]]; then
-              if draft=$(gh release view "$latest" --json isDraft --jq '.isDraft' 2>/dev/null); then
-                [[ "$draft" == false ]] || { echo 'An incomplete draft exists; inspect it before retrying.'; exit 1; }
-                echo 'No changes since the last nightly.'
-                exit 0
-              fi
-              tag="$latest"
-            else
-              tag="nightly-$(date -u +%Y-%m-%d)"
-            fi
+            tag="nightly-$(git rev-parse HEAD)"
             if git show-ref --verify --quiet "refs/tags/$tag"; then
-              [[ "$(git rev-parse "$tag^{commit}")" == "$(git rev-parse HEAD)" ]] || { echo 'Nightly tag already identifies another commit.'; exit 1; }
+              [[ "$(git rev-parse "$tag^{commit}")" == "$(git rev-parse HEAD)" ]] || { echo 'Nightly tag identifies another commit.'; exit 1; }
             else
               git tag "$tag"
               git push origin "refs/tags/$tag"
             fi
           fi
-          [[ "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-beta\.([1-9][0-9]*))?$ || "$tag" =~ ^nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { echo 'Invalid tag.'; exit 1; }
+          [[ "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-beta\.([1-9][0-9]*))?$ || "$tag" =~ ^nightly-[0-9a-f]{40}$ ]] || { echo 'Invalid tag.'; exit 1; }
           revision=$(git rev-parse --verify "refs/tags/$tag^{commit}")
           git merge-base --is-ancestor "$revision" origin/main
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo 'Release already exists; refusing to replace its artifacts.'
-            exit 1
+          if [[ "$tag" == nightly-* ]]; then
+            [[ "${tag#nightly-}" == "$revision" ]] || { echo 'Nightly tag must identify its commit.'; exit 1; }
+          fi
+          if draft=$(gh release view "$tag" --json isDraft --jq '.isDraft' 2>/dev/null); then
+            [[ "$draft" == false ]] || { echo 'An incomplete draft exists; inspect it before retrying.'; exit 1; }
+            echo 'Release already published; nothing to do.'
+            exit 0
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "revision=$revision" >> "$GITHUB_OUTPUT"
