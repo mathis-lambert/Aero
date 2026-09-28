@@ -1,5 +1,5 @@
 public enum BrowserCommand: String, CaseIterable, Sendable {
-    case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles, newProfile, newSpace
+    case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles, newProfile, newSpace, passwords
     case showHistory, findInPage, findNext, findPrevious, copyLink, controlCenter, clearCookies, clearCache, siteSettings
 
     case zoomIn, zoomOut, resetZoom, reloadFromOrigin, stopLoading, printPage, showDownloads
@@ -21,7 +21,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
     public var keyRouting: KeyRouting {
         switch self {
         case .commandPalette, .findInPage, .findNext, .findPrevious, .copyLink,
-             .profiles, .controlCenter, .clearCookies, .clearCache, .siteSettings, .stopLoading: .pageFirst
+             .profiles, .passwords, .controlCenter, .clearCookies, .clearCache, .siteSettings, .stopLoading: .pageFirst
         default: .reserved
         }
     }

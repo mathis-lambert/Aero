@@ -34,6 +34,22 @@
         }
       }
     },
+    "%@’s passwords could not be read." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@’s passwords could not be read."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les mots de passe de %@ n’ont pas pu être lus."
+          }
+        }
+      }
+    },
     "%lld cookies" : {
       "localizations" : {
         "en" : {
@@ -186,6 +202,22 @@
         }
       }
     },
+    "Access to the keychain was not allowed." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access to the keychain was not allowed."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’accès au trousseau n’a pas été autorisé."
+          }
+        }
+      }
+    },
     "Actual size" : {
       "localizations" : {
         "en" : {
@@ -330,6 +362,22 @@
         }
       }
     },
+    "Added: %lld · Already saved: %lld · Skipped: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added: %1$lld · Already saved: %2$lld · Skipped: %3$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutés : %1$lld · Déjà enregistrés : %2$lld · Ignorés : %3$lld"
+          }
+        }
+      }
+    },
     "Ads and trackers" : {
       "localizations" : {
         "en" : {
@@ -347,6 +395,22 @@
       }
     },
     "Aero" : {},
+    "Aero Passwords.csv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero Passwords.csv"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots de passe Aero.csv"
+          }
+        }
+      }
+    },
     "All history" : {
       "localizations" : {
         "en" : {
@@ -791,6 +855,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisir un groupe pour l’onglet actuel."
+          }
+        }
+      }
+    },
+    "Choose a passwords file exported from a browser or a password manager." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a passwords file exported from a browser or a password manager."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un fichier de mots de passe exporté depuis un navigateur ou un gestionnaire de mots de passe."
           }
         }
       }
@@ -1243,6 +1323,22 @@
         }
       }
     },
+    "Copy password" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy password"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le mot de passe"
+          }
+        }
+      }
+    },
     "Copy the current page’s address to the clipboard." : {
       "localizations" : {
         "en" : {
@@ -1595,6 +1691,22 @@
         }
       }
     },
+    "Delete this password?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this password?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer ce mot de passe ?"
+          }
+        }
+      }
+    },
     "Disable shortcut" : {
       "localizations" : {
         "en" : {
@@ -1767,6 +1879,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "English"
+          }
+        }
+      }
+    },
+    "Export passwords…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export passwords…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter les mots de passe…"
           }
         }
       }
@@ -2215,6 +2343,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Icône"
+          }
+        }
+      }
+    },
+    "Import and export" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import and export"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import et export"
+          }
+        }
+      }
+    },
+    "Importing…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importing…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importation…"
           }
         }
       }
@@ -2795,6 +2955,38 @@
         }
       }
     },
+    "Never" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jamais"
+          }
+        }
+      }
+    },
+    "Never for this site" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never for this site"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jamais pour ce site"
+          }
+        }
+      }
+    },
     "New Group" : {
       "localizations" : {
         "en" : {
@@ -3019,6 +3211,22 @@
         }
       }
     },
+    "No Chrome, Arc, Dia, Brave, Edge or Vivaldi profile found" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Chrome, Arc, Dia, Brave, Edge or Vivaldi profile found"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun profil Chrome, Arc, Dia, Brave, Edge ou Vivaldi trouvé"
+          }
+        }
+      }
+    },
     "No cookies" : {
       "localizations" : {
         "en" : {
@@ -3115,6 +3323,22 @@
         }
       }
     },
+    "No passwords match." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No passwords match."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun mot de passe ne correspond."
+          }
+        }
+      }
+    },
     "No results" : {
       "localizations" : {
         "en" : {
@@ -3131,6 +3355,22 @@
         }
       }
     },
+    "No saved passwords in this profile." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No saved passwords in this profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun mot de passe enregistré dans ce profil."
+          }
+        }
+      }
+    },
     "No spaces use this profile." : {
       "localizations" : {
         "en" : {
@@ -3143,6 +3383,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun espace n’utilise ce profil."
+          }
+        }
+      }
+    },
+    "No username" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No username"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans nom d’utilisateur"
+          }
+        }
+      }
+    },
+    "Not now" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not now"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
           }
         }
       }
@@ -3207,6 +3479,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Désactivé"
+          }
+        }
+      }
+    },
+    "Offer to save passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offer to save passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proposer d’enregistrer les mots de passe"
           }
         }
       }
@@ -3495,6 +3783,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Papier"
+          }
+        }
+      }
+    },
+    "Passkeys" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passkeys"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clés d’identification"
+          }
+        }
+      }
+    },
+    "Password" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mot de passe"
+          }
+        }
+      }
+    },
+    "Password copied. It is removed from the clipboard in a minute." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password copied. It is removed from the clipboard in a minute."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mot de passe copié. Il sera retiré du presse-papiers dans une minute."
+          }
+        }
+      }
+    },
+    "Passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots de passe"
+          }
+        }
+      }
+    },
+    "Passwords exported: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwords exported: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots de passe exportés : %lld"
+          }
+        }
+      }
+    },
+    "Passwords…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwords…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots de passe…"
           }
         }
       }
@@ -4475,6 +4859,54 @@
         }
       }
     },
+    "Save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer"
+          }
+        }
+      }
+    },
+    "Save password for %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save password for %@?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer le mot de passe pour %@ ?"
+          }
+        }
+      }
+    },
+    "Save passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer les mots de passe"
+          }
+        }
+      }
+    },
     "Save shortcut" : {
       "localizations" : {
         "en" : {
@@ -4503,6 +4935,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Données enregistrées indisponibles"
+          }
+        }
+      }
+    },
+    "Saved passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots de passe enregistrés"
           }
         }
       }
@@ -4567,6 +5015,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rechercher ou saisir une adresse"
+          }
+        }
+      }
+    },
+    "Search passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher des mots de passe"
           }
         }
       }
@@ -5116,6 +5580,38 @@
         }
       }
     },
+    "Show password…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show password…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le mot de passe…"
+          }
+        }
+      }
+    },
+    "Show the passwords saved in this profile." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show the passwords saved in this profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les mots de passe enregistrés dans ce profil."
+          }
+        }
+      }
+    },
     "Shown in the Dock, the Finder and Launchpad, even while Aero is closed." : {
       "localizations" : {
         "en" : {
@@ -5564,6 +6060,102 @@
         }
       }
     },
+    "The file could not be read as text." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file could not be read as text."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le fichier n’a pas pu être lu comme du texte."
+          }
+        }
+      }
+    },
+    "The file could not be written." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file could not be written."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le fichier n’a pas pu être écrit."
+          }
+        }
+      }
+    },
+    "This CSV file is too large to import (16 MB maximum)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This CSV file is too large to import (16 MB maximum)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier CSV est trop volumineux pour être importé (16 Mo maximum)."
+          }
+        }
+      }
+    },
+    "The file is not encrypted: anyone who can open it can read your passwords." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file is not encrypted: anyone who can open it can read your passwords."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le fichier n’est pas chiffré : toute personne qui peut l’ouvrir peut lire vos mots de passe."
+          }
+        }
+      }
+    },
+    "The keychain could not be used. Try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The keychain could not be used. Try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le trousseau n’a pas pu être utilisé. Réessayez."
+          }
+        }
+      }
+    },
+    "The keychain is locked. Unlock your Mac, then try again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The keychain is locked. Unlock your Mac, then try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le trousseau est verrouillé. Déverrouillez votre Mac, puis réessayez."
+          }
+        }
+      }
+    },
     "The page will reload. Unsaved input may be lost. Cookies and history stay in the original profile." : {
       "localizations" : {
         "en" : {
@@ -5580,6 +6172,22 @@
         }
       }
     },
+    "The password for %@ on %@ is removed from your keychain." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The password for %1$@ on %2$@ is removed from your keychain."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mot de passe de %1$@ sur %2$@ est retiré de votre trousseau."
+          }
+        }
+      }
+    },
     "This data requires a newer version of Aero. Your files have been kept unchanged." : {
       "localizations" : {
         "en" : {
@@ -5592,6 +6200,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ces données nécessitent une version plus récente d’Aero. Vos fichiers ont été conservés sans modification."
+          }
+        }
+      }
+    },
+    "This file has no web addresses and passwords." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file has no web addresses and passwords."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier ne contient pas d’adresses web ni de mots de passe."
           }
         }
       }
@@ -5836,6 +6460,22 @@
         }
       }
     },
+    "Update password for %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update password for %@?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre à jour le mot de passe pour %@ ?"
+          }
+        }
+      }
+    },
     "Update “%@”?" : {
       "localizations" : {
         "en" : {
@@ -5884,6 +6524,22 @@
         }
       }
     },
+    "Use strong password" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use strong password"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser un mot de passe fort"
+          }
+        }
+      }
+    },
     "Use website first" : {
       "localizations" : {
         "en" : {
@@ -5896,6 +6552,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Priorité au site web"
+          }
+        }
+      }
+    },
+    "Username" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom d’utilisateur"
           }
         }
       }
@@ -6060,6 +6732,54 @@
         }
       }
     },
+    "export your passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "export your passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "exporter vos mots de passe"
+          }
+        }
+      }
+    },
+    "macOS did not allow Aero to read %@’s passwords." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS did not allow Aero to read %@’s passwords."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS n’a pas autorisé Aero à lire les mots de passe de %@."
+          }
+        }
+      }
+    },
+    "show a saved password" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "show a saved password"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "afficher un mot de passe enregistré"
+          }
+        }
+      }
+    },
     "zoom reset 100%" : {
       "localizations" : {
         "en" : {
@@ -6088,6 +6808,382 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "« %@ » demande plus d’accès"
+          }
+        }
+      }
+    },
+    "%lld saved passwords" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld saved password"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld saved passwords"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mot de passe enregistré"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mots de passe enregistrés"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Account" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compte"
+          }
+        }
+      }
+    },
+    "After you sign in, Aero asks whether to save the password. Each site can be excluded from its controls." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After you sign in, Aero asks whether to save the password. Each site can be excluded from its controls."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après une connexion, Aero propose d’enregistrer le mot de passe. Vous pouvez exclure un site dans ses réglages."
+          }
+        }
+      }
+    },
+    "Choose CSV file…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose CSV file…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir un fichier CSV…"
+          }
+        }
+      }
+    },
+    "Choose a passwords file exported from a browser or password manager." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a passwords file exported from a browser or password manager."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un fichier de mots de passe exporté depuis un navigateur ou un gestionnaire de mots de passe."
+          }
+        }
+      }
+    },
+    "Delete password…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete password…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le mot de passe…"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminé"
+          }
+        }
+      }
+    },
+    "Existing passwords are kept when an import has a different password for the same account." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existing passwords are kept when an import has a different password for the same account."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les mots de passe existants sont conservés si l’importation contient un mot de passe différent pour le même compte."
+          }
+        }
+      }
+    },
+    "Export creates an unencrypted CSV file. Anyone who can open it can read the passwords." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export creates an unencrypted CSV file. Anyone who can open it can read the passwords."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’exportation crée un fichier CSV non chiffré. Toute personne qui peut l’ouvrir peut lire les mots de passe."
+          }
+        }
+      }
+    },
+    "From a CSV file" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From a CSV file"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis un fichier CSV"
+          }
+        }
+      }
+    },
+    "From a browser" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From a browser"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis un navigateur"
+          }
+        }
+      }
+    },
+    "Import into %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import into %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer dans %@"
+          }
+        }
+      }
+    },
+    "Import passwords…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import passwords…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer des mots de passe…"
+          }
+        }
+      }
+    },
+    "Passwords are saved separately in each profile’s Mac keychain items." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwords are saved separately in each profile’s Mac keychain items."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les mots de passe sont enregistrés séparément pour chaque profil dans le trousseau du Mac."
+          }
+        }
+      }
+    },
+    "Safari’s passwords are in the Passwords app and cannot be imported here." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari’s passwords are in the Passwords app and cannot be imported here."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les mots de passe de Safari sont dans l’app Mots de passe et ne peuvent pas être importés ici."
+          }
+        }
+      }
+    },
+    "Saving" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement"
+          }
+        }
+      }
+    },
+    "Sites can use passkeys from iCloud Keychain, a password app, a nearby phone or a security key." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sites can use passkeys from iCloud Keychain, a password app, a nearby phone or a security key."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les sites peuvent utiliser des clés d’accès du trousseau iCloud, d’une app de mots de passe, d’un téléphone à proximité ou d’une clé de sécurité."
+          }
+        }
+      }
+    },
+    "This build is not signed to use passkeys. Sites offer passwords instead." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This build is not signed to use passkeys. Sites offer passwords instead."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette version n’est pas signée pour utiliser les clés d’accès. Les sites proposent plutôt des mots de passe."
+          }
+        }
+      }
+    },
+    "This removes the login from this profile’s Mac keychain items." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This removes the login from this profile’s Mac keychain items."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet identifiant sera supprimé du trousseau du Mac pour ce profil."
+          }
+        }
+      }
+    },
+    "Import passwords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import passwords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer des mots de passe"
+          }
+        }
+      }
+    },
+    "This account already has a saved password for this site." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This account already has a saved password for this site."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce compte possède déjà un mot de passe enregistré pour ce site."
+          }
+        }
+      }
+    },
+    "This profile was deleted before its passwords could be saved." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This profile was deleted before its passwords could be saved."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce profil a été supprimé avant l’enregistrement de ses mots de passe."
           }
         }
       }

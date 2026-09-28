@@ -46,6 +46,7 @@ extension BrowserCommand {
         case .newProfile: String(localized: "New profile")
         case .newSpace: String(localized: "New space")
         case .profiles: String(localized: "Manage profiles")
+        case .passwords: String(localized: "Passwords")
         case .showHistory: String(localized: "Show all history")
         case .findInPage: String(localized: "Find…")
         case .findNext: String(localized: "Find next")
@@ -74,6 +75,7 @@ extension BrowserCommand {
         case .newProfile: String(localized: "Create a separate browsing identity.")
         case .newSpace: String(localized: "Create a space for your tabs.")
         case .profiles: String(localized: "Manage browsing identities and their spaces.")
+        case .passwords: String(localized: "Show the passwords saved in this profile.")
         case .showHistory: String(localized: "Open browsing history for the current profile.")
         case .findInPage: String(localized: "Find text on the current page.")
         case .findNext: String(localized: "Select the next matching text on the page.")
@@ -148,6 +150,7 @@ extension BrowserCommand {
         case .newProfile: "person.badge.plus"
         case .newSpace: "plus.square"
         case .profiles: "person.crop.circle"
+        case .passwords: "key"
         case .showHistory: "clock"
         case .findInPage: "text.magnifyingglass"
         case .findNext: "chevron.down"
@@ -183,7 +186,7 @@ extension BrowserCommand {
         case .newTab, .closeTab, .reopenTab, .nextTab, .previousTab, .recentTab, .previousRecentTab,
              .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab,
              .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace: .tabs
-        case .profiles, .newProfile: .profiles
+        case .profiles, .newProfile, .passwords: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
              .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: .page

@@ -34,6 +34,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
     /// The Chrome Web Store's install button for this page's address, after an install when pressed.
     @ObservationIgnored var onWebStoreButton: ((_ pressed: Bool) async -> WebStoreButton?)?
+    /// Reports of the page's sign-in and sign-up forms. See docs/PASSWORDS.md.
+    @ObservationIgnored var onPasswordForm: ((PasswordFormEvent, PasswordFrame) -> Void)?
     @ObservationIgnored weak var contentBlocker: ContentBlocker?
     /// The blocker's state last applied, so a navigation that changes nothing sends WebKit nothing.
     @ObservationIgnored private var contentBlockingState: Int?
@@ -44,6 +46,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     /// The address of the last recorded visit; reloads and restores of it add no visit.
     @ObservationIgnored private var visitedURL: URL?
     @ObservationIgnored private var firstFrameTimeout: Task<Void, Never>?
+    @ObservationIgnored var documentGeneration = 0
 
     /// Safari's user agent suffix. Without it, sites such as Google see an unknown WebKit browser and
     /// serve their basic, legacy pages. The installed Safari's version matches the system's engine.
@@ -61,7 +64,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     private static func isPageURL(_ url: URL) -> Bool { NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) }
 
-    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController) -> WKWebViewConfiguration {
+    /// `passkeys` carries passkey requests when the build is entitled to them; without it, pages are
+    /// told passkeys are unavailable. See docs/PASSWORDS.md › Passkeys.
+    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController, passkeys: PasskeyCeremony?) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
         configuration.webExtensionController = extensions
@@ -76,6 +81,15 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         configuration.userContentController.addUserScript(PageScripts.editedFieldTracker)
         configuration.userContentController.addUserScript(PageScripts.webStoreButton)
         configuration.userContentController.addScriptMessageHandler(WebStoreBridge(), contentWorld: PageScripts.world, name: PageScripts.webStoreHandlerName)
+        configuration.userContentController.addUserScript(PasswordScripts.forms)
+        configuration.userContentController.add(PasswordFormBridge(), contentWorld: PageScripts.world, name: PasswordScripts.handlerName)
+        if let passkeys {
+            configuration.userContentController.addUserScript(PasskeyScripts.page)
+            configuration.userContentController.addUserScript(PasskeyScripts.bridge)
+            configuration.userContentController.addScriptMessageHandler(PasskeyBridge(ceremony: passkeys), contentWorld: PageScripts.world, name: PasskeyBridge.name)
+        } else {
+            configuration.userContentController.addUserScript(PasskeyScripts.withoutPasskeys)
+        }
         return configuration
     }
 
@@ -175,6 +189,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func dispose() {
+        documentGeneration += 1
         onMetadata = nil
         onVisit = nil
         onDownload = nil
@@ -183,6 +198,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onClose = nil
         onPermission = nil
         onWebStoreButton = nil
+        onPasswordForm = nil
         contentBlocker = nil
         firstFrameTimeout?.cancel()
         observations.removeAll()
@@ -256,6 +272,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     // MARK: - WKNavigationDelegate
 
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        documentGeneration += 1
         failure = nil
         refresh()
     }

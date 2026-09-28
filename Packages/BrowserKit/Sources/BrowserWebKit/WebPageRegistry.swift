@@ -24,6 +24,8 @@ public final class WebPageRegistry {
     public weak var delegate: WebPageRegistryDelegate?
     public weak var extensionHost: WebExtensionHost?
     public let downloads: DownloadCoordinator
+    /// Present only in builds entitled to passkeys.
+    public let passkeys: PasskeyCeremony? = PasskeyCeremony.isAvailable ? PasskeyCeremony() : nil
     private let contentBlocker: ContentBlocker?
 
     var livePages: [UUID: LivePage] = [:]
@@ -161,7 +163,7 @@ public final class WebPageRegistry {
         let extensions = extensions(for: profileID)
         // An extension's own page needs its context's configuration.
         let configuration = NavigationInput.isExtensionURL(tab.url) ? extensions.configuration(for: tab.url) : nil
-        let page = BrowserPage(configuration: configuration ?? BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions.controller))
+        let page = BrowserPage(configuration: configuration ?? BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions.controller, passkeys: passkeys))
         connect(page, to: tab.id)
         if let state = hibernatedStates[tab.id] {
             discardState(tab.id)
@@ -186,6 +188,7 @@ public final class WebPageRegistry {
             if pressed { await delegate.page(tabID, didPressWebStoreButtonAt: url) }
             return delegate.page(tabID, webStoreButtonAt: url)
         }
+        page.onPasswordForm = { [weak self] event, frame in self?.delegate?.page(tabID, passwordForm: event, in: frame) }
         page.contentBlocker = contentBlocker
         page.onClose = { [weak self] in
             guard let opener = self?.livePages[tabID]?.openerTabID else { return }

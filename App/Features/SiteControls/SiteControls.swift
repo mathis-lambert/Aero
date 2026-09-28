@@ -27,6 +27,7 @@ extension BrowserModel {
         switch permission {
         case .ads: preferences.blocksAds ? .block : .allow
         case .automaticPictureInPicture: preferences.automaticPictureInPicture ? .allow : .block
+        case .savePasswords: preferences.offersToSavePasswords ? .allow : .block
         case .camera, .microphone, .location: nil
         }
     }
@@ -79,6 +80,7 @@ extension SitePermission {
         case .location: "Location"
         case .ads: "Ads and trackers"
         case .automaticPictureInPicture: "Automatic picture in picture"
+        case .savePasswords: "Save passwords"
         }
     }
 
@@ -89,6 +91,7 @@ extension SitePermission {
         case .location: "location"
         case .ads: "shield"
         case .automaticPictureInPicture: "pip"
+        case .savePasswords: "key"
         }
     }
 }

@@ -9,6 +9,7 @@ extension BrowserModel: WebPageRegistryDelegate {
     }
 
     func page(_ tabID: UUID, didUpdateURL url: URL, title: String) {
+        passwords.pageNavigated(tabID: tabID)
         updateTab(tabID, url: url, title: title)
     }
 

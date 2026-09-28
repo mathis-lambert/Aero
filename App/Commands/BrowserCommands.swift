@@ -52,6 +52,7 @@ struct BrowserMenuCommands: Commands {
         CommandMenu("Profiles") {
             command(.newProfile)
             command(.profiles)
+            command(.passwords)
             Divider()
             let browser = application
             ForEach(browser.profiles) { profile in
@@ -105,7 +106,7 @@ struct BrowserMenuCommands: Commands {
     }
 
     private func command(_ command: BrowserCommand) -> some View {
-        let owner = [.profiles, .newProfile].contains(command) ? application : browser
+        let owner = [.profiles, .newProfile, .passwords].contains(command) ? application : browser
         return Button(command.title) {
             owner?.perform(command)
             if command == .newProfile { openWindow(id: BrowserWindowView.windowID) }

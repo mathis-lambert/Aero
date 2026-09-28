@@ -1,3 +1,4 @@
+import BrowserCore
 import Foundation
 
 /// Settings history includes detail pages, not only sidebar sections.
@@ -5,18 +6,22 @@ enum SettingsRoute: Hashable {
     case section(SettingsSection)
     case profile(UUID)
     case space(UUID)
+    case passwordProfile(UUID)
+    case passwordLogin(SavedLogin)
+    case passwordImport(UUID)
 
     var section: SettingsSection {
         switch self {
         case .section(let section): section
         case .profile: .profiles
         case .space: .spaces
+        case .passwordProfile, .passwordLogin, .passwordImport: .passwords
         }
     }
 }
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, tabs, profiles, spaces, extensions, shortcuts
+    case general, tabs, profiles, spaces, passwords, extensions, shortcuts
     var id: Self { self }
     var title: String {
         switch self {
@@ -24,6 +29,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .tabs: String(localized: "Tabs")
         case .profiles: String(localized: "Profiles")
         case .spaces: String(localized: "Spaces")
+        case .passwords: String(localized: "Passwords")
         case .extensions: String(localized: "Extensions")
         case .shortcuts: String(localized: "Shortcuts")
         }
@@ -34,6 +40,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .tabs: "square.on.square"
         case .profiles: "person.crop.circle"
         case .spaces: "square.stack"
+        case .passwords: "key"
         case .extensions: "puzzlepiece.extension"
         case .shortcuts: "keyboard"
         }

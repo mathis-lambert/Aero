@@ -21,6 +21,7 @@ final class BrowserModel {
     let preferences: BrowserPreferences
     let favicons: FaviconCache
     let history: BrowserHistory
+    let passwords: Passwords
     let suggestionFetcher = SuggestionFetcher()
     private let filterLists: FilterListUpdater?
     @ObservationIgnored var extensionsTask: Task<Void, Never>?
@@ -66,6 +67,7 @@ final class BrowserModel {
         store = BrowserStore(directory: folder)
         favicons = FaviconCache(store: FaviconStore(directory: location.caches.appendingPathComponent("Favicons", isDirectory: true)))
         history = BrowserHistory(store: HistoryStore(file: folder.appendingPathComponent("History.sqlite")))
+        passwords = Passwords(testNamespace: testing)
         // Test runs must never write into the user's Downloads folder.
         let downloadsFolder = testing == nil ? URL.downloadsDirectory : folder.appendingPathComponent("Downloads", isDirectory: true)
         let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
@@ -134,6 +136,11 @@ final class BrowserModel {
         }
         appIcon.apply(preferences.appIcon)
         filterLists?.start()
+        Task {
+            await passwords.start()
+            // Passkeys decide which relying parties a page may name with the same list.
+            pages.passkeys?.suffixes = passwords.suffixes
+        }
         startExtensions()
     }
 
@@ -232,6 +239,7 @@ final class BrowserModel {
 
     func selectTab(_ id: UUID?, recordRecent: Bool = true) {
         guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = profile?.id else {
+            passwords.closePicker()
             window.find.dismiss()
             window.selectedTabID = nil
             currentPage = nil
@@ -239,6 +247,7 @@ final class BrowserModel {
             return
         }
         if tab.isFavorite { openedFavorites.insert(id) }
+        passwords.closePicker(unless: id)
         let previous = window.selectedTabID
         if previous != id { window.find.dismiss() }
         window.selectedTabID = id
@@ -325,6 +334,7 @@ final class BrowserModel {
         let wasSelected = window.selectedTabID == id
         let next = wasSelected ? tabShown(afterRemoving: tab) : nil
         pages.close(tabID: id)
+        passwords.forget(tabID: id)
         openedFavorites.remove(id)
         recentTabs.removeAll { $0 == id }
         if !tab.isFavorite {

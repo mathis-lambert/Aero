@@ -20,6 +20,7 @@ struct FaviconKey: Hashable {
 final class Favicon {
     fileprivate(set) var image: NSImage?
     fileprivate(set) var color: NSColor?
+    @ObservationIgnored fileprivate var attemptedFallback = false
 
     fileprivate func setImage(_ image: NSImage, color: FaviconColor?) {
         self.image = image
@@ -41,16 +42,21 @@ final class FaviconCache {
     /// Least recently shown first.
     private var recent: [FaviconKey] = []
     private var refreshTasks: [FaviconKey: Task<Void, Never>] = [:]
+    private var fallbackTasks: [FaviconKey: Task<Void, Never>] = [:]
     private var refreshed: Set<FaviconKey> = []
 
     init(store: FaviconStore) {
         self.store = store
     }
 
-    isolated deinit { refreshTasks.values.forEach { $0.cancel() } }
+    isolated deinit {
+        refreshTasks.values.forEach { $0.cancel() }
+        fallbackTasks.values.forEach { $0.cancel() }
+    }
 
     func removeProfile(_ id: UUID) async throws {
         let pending = refreshTasks.filter { $0.key.profileID == id }.map(\.value)
+            + fallbackTasks.filter { $0.key.profileID == id }.map(\.value)
         pending.forEach { $0.cancel() }
         // Drain any cache write already submitted before removing the profile directory.
         for task in pending { await task.value }
@@ -79,6 +85,7 @@ final class FaviconCache {
 
     func refresh(_ key: FaviconKey, declaredIcons links: [FaviconLink], at url: URL) {
         guard refreshed.insert(key).inserted else { return }
+        fallbackTasks[key]?.cancel()
         let candidates = FaviconCandidate.ranked(from: links, pageURL: url)
         refreshTasks[key] = Task { [weak self, fetcher, store] in
             defer { self?.refreshTasks[key] = nil }
@@ -87,6 +94,28 @@ final class FaviconCache {
             guard !Task.isCancelled else { return }
             self?.favicon(for: key).setImage(image, color: color)
             // Best effort: an icon that cannot be written is still shown and fetched again next launch.
+            try? await store.save(data, host: key.host, profileID: key.profileID)
+        }
+    }
+
+    /// A visible saved login may have no open tab. Ask only that host for its conventional icon,
+    /// once while its bounded cache entry lives, and never if an icon is already on disk.
+    func fetchMissing(_ key: FaviconKey, at url: URL) {
+        let favicon = favicon(for: key)
+        guard favicon.image == nil, !favicon.attemptedFallback, refreshTasks[key] == nil else { return }
+        favicon.attemptedFallback = true
+        let candidates = FaviconCandidate.ranked(from: [], pageURL: url)
+        guard !candidates.isEmpty else { return }
+        fallbackTasks[key] = Task { [weak self, fetcher, store] in
+            defer { self?.fallbackTasks[key] = nil }
+            guard await store.icon(host: key.host, profileID: key.profileID) == nil,
+                  !Task.isCancelled,
+                  let data = await fetcher.icon(from: candidates),
+                  let image = NSImage(data: data),
+                  let self, !Task.isCancelled, !self.refreshed.contains(key) else { return }
+            let color = await FaviconColor.extract(from: data)
+            guard !Task.isCancelled, !self.refreshed.contains(key) else { return }
+            self.favicon(for: key).setImage(image, color: color)
             try? await store.save(data, host: key.host, profileID: key.profileID)
         }
     }

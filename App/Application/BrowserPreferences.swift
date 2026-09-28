@@ -60,6 +60,7 @@ final class BrowserPreferences {
         static let appIcon = "browser.appIcon"
         static let blocksAds = "browser.blocksAds"
         static let automaticPictureInPicture = "browser.automaticPictureInPicture"
+        static let offersToSavePasswords = "browser.passwords.offersToSave"
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
     }
 
@@ -97,6 +98,10 @@ final class BrowserPreferences {
     var automaticPictureInPicture: Bool {
         didSet { defaults.set(automaticPictureInPicture, forKey: Key.automaticPictureInPicture) }
     }
+    /// Sites without their own Save passwords decision follow it.
+    var offersToSavePasswords: Bool {
+        didSet { defaults.set(offersToSavePasswords, forKey: Key.offersToSavePasswords) }
+    }
     /// When ad blocking last asked for newer lists, whatever the answer.
     var filterListsCheckedAt: Date? {
         didSet { defaults.set(filterListsCheckedAt, forKey: Key.filterListsCheckedAt) }
@@ -123,6 +128,7 @@ final class BrowserPreferences {
         appIcon = defaults.string(forKey: Key.appIcon).flatMap(AppIconVariant.init(id:))
         blocksAds = defaults.object(forKey: Key.blocksAds) as? Bool ?? true
         automaticPictureInPicture = defaults.object(forKey: Key.automaticPictureInPicture) as? Bool ?? true
+        offersToSavePasswords = defaults.object(forKey: Key.offersToSavePasswords) as? Bool ?? true
         filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
     }
 

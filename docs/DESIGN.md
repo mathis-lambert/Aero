@@ -22,6 +22,10 @@ Use the shared `Prompt` presentation, with one card surface, a concise title, op
 
 Use `.tooltip(_:shortcut:)` for chrome controls and `Keycaps` for bindings from the shared shortcut resolver. Tooltips must not clip against the sidebar or capture input; leaving, clicking, typing, scrolling or deactivating the window dismisses them. Only the hovered control schedules a delay.
 
+## Text entry
+
+Browser-owned text fields disable automatic correction. Web pages retain WebKit's own text-input behavior and their `autocorrect` and `autocapitalize` attributes.
+
 ## App icon
 
 `App/Resources/AppIcon.icon` contains the adaptive system icon. Regenerate it and the alternates with:

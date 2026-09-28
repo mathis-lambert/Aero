@@ -23,4 +23,6 @@ public protocol WebPageRegistryDelegate: AnyObject {
     func page(_ tabID: UUID, webStoreButtonAt url: URL) -> WebStoreButton?
     /// Returns once the installation it started was answered.
     func page(_ tabID: UUID, didPressWebStoreButtonAt url: URL) async
+    /// A sign-in or sign-up form of the page, or of one of its frames, reported focus or a submission.
+    func page(_ tabID: UUID, passwordForm event: PasswordFormEvent, in frame: PasswordFrame)
 }

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sign-up fixture</title></head>
+<body>
+<h1>Create account</h1>
+<form id="form">
+  <input id="email" type="email" autocomplete="username" aria-label="Email">
+  <input id="new" type="password" autocomplete="new-password" aria-label="New password">
+  <input id="confirm" type="password" autocomplete="new-password" aria-label="Confirm password">
+  <button type="submit">Create account</button>
+</form>
+<p id="state"></p>
+<script>
+const fresh = document.getElementById("new"), confirmation = document.getElementById("confirm");
+const show = () => document.getElementById("state").textContent = fresh.value && fresh.value === confirmation.value
+  ? `Passwords match with ${fresh.value.length} characters` : "Passwords differ";
+fresh.addEventListener("input", show);
+confirmation.addEventListener("input", show);
+document.getElementById("form").addEventListener("submit", (event) => event.preventDefault());
+show();
+</script>
+</body>
+</html>
