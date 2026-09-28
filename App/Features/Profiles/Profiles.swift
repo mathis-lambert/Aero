@@ -37,6 +37,7 @@ extension BrowserModel {
             recoveryPackages = try await store.createRecoverySnapshot()
             try await history.clear(profileID: profile.id, since: nil)
             try await favicons.removeProfile(profile.id)
+            try await passwords.store.removeAll(profileID: profile.id)
             try await pages.removeProfile(profile.id, extensions: profile.extensions)
             try session.removeProfile(profile.id)
             revision += 1

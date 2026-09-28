@@ -10,6 +10,7 @@ struct AeroApp: App {
         Window("Aero", id: BrowserWindowView.windowID) {
             BrowserWindowView(browser: browser)
                 .browserMotionPreferences()
+                .autocorrectionDisabled()
                 .task {
                     delegate.browser = browser
                     await browser.start()
@@ -23,6 +24,7 @@ struct AeroApp: App {
         Window("Settings", id: SettingsView.windowID) {
             SettingsView(browser: browser)
                 .browserMotionPreferences()
+                .autocorrectionDisabled()
         }
         .windowResizability(.contentSize)
         .windowToolbarStyle(.unifiedCompact)

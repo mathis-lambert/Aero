@@ -96,7 +96,7 @@ extension View {
 }
 
 /// Takes the keyboard away from the page or field that had it, so Return and Escape reach the prompt.
-private struct KeyboardToPrompt: NSViewRepresentable {
+struct KeyboardToPrompt: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { Resetter() }
     func updateNSView(_ view: NSView, context: Context) {}
 

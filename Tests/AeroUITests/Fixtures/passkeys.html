@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Passkey fixture</title></head>
+<body>
+<h1>Passkey availability</h1>
+<p id="state"></p>
+<script>
+document.getElementById("state").textContent =
+  window.PublicKeyCredential ? "Passkeys available" : "Passkeys unavailable";
+</script>
+</body>
+</html>

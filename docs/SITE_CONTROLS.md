@@ -1,6 +1,6 @@
 # Site controls
 
-What the browser offers for the site in the selected tab: its address actions, the control center, site data and permissions, ad and tracker blocking, and automatic picture in picture.
+What the browser offers for the site in the selected tab: its address actions, the control center, site data and permissions, ad and tracker blocking, automatic picture in picture, and whether it is offered to save passwords.
 
 ## Address actions
 
@@ -29,6 +29,7 @@ Site settings, a popover on the reload button or a page of the control center, s
 | Camera, microphone, location | Ask, Allow, Block | WebKit's own prompt, every time |
 | Ads and trackers | Default, Allow, Block | Settings › General › Block ads and trackers |
 | Automatic picture in picture | Default, Allow, Block | Settings › General › Automatic picture in picture |
+| Save passwords | Default, Allow, Block | Settings › Passwords › Offer to save passwords; Never for this site sets Block ([Passwords](PASSWORDS.md)) |
 
 Decisions belong to the profile, are saved with the session and keyed by the page's origin (`scheme://host[:port]`, lowercased, without the default port). An embedded frame gets the page's decision; WebKit's permissions policy already keeps cross-origin frames out unless the page delegates to them. Reset permissions forgets every decision for the site.
 

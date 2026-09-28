@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Login fixture</title><link rel="icon" href="/icon-orange.png" type="image/png"></head>
+<body>
+<h1>Sign in</h1>
+<!-- Sends with a script, as many sign-ins do; the page stays so the next fill can be checked. -->
+<form id="form">
+  <input id="username" name="username" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Username">
+  <input id="password" name="password" type="password" autocomplete="current-password" aria-label="Password">
+  <button type="submit">Sign in</button>
+</form>
+<p id="state"></p>
+<p id="result"></p>
+<script>
+const username = document.getElementById("username"), password = document.getElementById("password");
+const show = () => document.getElementById("state").textContent = `Filled ${username.value || "nobody"} with ${password.value.length} characters`;
+username.addEventListener("input", show);
+password.addEventListener("input", show);
+document.getElementById("form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  document.getElementById("result").textContent = `Signed in as ${username.value}`;
+});
+show();
+</script>
+</body>
+</html>

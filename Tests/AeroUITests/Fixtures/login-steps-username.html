@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Username step</title></head>
+<body>
+<h1>Enter your email</h1>
+<form id="identifier-form">
+  <input id="identifierId" name="identifier" type="email" autocapitalize="off" aria-label="Email address">
+  <button id="next" type="button">Next</button>
+</form>
+<script>
+document.getElementById("next").addEventListener("click", () => {
+  location.href = "login-steps-password.html";
+});
+</script>
+</body>
+</html>

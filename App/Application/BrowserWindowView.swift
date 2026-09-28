@@ -42,8 +42,32 @@ struct BrowserWindowView: View {
                                 .id(browser.window.selectedTabID)
                         } else if let page = browser.currentPage {
                             BrowserContentView(page: page)
+                                .overlay(alignment: .topLeading) {
+                                    if let picker = browser.passwords.picker, picker.tabID == browser.window.selectedTabID {
+                                        GeometryReader { area in
+                                            PasswordPickerView(browser: browser, picker: picker, bounds: area.size)
+                                        }
+                                        .transition(.opacity)
+                                    }
+                                }
                                 .overlay(alignment: .topTrailing) {
                                     VStack(alignment: .trailing, spacing: 8) {
+                                        if let offer = browser.passwords.offer, offer.tabID == browser.window.selectedTabID {
+                                            PasswordOfferView(browser: browser, offer: offer)
+                                                .transition(.move(edge: .top).combined(with: .opacity))
+                                        }
+                                        if let failure = browser.passwords.failure {
+                                            HStack(alignment: .top, spacing: 8) {
+                                                Text(failure)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                Button("Dismiss", systemImage: "xmark") { browser.passwords.failure = nil }
+                                                    .labelStyle(.iconOnly)
+                                            }
+                                            .padding(12)
+                                            .frame(width: 340)
+                                            .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.card)
+                                            .accessibilityIdentifier("passwords.failure")
+                                        }
                                         if browser.window.find.isPresented {
                                             FindBar(find: browser.window.find, page: page, shortcuts: browser.shortcuts)
                                                 .transition(.move(edge: .top).combined(with: .opacity))
@@ -60,6 +84,7 @@ struct BrowserWindowView: View {
                                     }
                                     .padding(BrowserDesign.floatingInset)
                                     .browserAnimation(value: browser.window.zoomFeedback != nil)
+                                    .browserAnimation(value: browser.passwords.offer?.id)
                                 }
                         } else {
                             NewTabView(browser: browser)

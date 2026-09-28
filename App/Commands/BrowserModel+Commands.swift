@@ -86,6 +86,7 @@ extension BrowserModel {
         case .reopenTab: reopenTab()
         case .toggleSidebar: window.sidebarPinned.toggle()
         case .profiles: showSettings(.section(.profiles))
+        case .passwords: showSettings(.section(.passwords))
         case .newProfile: present(.profile)
         case .newSpace: present(.space(nil))
         case .showHistory: show(.history)

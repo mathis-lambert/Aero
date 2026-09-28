@@ -12,6 +12,7 @@ struct SettingsRow<Tile: View, Subtitle: View, Trailing: View>: View {
     var body: some View {
         HStack(spacing: BrowserDesign.rowInset) {
             tile
+                .frame(width: BrowserDesign.identityHeight, height: BrowserDesign.identityHeight)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: title).font(BrowserDesign.Typography.chrome.weight(.medium)).lineLimit(1)
                 subtitle
@@ -25,7 +26,8 @@ struct SettingsRow<Tile: View, Subtitle: View, Trailing: View>: View {
                 .font(BrowserDesign.Typography.glyph)
                 .foregroundStyle(palette.secondary)
         }
-        .padding(.horizontal, 12)
+        .padding(.leading, 6)
+        .padding(.trailing, 12)
         .frame(minHeight: 52)
         .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
         .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))

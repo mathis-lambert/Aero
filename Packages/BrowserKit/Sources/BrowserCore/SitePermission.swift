@@ -1,15 +1,15 @@
 import Foundation
 
-/// What a site may do: use a device, show ads and trackers, or have its video moved to picture in
-/// picture. See docs/SITE_CONTROLS.md › Site data and permissions.
+/// What a site may do: use a device, show ads and trackers, have its video moved to picture in
+/// picture, or be offered to save passwords. See docs/SITE_CONTROLS.md › Site data and permissions.
 public enum SitePermission: String, CaseIterable, Sendable {
-    case camera, microphone, location, ads, automaticPictureInPicture
+    case camera, microphone, location, ads, automaticPictureInPicture, savePasswords
 
     /// Devices ask every time without a decision; the others follow a browser-wide setting.
     public var isDevice: Bool {
         switch self {
         case .camera, .microphone, .location: true
-        case .ads, .automaticPictureInPicture: false
+        case .ads, .automaticPictureInPicture, .savePasswords: false
         }
     }
 }
@@ -29,8 +29,9 @@ public struct SiteOrigin: RawRepresentable, Hashable, Sendable {
         let scheme = scheme.lowercased()
         let host = host.lowercased()
         guard let defaultPort = Self.defaultPorts[scheme], !host.isEmpty else { return nil }
+        let authorityHost = host.contains(":") && !host.hasPrefix("[") ? "[\(host)]" : host
         let port = port.flatMap { $0 == 0 || $0 == defaultPort ? nil : $0 }
-        rawValue = "\(scheme)://\(host)" + (port.map { ":\($0)" } ?? "")
+        rawValue = "\(scheme)://\(authorityHost)" + (port.map { ":\($0)" } ?? "")
     }
 
     public init?(url: URL) {

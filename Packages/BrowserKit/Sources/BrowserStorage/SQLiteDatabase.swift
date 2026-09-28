@@ -14,6 +14,10 @@ final class SQLiteDatabase {
             let count = Int(sqlite3_column_bytes(statement, column))
             return String(decoding: UnsafeBufferPointer(start: bytes, count: count), as: UTF8.self)
         }
+        func blob(_ column: Int32) -> Data {
+            guard let bytes = sqlite3_column_blob(statement, column) else { return Data() }
+            return Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, column)))
+        }
         func uuid(_ column: Int32) throws -> UUID {
             guard let value = UUID(uuidString: text(column)) else { throw StorageError.invalidData }
             return value

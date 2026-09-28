@@ -30,12 +30,16 @@ struct SettingsView: View {
                 switch route {
                 case .profile(let id): ProfileSettingsDetail(browser: browser, profileID: id, navigate: navigate)
                 case .space(let id): SpaceSettingsDetail(browser: browser, spaceID: id)
+                case .passwordProfile(let id): PasswordProfileSettingsView(browser: browser, profileID: id, navigate: navigate)
+                case .passwordLogin(let login): PasswordLoginSettingsView(browser: browser, login: login, replaceRoute: replaceCurrentRoute, didDelete: leaveDeletedPassword)
+                case .passwordImport(let id): PasswordImportSettingsView(browser: browser, profileID: id, navigate: navigate)
                 case .section(let section):
                     switch section {
                     case .general: GeneralSettingsView(browser: browser)
                     case .tabs: PerformanceSettingsView(browser: browser)
                     case .profiles: ProfilesSettingsView(browser: browser, navigate: navigate)
                     case .spaces: SpacesSettingsView(browser: browser, navigate: navigate)
+                    case .passwords: PasswordsSettingsView(browser: browser, navigate: navigate)
                     case .extensions: ExtensionsSettingsView(browser: browser)
                     case .shortcuts: ShortcutSettingsView(shortcuts: browser.shortcuts)
                     }
@@ -74,6 +78,9 @@ struct SettingsView: View {
         case .section(let section): section.title
         case .profile(let id): browser.profiles.first { $0.id == id }?.name ?? String(localized: "Profiles")
         case .space(let id): browser.session.spaces.first { $0.id == id }?.name ?? String(localized: "Spaces")
+        case .passwordProfile(let id): browser.profiles.first { $0.id == id }?.name ?? String(localized: "Passwords")
+        case .passwordLogin(let login): login.origin.host
+        case .passwordImport: String(localized: "Import passwords")
         }
     }
 
@@ -92,6 +99,8 @@ struct SettingsView: View {
         case .section: true
         case .profile(let id): browser.profiles.contains { $0.id == id }
         case .space(let id): browser.session.spaces.contains { $0.id == id }
+        case .passwordProfile(let id), .passwordImport(let id): browser.profiles.contains { $0.id == id }
+        case .passwordLogin(let login): browser.profiles.contains { $0.id == login.profileID }
         }
     }
 
@@ -101,5 +110,16 @@ struct SettingsView: View {
         history.append(route)
         if history.count > Self.historyLimit { history.removeFirst() }
         historyIndex = history.count - 1
+    }
+
+    private func replaceCurrentRoute(with route: SettingsRoute) {
+        history[historyIndex] = route
+    }
+
+    private func leaveDeletedPassword(profileID: UUID) {
+        history = Array(history.prefix(historyIndex))
+        historyIndex = history.count - 1
+        if history.isEmpty { history = [.passwordProfile(profileID)]; historyIndex = 0 }
+        else { navigate(to: .passwordProfile(profileID)) }
     }
 }
