@@ -41,6 +41,11 @@ public actor FaviconStore {
         if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) }
     }
 
+    /// Every profile's icons.
+    public func removeAll() throws {
+        if FileManager.default.fileExists(atPath: directory.path) { try FileManager.default.removeItem(at: directory) }
+    }
+
     /// At most 64 new writes between scans: 4 MiB / 64 files of bounded headroom.
     private func prune() throws {
         // A missing directory or failed scan must not repeat I/O on every cache lookup.

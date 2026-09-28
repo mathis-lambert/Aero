@@ -62,6 +62,7 @@ final class BrowserPreferences {
         static let automaticPictureInPicture = "browser.automaticPictureInPicture"
         static let offersToSavePasswords = "browser.passwords.offersToSave"
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
+        static let resetPending = "browser.resetPending"
     }
 
     let shortcuts: ShortcutPreferences
@@ -109,11 +110,7 @@ final class BrowserPreferences {
     var needsLanguageRestart: Bool { language != launchLanguage }
 
     init(testNamespace: String?) {
-        if let testNamespace {
-            // Never the person's own preferences.
-            guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
-            defaults = suite
-        } else { defaults = .standard }
+        defaults = Self.defaults(testNamespace: testNamespace)
         let savedWidth = defaults.double(forKey: Key.sidebarWidth)
         sidebarWidth = savedWidth.isFinite ? max(BrowserDesign.sidebarWidth, savedWidth) : BrowserDesign.sidebarWidth
         shortcuts = ShortcutPreferences(defaults: defaults)
@@ -130,6 +127,28 @@ final class BrowserPreferences {
         automaticPictureInPicture = defaults.object(forKey: Key.automaticPictureInPicture) as? Bool ?? true
         offersToSavePasswords = defaults.object(forKey: Key.offersToSavePasswords) as? Bool ?? true
         filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
+    }
+
+    private static func defaults(testNamespace: String?) -> UserDefaults {
+        guard let testNamespace else { return .standard }
+        // Never the person's own preferences.
+        guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
+        return suite
+    }
+
+    // MARK: - Reset (docs/STORAGE.md › Reset)
+
+    func markResetPending() { defaults.set(true, forKey: Key.resetPending) }
+
+    static func isResetPending(testNamespace: String?) -> Bool {
+        defaults(testNamespace: testNamespace).bool(forKey: Key.resetPending)
+    }
+
+    /// Every preference of this channel or test run, the pending mark included.
+    static func erase(testNamespace: String?) {
+        let domain = testNamespace.map { Key.testSuitePrefix + $0 } ?? Bundle.main.bundleIdentifier ?? ""
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        defaults(testNamespace: testNamespace).synchronize()
     }
 
     func setLanguage(_ language: BrowserLanguage) {

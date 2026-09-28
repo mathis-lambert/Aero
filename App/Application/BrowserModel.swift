@@ -31,8 +31,11 @@ final class BrowserModel {
 
     let pages: WebPageRegistry
     let store: BrowserStore
-    private let storageLocation: StorageLocation
+    let storageLocation: StorageLocation
     private(set) var storageFailureMessage: String?
+    /// This launch finishes a reset: website data stores are removed before any page exists.
+    @ObservationIgnored private var isResetting = false
+    @ObservationIgnored private var resetFailed = false
     private(set) var canRecoverStorage = false
     private(set) var isOpeningStorage = false
     var isChangingStructure = false
@@ -51,17 +54,24 @@ final class BrowserModel {
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
     /// Test runs only: the fixture server that stands in for every search engine.
     private let searchTestEndpoint: URL?
+    /// Test runs never touch the Mac's own keychain, URL cache or app bundle.
+    let isTestRun: Bool
 
     init() {
         launchInterval = Self.signposter.beginInterval(Diagnostics.Signpost.launch)
         let environment = ProcessInfo.processInfo.environment
         let testDirectory = environment["AERO_TEST_DATA"].map { URL(fileURLWithPath: $0, isDirectory: true) }
         let testing = testDirectory?.lastPathComponent
+        let location = StorageLocation(testDirectory: testDirectory)
+        // A reset erases files and preferences before anything reads them (docs/STORAGE.md › Reset).
+        let resetting = BrowserPreferences.isResetPending(testNamespace: testing)
+        let erased = resetting && Self.eraseForReset(location)
+        if erased { BrowserPreferences.erase(testNamespace: testing) }
         preferences = BrowserPreferences(testNamespace: testing)
         NSApp.appearance = preferences.appearance.nativeAppearance
         appIcon = AppIcon(variant: preferences.appIcon)
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
-        let location = StorageLocation(testDirectory: testDirectory)
+        isTestRun = testing != nil
         storageLocation = location
         let folder = location.data
         store = BrowserStore(directory: folder)
@@ -83,6 +93,8 @@ final class BrowserModel {
             filterLists = FilterListUpdater(blocker: contentBlocker, store: FilterListStore(directory: location.caches.appendingPathComponent("Filter Lists", isDirectory: true)),
                                             preferences: preferences, testSource: testFilterList)
         } else { filterLists = nil }
+        isResetting = resetting
+        resetFailed = resetting && !erased
         pages.delegate = self
         pages.extensionHost = self
     }
@@ -114,6 +126,10 @@ final class BrowserModel {
         loadFailed = false
         storageFailureMessage = nil
         do {
+            if isResetting {
+                isResetting = false
+                do { try await pages.removeAllWebsiteData() } catch { resetFailed = true }
+            }
             if let saved = try await store.load() { session = saved }
             else { try await store.save(session, revision: revision) }
             try await resumeProfileRemovals()
@@ -123,6 +139,7 @@ final class BrowserModel {
             } catch { present(.error(Self.saveFailureMessage)) }
             window.selectedSpaceID = session.spaces.first?.id
             isReady = true
+            if resetFailed { present(.error(String(localized: "Aero could not erase everything. Quit and reopen Aero to finish the reset."))) }
         } catch {
             loadFailed = true
             let hasRecovery = await store.hasRecoverySnapshot()

@@ -36,10 +36,10 @@ public final class WebPageRegistry {
     private static let maximumStates = 32
     private var hibernatedStates: [UUID: Data] = [:]
     private var stateOrder: [UUID] = []
-    private var stores: [UUID: WKWebsiteDataStore] = [:]
+    private(set) var stores: [UUID: WKWebsiteDataStore] = [:]
     private var extensions: [UUID: ProfileExtensions] = [:]
     private var pressureMonitor: MemoryPressureMonitor?
-    private let ephemeral: Bool
+    let ephemeral: Bool
     private let extensionsFolder: URL
     private let nativeHostFolders: [URL]
 

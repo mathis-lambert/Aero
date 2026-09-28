@@ -97,6 +97,13 @@ public actor HistoryStore {
         }
     }
 
+    /// Returns the space of deleted rows to the disk: SQLite otherwise keeps the file at its size.
+    public func compact() throws {
+        let database = try open()
+        try database.run("PRAGMA wal_checkpoint(TRUNCATE)")
+        try database.run("VACUUM")
+    }
+
     // MARK: - Database
 
     private func open() throws -> SQLiteDatabase {

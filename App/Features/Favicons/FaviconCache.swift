@@ -66,6 +66,17 @@ final class FaviconCache {
         try await store.removeProfile(id)
     }
 
+    /// Clearing Settings › Storage: icons are fetched again as pages load.
+    func removeAll() async throws {
+        let pending = Array(refreshTasks.values) + Array(fallbackTasks.values)
+        pending.forEach { $0.cancel() }
+        for task in pending { await task.value }
+        entries = [:]
+        recent = []
+        refreshed = []
+        try await store.removeAll()
+    }
+
     /// Looking an icon up starts reading it from disk the first time.
     func favicon(for key: FaviconKey) -> Favicon {
         recent.removeAll { $0 == key }

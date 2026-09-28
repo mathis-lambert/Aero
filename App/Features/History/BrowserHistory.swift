@@ -42,6 +42,10 @@ final class BrowserHistory {
         try await enqueue { try await $0.clear(profileID: profileID, since: date) }.value
     }
 
+    func compact() async throws {
+        try await enqueue { try await $0.compact() }.value
+    }
+
     func entries(profileID: UUID, matching query: String, before cursor: HistoryEntry.Cursor? = nil,
                  limit: Int = HistoryStore.pageSize) async throws -> [HistoryEntry] {
         writePendingTitles()

@@ -34,6 +34,16 @@
         }
       }
     },
+    "%@: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ : %2$@"
+          }
+        }
+      }
+    },
     "%@’s passwords could not be read." : {
       "localizations" : {
         "en" : {
@@ -234,6 +244,16 @@
         }
       }
     },
+    "Ad blocking lists" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listes de blocage"
+          }
+        }
+      }
+    },
     "Add" : {
       "localizations" : {
         "en" : {
@@ -407,6 +427,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mots de passe Aero.csv"
+          }
+        }
+      }
+    },
+    "Aero could not erase everything. Quit and reopen Aero to finish the reset." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero n’a pas pu tout effacer. Quittez et rouvrez Aero pour terminer la réinitialisation."
           }
         }
       }
@@ -695,6 +725,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "Caches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caches"
+          }
+        }
+      }
+    },
+    "Caches fill again as you browse. Sign-ins stay." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les caches se remplissent à nouveau pendant la navigation. Les connexions restent."
           }
         }
       }
@@ -1031,6 +1081,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Effacer la recherche"
+          }
+        }
+      }
+    },
+    "Clear site data" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les données"
+          }
+        }
+      }
+    },
+    "Clear the cookies and site data of %@?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les cookies et données des sites de %@ ?"
+          }
+        }
+      }
+    },
+    "Clear the history of every profile?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer l’historique de tous les profils ?"
+          }
+        }
+      }
+    },
+    "Clearing a profile’s data signs you out of its sites." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les données d’un profil vous déconnecte de ses sites."
+          }
+        }
+      }
+    },
+    "Clear…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer…"
           }
         }
       }
@@ -1707,6 +1807,16 @@
         }
       }
     },
+    "Deleted profiles" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils supprimés"
+          }
+        }
+      }
+    },
     "Disable shortcut" : {
       "localizations" : {
         "en" : {
@@ -1883,6 +1993,26 @@
         }
       }
     },
+    "Erases every profile, space, tab, favorite, history, password, website data, extension and setting. Aero then opens as new." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efface tous les profils, espaces, onglets, favoris, l’historique, les mots de passe, les données des sites, les extensions et les réglages. Aero s’ouvre ensuite comme neuf."
+          }
+        }
+      }
+    },
+    "Every profile’s visited pages." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages visitées de tous les profils."
+          }
+        }
+      }
+    },
     "Export passwords…" : {
       "localizations" : {
         "en" : {
@@ -1959,6 +2089,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plume"
+          }
+        }
+      }
+    },
+    "Fetched again as pages load." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérées à nouveau au chargement des pages."
           }
         }
       }
@@ -2395,6 +2535,26 @@
         }
       }
     },
+    "Installed extensions and their files." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions installées et leurs fichiers."
+          }
+        }
+      }
+    },
+    "Its sites will sign you out and forget their settings. Other profiles keep theirs." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses sites vous déconnecteront et oublieront leurs réglages. Les autres profils gardent les leurs."
+          }
+        }
+      }
+    },
     "Its tabs and groups will be removed. Profile data will be kept." : {
       "localizations" : {
         "en" : {
@@ -2683,6 +2843,26 @@
         }
       }
     },
+    "Manage…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer…"
+          }
+        }
+      }
+    },
+    "Measuring…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesure…"
+          }
+        }
+      }
+    },
     "Microphone" : {
       "localizations" : {
         "en" : {
@@ -2951,6 +3131,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Navigation"
+          }
+        }
+      }
+    },
+    "Needed to block ads and trackers; kept up to date on their own." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nécessaires pour bloquer publicités et traqueurs ; mises à jour automatiquement."
           }
         }
       }
@@ -3771,6 +3961,16 @@
         }
       }
     },
+    "Pages, images and scripts kept to open sites faster." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pages, images et scripts gardés pour ouvrir les sites plus vite."
+          }
+        }
+      }
+    },
     "Paper" : {
       "localizations" : {
         "en" : {
@@ -4171,6 +4371,26 @@
         }
       }
     },
+    "Profiles, spaces, tabs and favorites." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils, espaces, onglets et favoris."
+          }
+        }
+      }
+    },
+    "Profiles, spaces, tabs, history, passwords, website data, extensions and settings will be erased. Aero then quits and opens as new." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils, espaces, onglets, historique, mots de passe, données des sites, extensions et réglages seront effacés. Aero se ferme puis s’ouvre comme neuf."
+          }
+        }
+      }
+    },
     "Quit" : {
       "localizations" : {
         "en" : {
@@ -4567,6 +4787,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réservé par macOS : %@."
+          }
+        }
+      }
+    },
+    "Reset Aero" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser Aero"
+          }
+        }
+      }
+    },
+    "Reset Aero?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser Aero ?"
+          }
+        }
+      }
+    },
+    "Reset Aero…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser Aero…"
           }
         }
       }
@@ -5660,6 +5910,16 @@
         }
       }
     },
+    "Site icons" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icônes des sites"
+          }
+        }
+      }
+    },
     "Site settings…" : {
       "localizations" : {
         "en" : {
@@ -5836,6 +6096,16 @@
         }
       }
     },
+    "Storage" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage"
+          }
+        }
+      }
+    },
     "Sun" : {
       "localizations" : {
         "en" : {
@@ -5992,6 +6262,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Onglets"
+          }
+        }
+      }
+    },
+    "Tabs and spaces" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglets et espaces"
           }
         }
       }
@@ -6184,6 +6464,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le mot de passe de %1$@ sur %2$@ est retiré de votre trousseau."
+          }
+        }
+      }
+    },
+    "This could not be cleared. Quit Aero and try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’effacer. Quittez Aero et réessayez."
           }
         }
       }
@@ -6604,6 +6894,16 @@
         }
       }
     },
+    "Visited pages are removed from every profile. Tabs and favorites stay." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages visitées sont retirées de tous les profils. Les onglets et favoris restent."
+          }
+        }
+      }
+    },
     "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept." : {
       "localizations" : {
         "en" : {
@@ -6632,6 +6932,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attendez la fin des téléchargements de cet espace."
+          }
+        }
+      }
+    },
+    "Website cache" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache des sites"
+          }
+        }
+      }
+    },
+    "Website data" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données des sites"
+          }
+        }
+      }
+    },
+    "Website data left by profiles that no longer exist" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données laissées par des profils qui n’existent plus"
           }
         }
       }
@@ -6776,6 +7106,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "afficher un mot de passe enregistré"
+          }
+        }
+      }
+    },
+    "used by Aero on this Mac" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "utilisés par Aero sur ce Mac"
           }
         }
       }

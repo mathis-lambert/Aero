@@ -30,6 +30,7 @@ See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, c
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture ([Site Controls](docs/SITE_CONTROLS.md)).
 - Passwords per profile in the macOS keychain: saved after sign-in, filled on request, strong passwords for new accounts, import from Chrome, Arc, Dia, Brave, Edge, Vivaldi or CSV, and CSV export; passkeys through macOS in builds signed with Apple's browser entitlement ([Passwords](docs/PASSWORDS.md)).
 - Chrome and Safari web extensions per profile, from the Chrome Web Store or a folder, with native messaging to the apps they pair with ([Extensions](docs/EXTENSIONS.md)).
+- Settings › Storage: what Aero keeps on this Mac, item by item, with cleaning for caches, site data and history, and a full reset ([Storage](docs/STORAGE.md)).
 - Light, dark and system appearance, alternate app icons, English and French.
 
 Not implemented yet: onboarding, importing tabs, bookmarks and history, separate popup windows.
