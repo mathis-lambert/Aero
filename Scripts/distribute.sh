@@ -82,9 +82,19 @@ codesign --sign 'Developer ID Application' --timestamp "$dmg"
 notarize "$dmg" dmg "$dmg"
 codesign --verify --strict "$dmg"
 spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
+symbols="$archive/dSYMs/$product.app.dSYM"
+[[ -s "$symbols/Contents/Resources/DWARF/$product" ]] || fail "Missing app dSYM in $archive"
+binary_uuid=$(xcrun dwarfdump --uuid "$app/Contents/MacOS/$product" | awk '{print $2}')
+symbols_uuid=$(xcrun dwarfdump --uuid "$symbols" | awk '{print $2}')
+[[ -n "$binary_uuid" && "$binary_uuid" == "$symbols_uuid" ]] || fail 'App dSYM does not match the released binary.'
+app_zip="$output/Aero-$tag-arm64.zip"
+symbols_zip="$output/Aero-$tag-arm64-dSYMs.zip"
+ditto -c -k --keepParent "$app" "$app_zip"
+ditto -c -k --keepParent "$archive/dSYMs" "$symbols_zip"
 mkdir "$output/public"
 cp "$dmg" "$output/manifest.txt" "$output/public/"
-(cd "$output/public"; shasum -a 256 "${dmg:t}" > SHA256SUMS)
+mv "$app_zip" "$symbols_zip" "$output/public/"
+(cd "$output/public"; shasum -a 256 "${dmg:t}" "${app_zip:t}" "${symbols_zip:t}" > SHA256SUMS)
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     print "output=$output" >> "$GITHUB_OUTPUT"
     print "channel=$channel" >> "$GITHUB_OUTPUT"

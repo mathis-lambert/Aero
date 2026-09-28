@@ -72,9 +72,9 @@ The named tag must exist at HEAD and the checkout must be clean. A Developer ID 
 
 The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `diskutil image create from`, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
 
-The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. Only after all checks succeed does a `public/` directory appear, containing the DMG, SHA-256 checksum and manifest. Archives, dSYMs, export logs and notarization responses remain alongside it. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
+The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, and the manifest. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
 
-Each notarization waits at most 30 minutes. Failure or timeout stops publication and retains the submission response. An Apple submission can continue after a timeout: use its retained ID with `notarytool info` or `log` to diagnose it. Rerunning creates a fresh output directory; it does not overwrite previous results. Keep archive/dSYM backups for released versions beyond the CI retention period.
+Each notarization waits at most 30 minutes. Failure or timeout stops publication and retains the submission response. An Apple submission can continue after a timeout: use its retained ID with `notarytool info` or `log` to diagnose it. Rerunning creates a fresh output directory; it does not overwrite previous results. Keep archive backups for released versions beyond the CI retention period; the release asset retains the dSYMs.
 
 ## GitHub Actions
 
@@ -97,7 +97,7 @@ The `distribution` GitHub environment contains:
 
 The job imports the certificate into a temporary keychain. It writes the API key only to runner temporary storage and removes credentials in an `always()` cleanup step. Signing secrets are never required by contributors. GitHub supplies the release token with `contents: write`; no personal access token is needed. Protect main, release tags and changes to workflows; restrict the distribution environment to trusted publication refs. Configure any desired stable approval in GitHub environment protection rules.
 
-Public repositories use free standard hosted runner compute; larger runners are not selected. Artifacts have a retention policy: CI outputs 7 days, distribution archives and diagnostics 14 days. Published DMGs are GitHub Release assets, separate from transient Actions artifacts.
+Public repositories use free standard hosted runner compute; larger runners are not selected. Artifacts have a retention policy: CI outputs 7 days, distribution archives and diagnostics 14 days. Published DMGs, app ZIPs and dSYM ZIPs are GitHub Release assets, separate from transient Actions artifacts.
 
 ## Validation and failure modes
 
