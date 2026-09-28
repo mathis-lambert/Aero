@@ -69,7 +69,7 @@ extension BrowserModel {
                 persist()
             }
             return result
-        } catch ChromiumImportError.keyUnavailable {
+        } catch ChromiumLoginsError.keyUnavailable {
             return PasswordImportResult(failure: String(localized: "macOS did not allow Aero to read \(source.browser.name)’s passwords."))
         } catch {
             return PasswordImportResult(failure: String(localized: "\(source.browser.name)’s passwords could not be read."))

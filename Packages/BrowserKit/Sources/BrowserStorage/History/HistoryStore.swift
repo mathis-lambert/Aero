@@ -33,6 +33,33 @@ public actor HistoryStore {
         }
     }
 
+    /// Another browser's history, in one transaction: pages merge by profile and address, keeping the latest
+    /// visit and the imported title; a visit already recorded at the same instant is not added again, and visits
+    /// older than the retention are left out. See docs/ONBOARDING.md › Writing.
+    public func importPages(_ pages: [ImportedPage], profileID: UUID) throws {
+        let database = try open()
+        let cutoff = Date.now.addingTimeInterval(-Self.retention).timeIntervalSinceReferenceDate
+        try database.transaction {
+            for imported in pages {
+                guard let address = Self.address(imported.url), imported.lastVisit.timeIntervalSinceReferenceDate >= cutoff else { continue }
+                let page: [SQLiteDatabase.Value] = [.text(profileID.uuidString), .text(address)]
+                try database.run("""
+                    INSERT INTO pages (profile_id, url, title, last_visit) VALUES (?, ?, ?, ?)
+                    ON CONFLICT (profile_id, url) DO UPDATE SET
+                        last_visit = max(last_visit, excluded.last_visit),
+                        title = CASE WHEN excluded.last_visit >= last_visit AND excluded.title != '' THEN excluded.title ELSE title END
+                    """, page + [.text(Self.bounded(imported.title)), .real(imported.lastVisit.timeIntervalSinceReferenceDate)])
+                for visit in imported.visits where visit.timeIntervalSinceReferenceDate >= cutoff {
+                    let time = SQLiteDatabase.Value.real(visit.timeIntervalSinceReferenceDate)
+                    try database.run("""
+                        INSERT INTO visits (page_id, visited_at) SELECT id, ? FROM pages WHERE profile_id = ? AND url = ?
+                        AND NOT EXISTS (SELECT 1 FROM visits WHERE visits.page_id = pages.id AND visits.visited_at = ?)
+                        """, [time] + page + [time])
+                }
+            }
+        }
+    }
+
     /// Only updates existing entries, so a late title cannot bring back a cleared page.
     public func updateTitles(_ titles: [URL: String], profileID: UUID) throws {
         let database = try open()

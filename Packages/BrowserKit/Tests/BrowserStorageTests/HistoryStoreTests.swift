@@ -1,5 +1,5 @@
 import BrowserCore
-import BrowserStorage
+@testable import BrowserStorage
 import Foundation
 import SQLite3
 import Testing
@@ -163,4 +163,26 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     #expect(sqlite3_exec(lock, "ROLLBACK", nil, nil, nil) == SQLITE_OK)
     try await store.clear(profileID: profile, since: nil)
     #expect(try await store.entries(profileID: profile).isEmpty)
+}
+
+// docs/ONBOARDING.md › Failure mode 2: importing the same history twice must not duplicate pages or visits,
+// which the History page cannot show (it lists pages, not visit counts).
+@Test func importingHistoryTwiceMergesPagesAndVisits() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let store = fixture.store()
+    let profile = UUID()
+    let now = Date.now
+    let page = ImportedPage(url: try url("https://example.com/"), title: "Example", lastVisit: now,
+                            visits: [now, now.addingTimeInterval(-day), now.addingTimeInterval(-400 * day)])
+    try await store.recordVisit(to: page.url, title: "Visited in Aero", profileID: profile, at: now.addingTimeInterval(-2 * day))
+    try await store.importPages([page], profileID: profile)
+    try await store.importPages([page], profileID: profile)
+    let entries = try await store.entries(profileID: profile)
+    #expect(entries.count == 1)
+    #expect(entries[0].title == "Example")
+    #expect(abs(entries[0].lastVisit.timeIntervalSince(now)) < 0.001)
+    // Aero's own visit plus the two imported within retention, each once.
+    let visits = try SQLiteDatabase(file: fixture.file, readOnly: true).query("SELECT count(*) FROM visits") { $0.integer(0) }
+    #expect(visits == [3])
 }
