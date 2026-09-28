@@ -53,6 +53,7 @@ struct BrowserMenuCommands: Commands {
             command(.newProfile)
             command(.profiles)
             command(.passwords)
+            command(.importBrowserData)
             Divider()
             let browser = application
             ForEach(browser.profiles) { profile in

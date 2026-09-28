@@ -78,7 +78,7 @@ WebKit sizes are read-only estimates from the stores' folders under `~/Library/W
 
 ## Reset
 
-Reset Aero erases every browsing record of the channel: profiles, spaces, tabs and favorites, history, passwords, website data, extensions, icons, caches and preferences. The next launch is a fresh store.
+Reset Aero erases every browsing record of the channel: profiles, spaces, tabs and favorites, history, passwords, website data, extensions, icons, caches and preferences. The next launch is a fresh store, which starts the onboarding.
 
 After confirmation, the keychain items of every profile are deleted while Aero runs (a failure stops the reset and says so). Aero then records a pending reset in its preferences and quits; a helper process waits for it to exit and opens it again, so two instances never share the store. At launch, before any store or page exists, Aero deletes its `Storage` and `Caches` folders, removes every WebKit website data store it owns, and clears its preferences domain, the pending mark last. Test runs erase only their own directory, preferences suite and keychain namespace, and quit without reopening.
 
@@ -88,7 +88,7 @@ Failure modes, covered by `StorageSettingsE2ETests`:
 2. Clearing the cache signs the person out; clearing one profile's site data touches another profile.
 3. Clearing history leaves the file at its old size.
 4. Removing unused data removes the store of a live profile or of one being deleted.
-5. Reset leaves records, history, passwords, website data, extensions, icons or preferences behind.
+5. Reset leaves records, history, passwords, website data, extensions, icons, preferences or onboarding completion behind.
 6. Reset erases while pages or stores are in use, or two instances write the same store.
 7. A test run's reset touches the person's own data, preferences or keychain.
 8. A failed step reports success.

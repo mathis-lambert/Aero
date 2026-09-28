@@ -54,6 +54,11 @@ final class BrowserHistory {
         return try await store.entries(profileID: profileID, matching: query, before: cursor, limit: limit)
     }
 
+    /// Imported pages, queued after pending writes like any other history change (docs/ONBOARDING.md).
+    func importPages(_ pages: [ImportedPage], profileID: UUID) async throws {
+        try await enqueue { try await $0.importPages(pages, profileID: profileID) }.value
+    }
+
     func flush() async throws {
         writePendingTitles()
         try await enqueue().value

@@ -87,7 +87,8 @@ struct PasswordImportSettingsView: View {
             }
         }
         .task {
-            let found = await Task.detached(priority: .utility) { ChromiumLogins.installedProfiles(in: .applicationSupportDirectory) }.value
+            let folder = browser.importSourceRoots.applicationSupport
+            let found = await Task.detached(priority: .utility) { ChromiumLogins.installedProfiles(in: folder) }.value
             if !Task.isCancelled { sources = found }
         }
     }

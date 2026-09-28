@@ -1,6 +1,26 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ Needs Full Disk Access" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Nécessite l’accès complet au disque"
+          }
+        }
+      }
+    },
+    "%@ encrypts them so no other app can read them. Each of its profiles becomes a space." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ les chiffre pour qu’aucune autre app ne puisse les lire. Chacun de ses profils devient un espace."
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "localizations" : {
         "en" : {
@@ -16,6 +36,9 @@
           }
         }
       }
+    },
+    "%@ · %@" : {
+      "shouldTranslate" : false
     },
     "%@, %@" : {
       "comment" : "App icon variant: mark, then palette, such as “Feather, Sun”.",
@@ -40,6 +63,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ : %2$@"
+          }
+        }
+      }
+    },
+    "%@’s data could not be read. Quit %@ and try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les données de %1$@ n’ont pas pu être lues. Quittez %2$@, puis réessayez."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@’s data could not be read. Quit %2$@ and try again."
           }
         }
       }
@@ -100,6 +139,166 @@
         }
       }
     },
+    "%lld favorites" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favorite"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favorites"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favori"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favoris"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pages" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pages of history" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page of history"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages of history"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page d’historique"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages d’historique"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld passwords" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld password"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passwords"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mot de passe"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mots de passe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld points" : {
       "localizations" : {
         "en" : {
@@ -112,6 +311,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld points"
+          }
+        }
+      }
+    },
+    "%lld profiles" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profile"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profiles"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profil"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profils"
+                }
+              }
+            }
           }
         }
       }
@@ -431,12 +670,42 @@
         }
       }
     },
+    "Aero copies what you pick. The other browser stays as it is." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero copie ce que vous choisissez. L’autre navigateur reste intact."
+          }
+        }
+      }
+    },
     "Aero could not erase everything. Quit and reopen Aero to finish the reset." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aero n’a pas pu tout effacer. Quittez et rouvrez Aero pour terminer la réinitialisation."
+          }
+        }
+      }
+    },
+    "Aero is busy saving other changes. Try again in a moment." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero enregistre d’autres modifications. Réessayez dans un instant."
+          }
+        }
+      }
+    },
+    "Aero is your default browser." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero est votre navigateur par défaut."
           }
         }
       }
@@ -473,6 +742,16 @@
         }
       }
     },
+    "Allow Full Disk Access so Aero can read it. macOS asks Aero to reopen; you come back here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez l’accès complet au disque pour qu’Aero puisse le lire. macOS rouvre Aero, et vous revenez ici."
+          }
+        }
+      }
+    },
     "Already assigned to %@. Replacing removes that assignment." : {
       "localizations" : {
         "en" : {
@@ -501,6 +780,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ambre"
+          }
+        }
+      }
+    },
+    "And %lld more spaces" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "And %lld more space"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "And %lld more spaces"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Et %lld autre espace"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Et %lld autres espaces"
+                }
+              }
+            }
           }
         }
       }
@@ -725,6 +1044,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "Bookmarks become favorites; each folder becomes a group." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les signets deviennent des favoris ; chaque dossier devient un groupe."
+          }
+        }
+      }
+    },
+    "Bookmarks menu" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu des signets"
+          }
+        }
+      }
+    },
+    "Bring favorites, history and passwords from another browser." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer favoris, historique et mots de passe depuis un autre navigateur."
+          }
+        }
+      }
+    },
+    "Bring your things" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérez vos affaires"
+          }
+        }
+      }
+    },
+    "Bringing it over." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On rapatrie tout."
           }
         }
       }
@@ -969,6 +1338,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisissez le dossier qui contient le manifest.json de l’extension."
+          }
+        }
+      }
+    },
+    "Choose what to bring." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez quoi importer."
           }
         }
       }
@@ -1311,6 +1690,16 @@
         }
       }
     },
+    "Continue" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
     "Cookies and site data" : {
       "localizations" : {
         "en" : {
@@ -1647,6 +2036,16 @@
         }
       }
     },
+    "Default browser" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigateur par défaut"
+          }
+        }
+      }
+    },
     "Default priority" : {
       "localizations" : {
         "en" : {
@@ -1961,6 +2360,26 @@
         }
       }
     },
+    "Empty" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vide"
+          }
+        }
+      }
+    },
+    "Empty for now" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vide pour l’instant"
+          }
+        }
+      }
+    },
     "Enabled" : {
       "localizations" : {
         "en" : {
@@ -2013,6 +2432,16 @@
         }
       }
     },
+    "Everything is here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout est là."
+          }
+        }
+      }
+    },
     "Export passwords…" : {
       "localizations" : {
         "en" : {
@@ -2061,6 +2490,36 @@
         }
       }
     },
+    "Fair winds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bon vent."
+          }
+        }
+      }
+    },
+    "Favorites" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris"
+          }
+        }
+      }
+    },
+    "Favorites and history" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris et historique"
+          }
+        }
+      }
+    },
     "Favorites grid" : {
       "localizations" : {
         "en" : {
@@ -2073,6 +2532,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grille des favoris"
+          }
+        }
+      }
+    },
+    "Favorites, history and passwords." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris, historique et mots de passe."
           }
         }
       }
@@ -2215,6 +2684,16 @@
         }
       }
     },
+    "Folder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dossier"
+          }
+        }
+      }
+    },
     "Forward" : {
       "localizations" : {
         "en" : {
@@ -2227,6 +2706,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suivant"
+          }
+        }
+      }
+    },
+    "Found on this Mac" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sur ce Mac"
+          }
+        }
+      }
+    },
+    "Four shortcuts to try." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quatre raccourcis à essayer."
           }
         }
       }
@@ -2259,6 +2758,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Libère de la mémoire en déchargeant les onglets inutilisés depuis un moment. Ils se rechargent là où vous les aviez laissés."
+          }
+        }
+      }
+    },
+    "From %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis %@"
+          }
+        }
+      }
+    },
+    "From Mail, Messages or a PDF." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis Mail, Messages ou un PDF."
           }
         }
       }
@@ -2311,6 +2830,26 @@
         }
       }
     },
+    "Get started" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commencer"
+          }
+        }
+      }
+    },
+    "Getting around" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se déplacer"
+          }
+        }
+      }
+    },
     "Give the current tab a custom name." : {
       "localizations" : {
         "en" : {
@@ -2323,6 +2862,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Donner un nom personnalisé à l’onglet actuel."
+          }
+        }
+      }
+    },
+    "Go back to your last tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenir au dernier onglet"
           }
         }
       }
@@ -2423,6 +2972,16 @@
         }
       }
     },
+    "History and passwords" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historique et mots de passe"
+          }
+        }
+      }
+    },
     "History could not be changed. Check available disk space and try again." : {
       "localizations" : {
         "en" : {
@@ -2451,6 +3010,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’historique n’a pas pu être ouvert. Il a été conservé intact."
+          }
+        }
+      }
+    },
+    "History could not be saved. Your favorites were imported." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’historique n’a pas pu être enregistré. Vos favoris ont été importés."
           }
         }
       }
@@ -2499,6 +3068,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Import et export"
+          }
+        }
+      }
+    },
+    "Import from another browser…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer depuis un autre navigateur…"
+          }
+        }
+      }
+    },
+    "Imported" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importé"
+          }
+        }
+      }
+    },
+    "Importing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importation"
           }
         }
       }
@@ -2667,6 +3266,16 @@
         }
       }
     },
+    "Learn the essentials" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les essentiels"
+          }
+        }
+      }
+    },
     "Letter A" : {
       "localizations" : {
         "en" : {
@@ -2695,6 +3304,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clair"
+          }
+        }
+      }
+    },
+    "Light as air." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Léger comme l’air."
           }
         }
       }
@@ -2731,6 +3350,16 @@
         }
       }
     },
+    "Links open here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les liens s’ouvrent ici."
+          }
+        }
+      }
+    },
     "Location" : {
       "localizations" : {
         "en" : {
@@ -2743,6 +3372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Position"
+          }
+        }
+      }
+    },
+    "Looking…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche…"
           }
         }
       }
@@ -2891,6 +3530,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réduire"
+          }
+        }
+      }
+    },
+    "Mobile bookmarks" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris mobiles"
           }
         }
       }
@@ -3513,6 +4162,16 @@
         }
       }
     },
+    "No other browser on this Mac." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun autre navigateur sur ce Mac."
+          }
+        }
+      }
+    },
     "No passwords match." : {
       "localizations" : {
         "en" : {
@@ -3589,6 +4248,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sans nom d’utilisateur"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun"
           }
         }
       }
@@ -3721,6 +4390,16 @@
         }
       }
     },
+    "Only if you want." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seulement si vous le souhaitez."
+          }
+        }
+      }
+    },
     "Open" : {
       "localizations" : {
         "en" : {
@@ -3733,6 +4412,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir"
+          }
+        }
+      }
+    },
+    "Open System Settings" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Réglages Système"
           }
         }
       }
@@ -3817,6 +4506,26 @@
         }
       }
     },
+    "Open tabs stay behind, and sites will ask you to sign in again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les onglets ouverts restent là-bas, et les sites vous demanderont de vous reconnecter."
+          }
+        }
+      }
+    },
+    "Open the control bar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir la barre de commande"
+          }
+        }
+      }
+    },
     "Open the current site’s controls and extensions." : {
       "localizations" : {
         "en" : {
@@ -3861,6 +4570,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Options"
+          }
+        }
+      }
+    },
+    "Or start fresh." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ou partez de zéro."
+          }
+        }
+      }
+    },
+    "Or swipe with two fingers" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ou balayez avec deux doigts"
+          }
+        }
+      }
+    },
+    "Other bookmarks" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres signets"
           }
         }
       }
@@ -4163,6 +4902,16 @@
         }
       }
     },
+    "Pinned tabs and folders, in their spaces." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglets épinglés et dossiers, dans leurs espaces."
+          }
+        }
+      }
+    },
     "Plum" : {
       "localizations" : {
         "en" : {
@@ -4207,6 +4956,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appuyez sur le raccourci"
+          }
+        }
+      }
+    },
+    "Press ⌘T to open your first tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez sur ⌘T pour ouvrir votre premier onglet."
           }
         }
       }
@@ -4483,6 +5242,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lire et modifier vos données sur tous les sites web"
+          }
+        }
+      }
+    },
+    "Ready" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prêt"
           }
         }
       }
@@ -5109,6 +5878,16 @@
         }
       }
     },
+    "Safari keeps its data locked." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari garde ses données sous clé."
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "en" : {
@@ -5622,6 +6401,16 @@
         }
       }
     },
+    "Set as default" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Définir par défaut"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "en" : {
@@ -5650,6 +6439,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages…"
+          }
+        }
+      }
+    },
+    "Setup takes about a minute." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La configuration prend environ une minute."
           }
         }
       }
@@ -5830,6 +6629,16 @@
         }
       }
     },
+    "Show or hide the sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher ou masquer la barre latérale"
+          }
+        }
+      }
+    },
     "Show password…" : {
       "localizations" : {
         "en" : {
@@ -5936,6 +6745,16 @@
         }
       }
     },
+    "Skip setup" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer la configuration"
+          }
+        }
+      }
+    },
     "Sleep after" : {
       "localizations" : {
         "en" : {
@@ -6032,6 +6851,26 @@
         }
       }
     },
+    "Spaces and favorites" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaces et favoris"
+          }
+        }
+      }
+    },
+    "Spaces and favorites stay in %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les espaces et favoris restent dans %@"
+          }
+        }
+      }
+    },
     "Spaces organize tabs by context. Drag them to set their order in the sidebar." : {
       "localizations" : {
         "en" : {
@@ -6060,6 +6899,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spotlight"
+          }
+        }
+      }
+    },
+    "Start browsing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commencer à naviguer"
+          }
+        }
+      }
+    },
+    "Start fresh" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partir de zéro"
+          }
+        }
+      }
+    },
+    "Start where you left off." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprenez où vous en étiez."
           }
         }
       }
@@ -6150,6 +7019,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Parcourir les onglets récents. Relâcher les touches de modification pour confirmer."
+          }
+        }
+      }
+    },
+    "Switch spaces" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer d’espace"
           }
         }
       }
@@ -6324,6 +7203,16 @@
         }
       }
     },
+    "The control bar knows where you go." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La barre de commande sait où vous allez."
+          }
+        }
+      }
+    },
     "The extension operation could not be completed. Your saved files have been kept. Try again." : {
       "localizations" : {
         "en" : {
@@ -6336,6 +7225,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’opération sur l’extension n’a pas pu être terminée. Vos fichiers enregistrés ont été conservés. Réessayez."
+          }
+        }
+      }
+    },
+    "The favorites could not be saved. Check that there is enough disk space and try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les favoris n’ont pas pu être enregistrés. Vérifiez l’espace disque disponible, puis réessayez."
           }
         }
       }
@@ -6654,6 +7553,16 @@
         }
       }
     },
+    "Try them now." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez-les maintenant."
+          }
+        }
+      }
+    },
     "Type or paste an emoji" : {
       "localizations" : {
         "en" : {
@@ -6966,6 +7875,26 @@
         }
       }
     },
+    "Welcome to Aero" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bienvenue dans Aero"
+          }
+        }
+      }
+    },
+    "What comes along" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qui vous suit"
+          }
+        }
+      }
+    },
     "When a website uses this shortcut" : {
       "localizations" : {
         "en" : {
@@ -6998,6 +7927,16 @@
         }
       }
     },
+    "Within reach." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À portée de main."
+          }
+        }
+      }
+    },
     "Yesterday" : {
       "localizations" : {
         "en" : {
@@ -7010,6 +7949,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hier"
+          }
+        }
+      }
+    },
+    "You can import later from the Profiles menu." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pourrez importer plus tard depuis le menu Profils."
+          }
+        }
+      }
+    },
+    "Your default browser" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigateur par défaut"
+          }
+        }
+      }
+    },
+    "Your favorites are in the sidebar. Press ⌘T to open a new tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vos favoris sont dans la barre latérale. Appuyez sur ⌘T pour ouvrir un onglet."
           }
         }
       }
@@ -7074,6 +8043,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "exporter vos mots de passe"
+          }
+        }
+      }
+    },
+    "macOS asks you once to allow it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS vous le demande une fois."
+          }
+        }
+      }
+    },
+    "macOS asks you to confirm." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS vous demande de confirmer."
           }
         }
       }

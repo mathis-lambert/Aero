@@ -26,6 +26,8 @@ final class BrowserModel {
     private let filterLists: FilterListUpdater?
     @ObservationIgnored var extensionsTask: Task<Void, Never>?
     var currentPage: BrowserPage?
+    /// The first launch's onboarding while it shows (docs/ONBOARDING.md).
+    private(set) var onboarding: OnboardingModel?
     /// Explicitly opened favorites, including hibernated and internal pages. Runtime only.
     var openedFavorites: Set<UUID> = []
 
@@ -54,8 +56,12 @@ final class BrowserModel {
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
     /// Test runs only: the fixture server that stands in for every search engine.
     private let searchTestEndpoint: URL?
-    /// Test runs never touch the Mac's own keychain, URL cache or app bundle.
+    /// Test runs never touch the Mac's own browsers, keychain, URL cache or app bundle.
     let isTestRun: Bool
+    /// Where other browsers are looked for: fixture folders in test runs.
+    let importSourceRoots: (applicationSupport: URL, safari: URL)
+    /// UI tests opt in with `AERO_TEST_ONBOARDING`; other test runs start on the browser.
+    private let showsOnboarding: Bool
 
     init() {
         launchInterval = Self.signposter.beginInterval(Diagnostics.Signpost.launch)
@@ -72,6 +78,14 @@ final class BrowserModel {
         appIcon = AppIcon(variant: preferences.appIcon)
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
         isTestRun = testing != nil
+        showsOnboarding = testing == nil || environment["AERO_TEST_ONBOARDING"] == "1"
+        if let testDirectory {
+            let root = environment["AERO_TEST_IMPORT_SOURCES"].map { URL(fileURLWithPath: $0, isDirectory: true) }
+                ?? testDirectory.appendingPathComponent("ImportSources", isDirectory: true)
+            importSourceRoots = (root.appendingPathComponent("Application Support", isDirectory: true), root.appendingPathComponent("Safari", isDirectory: true))
+        } else {
+            importSourceRoots = (.applicationSupportDirectory, URL.libraryDirectory.appendingPathComponent("Safari", isDirectory: true))
+        }
         storageLocation = location
         let folder = location.data
         store = BrowserStore(directory: folder)
@@ -130,7 +144,8 @@ final class BrowserModel {
                 isResetting = false
                 do { try await pages.removeAllWebsiteData() } catch { resetFailed = true }
             }
-            if let saved = try await store.load() { session = saved }
+            let saved = try await store.load()
+            if let saved { session = saved }
             else { try await store.save(session, revision: revision) }
             try await resumeProfileRemovals()
             // Recovery is useful only after validation. Failure never overwrites the old snapshot.
@@ -140,6 +155,7 @@ final class BrowserModel {
             window.selectedSpaceID = session.spaces.first?.id
             isReady = true
             if resetFailed { present(.error(String(localized: "Aero could not erase everything. Quit and reopen Aero to finish the reset."))) }
+            beginOnboardingIfNeeded(freshStore: saved == nil)
         } catch {
             loadFailed = true
             let hasRecovery = await store.hasRecoverySnapshot()
@@ -175,6 +191,27 @@ final class BrowserModel {
     }
 
     func revealStorage() { NSWorkspace.shared.open(storageLocation.data) }
+
+    /// Only a fresh store starts it; an unfinished one resumes on its step.
+    private func beginOnboardingIfNeeded(freshStore: Bool) {
+        guard showsOnboarding else { return }
+        if let progress = preferences.onboarding {
+            if !progress.completed { onboarding = OnboardingModel(browser: self, step: progress.step) }
+        } else if freshStore, !preferences.hasOnboardingRecord {
+            preferences.onboarding = OnboardingProgress(step: .welcome, completed: false)
+            onboarding = OnboardingModel(browser: self, step: .welcome)
+        }
+    }
+
+    func endOnboarding() {
+        onboarding = nil
+    }
+
+    /// The onboarding's import steps alone, for someone already using Aero (docs/ONBOARDING.md › When it appears).
+    func beginImport() {
+        guard onboarding == nil else { return }
+        onboarding = OnboardingModel(browser: self, step: .source, mode: .importOnly)
+    }
 
     private func endLaunchInterval() {
         guard let launchInterval else { return }

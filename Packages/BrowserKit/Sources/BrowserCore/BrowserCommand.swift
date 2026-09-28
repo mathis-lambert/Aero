@@ -1,5 +1,5 @@
 public enum BrowserCommand: String, CaseIterable, Sendable {
-    case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles, newProfile, newSpace, passwords
+    case newTab, openLocation, commandPalette, back, forward, reload, closeTab, reopenTab, toggleSidebar, profiles, newProfile, newSpace, passwords, importBrowserData
     case showHistory, findInPage, findNext, findPrevious, copyLink, controlCenter, clearCookies, clearCache, siteSettings
 
     case zoomIn, zoomOut, resetZoom, reloadFromOrigin, stopLoading, printPage, showDownloads

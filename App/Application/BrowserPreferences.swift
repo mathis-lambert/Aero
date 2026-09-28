@@ -62,6 +62,7 @@ final class BrowserPreferences {
         static let automaticPictureInPicture = "browser.automaticPictureInPicture"
         static let offersToSavePasswords = "browser.passwords.offersToSave"
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
+        static let onboarding = "browser.onboarding"
         static let resetPending = "browser.resetPending"
     }
 
@@ -108,6 +109,23 @@ final class BrowserPreferences {
         didSet { defaults.set(filterListsCheckedAt, forKey: Key.filterListsCheckedAt) }
     }
     var needsLanguageRestart: Bool { language != launchLanguage }
+    /// The first launch's progress (docs/ONBOARDING.md › When it appears). `nil` when absent or unreadable:
+    /// an unreadable value never brings the onboarding back.
+    var onboarding: OnboardingProgress? {
+        get {
+            guard let value = defaults.dictionary(forKey: Key.onboarding),
+                  value["version"] as? Int == OnboardingProgress.version,
+                  let step = (value["step"] as? String).flatMap(OnboardingStep.init(rawValue:)),
+                  let completed = value["completed"] as? Bool else { return nil }
+            return OnboardingProgress(step: step, completed: completed)
+        }
+        set {
+            guard let newValue else { defaults.removeObject(forKey: Key.onboarding); return }
+            defaults.set(["version": OnboardingProgress.version, "step": newValue.step.rawValue, "completed": newValue.completed],
+                         forKey: Key.onboarding)
+        }
+    }
+    var hasOnboardingRecord: Bool { defaults.object(forKey: Key.onboarding) != nil }
 
     init(testNamespace: String?) {
         defaults = Self.defaults(testNamespace: testNamespace)

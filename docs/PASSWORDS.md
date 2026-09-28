@@ -82,7 +82,7 @@ Deleting a profile deletes its passwords: the step runs with the other data remo
 
 ## Test runs
 
-With `AERO_TEST_DATA`, items use the creator `AERT` and a security domain under the test folder's name; a launch removes abandoned `AERT` items older than a day, leaving concurrent test runs alone. Real passwords are never read or written by tests.
+With `AERO_TEST_DATA`, items use the creator `AERT` and a security domain under the test folder's name; a launch removes abandoned `AERT` items older than a day, leaving concurrent test runs alone. Real passwords are never read or written by tests. Browsers to import from are looked for only in the fixture sources (`ONBOARDING.md` › Test runs).
 
 ## Failure modes and acceptance scenarios
 

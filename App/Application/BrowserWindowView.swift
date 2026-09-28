@@ -19,6 +19,22 @@ struct BrowserWindowView: View {
     private var isOverlaid: Bool { browser.window.controlBar != nil || prompt != nil }
 
     var body: some View {
+        browserContent
+            // Nothing behind the onboarding keeps focus or takes keys.
+            .disabled(browser.onboarding != nil)
+            .overlay {
+                if let onboarding = browser.onboarding {
+                    OnboardingView(browser: browser, onboarding: onboarding)
+                        .transition(.opacity)
+                }
+            }
+            .browserAnimation(value: browser.onboarding == nil)
+            .environment(\.windowControls, windowControls)
+            // Menus reach the browser even while the onboarding covers it.
+            .focusedSceneValue(\.browserModel, browser)
+    }
+
+    private var browserContent: some View {
         GeometryReader { geometry in
             let maximumWidth = max(BrowserDesign.sidebarWidth, geometry.size.width / 3)
             let sidebarWidth = min(resizingSidebarWidth ?? browser.preferences.sidebarWidth, maximumWidth)
@@ -174,8 +190,6 @@ struct BrowserWindowView: View {
             }
         }
         .background(WindowConfiguration(controls: windowControls))
-        .environment(\.windowControls, windowControls)
-        .focusedSceneValue(\.browserModel, browser)
     }
 
     private func resizeHandle(width: CGFloat, maximum: CGFloat) -> some View {

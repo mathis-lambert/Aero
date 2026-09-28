@@ -66,6 +66,20 @@ final class FaviconCache {
         try await store.removeProfile(id)
     }
 
+    /// Icons another browser had for imported pages. An icon already on disk is kept; each is scaled like a fetched one.
+    func adopt(_ icons: [URL: Data], profileID: UUID) async {
+        let keyed = icons.compactMap { url, data in FaviconKey(profileID: profileID, url: url).map { ($0, data) } }
+        let scaled = await Task.detached(priority: .utility) {
+            keyed.compactMap { key, data in FaviconFetcher.downsampledPNG(from: data).map { (key, $0) } }
+        }.value
+        for (key, data) in scaled {
+            guard await store.icon(host: key.host, profileID: key.profileID) == nil, let image = NSImage(data: data) else { continue }
+            // Best effort, as for fetched icons: one that cannot be written is fetched again later.
+            try? await store.save(data, host: key.host, profileID: key.profileID)
+            if let favicon = entries[key], favicon.image == nil { favicon.setImage(image, color: await FaviconColor.extract(from: data)) }
+        }
+    }
+
     /// Clearing Settings › Storage: icons are fetched again as pages load.
     func removeAll() async throws {
         let pending = Array(refreshTasks.values) + Array(fallbackTasks.values)

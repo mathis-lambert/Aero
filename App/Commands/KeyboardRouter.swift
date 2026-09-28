@@ -41,7 +41,8 @@ final class KeyboardRouter {
               let command = BrowserCommand.allCases.first(where: {
                   browser.shortcuts.routing(for: $0) == .reserved && browser.shortcuts.effective[$0, default: []].contains(binding)
               }), browser.isEnabled(command) else { return false }
-        if command == .recentTab || command == .previousRecentTab {
+        // The onboarding shows the gesture instead of switching the tabs behind it.
+        if command == .recentTab || command == .previousRecentTab, browser.onboarding == nil {
             guard browser.window.controlBar == nil, browser.window.renaming == nil else { return false }
             cycleModifiers = binding.eventModifiers.subtracting(.shift)
             browser.cycleTab(backwards: command == .previousRecentTab)
