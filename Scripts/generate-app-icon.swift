@@ -80,6 +80,34 @@ final class Layer {
         let px = min(side - 1, max(0, Int(x))), py = min(side - 1, max(0, Int(y)))
         return Double(context.data!.bindMemory(to: UInt8.self, capacity: side * side)[py * side + px]) / 255
     }
+    /// The bounding box and centroid, in units, of the pixels brighter than `threshold`.
+    func shape(above threshold: Double) -> (box: CGRect, centroid: CGPoint) {
+        let pixels = context.data!.bindMemory(to: UInt8.self, capacity: side * side), limit = UInt8(threshold * 255)
+        var minX = side, minY = side, maxX = -1, maxY = -1, sumX = 0.0, sumY = 0.0, count = 0.0
+        for y in 0..<side {
+            for x in 0..<side where pixels[y * side + x] > limit {
+                minX = min(minX, x); maxX = max(maxX, x); minY = min(minY, y); maxY = max(maxY, y)
+                sumX += Double(x); sumY += Double(y); count += 1
+            }
+        }
+        guard count > 0 else { fatalError("The mark drew nothing") }
+        let box = CGRect(x: Double(minX) / unit, y: Double(minY) / unit, width: Double(maxX - minX + 1) / unit, height: Double(maxY - minY + 1) / unit)
+        return (box, CGPoint(x: (sumX / count + 0.5) / unit, y: (sumY / count + 0.5) / unit))
+    }
+}
+
+/// Marks are framed by the shape they draw, not by how they are built: the longer side of the shape spans
+/// `markExtent` units, and its centre sits between its bounding box and its centroid, so the bottom-heavy A rises
+/// and the feather moves off its dense vane, as the eye expects.
+let markExtent = 54.0, opticalWeight = 0.3
+
+func framing(_ draw: (Layer) -> Void, threshold: Double) -> CGAffineTransform {
+    let probe = Layer()
+    draw(probe)
+    let (box, centroid) = probe.shape(above: threshold)
+    let scale = markExtent / max(box.width, box.height)
+    let x = box.midX + (centroid.x - box.midX) * opticalWeight, y = box.midY + (centroid.y - box.midY) * opticalWeight
+    return CGAffineTransform(translationX: 50, y: 50).scaledBy(x: scale, y: scale).translatedBy(x: -x, y: -y)
 }
 
 func drawA(_ layer: Layer) {
@@ -94,7 +122,7 @@ func drawA(_ layer: Layer) {
     }
     CTFontGetAdvancesForGlyphs(font, .horizontal, &glyphs, &advance, 1)
     let g = layer.context
-    // Glyph outlines point up: flip them back and sit the baseline at y = 81, centred on the advance like canvas text.
+    // Glyph outlines point up: flip them back. The placement is rough; `framing` sizes and centres the drawn shape.
     g.translateBy(x: 50 - advance.width / 2, y: 81); g.scaleBy(x: 1, y: -1)
     g.setFillColor(gray: 1, alpha: 1); g.addPath(outline); g.fillPath()
     g.setStrokeColor(gray: 1, alpha: 1); g.setLineWidth(boost); g.setLineJoin(.round); g.addPath(outline); g.strokePath()
@@ -166,10 +194,11 @@ struct Dot { let x: Double, y: Double, radius: Double, darkness: Double }
 
 func dots(for mark: Mark, motif: Motif) -> [Dot] {
     let tune = tuning[mark]!, mask = Layer(), shade = Layer()
-    switch mark {
-    case .a: drawA(mask)
-    case .feather: drawFeather(mask, shade: false); drawFeather(shade, shade: true)
-    }
+    let drawMask: (Layer) -> Void = { mark == .a ? drawA($0) : drawFeather($0, shade: false) }
+    let frame = framing(drawMask, threshold: tune.threshold)
+    for layer in [mask, shade] { layer.context.concatenate(frame) }
+    drawMask(mask)
+    if mark == .feather { drawFeather(shade, shade: true) }
     let pitch = canvas / tune.cells, count = Int(tune.cells.rounded(.up))
     var result: [Dot] = []
     for j in 0..<count {
