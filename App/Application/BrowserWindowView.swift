@@ -9,6 +9,7 @@ struct BrowserWindowView: View {
     let browser: BrowserModel
     @State private var sidebarRevealed = false
     @State private var resizingSidebarWidth: CGFloat?
+    @State private var windowControls = WindowControls()
     @Environment(\.openWindow) private var openWindow
     @Environment(\.palette) private var palette
 
@@ -172,7 +173,8 @@ struct BrowserWindowView: View {
                 browser.perform(.stopLoading)
             }
         }
-        .background(WindowConfiguration())
+        .background(WindowConfiguration(controls: windowControls))
+        .environment(\.windowControls, windowControls)
         .focusedSceneValue(\.browserModel, browser)
     }
 

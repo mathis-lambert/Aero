@@ -83,10 +83,12 @@ final class BrowserUITests: BrowserE2ETestCase {
             XCTAssertTrue(address.exists)
             XCTAssertGreaterThan(address.frame.minY, navigation[2].frame.maxY)
             XCTAssertGreaterThan(profile.frame.minY, address.frame.maxY)
-            XCTAssertFalse(window.buttons[XCUIIdentifierCloseWindow].exists, "The titlebar's own buttons stay hidden")
         }
 
         verifyVisibleLayout()
+        lights[0].hover()
+        pause(0.5)
+        attachScreenshot("native-window-controls-hover", of: app)
         app.typeKey("s", modifierFlags: .command)
         XCTAssertFalse(sidebarToggle.exists)
         XCTAssertFalse(address.exists)
@@ -112,11 +114,39 @@ final class BrowserUITests: BrowserE2ETestCase {
         window.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
             .withOffset(CGVector(dx: 4, dy: 0)).hover()
         XCTAssertTrue(app.buttons["sidebar.toggle"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["window.close"].isHittable)
         let floatingAddress = app.buttons["sidebar.location"].frame
         XCTAssertEqual(floatingAddress.minX - pinnedAddress.minX, 12, accuracy: 1)
         XCTAssertEqual(floatingAddress.minY - pinnedAddress.minY, 12, accuracy: 1)
+        app.buttons["window.close"].hover()
+        pause(0.5)
+        XCTAssertTrue(app.buttons["sidebar.toggle"].exists, "Hovering the native controls keeps the sidebar open")
+        attachScreenshot("floating-window-controls-hover", of: app)
         window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).hover()
         XCTAssertFalse(app.buttons["sidebar.toggle"].exists)
+        XCTAssertFalse(app.buttons["window.close"].exists)
+    }
+
+    func testWindowControlsSurviveFullScreen() {
+        open("solid.html", expecting: "Solid fixture")
+        let window = app.windows["aero.main"]
+        let originalFrame = window.frame
+        app.buttons["window.fullScreen"].click()
+        XCTAssertTrue(poll { window.frame.height > originalFrame.height })
+        pause(1)
+        app.typeKey("s", modifierFlags: .command)
+        XCTAssertFalse(app.buttons["window.close"].exists)
+        app.typeKey("s", modifierFlags: .command)
+        XCTAssertTrue(app.buttons["window.close"].waitForExistence(timeout: Self.renderTimeout))
+        app.buttons["window.fullScreen"].click()
+        XCTAssertTrue(poll { abs(window.frame.height - originalFrame.height) < 1 })
+        pause(1)
+        for identifier in ["window.close", "window.minimize", "window.fullScreen"] {
+            XCTAssertTrue(app.buttons[identifier].isHittable)
+            XCTAssertEqual(app.buttons[identifier].frame.midY, app.buttons["sidebar.toggle"].frame.midY, accuracy: 0.5)
+        }
+        app.buttons["window.close"].hover()
+        attachScreenshot("window-controls-after-full-screen", of: app)
     }
 
     func testSettingsSectionsAndLanguagePreference() {
