@@ -27,6 +27,7 @@ pinned tabs and open tabs; Command-9 selects the last one.
 | Downloads / history | Shift-Command-J / Command-Y |
 | Print / copy URL | Command-P / Shift-Command-C |
 | Next / previous in sidebar order | Option-Command-Right / Option-Command-Left |
+| Next / previous space | Control-Command-Right / Control-Command-Left |
 | Recent / reverse recent | Control-Tab / Shift-Control-Tab |
 | Tabs 1–8 / last | Command-1…8 / Command-9 |
 

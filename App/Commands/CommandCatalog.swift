@@ -230,6 +230,8 @@ extension BrowserCommand {
         case .showDownloads: return [.init("j", [.command, .shift])]
         case .nextTab: return [.init(String(KeyEquivalent.rightArrow.character), [.command, .option])]
         case .previousTab: return [.init(String(KeyEquivalent.leftArrow.character), [.command, .option])]
+        case .nextSpace: return [.init(String(KeyEquivalent.rightArrow.character), [.command, .control])]
+        case .previousSpace: return [.init(String(KeyEquivalent.leftArrow.character), [.command, .control])]
         case .recentTab: return [.init("\t", .control)]
         case .previousRecentTab: return [.init("\t", [.control, .shift])]
         case .lastTab: return [.init("9")]
