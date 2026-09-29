@@ -647,7 +647,9 @@
         }
       }
     },
-    "Aero" : {},
+    "Aero" : {
+      "shouldTranslate" : false
+    },
     "Aero Passwords.csv" : {
       "localizations" : {
         "en" : {
@@ -8467,6 +8469,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer de l’historique"
+          }
+        }
+      }
+    },
+    "Dismiss" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer"
           }
         }
       }
