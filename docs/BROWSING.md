@@ -30,7 +30,7 @@ Icons are fetched anonymously, downsampled off the main actor and cached by prof
 
 ## Popups
 
-Popups use WebKit's supplied configuration and open in the opener's space, preserving `window.opener`, messaging and OAuth. Only script-opened tabs may close themselves. Loaded popup relationships prevent hibernation. Separate popup windows are not supported.
+Popups use WebKit's supplied configuration and open in the opener's space, preserving `window.opener`, messaging and OAuth. Only script-opened tabs may close themselves. Loaded popup relationships prevent hibernation. Separate popup windows are not supported. A popup or link for another scheme is handled as in [Other apps](OTHER_APPS.md) › Links to other apps.
 
 ## Find and downloads
 

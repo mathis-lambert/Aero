@@ -55,6 +55,7 @@ enum WindowPrompt: Identifiable {
     case clearHistory((HistoryClearRange) -> Void)
     /// Shown in the Settings window when asked from there.
     case extensionRequest(ExtensionRequest)
+    case applicationLink(ApplicationLink)
     case error(String)
 
     var id: String {
@@ -67,6 +68,7 @@ enum WindowPrompt: Identifiable {
         case .profile: "profile"
         case .clearHistory: "clearHistory"
         case .extensionRequest(let request): "extension.\(request.id)"
+        case .applicationLink(let link): "applicationLink.\(link.tabID).\(link.url.absoluteString)"
         case .error(let message): "error.\(message)"
         }
     }

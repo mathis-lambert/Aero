@@ -21,6 +21,23 @@
     <key>AeroDataDirectory</key><string>$(AERO_DATA_DIRECTORY)</string>
     <key>AeroRevision</key><string>$(AERO_REVISION)</string>
     <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <!-- A web browser: other apps and the default browser setting hand it web addresses (docs/OTHER_APPS.md). -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key><string>Web site URL</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>CFBundleURLSchemes</key><array><string>http</string><string>https</string></array>
+        </dict>
+    </array>
+    <!-- Other apps' ASWebAuthenticationSession sign-ins, when Aero is the default browser. -->
+    <key>ASWebAuthenticationSessionWebBrowserSupportCapabilities</key>
+    <dict>
+        <key>IsSupported</key><true/>
+        <key>EphemeralBrowserSessionIsSupported</key><true/>
+        <key>CallbackURLMatchingIsSupported</key><true/>
+        <key>AdditionalHeaderFieldsAreSupported</key><true/>
+    </dict>
     <key>LSMinimumSystemVersion</key><string>$(MACOSX_DEPLOYMENT_TARGET)</string>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <!-- Downloaded files are quarantined so Gatekeeper checks them, as with Safari. -->

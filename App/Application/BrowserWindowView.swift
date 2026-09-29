@@ -254,6 +254,7 @@ struct WindowPromptView: View {
         case .profile: ProfilePrompt(browser: browser)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)
         case .extensionRequest(let request): ExtensionRequestPrompt(browser: browser, request: request)
+        case .applicationLink(let link): ApplicationLinkPrompt(browser: browser, link: link)
         case .error(let message):
             Prompt(title: Text("Something needs your attention"), message: Text(verbatim: message)) {
                 PromptConfirmButton(title: "OK") { browser.dismissPrompt() }

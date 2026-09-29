@@ -26,8 +26,12 @@ struct AeroApp: App {
             return WindowPlacement(.center, size: CGSize(width: min(fitting.width, preferred.width),
                                                          height: min(fitting.height, preferred.height)))
         }
-        .onChange(of: browser.startup == .loading, initial: true) { _, loading in
-            if !loading { openWindow(id: BrowserWindowView.windowID) }
+        // Links go to the application delegate; a scene handling them would present its window again.
+        .handlesExternalEvents(matching: [])
+        .onChange(of: browser.mainWindowRequests) {
+            // Opens a closed window; one that exists is only brought forward by AppKit, from Stage Manager's strip too.
+            if let window = WindowConfiguration.mainWindow { window.makeKeyAndOrderFront(nil) }
+            else { openWindow(id: BrowserWindowView.windowID) }
         }
         .commands { BrowserMenuCommands(application: browser, quit: browser.requestQuit) }
 
@@ -38,6 +42,7 @@ struct AeroApp: App {
         }
         .windowResizability(.contentSize)
         .windowToolbarStyle(.unifiedCompact)
+        .handlesExternalEvents(matching: [])
         .defaultLaunchBehavior(.suppressed)
         .restorationBehavior(.disabled)
     }
@@ -51,8 +56,23 @@ final class BrowserAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         keyboardRouter = KeyboardRouter { [weak self] in self?.browser }
+        browser.signIns.register()
+        let launchedForSignIn = SignInSessions.wasLaunchedForSignIn
         // Startup belongs to the application lifetime, independently of open windows.
-        Task { await browser.start() }
+        Task {
+            await browser.start()
+            // A launch only to sign in shows the sign-in alone, unless there is a failure to recover from.
+            if !launchedForSignIn || !browser.isReady { browser.showMainWindow() }
+        }
+    }
+
+    /// Links from other apps, and addresses opened with Aero (docs/OTHER_APPS.md › Links from other apps).
+    func application(_ application: NSApplication, open urls: [URL]) { browser.openFromOtherApp(urls) }
+
+    /// The Dock icon brings back the main window after it was closed, or when a launch to sign in did not show it.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag, browser.startup != .loading { browser.showMainWindow() }
+        return false
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

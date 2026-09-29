@@ -17,6 +17,12 @@ final class BrowserModel {
     /// What the window can show; it opens once this leaves `loading` (docs/ONBOARDING.md › Presentation).
     private(set) var startup = Startup.loading
     var isReady: Bool { startup == .ready }
+    /// Each increment asks the app to show the main window, opening it again if it was closed.
+    private(set) var mainWindowRequests = 0
+    /// Links from other apps, opened once the browser can show them (docs/OTHER_APPS.md › Links from other apps).
+    @ObservationIgnored var pendingLinks: [URL] = []
+    /// Other apps' sign-ins, each in its own window (docs/OTHER_APPS.md › Sign-in for other apps).
+    let signIns = SignInSessions()
     let window = BrowserWindowState()
     private let appIcon: AppIcon
     let updater: AppUpdater
@@ -40,7 +46,9 @@ final class BrowserModel {
     @ObservationIgnored private var isResetting = false
     @ObservationIgnored private var resetFailed = false
     private(set) var isOpeningStorage = false
-    var isChangingStructure = false
+    var isChangingStructure = false {
+        didSet { if !isChangingStructure { openPendingLinks() } }
+    }
     var extensionsReady = false
     var extensionOperations: Set<String> = []
     var recoveryPackages: Set<UUID>?
@@ -112,6 +120,7 @@ final class BrowserModel {
         resetFailed = resetting && !erased
         pages.delegate = self
         pages.extensionHost = self
+        signIns.browser = self
     }
 
     isolated deinit {
@@ -162,6 +171,8 @@ final class BrowserModel {
         }
         // Updates wait for the end of the first launch's onboarding.
         if onboarding == nil { updater.start() }
+        openPendingLinks()
+        signIns.beginPending()
         appIcon.apply(preferences.appIcon)
         filterLists?.start()
         Task {
@@ -201,7 +212,10 @@ final class BrowserModel {
     func endOnboarding() {
         onboarding = nil
         updater.start()
+        openPendingLinks()
     }
+
+    func showMainWindow() { mainWindowRequests += 1 }
 
     /// The onboarding's import steps alone, for someone already using Aero (docs/ONBOARDING.md › When it appears).
     func beginImport() {

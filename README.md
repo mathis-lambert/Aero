@@ -27,6 +27,7 @@ See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, c
 - Transactional SQLite state, versioned schema migrations and explicit recovery ([Storage](docs/STORAGE.md)), session restoration without loading pages, and tab hibernation ([Performance](docs/PERFORMANCE.md)).
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search.
 - Find in page, downloads, popups, favicons ([Browsing](docs/BROWSING.md)).
+- A default browser for the Mac: links from other apps open in a tab, pages ask before handing a link to another app, and apps sign in through Aero with `ASWebAuthenticationSession` ([Other apps](docs/OTHER_APPS.md)).
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture ([Site Controls](docs/SITE_CONTROLS.md)).
 - A first-launch onboarding that imports spaces, favorites, history and passwords from Arc, Chrome, Dia, Brave, Edge, Vivaldi or Safari; open tabs are never imported ([Onboarding](docs/ONBOARDING.md)).
 - Passwords per profile in the macOS keychain: saved after sign-in, filled on request, strong passwords for new accounts, import from Chrome, Arc, Dia, Brave, Edge, Vivaldi or CSV, and CSV export; passkeys through macOS in builds signed with Apple's browser entitlement ([Passwords](docs/PASSWORDS.md)).
@@ -34,11 +35,12 @@ See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, c
 - Settings › Storage: what Aero keeps on this Mac, item by item, with cleaning for caches, site data and history, and a full reset ([Storage](docs/STORAGE.md)).
 - Light, dark and system appearance, alternate app icons, English and French.
 
-Not implemented yet: separate popup windows.
+Not implemented yet: separate popup windows, opening local HTML files.
 
 ## Documentation
 
 - [Browsing](docs/BROWSING.md): navigation behavior and limits.
+- [Other apps](docs/OTHER_APPS.md): links from and to other apps, and their sign-ins.
 - [Testing](docs/TESTING.md): unit tests, journeys, plans and fixtures.
 - [Profiles and spaces](docs/SPACES.md): ownership, settings and identity transitions.
 - [Storage](docs/STORAGE.md): locations, schema changes and recovery.

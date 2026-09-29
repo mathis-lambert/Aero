@@ -30,6 +30,10 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onDownload: ((WKDownload) -> Void)?
     @ObservationIgnored var onIcons: (([FaviconLink], URL) -> Void)?
     @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
+    /// An address for another app, which the page does not load (docs/OTHER_APPS.md › Links to other apps).
+    @ObservationIgnored var onApplicationLink: ((URL) -> Void)?
+    /// The page's owner takes the addresses it returns `true` for instead of loading them, such as a sign-in's callback.
+    @ObservationIgnored public var interceptsNavigation: ((URL) -> Bool)?
     @ObservationIgnored var onClose: (() -> Void)?
     @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
     /// The Chrome Web Store's install button for this page's address, after an install when pressed.
@@ -66,7 +70,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     /// `passkeys` carries passkey requests when the build is entitled to them; without it, pages are
     /// told passkeys are unavailable. See docs/PASSWORDS.md › Passkeys.
-    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController, passkeys: PasskeyCeremony?) -> WKWebViewConfiguration {
+    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController?, passkeys: PasskeyCeremony?) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
         configuration.webExtensionController = extensions
@@ -117,11 +121,14 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         ]
     }
 
-    public func load(_ url: URL) {
+    /// `headers` are sent with this request only, such as those a sign-in asks for.
+    public func load(_ url: URL, headers: [String: String] = [:]) {
         guard Self.isPageURL(url) else { fail(.unsupportedNavigation); return }
         failure = nil
         requestedURL = url
-        webView.load(URLRequest(url: url))
+        var request = URLRequest(url: url)
+        for (field, value) in headers { request.setValue(value, forHTTPHeaderField: field) }
+        webView.load(request)
     }
 
     /// Returns to a hibernated page's history and scroll position without an extra network request.
@@ -195,6 +202,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onDownload = nil
         onIcons = nil
         onPopup = nil
+        onApplicationLink = nil
+        interceptsNavigation = nil
         onClose = nil
         onPermission = nil
         onWebStoreButton = nil
@@ -311,12 +320,21 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         guard let url = navigationAction.request.url else { return .cancel }
+        if interceptsNavigation?(url) == true { return .cancel }
         if navigationAction.shouldPerformDownload { return .download }
-        if navigationAction.targetFrame?.isMainFrame == true { updateContentBlocking(for: url) }
-        // Frame-local blob/about documents are legitimate; never launch external schemes implicitly.
-        if Self.isPageURL(url) || ["about", "blob"].contains(url.scheme ?? "") { return .allow }
-        if navigationAction.targetFrame?.isMainFrame != false { fail(.unsupportedNavigation) }
-        return .cancel
+        let isMainFrame = navigationAction.targetFrame?.isMainFrame != false
+        switch NavigationInput.target(of: url) {
+        case .page:
+            if isMainFrame { updateContentBlocking(for: url) }
+            return .allow
+        case .application:
+            // The page itself, or a link followed in one of its frames; a frame cannot launch apps on its own.
+            if isMainFrame || navigationAction.navigationType == .linkActivated { onApplicationLink?(url) }
+            return .cancel
+        case .blocked:
+            if isMainFrame { fail(.unsupportedNavigation) }
+            return .cancel
+        }
     }
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse) async -> WKNavigationResponsePolicy {
@@ -335,12 +353,14 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     // MARK: - WKUIDelegate
 
-    /// Popups may start blank (`about:blank`, then written by script) but never at another scheme,
-    /// so a website cannot open a browser page such as `aero://history`.
+    /// Popups may start blank (`about:blank`, then written by script) or at a website, never at another scheme,
+    /// so a website cannot open a browser page such as `aero://history`. One for another app asks for that app.
     public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        let url = navigationAction.request.url
-        if let url, !url.absoluteString.isEmpty, !NavigationInput.isWebURL(url), url.scheme != "about" { return nil }
-        return onPopup?(configuration, url)
+        guard let url = navigationAction.request.url, !url.absoluteString.isEmpty else { return onPopup?(configuration, nil) }
+        if interceptsNavigation?(url) == true { return nil }
+        if NavigationInput.isWebURL(url) || url.scheme?.lowercased() == "about" { return onPopup?(configuration, url) }
+        if NavigationInput.target(of: url) == .application { onApplicationLink?(url) }
+        return nil
     }
 
     public func webViewDidClose(_ webView: WKWebView) { onClose?() }

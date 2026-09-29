@@ -127,8 +127,12 @@ final class OnboardingJourneys: E2ETestCase {
         continueButton.click()
         waitForTitle("À portée de main.")
         attachScreenshot("fr dark 5 getting around")
+        // docs/OTHER_APPS.md › Links from other apps: a link waits for the end of the onboarding.
+        openFromAnotherApp(server.url("site.html"))
+        XCTAssertTrue(app.groups["onboarding"].waitForExistence(timeout: Self.renderTimeout), "A link does not interrupt the onboarding")
         app.buttons["onboarding.skip"].click()
         XCTAssertTrue(poll(timeout: Self.pageTimeout) { !self.app.groups["onboarding"].exists }, "Skip ends the onboarding")
+        XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "The link opens once the browser shows")
 
         XCTAssertEqual(labels(of: "sidebar.space"), ["Home"])
         XCTAssertTrue(labels(of: "sidebar.favorite").contains("Weather"), "The bookmarks bar is in the sidebar")

@@ -4446,6 +4446,22 @@
         }
       }
     },
+    "Open “%@”?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open “%@”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir « %@ » ?"
+          }
+        }
+      }
+    },
     "Or start fresh." : {
       "localizations" : {
         "fr" : {
@@ -4916,6 +4932,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Priorité"
+          }
+        }
+      }
+    },
+    "Private sign-in" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private sign-in"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion privée"
           }
         }
       }
@@ -5975,6 +6007,22 @@
         }
       }
     },
+    "Secure connection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secure connection"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion sécurisée"
+          }
+        }
+      }
+    },
     "Select a shortcut" : {
       "localizations" : {
         "en" : {
@@ -6453,6 +6501,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Affiche les suggestions du moteur pendant la saisie. Les adresses ne sont jamais envoyées."
+          }
+        }
+      }
+    },
+    "Sign In" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign In"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion"
           }
         }
       }
@@ -7209,6 +7273,22 @@
         }
       }
     },
+    "This page wants to open a link in another app." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This page wants to open a link in another app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette page veut ouvrir un lien dans une autre app."
+          }
+        }
+      }
+    },
     "This page, or something it loaded, is not encrypted" : {
       "localizations" : {
         "en" : {
@@ -7221,6 +7301,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette page, ou un élément qu’elle a chargé, n’est pas chiffrée"
+          }
+        }
+      }
+    },
+    "This sign-in uses no saved website data and keeps none." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This sign-in uses no saved website data and keeps none."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette connexion n’utilise aucune donnée de site enregistrée et n’en conserve aucune."
           }
         }
       }
@@ -7633,6 +7729,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attendez la fin des téléchargements de cet espace."
+          }
+        }
+      }
+    },
+    "Website" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site web"
           }
         }
       }
