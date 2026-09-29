@@ -1,14 +1,16 @@
 import SwiftUI
 
+/// The main window's content when saved records could not be opened (docs/STORAGE.md › Recovery).
 struct StorageRecoveryView: View {
     let browser: BrowserModel
+    let failure: StorageFailure
     @State private var confirmsRecovery = false
 
     var body: some View {
         ContentUnavailableView {
             Label("Saved data unavailable", systemImage: "externaldrive.badge.exclamationmark")
         } description: {
-            Text(verbatim: browser.storageFailureMessage ?? "")
+            Text(verbatim: failure.message)
         } actions: {
             VStack {
                 HStack {
@@ -19,7 +21,7 @@ struct StorageRecoveryView: View {
                         .fixedSize()
                         .accessibilityIdentifier("storage.showFiles")
                 }
-                if browser.canRecoverStorage {
+                if failure.canRestore {
                     Button("Restore previous state…") { confirmsRecovery = true }
                         .fixedSize()
                         .accessibilityIdentifier("storage.restore")
