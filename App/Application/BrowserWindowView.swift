@@ -18,20 +18,63 @@ struct BrowserWindowView: View {
     /// The control bar or a prompt covers the window, which then takes no clicks.
     private var isOverlaid: Bool { browser.window.controlBar != nil || prompt != nil }
 
+    /// The size the browser opens at without a saved frame, and grows to after the first launch's onboarding.
+    static func preferredSize(on screen: CGSize) -> CGSize {
+        CGSize(width: min(1440, screen.width * 0.9), height: min(920, screen.height * 0.9))
+    }
+
+    /// The first launch's onboarding replaces the browser, in a compact window; a later import covers it instead.
+    private var showsFirstLaunch: Bool { browser.isReady && browser.onboarding?.mode == .firstLaunch }
+
     var body: some View {
-        browserContent
-            // Nothing behind the onboarding keeps focus or takes keys.
-            .disabled(browser.onboarding != nil)
-            .overlay {
-                if let onboarding = browser.onboarding {
-                    OnboardingView(browser: browser, onboarding: onboarding)
-                        .transition(.opacity)
+        let compact = showsFirstLaunch ? OnboardingWindow.size : nil
+        content
+            .browserAnimation(value: browser.onboarding == nil)
+            // SwiftUI owns the window's limits through the scene's `contentSize` resizability; they change at once.
+            .frame(minWidth: compact?.width ?? 820, maxWidth: compact?.width ?? .infinity,
+                   minHeight: compact?.height ?? 580, maxHeight: compact?.height ?? .infinity)
+            .animation(nil, value: compact)
+            .onChange(of: showsFirstLaunch) { _, shows in
+                guard let window = WindowConfiguration.mainWindow else { return }
+                // After SwiftUI has applied the new limits: resizing inside its update re-enters it.
+                Task { [weak window] in
+                    guard let window, window.isVisible, shows == showsFirstLaunch else { return }
+                    OnboardingWindow.resize(window, forOnboarding: shows)
                 }
             }
-            .browserAnimation(value: browser.onboarding == nil)
             .environment(\.windowControls, windowControls)
+            .background(WindowConfiguration(controls: windowControls))
             // Menus reach the browser even while the onboarding covers it.
             .focusedSceneValue(\.browserModel, browser)
+    }
+
+    @ViewBuilder private var content: some View {
+        switch browser.startup {
+        case .loading:
+            // The window opens after startup; this shows only if it is opened sooner, from the Dock or a menu.
+            Color.clear
+        case .failed(let failure):
+            StorageRecoveryView(browser: browser, failure: failure)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(alignment: .topLeading) {
+                    NativeWindowControls().frame(width: BrowserDesign.windowControlsWidth, height: 44)
+                }
+        case .ready:
+            if let onboarding = browser.onboarding, onboarding.mode == .firstLaunch {
+                OnboardingView(browser: browser, onboarding: onboarding)
+                    .transition(.opacity)
+            } else {
+                browserContent
+                    // Nothing behind an import keeps focus or takes keys.
+                    .disabled(browser.onboarding != nil)
+                    .overlay {
+                        if let onboarding = browser.onboarding {
+                            OnboardingView(browser: browser, onboarding: onboarding)
+                                .transition(.opacity)
+                        }
+                    }
+            }
+        }
     }
 
     private var browserContent: some View {
@@ -42,7 +85,6 @@ struct BrowserWindowView: View {
                 HStack(spacing: 0) {
                     if browser.window.sidebarPinned {
                         SidebarView(browser: browser)
-                            .disabled(!browser.isReady || browser.isChangingStructure)
                             .frame(width: sidebarWidth)
                             .overlay(alignment: .trailing) {
                                 resizeHandle(width: sidebarWidth, maximum: maximumWidth)
@@ -50,11 +92,7 @@ struct BrowserWindowView: View {
                             .transition(.move(edge: .leading).combined(with: .opacity))
                     }
                     ZStack {
-                        if !browser.isReady {
-                            if browser.loadFailed {
-                                StorageRecoveryView(browser: browser)
-                            } else { ProgressView().controlSize(.small) }
-                        } else if let internalPage = browser.internalPage {
+                        if let internalPage = browser.internalPage {
                             InternalPageView(page: internalPage, browser: browser)
                                 .id(browser.window.selectedTabID)
                         } else if let page = browser.currentPage {
@@ -124,7 +162,6 @@ struct BrowserWindowView: View {
                         .allowsHitTesting(!sidebarRevealed && !isOverlaid)
                     if sidebarRevealed || browser.window.holdsSidebarOpen {
                         SidebarView(browser: browser)
-                            .disabled(!browser.isReady || browser.isChangingStructure)
                             .frame(width: sidebarWidth)
                             .frame(maxHeight: .infinity)
                             .browserSurface(fill: palette.sidebar, border: palette.line, radius: BrowserDesign.Radius.floatingSidebar)
@@ -154,7 +191,6 @@ struct BrowserWindowView: View {
                 }
             }
         }
-        .frame(minWidth: 820, minHeight: 580)
         .ignoresSafeArea(.container, edges: .top)
         .background(palette.sidebar)
         .foregroundStyle(palette.ink)
@@ -186,7 +222,6 @@ struct BrowserWindowView: View {
                 browser.perform(.stopLoading)
             }
         }
-        .background(WindowConfiguration(controls: windowControls))
     }
 
     private func resizeHandle(width: CGFloat, maximum: CGFloat) -> some View {
@@ -219,6 +254,7 @@ struct WindowPromptView: View {
         case .profile: ProfilePrompt(browser: browser)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)
         case .extensionRequest(let request): ExtensionRequestPrompt(browser: browser, request: request)
+        case .applicationLink(let link): ApplicationLinkPrompt(browser: browser, link: link)
         case .error(let message):
             Prompt(title: Text("Something needs your attention"), message: Text(verbatim: message)) {
                 PromptConfirmButton(title: "OK") { browser.dismissPrompt() }

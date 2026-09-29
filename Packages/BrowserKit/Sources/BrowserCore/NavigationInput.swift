@@ -1,6 +1,27 @@
 import Foundation
 
+/// Where an address a page navigates to goes. See docs/OTHER_APPS.md › Links to other apps.
+public enum NavigationTarget: Equatable, Sendable {
+    /// Loads in the page: websites, extension pages, and frame-local `about:` and `blob:` documents.
+    case page
+    /// Belongs to another app, which opens only after the person confirms.
+    case application
+    /// Never loads and never leaves: local files, scripts, inline data and the browser's own pages.
+    case blocked
+}
+
 public enum NavigationInput {
+    /// Schemes a website may never navigate to or hand to another app.
+    private static let blockedSchemes: Set<String> = ["file", "javascript", "data", "vbscript", InternalPage.scheme, "webkit-extension", "http", "https"]
+
+    public static func target(of url: URL) -> NavigationTarget {
+        if isWebURL(url) || isExtensionURL(url) { return .page }
+        guard let scheme = url.scheme?.lowercased(), !scheme.isEmpty else { return .blocked }
+        if scheme == "about" || scheme == "blob" { return .page }
+        // What remains of the page schemes is malformed, such as `https:` without a host.
+        return blockedSchemes.contains(scheme) ? .blocked : .application
+    }
+
     public static func isWebURL(_ url: URL) -> Bool {
         ["http", "https"].contains(url.scheme?.lowercased() ?? "") && !(url.host ?? "").isEmpty
     }

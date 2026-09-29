@@ -1,3 +1,4 @@
+import AppKit
 import os
 import XCTest
 
@@ -173,6 +174,17 @@ class E2ETestCase: XCTestCase {
         XCTAssertTrue(controlBarInput.waitForExistence(timeout: Self.renderTimeout))
         controlBarInput.typeText(server.url(fixture, host: host).absoluteString + "\n")
         XCTAssertTrue(page(text).waitForExistence(timeout: Self.pageTimeout), "\(fixture) loaded")
+    }
+
+    /// Hands `url` to the running Aero as another app would. `XCUIApplication.open` would launch a second instance.
+    func openFromAnotherApp(_ url: URL) {
+        // Journeys run the Aero Dev scheme (docs/TESTING.md).
+        guard let bundle = NSRunningApplication.runningApplications(withBundleIdentifier: "app.getaero.browser.debug").first?.bundleURL else {
+            return XCTFail("Aero is running")
+        }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        NSWorkspace.shared.open([url], withApplicationAt: bundle, configuration: configuration)
     }
 
     /// Runs a command from the command bar, as someone who does not know its shortcut would.

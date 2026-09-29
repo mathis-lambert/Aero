@@ -14,8 +14,15 @@ final class BrowserModel {
         String(localized: "Changes could not be saved. Check that there is enough disk space and try again.")
     }
     var session = BrowserSession(profileName: String(localized: "Personal"), spaceName: String(localized: "Main"))
-    private(set) var isReady = false
-    private(set) var loadFailed = false
+    /// What the window can show; it opens once this leaves `loading` (docs/ONBOARDING.md › Presentation).
+    private(set) var startup = Startup.loading
+    var isReady: Bool { startup == .ready }
+    /// Each increment asks the app to show the main window, opening it again if it was closed.
+    private(set) var mainWindowRequests = 0
+    /// Links from other apps, opened once the browser can show them (docs/OTHER_APPS.md › Links from other apps).
+    @ObservationIgnored var pendingLinks: [URL] = []
+    /// Other apps' sign-ins, each in its own window (docs/OTHER_APPS.md › Sign-in for other apps).
+    let signIns = SignInSessions()
     let window = BrowserWindowState()
     private let appIcon: AppIcon
     let updater: AppUpdater
@@ -35,13 +42,13 @@ final class BrowserModel {
     let pages: WebPageRegistry
     let store: BrowserStore
     let storageLocation: StorageLocation
-    private(set) var storageFailureMessage: String?
     /// This launch finishes a reset: website data stores are removed before any page exists.
     @ObservationIgnored private var isResetting = false
     @ObservationIgnored private var resetFailed = false
-    private(set) var canRecoverStorage = false
     private(set) var isOpeningStorage = false
-    var isChangingStructure = false
+    var isChangingStructure = false {
+        didSet { if !isChangingStructure { openPendingLinks() } }
+    }
     var extensionsReady = false
     var extensionOperations: Set<String> = []
     var recoveryPackages: Set<UUID>?
@@ -113,6 +120,7 @@ final class BrowserModel {
         resetFailed = resetting && !erased
         pages.delegate = self
         pages.extensionHost = self
+        signIns.browser = self
     }
 
     isolated deinit {
@@ -139,8 +147,6 @@ final class BrowserModel {
         guard !isReady, !isOpeningStorage else { return }
         isOpeningStorage = true
         defer { isOpeningStorage = false; endLaunchInterval() }
-        loadFailed = false
-        storageFailureMessage = nil
         do {
             if isResetting {
                 isResetting = false
@@ -155,20 +161,18 @@ final class BrowserModel {
                 recoveryPackages = try await store.createRecoverySnapshot()
             } catch { present(.error(Self.saveFailureMessage)) }
             window.selectedSpaceID = session.spaces.first?.id
-            isReady = true
             if resetFailed { present(.error(String(localized: "Aero could not erase everything. Quit and reopen Aero to finish the reset."))) }
             beginOnboardingIfNeeded(freshStore: saved == nil)
+            // One transition: the first screen is complete when the window can show it.
+            startup = .ready
         } catch {
-            loadFailed = true
-            let hasRecovery = await store.hasRecoverySnapshot()
-            canRecoverStorage = (error as? StorageError) != .newerVersion && (error as? StorageError) != .inUse && hasRecovery
-            switch error as? StorageError {
-            case .newerVersion: storageFailureMessage = String(localized: "This data requires a newer version of Aero. Your files have been kept unchanged.")
-            case .inUse: storageFailureMessage = String(localized: "Another Aero process is using this data. Quit it, then retry.")
-            default: storageFailureMessage = String(localized: "Your saved data could not be opened. Your files have been kept for recovery.")
-            }
+            startup = .failed(await StorageFailure(error, store: store))
             return
         }
+        // Updates wait for the end of the first launch's onboarding.
+        if onboarding == nil { updater.start() }
+        openPendingLinks()
+        signIns.beginPending()
         appIcon.apply(preferences.appIcon)
         filterLists?.start()
         Task {
@@ -180,7 +184,7 @@ final class BrowserModel {
     }
 
     func restoreStorage() async {
-        guard !isReady, !isOpeningStorage, canRecoverStorage else { return }
+        guard case .failed(let failure) = startup, failure.canRestore, !isOpeningStorage else { return }
         isOpeningStorage = true
         do {
             try await store.restoreRecoverySnapshot()
@@ -188,7 +192,7 @@ final class BrowserModel {
             await start()
         } catch {
             isOpeningStorage = false
-            storageFailureMessage = Self.saveFailureMessage
+            startup = .failed(StorageFailure(message: Self.saveFailureMessage, canRestore: failure.canRestore))
         }
     }
 
@@ -208,7 +212,10 @@ final class BrowserModel {
     func endOnboarding() {
         onboarding = nil
         updater.start()
+        openPendingLinks()
     }
+
+    func showMainWindow() { mainWindowRequests += 1 }
 
     /// The onboarding's import steps alone, for someone already using Aero (docs/ONBOARDING.md › When it appears).
     func beginImport() {

@@ -12,6 +12,8 @@ public protocol WebPageRegistryDelegate: AnyObject {
     func page(_ tabID: UUID, didDeclareIcons links: [FaviconLink], at url: URL)
     /// Creates the record for a popup in the opener's space, or returns `nil` to block it.
     func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab?
+    /// The page, or a link followed in one of its frames, asks to open `url` in another app; nothing was opened.
+    func page(_ tabID: UUID, requestsApplicationFor url: URL)
     /// The popup's page is live; the tab may now be selected.
     func pageDidOpenPopup(_ tabID: UUID)
     /// A popup called `window.close()`; its opener may be selected again.

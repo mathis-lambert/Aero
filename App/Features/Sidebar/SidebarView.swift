@@ -24,7 +24,7 @@ struct SidebarView: View {
             SpacePager(browser: browser)
             footer
         }
-        .disabled(!browser.isReady || browser.isChangingStructure)
+        .disabled(browser.isChangingStructure)
     }
 
     private var footer: some View {

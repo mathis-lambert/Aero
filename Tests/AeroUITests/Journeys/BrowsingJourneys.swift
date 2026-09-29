@@ -180,4 +180,27 @@ final class BrowsingJourneys: E2ETestCase {
         XCTAssertFalse(app.textFields["history.search"].waitForExistence(timeout: 2), "A page cannot navigate to aero://history")
         XCTAssertFalse(labels(of: "sidebar.tab").contains("History"))
     }
+
+    /// Links cross between Aero and other apps: a link another app opens becomes a selected tab, and a page asks
+    /// before handing a link to another app. See docs/OTHER_APPS.md.
+    func testLinksCrossBetweenAeroAndOtherApps() throws {
+        try launch()
+        let tabs = tabRows.count
+        openFromAnotherApp(server.url("site.html"))
+        XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "A link from another app opens and is selected")
+        XCTAssertEqual(tabRows.count, tabs + 1, "It opens in a new tab")
+
+        open("app-links.html", expecting: "App links")
+        let prompt = app.groups["applicationLink.prompt"]
+        XCTAssertFalse(prompt.waitForExistence(timeout: 1), "A frame cannot launch an app on its own")
+        app.webViews.links["Unknown app"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+        XCTAssertFalse(prompt.waitForExistence(timeout: 1), "An address no app opens asks nothing")
+        app.webViews.links["Write an email"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+        XCTAssertTrue(prompt.waitForExistence(timeout: Self.renderTimeout), "A link for another app asks first")
+        attachScreenshot("open in another app")
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(poll { !prompt.exists }, "Escape declines")
+        XCTAssertTrue(page("App links").exists, "The page stays as it was")
+        XCTAssertFalse(app.staticTexts["This page could not be opened"].exists)
+    }
 }

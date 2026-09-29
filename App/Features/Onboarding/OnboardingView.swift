@@ -2,7 +2,7 @@ import BrowserCore
 import BrowserStorage
 import SwiftUI
 
-/// The first launch, over the main window's content (docs/ONBOARDING.md). A plate on the leading side carries
+/// The first launch in place of the browser, or an import over it (docs/ONBOARDING.md). A plate on the leading side carries
 /// the words; the stage on the trailing side shows what each step does, over the wind.
 struct OnboardingView: View {
     static let plateWidth: CGFloat = 472
@@ -60,9 +60,7 @@ struct OnboardingView: View {
             .frame(height: 44)
             .ignoresSafeArea()
         }
-        .background { if onboarding.mode == .firstLaunch { OnboardingWindowFrame() } }
-        // The browser underneath is disabled, so keys come here: Return presses the default button, Command-Left
-        // Bracket goes back through the Back command, and the arrows choose a browser.
+        // Return presses the default button, Command-Left Bracket invokes Back, and arrows choose a browser.
         .focusable()
         .focused($isFocused)
         .focusEffectDisabled()
@@ -280,59 +278,21 @@ struct ReturnCap: View {
     }
 }
 
-/// The onboarding keeps the window compact and centered; when it ends, the window grows back to where it was,
-/// becoming the browser. See docs/ONBOARDING.md › Presentation.
-struct OnboardingWindowFrame: NSViewRepresentable {
-    static let size = NSSize(width: 1040, height: 660)
+/// The first launch's window: compact while the onboarding shows, then grown to the browser's size. SwiftUI owns the
+/// limits (`BrowserWindowView`); this only moves the window once they changed. See docs/ONBOARDING.md › Presentation.
+enum OnboardingWindow {
+    static let size = CGSize(width: 1040, height: 660)
 
-    func makeNSView(context: Context) -> FrameView { FrameView() }
-    func updateNSView(_ nsView: FrameView, context: Context) {}
-    /// Restored after SwiftUI's update: resizing inside it re-enters the update cycle.
-    static func dismantleNSView(_ nsView: FrameView, coordinator: ()) { DispatchQueue.main.async { nsView.restore() } }
-
-    final class FrameView: NSView {
-        private weak var managed: NSWindow?
-        private var previous: (frame: NSRect, minimum: NSSize, maximum: NSSize)?
-
-        override func viewDidMoveToWindow() {
-            super.viewDidMoveToWindow()
-            guard let window, managed == nil else { return }
-            managed = window
-            // The window is still being set up: size it once it has its screen and frame.
-            DispatchQueue.main.async { [weak self] in self?.compact(window) }
-        }
-
-        private func compact(_ window: NSWindow) {
-            guard managed === window, let screen = (window.screen ?? NSScreen.main)?.visibleFrame else { return }
-            previous = (window.frame, window.contentMinSize, window.contentMaxSize)
-            let content = NSSize(width: min(OnboardingWindowFrame.size.width, screen.width), height: min(OnboardingWindowFrame.size.height, screen.height))
-            let frame = window.frameRect(forContentRect: NSRect(origin: .zero, size: content))
-            window.contentMinSize = content
-            window.contentMaxSize = content
-            window.setFrame(NSRect(x: screen.midX - frame.width / 2, y: screen.midY - frame.height / 2, width: frame.width, height: frame.height),
-                            display: true, animate: false)
-        }
-
-        func restore() {
-            guard let window = managed else { return }
-            managed = nil
-            let screen = (window.screen ?? NSScreen.main)?.visibleFrame ?? window.frame
-            let minimum = previous?.minimum ?? NSSize(width: 600, height: 400)
-            window.contentMaxSize = previous?.maximum ?? NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-            window.contentMinSize = minimum
-            // Back to where it was, or a generous browser size on a first launch; grown from the onboarding's center.
-            var target = previous?.frame ?? .zero
-            if target.width < max(800, minimum.width) || !screen.intersects(target) {
-                let size = NSSize(width: min(1440, screen.width * 0.9), height: min(920, screen.height * 0.9))
-                target = NSRect(x: screen.midX - size.width / 2, y: screen.midY - size.height / 2, width: size.width, height: size.height)
-            }
-            guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { window.setFrame(target, display: true); return }
-            // Animated through the animator: `setFrame(_:display:animate:)` blocks and spins the run loop.
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.35
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                window.animator().setFrame(target, display: true)
-            }
+    @MainActor static func resize(_ window: NSWindow, forOnboarding onboarding: Bool) {
+        guard let screen = (window.screen ?? NSScreen.main)?.visibleFrame else { return }
+        let size = onboarding ? window.frame.size : window.frameRect(forContentRect: NSRect(origin: .zero, size: BrowserWindowView.preferredSize(on: screen.size))).size
+        let target = NSRect(x: screen.midX - size.width / 2, y: screen.midY - size.height / 2, width: size.width, height: size.height)
+        guard !onboarding, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { window.setFrame(target, display: true); return }
+        // Grown from the onboarding's center, through the animator: `setFrame(_:display:animate:)` spins the run loop.
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.35
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().setFrame(target, display: true)
         }
     }
 }

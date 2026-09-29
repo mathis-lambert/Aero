@@ -182,6 +182,7 @@ public final class WebPageRegistry {
         page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
         page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
+        page.onApplicationLink = { [weak self] url in self?.delegate?.page(tabID, requestsApplicationFor: url) }
         page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
         page.onWebStoreButton = { [weak self, weak page] pressed in
             guard let url = page?.webView.url, let delegate = self?.delegate else { return nil }
@@ -208,6 +209,22 @@ public final class WebPageRegistry {
         delegate?.pageDidOpenPopup(tab.id)
         return popup.webView
     }
+
+    /// A page outside any tab, for another app's sign-in (docs/OTHER_APPS.md › Sign-in for other apps). It uses the
+    /// profile's website data and extensions, or, for a private sign-in, a store of its own that ends with the page.
+    /// It records no history and opens no popups.
+    public func makeSignInPage(profileID: UUID, isPrivate: Bool) -> BrowserPage {
+        let configuration = isPrivate
+            ? BrowserPage.configuration(store: .nonPersistent(), extensions: nil, passkeys: passkeys)
+            : BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions(for: profileID).controller, passkeys: passkeys)
+        let page = BrowserPage(configuration: configuration)
+        page.contentBlocker = contentBlocker
+        Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
+        return page
+    }
+
+    /// Ends a sign-in page: its web content process and, for a private sign-in, its website data go with it.
+    public func discardSignInPage(_ page: BrowserPage) { page.dispose() }
 
     /// Unloading either side of a popup relationship would break `window.opener`.
     func hasPopupRelationship(_ tabID: UUID) -> Bool {

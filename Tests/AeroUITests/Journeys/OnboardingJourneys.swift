@@ -4,6 +4,30 @@ import XCTest
 /// (Arc, Chromium, Dia, Safari) are covered by BrowserStorageTests. See docs/ONBOARDING.md › Verification.
 @MainActor
 final class OnboardingJourneys: E2ETestCase {
+    /// First-launch window sizing must settle before interaction and restore browser sizing on exit.
+    /// Conflicting AppKit and SwiftUI constraints can abort in the first display cycle.
+    func testFirstLaunchWindowSettlesThenRestoresBrowser() throws {
+        try launch(Launch(french: true, screen: .onboarding))
+        XCTAssertFalse(app.buttons["sidebar.toggle"].exists, "The browser is not created behind first-launch onboarding")
+        let window = app.windows.firstMatch
+        XCTAssertTrue(poll {
+            abs(window.frame.width - 1040) < 2 && (660...700).contains(window.frame.height)
+        }, "The onboarding settles at its compact size: \(window.frame)")
+        // Window accessibility frames include the native title bar, whose height is system-owned.
+        let compactHeight = window.frame.height
+        attachScreenshot("first visible screen is onboarding")
+        app.buttons["onboarding.start"].click()
+        XCTAssertTrue(app.buttons["onboarding.source.Google Chrome"].waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertFalse(app.buttons["sidebar.toggle"].exists)
+        XCTAssertEqual(window.frame.width, 1040, accuracy: 2)
+        XCTAssertEqual(window.frame.height, compactHeight, accuracy: 2)
+        attachScreenshot("first launch compact window")
+        app.buttons["onboarding.skip"].click()
+        XCTAssertTrue(poll { !self.app.groups["onboarding"].exists && window.frame.width > 1040 })
+        XCTAssertTrue(app.buttons["sidebar.toggle"].isHittable)
+        attachScreenshot("browser window after first launch")
+    }
+
     private var title: String { element("onboarding.title").label }
     private var continueButton: XCUIElement { app.buttons["onboarding.continue"] }
 
@@ -67,7 +91,10 @@ final class OnboardingJourneys: E2ETestCase {
         XCTAssertTrue(poll(timeout: Self.pageTimeout) { !self.app.groups["onboarding"].exists }, "Return starts browsing")
 
         XCTAssertTrue(poll { self.app.buttons["window.close"].isHittable }, "The window controls are back in the sidebar")
-        XCTAssertEqual(app.buttons["window.close"].frame.midY, app.buttons["sidebar.toggle"].frame.midY, accuracy: 0.5)
+        // The window is still expanding; two accessibility queries can sample different animation frames.
+        XCTAssertTrue(poll {
+            abs(self.app.buttons["window.close"].frame.midY - self.app.buttons["sidebar.toggle"].frame.midY) <= 0.5
+        }, "The window controls settle into alignment with the sidebar")
         attachScreenshot("8 browser")
         XCTAssertEqual(labels(of: "sidebar.space"), ["Personal", "Work", "Studio"], "Arc's spaces, in order")
         XCTAssertTrue(labels(of: "sidebar.tab").isEmpty, "No open tab is imported, and Control-Tab switched nothing behind")
@@ -100,8 +127,12 @@ final class OnboardingJourneys: E2ETestCase {
         continueButton.click()
         waitForTitle("À portée de main.")
         attachScreenshot("fr dark 5 getting around")
+        // docs/OTHER_APPS.md › Links from other apps: a link waits for the end of the onboarding.
+        openFromAnotherApp(server.url("site.html"))
+        XCTAssertTrue(app.groups["onboarding"].waitForExistence(timeout: Self.renderTimeout), "A link does not interrupt the onboarding")
         app.buttons["onboarding.skip"].click()
         XCTAssertTrue(poll(timeout: Self.pageTimeout) { !self.app.groups["onboarding"].exists }, "Skip ends the onboarding")
+        XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "The link opens once the browser shows")
 
         XCTAssertEqual(labels(of: "sidebar.space"), ["Home"])
         XCTAssertTrue(labels(of: "sidebar.favorite").contains("Weather"), "The bookmarks bar is in the sidebar")
