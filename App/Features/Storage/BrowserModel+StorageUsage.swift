@@ -122,7 +122,7 @@ extension BrowserModel {
             try relaunch.run()
         }
         // From the run loop, not this task: termination waits in a nested loop for the final save, which runs on the main queue.
-        RunLoop.main.perform { NSApp.terminate(nil) }
+        RunLoop.main.perform { MainActor.assumeIsolated { NSApp.terminate(nil) } }
     }
 
     /// At launch, before any store exists. `false` when files remain; the pending mark is then kept for the next launch.
