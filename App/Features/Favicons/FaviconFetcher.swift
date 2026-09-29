@@ -37,7 +37,7 @@ struct FaviconFetcher: Sendable {
     }
 
     /// Picks the largest frame (ICO files hold several) and scales it down without decoding it at full size.
-    private static func downsampledPNG(from data: Data) -> Data? {
+    static func downsampledPNG(from data: Data) -> Data? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let frames = 0..<CGImageSourceGetCount(source)
         let largest = frames.max { pixelWidth(of: source, at: $0) < pixelWidth(of: source, at: $1) } ?? 0

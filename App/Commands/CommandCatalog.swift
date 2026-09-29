@@ -4,58 +4,59 @@ import SwiftUI
 extension BrowserCommand {
     var title: String {
         switch self {
-        case .zoomIn: String(localized: "Zoom in")
-        case .zoomOut: String(localized: "Zoom out")
-        case .resetZoom: String(localized: "Actual size")
-        case .reloadFromOrigin: String(localized: "Reload without cache")
-        case .stopLoading: String(localized: "Stop loading")
+        case .zoomIn: String(localized: "Zoom In")
+        case .zoomOut: String(localized: "Zoom Out")
+        case .resetZoom: String(localized: "Actual Size")
+        case .reloadFromOrigin: String(localized: "Reload Without Cache")
+        case .stopLoading: String(localized: "Stop Loading")
         case .printPage: String(localized: "Print…")
-        case .showDownloads: String(localized: "Downloads")
-        case .nextTab: String(localized: "Next tab")
-        case .previousTab: String(localized: "Previous tab")
-        case .recentTab: String(localized: "Next recently used tab")
-        case .previousRecentTab: String(localized: "Previous recently used tab")
-        case .tab1: String(localized: "Select tab 1")
-        case .tab2: String(localized: "Select tab 2")
-        case .tab3: String(localized: "Select tab 3")
-        case .tab4: String(localized: "Select tab 4")
-        case .tab5: String(localized: "Select tab 5")
-        case .tab6: String(localized: "Select tab 6")
-        case .tab7: String(localized: "Select tab 7")
-        case .tab8: String(localized: "Select tab 8")
-        case .lastTab: String(localized: "Select last tab")
-        case .toggleFavorite: String(localized: "Toggle favorite")
-        case .duplicateTab: String(localized: "Duplicate tab")
-        case .renameTab: String(localized: "Rename tab…")
-        case .closeOtherTabs: String(localized: "Close other tabs")
-        case .closeFollowingTabs: String(localized: "Close following tabs")
-        case .newGroup: String(localized: "New group with tab")
-        case .moveToGroup: String(localized: "Move tab to group…")
-        case .moveToSpace: String(localized: "Move tab to space…")
-        case .nextSpace: String(localized: "Next space")
-        case .previousSpace: String(localized: "Previous space")
-        case .newTab: String(localized: "New tab")
-        case .openLocation: String(localized: "Open location")
-        case .commandPalette: String(localized: "Commands")
+        case .showDownloads: String(localized: "Show Downloads")
+        case .nextTab: String(localized: "Next Tab")
+        case .previousTab: String(localized: "Previous Tab")
+        case .recentTab: String(localized: "Next Recently Used Tab")
+        case .previousRecentTab: String(localized: "Previous Recently Used Tab")
+        case .tab1: String(localized: "Select Tab 1")
+        case .tab2: String(localized: "Select Tab 2")
+        case .tab3: String(localized: "Select Tab 3")
+        case .tab4: String(localized: "Select Tab 4")
+        case .tab5: String(localized: "Select Tab 5")
+        case .tab6: String(localized: "Select Tab 6")
+        case .tab7: String(localized: "Select Tab 7")
+        case .tab8: String(localized: "Select Tab 8")
+        case .lastTab: String(localized: "Select Last Tab")
+        case .toggleFavorite: String(localized: "Toggle Favorite")
+        case .duplicateTab: String(localized: "Duplicate Tab")
+        case .renameTab: String(localized: "Rename Tab…")
+        case .closeOtherTabs: String(localized: "Close Other Tabs")
+        case .closeFollowingTabs: String(localized: "Close Tabs Below")
+        case .newGroup: String(localized: "New Group with Tab")
+        case .moveToGroup: String(localized: "Move to Group…")
+        case .moveToSpace: String(localized: "Move to Space…")
+        case .nextSpace: String(localized: "Next Space")
+        case .previousSpace: String(localized: "Previous Space")
+        case .newTab: String(localized: "New Tab")
+        case .openLocation: String(localized: "Open Location…")
+        case .commandPalette: String(localized: "Command Bar")
         case .back: String(localized: "Back")
         case .forward: String(localized: "Forward")
-        case .reload: String(localized: "Reload page")
-        case .closeTab: String(localized: "Close tab")
-        case .reopenTab: String(localized: "Reopen closed tab")
-        case .toggleSidebar: String(localized: "Toggle sidebar")
-        case .newProfile: String(localized: "New profile")
-        case .newSpace: String(localized: "New space")
-        case .profiles: String(localized: "Manage profiles")
+        case .reload: String(localized: "Reload Page")
+        case .closeTab: String(localized: "Close Tab")
+        case .reopenTab: String(localized: "Reopen Closed Tab")
+        case .toggleSidebar: String(localized: "Toggle Sidebar")
+        case .newProfile: String(localized: "New Profile…")
+        case .newSpace: String(localized: "New Space…")
+        case .profiles: String(localized: "Manage Profiles")
         case .passwords: String(localized: "Passwords")
-        case .showHistory: String(localized: "Show all history")
+        case .importBrowserData: String(localized: "Import from Another Browser…")
+        case .showHistory: String(localized: "Show All History")
         case .findInPage: String(localized: "Find…")
-        case .findNext: String(localized: "Find next")
-        case .findPrevious: String(localized: "Find previous")
-        case .copyLink: String(localized: "Copy link")
-        case .controlCenter: String(localized: "Site controls")
-        case .clearCookies: String(localized: "Clear cookies")
-        case .clearCache: String(localized: "Clear cache")
-        case .siteSettings: String(localized: "Site settings…")
+        case .findNext: String(localized: "Find Next")
+        case .findPrevious: String(localized: "Find Previous")
+        case .copyLink: String(localized: "Copy Link")
+        case .controlCenter: String(localized: "Site Controls")
+        case .clearCookies: String(localized: "Clear Cookies")
+        case .clearCache: String(localized: "Clear Cache")
+        case .siteSettings: String(localized: "Site Settings…")
         }
     }
 
@@ -76,6 +77,7 @@ extension BrowserCommand {
         case .newSpace: String(localized: "Create a space for your tabs.")
         case .profiles: String(localized: "Manage browsing identities and their spaces.")
         case .passwords: String(localized: "Show the passwords saved in this profile.")
+        case .importBrowserData: String(localized: "Bring favorites, history and passwords from another browser.")
         case .showHistory: String(localized: "Open browsing history for the current profile.")
         case .findInPage: String(localized: "Find text on the current page.")
         case .findNext: String(localized: "Select the next matching text on the page.")
@@ -98,7 +100,7 @@ extension BrowserCommand {
         case .duplicateTab: String(localized: "Open a copy of the current tab in this space.")
         case .renameTab: String(localized: "Give the current tab a custom name.")
         case .closeOtherTabs: String(localized: "Close the other tabs in this space. Favorite records are kept.")
-        case .closeFollowingTabs: String(localized: "Close tabs after the current tab in sidebar order. Favorite records are kept.")
+        case .closeFollowingTabs: String(localized: "Close the tabs below the current tab in sidebar order. Favorite records are kept.")
         case .newGroup: String(localized: "Create a group containing the current tab and choose its name.")
         case .moveToGroup: String(localized: "Choose a group for the current tab.")
         case .moveToSpace: String(localized: "Move the current tab to another space.")
@@ -111,12 +113,12 @@ extension BrowserCommand {
         case .zoomIn: "plus.magnifyingglass"
         case .zoomOut: "minus.magnifyingglass"
         case .resetZoom: "1.magnifyingglass"
-        case .reloadFromOrigin: "arrow.clockwise"
+        case .reloadFromOrigin: "arrow.clockwise.circle"
         case .stopLoading: "xmark"
         case .printPage: "printer"
         case .showDownloads: "arrow.down.circle"
-        case .nextTab: "arrow.right"
-        case .previousTab: "arrow.left"
+        case .nextTab: "arrow.down"
+        case .previousTab: "arrow.up"
         case .recentTab: "arrow.turn.down.right"
         case .previousRecentTab: "arrow.turn.down.left"
         case .tab1: "square"
@@ -131,18 +133,18 @@ extension BrowserCommand {
         case .toggleFavorite: "star"
         case .duplicateTab: "plus.square.on.square"
         case .renameTab: "pencil"
-        case .closeOtherTabs: "xmark"
-        case .closeFollowingTabs: "xmark"
+        case .closeOtherTabs: "xmark.square"
+        case .closeFollowingTabs: "arrow.down.to.line"
         case .newGroup: "folder.badge.plus"
         case .moveToGroup: "folder"
-        case .moveToSpace: "square.stack"
-        case .nextSpace: "chevron.forward"
-        case .previousSpace: "chevron.backward"
+        case .moveToSpace: "rectangle.stack"
+        case .nextSpace: "arrow.right.square"
+        case .previousSpace: "arrow.left.square"
         case .newTab: "plus"
         case .openLocation: "magnifyingglass"
         case .commandPalette: "command"
-        case .back: "arrow.left"
-        case .forward: "arrow.right"
+        case .back: "chevron.backward"
+        case .forward: "chevron.forward"
         case .reload: "arrow.clockwise"
         case .closeTab: "xmark"
         case .reopenTab: "arrow.uturn.backward"
@@ -151,6 +153,7 @@ extension BrowserCommand {
         case .newSpace: "plus.square"
         case .profiles: "person.crop.circle"
         case .passwords: "key"
+        case .importBrowserData: "square.and.arrow.down"
         case .showHistory: "clock"
         case .findInPage: "text.magnifyingglass"
         case .findNext: "chevron.down"
@@ -162,8 +165,6 @@ extension BrowserCommand {
         case .siteSettings: "slider.horizontal.3"
         }
     }
-
-
 }
 
 extension BrowserCommand {
@@ -186,7 +187,7 @@ extension BrowserCommand {
         case .newTab, .closeTab, .reopenTab, .nextTab, .previousTab, .recentTab, .previousRecentTab,
              .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab,
              .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace: .tabs
-        case .profiles, .newProfile, .passwords: .profiles
+        case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
              .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: .page
@@ -230,6 +231,8 @@ extension BrowserCommand {
         case .showDownloads: return [.init("j", [.command, .shift])]
         case .nextTab: return [.init(String(KeyEquivalent.rightArrow.character), [.command, .option])]
         case .previousTab: return [.init(String(KeyEquivalent.leftArrow.character), [.command, .option])]
+        case .nextSpace: return [.init(String(KeyEquivalent.rightArrow.character), [.command, .control])]
+        case .previousSpace: return [.init(String(KeyEquivalent.leftArrow.character), [.command, .control])]
         case .recentTab: return [.init("\t", .control)]
         case .previousRecentTab: return [.init("\t", [.control, .shift])]
         case .lastTab: return [.init("9")]

@@ -25,9 +25,14 @@ public struct InstalledExtension: Identifiable, Equatable, Sendable {
     public var pendingVersion: String?
 
     var isValid: Bool {
-        id.count == 32 && id.utf8.allSatisfy { $0 >= 97 && $0 <= 112 }
+        Self.isValidIdentifier(id)
             && Set(grantedPermissions).count == grantedPermissions.count
             && Set(grantedSites).count == grantedSites.count
+    }
+
+    /// Chrome's 32 ASCII letters a–p, shared by stored records and Web Store addresses.
+    public static func isValidIdentifier(_ value: String) -> Bool {
+        value.utf8.count == 32 && value.utf8.allSatisfy { $0 >= 97 && $0 <= 112 }
     }
 
     public init(id: String, version: String, source: Source, grantedPermissions: [String], grantedSites: [String]) {

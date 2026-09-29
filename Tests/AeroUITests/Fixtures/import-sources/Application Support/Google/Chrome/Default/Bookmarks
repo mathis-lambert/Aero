@@ -1,0 +1,65 @@
+{
+ "version": 1,
+ "roots": {
+  "bookmark_bar": {
+   "type": "folder",
+   "name": "Bookmarks bar",
+   "children": [
+    {
+     "type": "url",
+     "url": "https://weather.test/",
+     "name": "Weather"
+    },
+    {
+     "type": "folder",
+     "name": "Recipes",
+     "children": [
+      {
+       "type": "url",
+       "url": "https://soup.test/",
+       "name": "Soup"
+      },
+      {
+       "type": "folder",
+       "name": "Winter",
+       "children": [
+        {
+         "type": "url",
+         "url": "https://stew.test/",
+         "name": "Stew"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "folder",
+     "name": "Recipes",
+     "children": [
+      {
+       "type": "url",
+       "url": "https://bread.test/",
+       "name": "Bread"
+      }
+     ]
+    }
+   ]
+  },
+  "other": {
+   "type": "folder",
+   "name": "Other bookmarks",
+   "children": [
+    {
+     "type": "url",
+     "url": "https://later.test/",
+     "name": "Later"
+    }
+   ]
+  },
+  "synced": {
+   "type": "folder",
+   "name": "Mobile bookmarks",
+   "children": []
+  }
+ }
+}

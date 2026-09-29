@@ -62,6 +62,8 @@ final class BrowserPreferences {
         static let automaticPictureInPicture = "browser.automaticPictureInPicture"
         static let offersToSavePasswords = "browser.passwords.offersToSave"
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
+        static let onboarding = "browser.onboarding"
+        static let resetPending = "browser.resetPending"
     }
 
     let shortcuts: ShortcutPreferences
@@ -107,13 +109,26 @@ final class BrowserPreferences {
         didSet { defaults.set(filterListsCheckedAt, forKey: Key.filterListsCheckedAt) }
     }
     var needsLanguageRestart: Bool { language != launchLanguage }
+    /// The first launch's progress (docs/ONBOARDING.md › When it appears). `nil` when absent or unreadable:
+    /// an unreadable value never brings the onboarding back.
+    var onboarding: OnboardingProgress? {
+        get {
+            guard let value = defaults.dictionary(forKey: Key.onboarding),
+                  value["version"] as? Int == OnboardingProgress.version,
+                  let step = (value["step"] as? String).flatMap(OnboardingStep.init(rawValue:)),
+                  let completed = value["completed"] as? Bool else { return nil }
+            return OnboardingProgress(step: step, completed: completed)
+        }
+        set {
+            guard let newValue else { defaults.removeObject(forKey: Key.onboarding); return }
+            defaults.set(["version": OnboardingProgress.version, "step": newValue.step.rawValue, "completed": newValue.completed],
+                         forKey: Key.onboarding)
+        }
+    }
+    var hasOnboardingRecord: Bool { defaults.object(forKey: Key.onboarding) != nil }
 
     init(testNamespace: String?) {
-        if let testNamespace {
-            // Never the person's own preferences.
-            guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
-            defaults = suite
-        } else { defaults = .standard }
+        defaults = Self.defaults(testNamespace: testNamespace)
         let savedWidth = defaults.double(forKey: Key.sidebarWidth)
         sidebarWidth = savedWidth.isFinite ? max(BrowserDesign.sidebarWidth, savedWidth) : BrowserDesign.sidebarWidth
         shortcuts = ShortcutPreferences(defaults: defaults)
@@ -130,6 +145,28 @@ final class BrowserPreferences {
         automaticPictureInPicture = defaults.object(forKey: Key.automaticPictureInPicture) as? Bool ?? true
         offersToSavePasswords = defaults.object(forKey: Key.offersToSavePasswords) as? Bool ?? true
         filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
+    }
+
+    private static func defaults(testNamespace: String?) -> UserDefaults {
+        guard let testNamespace else { return .standard }
+        // Never the person's own preferences.
+        guard let suite = UserDefaults(suiteName: Key.testSuitePrefix + testNamespace) else { preconditionFailure("No preferences suite for the test run") }
+        return suite
+    }
+
+    // MARK: - Reset (docs/STORAGE.md › Reset)
+
+    func markResetPending() { defaults.set(true, forKey: Key.resetPending) }
+
+    static func isResetPending(testNamespace: String?) -> Bool {
+        defaults(testNamespace: testNamespace).bool(forKey: Key.resetPending)
+    }
+
+    /// Every preference of this channel or test run, the pending mark included.
+    static func erase(testNamespace: String?) {
+        let domain = testNamespace.map { Key.testSuitePrefix + $0 } ?? Bundle.main.bundleIdentifier ?? ""
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        defaults(testNamespace: testNamespace).synchronize()
     }
 
     func setLanguage(_ language: BrowserLanguage) {

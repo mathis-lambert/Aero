@@ -58,8 +58,12 @@ struct SidebarView: View {
             }
             .disabled(browser.currentPage == nil)
             .contextMenu {
-                ForEach([BrowserCommand.clearCookies, .clearCache, .siteSettings], id: \.self) { command in
-                    Button(command.title) { browser.perform(command) }.disabled(!browser.isEnabled(command))
+                ForEach([[BrowserCommand.reloadFromOrigin], [.clearCookies, .clearCache], [.siteSettings]], id: \.self) { section in
+                    Section {
+                        ForEach(section, id: \.self) { command in
+                            Button(command.title, systemImage: command.symbol) { browser.perform(command) }.disabled(!browser.isEnabled(command))
+                        }
+                    }
                 }
             }
             .popover(isPresented: Bindable(browser.window).siteSettingsPresented, arrowEdge: .bottom) {

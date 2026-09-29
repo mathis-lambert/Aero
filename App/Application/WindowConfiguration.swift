@@ -1,22 +1,28 @@
 import AppKit
 import SwiftUI
 
-/// Gives the browser window a full-height content view and hides its titlebar buttons, which
-/// `NativeWindowControls` replaces in the sidebar, while AppKit keeps window behavior.
+/// Gives the browser window a full-height content view and a transparent titlebar, and hands it to the window
+/// controls' owner (`WindowControls`), while AppKit keeps window behavior.
 struct WindowConfiguration: NSViewRepresentable {
+    let controls: WindowControls
+
     static let mainWindowIdentifier = "aero.main"
 
     static var mainWindow: NSWindow? {
         NSApp.windows.first { $0.identifier?.rawValue == mainWindowIdentifier }
     }
 
-    func makeNSView(context: Context) -> NSView { WindowProbe() }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        (nsView as? WindowProbe)?.hideTitlebarButtons()
-    }
+    func makeNSView(context: Context) -> NSView { WindowProbe(controls: controls) }
+    func updateNSView(_ nsView: NSView, context: Context) {}
 
     private final class WindowProbe: NSView {
+        let controls: WindowControls
+        init(controls: WindowControls) {
+            self.controls = controls
+            super.init(frame: .zero)
+        }
+        required init?(coder: NSCoder) { nil }
+
         override func viewWillMove(toWindow newWindow: NSWindow?) {
             NotificationCenter.default.removeObserver(self)
             super.viewWillMove(toWindow: newWindow)
@@ -32,20 +38,17 @@ struct WindowConfiguration: NSViewRepresentable {
             window.isMovableByWindowBackground = false
             // An empty native toolbar would cover the sidebar and page content.
             window.toolbar = nil
-            // Full screen rebuilds the titlebar, which shows its buttons again.
+            // Full screen rebuilds the titlebar.
             for name in [NSWindow.didEnterFullScreenNotification, NSWindow.didExitFullScreenNotification] {
-                NotificationCenter.default.addObserver(self, selector: #selector(hideTitlebarButtons), name: name, object: window)
+                NotificationCenter.default.addObserver(self, selector: #selector(styleTitlebar), name: name, object: window)
             }
-            hideTitlebarButtons()
+            styleTitlebar()
+            controls.attach(to: window)
         }
 
-        @objc func hideTitlebarButtons() {
-            guard let window else { return }
-            window.titlebarAppearsTransparent = true
-            window.titlebarSeparatorStyle = .none
-            for type in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
-                window.standardWindowButton(type)?.isHidden = true
-            }
+        @objc private func styleTitlebar() {
+            window?.titlebarAppearsTransparent = true
+            window?.titlebarSeparatorStyle = .none
         }
     }
 }

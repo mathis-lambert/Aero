@@ -42,12 +42,21 @@ final class BrowserHistory {
         try await enqueue { try await $0.clear(profileID: profileID, since: date) }.value
     }
 
+    func compact() async throws {
+        try await enqueue { try await $0.compact() }.value
+    }
+
     func entries(profileID: UUID, matching query: String, before cursor: HistoryEntry.Cursor? = nil,
                  limit: Int = HistoryStore.pageSize) async throws -> [HistoryEntry] {
         writePendingTitles()
         // Reads remain available after failed recording; writeFailed explains that condition.
         _ = await lastWrite?.result
         return try await store.entries(profileID: profileID, matching: query, before: cursor, limit: limit)
+    }
+
+    /// Imported pages, queued after pending writes like any other history change (docs/ONBOARDING.md).
+    func importPages(_ pages: [ImportedPage], profileID: UUID) async throws {
+        try await enqueue { try await $0.importPages(pages, profileID: profileID) }.value
     }
 
     func flush() async throws {

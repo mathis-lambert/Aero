@@ -46,7 +46,12 @@ struct TabGroupSection: View {
             .accessibilityLabel(Text(verbatim: group.name))
             .accessibilityIdentifier("sidebar.group")
             .contextMenu {
-                Button("Rename…", systemImage: "pencil") { browser.window.renaming = .group(group.id) }
+                Button("Rename Group…", systemImage: "pencil") { browser.window.renaming = .group(group.id) }
+                Button(group.isCollapsed ? "Expand Group" : "Collapse Group", systemImage: group.isCollapsed ? "chevron.down" : "chevron.up") {
+                    browser.setGroupCollapsed(group.id, !group.isCollapsed)
+                }
+                Divider()
+                // Its tabs stay pinned where the group was.
                 Button("Ungroup", systemImage: "folder.badge.minus") { browser.removeGroup(group.id) }
             }
         }

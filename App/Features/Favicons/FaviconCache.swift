@@ -66,6 +66,31 @@ final class FaviconCache {
         try await store.removeProfile(id)
     }
 
+    /// Icons another browser had for imported pages. An icon already on disk is kept; each is scaled like a fetched one.
+    func adopt(_ icons: [URL: Data], profileID: UUID) async {
+        let keyed = icons.compactMap { url, data in FaviconKey(profileID: profileID, url: url).map { ($0, data) } }
+        let scaled = await Task.detached(priority: .utility) {
+            keyed.compactMap { key, data in FaviconFetcher.downsampledPNG(from: data).map { (key, $0) } }
+        }.value
+        for (key, data) in scaled {
+            guard await store.icon(host: key.host, profileID: key.profileID) == nil, let image = NSImage(data: data) else { continue }
+            // Best effort, as for fetched icons: one that cannot be written is fetched again later.
+            try? await store.save(data, host: key.host, profileID: key.profileID)
+            if let favicon = entries[key], favicon.image == nil { favicon.setImage(image, color: await FaviconColor.extract(from: data)) }
+        }
+    }
+
+    /// Clearing Settings › Storage: icons are fetched again as pages load.
+    func removeAll() async throws {
+        let pending = Array(refreshTasks.values) + Array(fallbackTasks.values)
+        pending.forEach { $0.cancel() }
+        for task in pending { await task.value }
+        entries = [:]
+        recent = []
+        refreshed = []
+        try await store.removeAll()
+    }
+
     /// Looking an icon up starts reading it from disk the first time.
     func favicon(for key: FaviconKey) -> Favicon {
         recent.removeAll { $0 == key }
@@ -98,11 +123,12 @@ final class FaviconCache {
         }
     }
 
-    /// A visible saved login may have no open tab. Ask only that host for its conventional icon,
+    /// A visible site icon may have no open tab. Ask only that host for its conventional icon,
     /// once while its bounded cache entry lives, and never if an icon is already on disk.
     func fetchMissing(_ key: FaviconKey, at url: URL) {
         let favicon = favicon(for: key)
-        guard favicon.image == nil, !favicon.attemptedFallback, refreshTasks[key] == nil else { return }
+        // Evicting an entry does not finish its request; keep one owned request per site.
+        guard favicon.image == nil, !favicon.attemptedFallback, refreshTasks[key] == nil, fallbackTasks[key] == nil else { return }
         favicon.attemptedFallback = true
         let candidates = FaviconCandidate.ranked(from: [], pageURL: url)
         guard !candidates.isEmpty else { return }

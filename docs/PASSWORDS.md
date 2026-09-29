@@ -60,7 +60,7 @@ On a new-password field, the list offers **Use strong password**: 20 characters 
 
 ## Managing
 
-Settings › Passwords lists the profiles that own saved logins and the shared saving preference. Open a profile to search its logins, import passwords or export a CSV file. Each visible login reuses the profile's site favicon; when none is cached, Aero asks that host for `/favicon.ico`. This uses the existing favicon cache, limited to 256 icons in memory and 512 files or 32 MiB on disk, with one icon per host and profile. Open a login for its account and password details, editing and deletion. Settings Back and Forward move between these pages. The Passwords command (in the Profiles menu and the command bar) opens the overview. Showing, copying or editing a password and exporting require the Mac owner's authentication (Touch ID or the account password), valid for five minutes. A copied password is removed from the pasteboard after 60 seconds if it is still there. Deleting a login removes its keychain item.
+Settings › Passwords lists the profiles that own saved logins and the shared saving preference. Open a profile to search its logins, import passwords or export a CSV file. Each visible login reuses the profile's site favicon; when none is cached, Aero asks that host for `/favicon.ico`. This uses the existing favicon cache, limited to 256 icons in memory and 512 files or 32 MiB on disk, with one icon per host and profile. Open a login for its account and password details, editing and deletion. Settings Back and Forward move between these pages. The Passwords command (in the command bar) opens the overview. Showing, copying or editing a password and exporting require the Mac owner's authentication (Touch ID or the account password), valid for five minutes. A copied password is removed from the pasteboard after 60 seconds if it is still there. Deleting a login removes its keychain item.
 
 ## Import and export
 
@@ -82,7 +82,7 @@ Deleting a profile deletes its passwords: the step runs with the other data remo
 
 ## Test runs
 
-With `AERO_TEST_DATA`, items use the creator `AERT` and a security domain under the test folder's name; a launch removes abandoned `AERT` items older than a day, leaving concurrent test runs alone. Real passwords are never read or written by tests.
+With `AERO_TEST_DATA`, items use the creator `AERT` and a security domain under the test folder's name; a launch removes abandoned `AERT` items older than a day, leaving concurrent test runs alone. Real passwords are never read or written by tests. Browsers to import from are looked for only in the fixture sources (`ONBOARDING.md` › Test runs).
 
 ## Failure modes and acceptance scenarios
 
@@ -105,4 +105,4 @@ With `AERO_TEST_DATA`, items use the creator `AERT` and a security domain under 
 17. An import still writing while its destination profile is deleted recreates passwords for a profile that no longer exists.
 18. An IPv6 site's origin loses its brackets, so its saved login or site decision cannot be read back.
 
-Verification: E2E `PasswordsE2ETests` covers saving, filling, Update, Never across relaunch, the strong password on sign-up, profile isolation, Settings listing and deletion, two-step account capture without crossing tabs or origins, and the unavailable-passkey fallback in source builds (1–5, 8–10, 13, 15). Isolated Swift tests cover site matching (2), CSV (11), Chromium decryption (12), keychain scoping and deletion per profile (3, 5, 6, 7), rename collisions (16), writes after profile deletion (17), and IPv6 origin round trips (18), which UI tests cannot vary exhaustively or observe. Passkey ceremonies still require the entitlement and manual verification on a signed build (13).
+Verification: `PasswordsJourneys` covers saving, filling, Update, Never across relaunch, the strong password on sign-up, profile isolation, Settings listing and deletion, two-step account capture without crossing tabs or origins, and the unavailable-passkey fallback in source builds (1–5, 8–10, 13, 15). Isolated Swift tests cover site matching (2), CSV (11), Chromium decryption (12), keychain scoping and deletion per profile (3, 5, 6, 7), rename collisions (16), writes after profile deletion (17), and IPv6 origin round trips (18), which UI tests cannot vary exhaustively or observe. Passkey ceremonies still require the entitlement and manual verification on a signed build (13).

@@ -13,6 +13,7 @@ struct Prompt<Content: View, Actions: View>: View {
     @ViewBuilder var content: Content
     @ViewBuilder var actions: Actions
     @Environment(\.palette) private var palette
+    @Environment(\.promptCancel) private var cancel
 
     var body: some View {
         Group {
@@ -33,7 +34,8 @@ struct Prompt<Content: View, Actions: View>: View {
                 title.font(BrowserDesign.Typography.heading)
                 if let message { message.foregroundStyle(palette.secondary).fixedSize(horizontal: false, vertical: true) }
             }
-            content
+            // A focused field keeps Escape from the Cancel button's shortcut, so it cancels from here.
+            content.onExitCommand { cancel?.action() }
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
                 actions
@@ -49,6 +51,15 @@ extension Prompt where Content == EmptyView {
     init(title: Text, message: Text? = nil, icon: Image? = nil, @ViewBuilder actions: () -> Actions) {
         self.init(title: title, message: message, icon: icon, content: { EmptyView() }, actions: actions)
     }
+}
+
+/// What Escape does inside a prompt's content; the Cancel button's shortcut covers the rest of the card.
+struct PromptCancel {
+    let action: () -> Void
+}
+
+extension EnvironmentValues {
+    @Entry var promptCancel: PromptCancel?
 }
 
 /// Escape and a click outside the card do the same.
@@ -86,8 +97,10 @@ extension View {
                         .onTapGesture(perform: onCancel)
                         .accessibilityHidden(true)
                     content(item)
+                        .environment(\.promptCancel, PromptCancel(action: onCancel))
                 }
-                .background(KeyboardToPrompt())
+                // One per prompt: a prompt that replaces another takes the keyboard from it too.
+                .background(KeyboardToPrompt().id(item.id))
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
         }

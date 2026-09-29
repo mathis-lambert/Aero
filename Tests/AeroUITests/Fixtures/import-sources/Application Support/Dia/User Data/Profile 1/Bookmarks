@@ -1,0 +1,37 @@
+{
+ "version": 1,
+ "roots": {
+  "bookmark_bar": {
+   "type": "folder",
+   "name": "Bookmarks bar",
+   "children": [
+    {
+     "type": "url",
+     "url": "https://podcast.test/",
+     "name": "Podcast"
+    },
+    {
+     "type": "folder",
+     "name": "Voyages",
+     "children": [
+      {
+       "type": "url",
+       "url": "https://trains.test/",
+       "name": "Trains"
+      }
+     ]
+    }
+   ]
+  },
+  "other": {
+   "type": "folder",
+   "name": "Other bookmarks",
+   "children": []
+  },
+  "synced": {
+   "type": "folder",
+   "name": "Mobile bookmarks",
+   "children": []
+  }
+ }
+}

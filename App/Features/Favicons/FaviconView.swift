@@ -5,6 +5,8 @@ struct FaviconView<Placeholder: View>: View {
     let cache: FaviconCache
     let key: FaviconKey?
     let size: CGFloat
+    /// A page that may never load here, such as a favorite: its site is asked for its icon when none is saved.
+    var fetchingMissing: URL?
     @ViewBuilder let placeholder: Placeholder
 
     var body: some View {
@@ -21,5 +23,9 @@ struct FaviconView<Placeholder: View>: View {
             }
         }
         .accessibilityHidden(true)
+        .task(id: key) {
+            guard let key, let fetchingMissing else { return }
+            cache.fetchMissing(key, at: fetchingMissing)
+        }
     }
 }

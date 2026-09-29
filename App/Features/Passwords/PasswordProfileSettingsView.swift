@@ -51,9 +51,9 @@ struct PasswordProfileSettingsView: View {
                                 ForEach(shown) { login in
                                     Button { navigate(.passwordLogin(login)) } label: {
                                         SettingsRow(title: login.origin.host) {
-                                            FaviconView(cache: browser.favicons,
-                                                        key: URL(string: login.origin.rawValue).flatMap { FaviconKey(profileID: profileID, url: $0) },
-                                                        size: BrowserDesign.tabIconSize) {
+                                            let site = URL(string: login.origin.rawValue)
+                                            FaviconView(cache: browser.favicons, key: site.flatMap { FaviconKey(profileID: profileID, url: $0) },
+                                                        size: BrowserDesign.tabIconSize, fetchingMissing: site) {
                                                 Image(systemName: "globe").font(BrowserDesign.Typography.chrome)
                                             }
                                             .frame(width: BrowserDesign.identityHeight, height: BrowserDesign.identityHeight)
@@ -65,11 +65,6 @@ struct PasswordProfileSettingsView: View {
                                     .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
                                     .accessibilityIdentifier("passwords.row")
                                     .accessibilityLabel(Text(verbatim: "\(login.origin.host), \(login.username)"))
-                                    .task(id: login.origin) {
-                                        guard let url = URL(string: login.origin.rawValue),
-                                              let key = FaviconKey(profileID: profileID, url: url) else { return }
-                                        browser.favicons.fetchMissing(key, at: url)
-                                    }
                                 }
                             }
                         }

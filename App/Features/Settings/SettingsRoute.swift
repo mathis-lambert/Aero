@@ -21,7 +21,7 @@ enum SettingsRoute: Hashable {
 }
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, tabs, profiles, spaces, passwords, extensions, shortcuts
+    case general, tabs, profiles, spaces, passwords, extensions, storage, shortcuts
     var id: Self { self }
     var title: String {
         switch self {
@@ -31,6 +31,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .spaces: String(localized: "Spaces")
         case .passwords: String(localized: "Passwords")
         case .extensions: String(localized: "Extensions")
+        case .storage: String(localized: "Storage")
         case .shortcuts: String(localized: "Shortcuts")
         }
     }
@@ -42,6 +43,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .spaces: "square.stack"
         case .passwords: "key"
         case .extensions: "puzzlepiece.extension"
+        case .storage: "internaldrive"
         case .shortcuts: "keyboard"
         }
     }

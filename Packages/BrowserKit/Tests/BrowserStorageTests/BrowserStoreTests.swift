@@ -98,6 +98,46 @@ private func location() -> URL { FileManager.default.temporaryDirectory.appendin
     #expect(try Data(contentsOf: file) == bytes)
 }
 
+/// docs/STORAGE.md › Recovery: a missing database is never replaced by a fresh one while a snapshot shows data existed.
+@Test func aMissingDatabaseWithASnapshotIsNotStartedFresh() async throws {
+    let folder = location()
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let store = BrowserStore(directory: folder)
+    try await store.save(BrowserSession(profileName: "Saved"), revision: 1)
+    #expect(try await store.createRecoverySnapshot() != nil)
+    await store.close()
+    try FileManager.default.removeItem(at: folder.appendingPathComponent("Browser.sqlite"))
+    let reopened = BrowserStore(directory: folder)
+    await #expect(throws: StorageError.invalidData) { try await reopened.load() }
+    #expect(!FileManager.default.fileExists(atPath: folder.appendingPathComponent("Browser.sqlite").path), "Nothing fresh is created")
+    #expect(await reopened.hasRecoverySnapshot())
+}
+
+/// docs/STORAGE.md › Recovery: restoring brings back the last good launch and archives the damaged file unchanged.
+@Test func restoringTheSnapshotBringsBackTheLastGoodLaunch() async throws {
+    let folder = location()
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let store = BrowserStore(directory: folder)
+    var good = BrowserSession(profileName: "Good")
+    _ = good.open(URL(string: "https://example.test/")!, in: good.spaces[0].id)
+    try await store.save(good, revision: 1)
+    _ = try await store.createRecoverySnapshot()
+    var later = good
+    try later.editProfile(id: good.profiles[0].id, name: "Later")
+    try await store.save(later, revision: 2)
+    await store.close()
+    let damaged = Data("damaged records".utf8)
+    try damaged.write(to: folder.appendingPathComponent("Browser.sqlite"))
+
+    let reopened = BrowserStore(directory: folder)
+    await #expect(throws: (any Error).self) { try await reopened.load() }
+    try await reopened.restoreRecoverySnapshot()
+    #expect(try await reopened.load() == good)
+    let archives = try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil).filter { $0.lastPathComponent.hasPrefix("Recovery-") }
+    #expect(archives.count == 1)
+    #expect(try Data(contentsOf: try #require(archives.first).appendingPathComponent("Browser.sqlite")) == damaged)
+}
+
 @Test func tableRebuildPreservesChildrenAndFailedMigrationRestoresForeignKeys() throws {
     let folder = location()
     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

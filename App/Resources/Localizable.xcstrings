@@ -1,6 +1,26 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ Needs Full Disk Access" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Nécessite l’accès complet au disque"
+          }
+        }
+      }
+    },
+    "%@ encrypts them so no other app can read them. Each of its profiles becomes a space." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ les chiffre pour qu’aucune autre app ne puisse les lire. Chacun de ses profils devient un espace."
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "localizations" : {
         "en" : {
@@ -17,6 +37,9 @@
         }
       }
     },
+    "%@ · %@" : {
+      "shouldTranslate" : false
+    },
     "%@, %@" : {
       "comment" : "App icon variant: mark, then palette, such as “Feather, Sun”.",
       "localizations" : {
@@ -30,6 +53,32 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ : %2$@"
+          }
+        }
+      }
+    },
+    "%@’s data could not be read. Quit %@ and try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les données de %1$@ n’ont pas pu être lues. Quittez %2$@, puis réessayez."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@’s data could not be read. Quit %2$@ and try again."
           }
         }
       }
@@ -90,6 +139,166 @@
         }
       }
     },
+    "%lld favorites" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favorite"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favorites"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favori"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld favoris"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pages" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pages of history" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page of history"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages of history"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page d’historique"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages d’historique"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld passwords" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld password"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passwords"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mot de passe"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mots de passe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld points" : {
       "localizations" : {
         "en" : {
@@ -102,6 +311,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld points"
+          }
+        }
+      }
+    },
+    "%lld profiles" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profile"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profiles"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profil"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld profils"
+                }
+              }
+            }
           }
         }
       }
@@ -218,18 +467,22 @@
         }
       }
     },
-    "Actual size" : {
+    "Actual Size" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actual size"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Taille réelle"
+          }
+        }
+      }
+    },
+    "Ad blocking lists" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listes de blocage"
           }
         }
       }
@@ -394,7 +647,9 @@
         }
       }
     },
-    "Aero" : {},
+    "Aero" : {
+      "shouldTranslate" : false
+    },
     "Aero Passwords.csv" : {
       "localizations" : {
         "en" : {
@@ -407,6 +662,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mots de passe Aero.csv"
+          }
+        }
+      }
+    },
+    "Aero copies what you pick. The other browser stays as it is." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero copie ce que vous choisissez. L’autre navigateur reste intact."
+          }
+        }
+      }
+    },
+    "Aero could not erase everything. Quit and reopen Aero to finish the reset." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero n’a pas pu tout effacer. Quittez et rouvrez Aero pour terminer la réinitialisation."
+          }
+        }
+      }
+    },
+    "Aero is busy saving other changes. Try again in a moment." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero enregistre d’autres modifications. Réessayez dans un instant."
+          }
+        }
+      }
+    },
+    "Aero is your default browser." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero est votre navigateur par défaut."
           }
         }
       }
@@ -443,6 +738,16 @@
         }
       }
     },
+    "Allow Full Disk Access so Aero can read it. macOS asks Aero to reopen; you come back here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez l’accès complet au disque pour qu’Aero puisse le lire. macOS rouvre Aero, et vous revenez ici."
+          }
+        }
+      }
+    },
     "Already assigned to %@. Replacing removes that assignment." : {
       "localizations" : {
         "en" : {
@@ -471,6 +776,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ambre"
+          }
+        }
+      }
+    },
+    "And %lld more spaces" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "And %lld more space"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "And %lld more spaces"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Et %lld autre espace"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Et %lld autres espaces"
+                }
+              }
+            }
           }
         }
       }
@@ -699,6 +1044,76 @@
         }
       }
     },
+    "Bookmarks become favorites; each folder becomes a group." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les signets deviennent des favoris ; chaque dossier devient un groupe."
+          }
+        }
+      }
+    },
+    "Bookmarks menu" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu des signets"
+          }
+        }
+      }
+    },
+    "Bring favorites, history and passwords from another browser." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer favoris, historique et mots de passe depuis un autre navigateur."
+          }
+        }
+      }
+    },
+    "Bring your things" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérez vos affaires"
+          }
+        }
+      }
+    },
+    "Bringing it over." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On rapatrie tout."
+          }
+        }
+      }
+    },
+    "Caches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caches"
+          }
+        }
+      }
+    },
+    "Caches fill again as you browse. Sign-ins stay." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les caches se remplissent à nouveau pendant la navigation. Les connexions restent."
+          }
+        }
+      }
+    },
     "Camera" : {
       "localizations" : {
         "en" : {
@@ -923,6 +1338,16 @@
         }
       }
     },
+    "Choose what to bring." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez quoi importer."
+          }
+        }
+      }
+    },
     "Clear" : {
       "localizations" : {
         "en" : {
@@ -939,14 +1364,8 @@
         }
       }
     },
-    "Clear cache" : {
+    "Clear Cache" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear cache"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -955,14 +1374,8 @@
         }
       }
     },
-    "Clear cookies" : {
+    "Clear Cookies" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear cookies"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1035,18 +1448,52 @@
         }
       }
     },
-    "Close" : {
+    "Clear site data" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fermer"
+            "value" : "Effacer les données"
+          }
+        }
+      }
+    },
+    "Clear the cookies and site data of %@?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les cookies et données des sites de %@ ?"
+          }
+        }
+      }
+    },
+    "Clear the history of every profile?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer l’historique de tous les profils ?"
+          }
+        }
+      }
+    },
+    "Clearing a profile’s data signs you out of its sites." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les données d’un profil vous déconnecte de ses sites."
+          }
+        }
+      }
+    },
+    "Clear…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer…"
           }
         }
       }
@@ -1067,30 +1514,18 @@
         }
       }
     },
-    "Close following tabs" : {
+    "Close Tabs Below" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close following tabs"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fermer les onglets suivants"
+            "value" : "Fermer les onglets en dessous"
           }
         }
       }
     },
-    "Close other tabs" : {
+    "Close Other Tabs" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close other tabs"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1115,18 +1550,22 @@
         }
       }
     },
-    "Close tabs after the current tab in sidebar order. Favorite records are kept." : {
+    "Close Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close tabs after the current tab in sidebar order. Favorite records are kept."
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fermer les onglets après l’onglet actuel dans la barre latérale. Les favoris sont conservés."
+            "value" : "Fermer l’onglet"
+          }
+        }
+      }
+    },
+    "Close the tabs below the current tab in sidebar order. Favorite records are kept." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer les onglets situés sous l’onglet actuel dans la barre latérale. Les favoris sont conservés."
           }
         }
       }
@@ -1163,14 +1602,8 @@
         }
       }
     },
-    "Close window" : {
+    "Close Window" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close window"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1195,18 +1628,22 @@
         }
       }
     },
-    "Commands" : {
+    "Command Bar" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Commands"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Commandes"
+            "value" : "Barre de commandes"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
           }
         }
       }
@@ -1315,6 +1752,16 @@
             "value" : "Copy link"
           }
         },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le lien"
+          }
+        }
+      }
+    },
+    "Copy Link" : {
+      "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1547,6 +1994,16 @@
         }
       }
     },
+    "Default browser" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigateur par défaut"
+          }
+        }
+      }
+    },
     "Default priority" : {
       "localizations" : {
         "en" : {
@@ -1707,6 +2164,16 @@
         }
       }
     },
+    "Deleted profiles" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils supprimés"
+          }
+        }
+      }
+    },
     "Disable shortcut" : {
       "localizations" : {
         "en" : {
@@ -1755,30 +2222,18 @@
         }
       }
     },
-    "Duplicate" : {
+    "Show Downloads" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duplicate"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dupliquer"
+            "value" : "Afficher les téléchargements"
           }
         }
       }
     },
-    "Duplicate tab" : {
+    "Duplicate Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duplicate tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1799,22 +2254,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chaque profil garde ses propres cookies, connexions, historique, autorisations de sites et extensions."
-          }
-        }
-      }
-    },
-    "Edit space…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit space…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier l’espace…"
           }
         }
       }
@@ -1851,6 +2290,26 @@
         }
       }
     },
+    "Empty" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vide"
+          }
+        }
+      }
+    },
+    "Empty for now" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vide pour l’instant"
+          }
+        }
+      }
+    },
     "Enabled" : {
       "localizations" : {
         "en" : {
@@ -1879,6 +2338,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "English"
+          }
+        }
+      }
+    },
+    "Erases every profile, space, tab, favorite, history, password, website data, extension and setting. Aero then opens as new." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efface tous les profils, espaces, onglets, favoris, l’historique, les mots de passe, les données des sites, les extensions et les réglages. Aero s’ouvre ensuite comme neuf."
+          }
+        }
+      }
+    },
+    "Every profile’s visited pages." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages visitées de tous les profils."
+          }
+        }
+      }
+    },
+    "Everything is here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout est là."
           }
         }
       }
@@ -1931,6 +2420,36 @@
         }
       }
     },
+    "Fair winds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bon vent."
+          }
+        }
+      }
+    },
+    "Favorites" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris"
+          }
+        }
+      }
+    },
+    "Favorites and history" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris et historique"
+          }
+        }
+      }
+    },
     "Favorites grid" : {
       "localizations" : {
         "en" : {
@@ -1947,6 +2466,16 @@
         }
       }
     },
+    "Favorites, history and passwords." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris, historique et mots de passe."
+          }
+        }
+      }
+    },
     "Feather" : {
       "localizations" : {
         "en" : {
@@ -1959,6 +2488,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plume"
+          }
+        }
+      }
+    },
+    "Fetched again as pages load." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérées à nouveau au chargement des pages."
           }
         }
       }
@@ -1995,14 +2534,8 @@
         }
       }
     },
-    "Find next" : {
+    "Find Next" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find next"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2011,14 +2544,8 @@
         }
       }
     },
-    "Find previous" : {
+    "Find Previous" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find previous"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2075,6 +2602,16 @@
         }
       }
     },
+    "Folder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dossier"
+          }
+        }
+      }
+    },
     "Forward" : {
       "localizations" : {
         "en" : {
@@ -2087,6 +2624,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suivant"
+          }
+        }
+      }
+    },
+    "Found on this Mac" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sur ce Mac"
+          }
+        }
+      }
+    },
+    "Four shortcuts to try." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quatre raccourcis à essayer."
           }
         }
       }
@@ -2119,6 +2676,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Libère de la mémoire en déchargeant les onglets inutilisés depuis un moment. Ils se rechargent là où vous les aviez laissés."
+          }
+        }
+      }
+    },
+    "From %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis %@"
+          }
+        }
+      }
+    },
+    "From Mail, Messages or a PDF." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis Mail, Messages ou un PDF."
           }
         }
       }
@@ -2171,6 +2748,26 @@
         }
       }
     },
+    "Get started" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commencer"
+          }
+        }
+      }
+    },
+    "Getting around" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se déplacer"
+          }
+        }
+      }
+    },
     "Give the current tab a custom name." : {
       "localizations" : {
         "en" : {
@@ -2183,6 +2780,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Donner un nom personnalisé à l’onglet actuel."
+          }
+        }
+      }
+    },
+    "Go back to your last tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenir au dernier onglet"
           }
         }
       }
@@ -2283,6 +2890,16 @@
         }
       }
     },
+    "History and passwords" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historique et mots de passe"
+          }
+        }
+      }
+    },
     "History could not be changed. Check available disk space and try again." : {
       "localizations" : {
         "en" : {
@@ -2311,6 +2928,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’historique n’a pas pu être ouvert. Il a été conservé intact."
+          }
+        }
+      }
+    },
+    "History could not be saved. Your favorites were imported." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’historique n’a pas pu être enregistré. Vos favoris ont été importés."
           }
         }
       }
@@ -2363,6 +2990,36 @@
         }
       }
     },
+    "Import from Another Browser…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer depuis un autre navigateur…"
+          }
+        }
+      }
+    },
+    "Imported" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importé"
+          }
+        }
+      }
+    },
+    "Importing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importation"
+          }
+        }
+      }
+    },
     "Importing…" : {
       "localizations" : {
         "en" : {
@@ -2391,6 +3048,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indigo"
+          }
+        }
+      }
+    },
+    "Installed extensions and their files." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions installées et leurs fichiers."
+          }
+        }
+      }
+    },
+    "Its sites will sign you out and forget their settings. Other profiles keep theirs." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses sites vous déconnecteront et oublieront leurs réglages. Les autres profils gardent les leurs."
           }
         }
       }
@@ -2507,6 +3184,16 @@
         }
       }
     },
+    "Learn the essentials" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les essentiels"
+          }
+        }
+      }
+    },
     "Letter A" : {
       "localizations" : {
         "en" : {
@@ -2535,6 +3222,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clair"
+          }
+        }
+      }
+    },
+    "Light as air." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Léger comme l’air."
           }
         }
       }
@@ -2571,6 +3268,16 @@
         }
       }
     },
+    "Links open here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les liens s’ouvrent ici."
+          }
+        }
+      }
+    },
     "Location" : {
       "localizations" : {
         "en" : {
@@ -2583,6 +3290,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Position"
+          }
+        }
+      }
+    },
+    "Looking…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche…"
           }
         }
       }
@@ -2651,14 +3368,8 @@
         }
       }
     },
-    "Manage profiles" : {
+    "Manage Profiles" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manage profiles"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2679,6 +3390,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gérer les espaces…"
+          }
+        }
+      }
+    },
+    "Manage…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer…"
+          }
+        }
+      }
+    },
+    "Measuring…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesure…"
           }
         }
       }
@@ -2711,6 +3442,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réduire"
+          }
+        }
+      }
+    },
+    "Mobile bookmarks" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoris mobiles"
           }
         }
       }
@@ -2763,38 +3504,6 @@
         }
       }
     },
-    "Move left" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move left"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déplacer vers la gauche"
-          }
-        }
-      }
-    },
-    "Move right" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move right"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déplacer vers la droite"
-          }
-        }
-      }
-    },
     "Move tab" : {
       "localizations" : {
         "en" : {
@@ -2811,34 +3520,42 @@
         }
       }
     },
-    "Move tab to group…" : {
+    "Move to Group…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move tab to group…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer l’onglet vers un groupe…"
+            "value" : "Déplacer vers un groupe…"
           }
         }
       }
     },
-    "Move tab to space…" : {
+    "Move to Space…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move tab to space…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer l’onglet vers un espace…"
+            "value" : "Déplacer vers un espace…"
+          }
+        }
+      }
+    },
+    "Move" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer"
+          }
+        }
+      }
+    },
+    "Current" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actuel"
           }
         }
       }
@@ -2877,16 +3594,10 @@
     },
     "Move to Group" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Group"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer vers le groupe"
+            "value" : "Déplacer vers un groupe"
           }
         }
       }
@@ -2951,6 +3662,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Navigation"
+          }
+        }
+      }
+    },
+    "Needed to block ads and trackers; kept up to date on their own." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nécessaires pour bloquer publicités et traqueurs ; mises à jour automatiquement."
           }
         }
       }
@@ -3051,6 +3772,16 @@
         }
       }
     },
+    "New Profile…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau profil…"
+          }
+        }
+      }
+    },
     "New profile…" : {
       "localizations" : {
         "en" : {
@@ -3079,6 +3810,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nouvel espace"
+          }
+        }
+      }
+    },
+    "New Space…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvel espace…"
           }
         }
       }
@@ -3115,6 +3856,16 @@
         }
       }
     },
+    "New Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvel onglet"
+          }
+        }
+      }
+    },
     "Next match" : {
       "localizations" : {
         "en" : {
@@ -3131,14 +3882,8 @@
         }
       }
     },
-    "Next recently used tab" : {
+    "Next Recently Used Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next recently used tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3163,14 +3908,8 @@
         }
       }
     },
-    "Next space" : {
+    "Next Space" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next space"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3179,14 +3918,8 @@
         }
       }
     },
-    "Next tab" : {
+    "Next Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3323,6 +4056,16 @@
         }
       }
     },
+    "No other browser on this Mac." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun autre navigateur sur ce Mac."
+          }
+        }
+      }
+    },
     "No passwords match." : {
       "localizations" : {
         "en" : {
@@ -3399,6 +4142,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sans nom d’utilisateur"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun"
           }
         }
       }
@@ -3531,6 +4284,16 @@
         }
       }
     },
+    "Only if you want." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seulement si vous le souhaitez."
+          }
+        }
+      }
+    },
     "Open" : {
       "localizations" : {
         "en" : {
@@ -3543,6 +4306,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir"
+          }
+        }
+      }
+    },
+    "Open System Settings" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Réglages Système"
           }
         }
       }
@@ -3595,22 +4368,6 @@
         }
       }
     },
-    "Open in new tab" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open in new tab"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir dans un nouvel onglet"
-          }
-        }
-      }
-    },
     "Open location" : {
       "localizations" : {
         "en" : {
@@ -3623,6 +4380,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir une adresse"
+          }
+        }
+      }
+    },
+    "Open Location…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir une adresse…"
+          }
+        }
+      }
+    },
+    "Open tabs stay behind, and sites will ask you to sign in again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les onglets ouverts restent là-bas, et les sites vous demanderont de vous reconnecter."
+          }
+        }
+      }
+    },
+    "Open the control bar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir la barre de commande"
           }
         }
       }
@@ -3659,18 +4446,32 @@
         }
       }
     },
-    "Options" : {
+    "Or start fresh." : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Options"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Options"
+            "value" : "Ou partez de zéro."
+          }
+        }
+      }
+    },
+    "Or swipe with two fingers" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ou balayez avec deux doigts"
+          }
+        }
+      }
+    },
+    "Other bookmarks" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres signets"
           }
         }
       }
@@ -3767,6 +4568,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les pages que vous consultez apparaissent ici."
+          }
+        }
+      }
+    },
+    "Pages, images and scripts kept to open sites faster." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pages, images et scripts gardés pour ouvrir les sites plus vite."
           }
         }
       }
@@ -3947,18 +4758,12 @@
         }
       }
     },
-    "Pin as Tab" : {
+    "Pinned tabs and folders, in their spaces." : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pin as Tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Épingler comme onglet"
+            "value" : "Onglets épinglés et dossiers, dans leurs espaces."
           }
         }
       }
@@ -4011,6 +4816,16 @@
         }
       }
     },
+    "Press ⌘T to open your first tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez sur ⌘T pour ouvrir votre premier onglet."
+          }
+        }
+      }
+    },
     "Previous match" : {
       "localizations" : {
         "en" : {
@@ -4027,14 +4842,8 @@
         }
       }
     },
-    "Previous recently used tab" : {
+    "Previous Recently Used Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous recently used tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4059,14 +4868,8 @@
         }
       }
     },
-    "Previous space" : {
+    "Previous Space" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous space"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4075,14 +4878,8 @@
         }
       }
     },
-    "Previous tab" : {
+    "Previous Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4167,6 +4964,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Profils"
+          }
+        }
+      }
+    },
+    "Profiles, spaces, tabs and favorites." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils, espaces, onglets et favoris."
+          }
+        }
+      }
+    },
+    "Profiles, spaces, tabs, history, passwords, website data, extensions and settings will be erased. Aero then quits and opens as new." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profils, espaces, onglets, historique, mots de passe, données des sites, extensions et réglages seront effacés. Aero se ferme puis s’ouvre comme neuf."
           }
         }
       }
@@ -4267,6 +5084,16 @@
         }
       }
     },
+    "Ready" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prêt"
+          }
+        }
+      }
+    },
     "Reassign or delete this profile’s spaces first." : {
       "localizations" : {
         "en" : {
@@ -4347,6 +5174,16 @@
         }
       }
     },
+    "Reload Page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recharger la page"
+          }
+        }
+      }
+    },
     "Reload pages" : {
       "localizations" : {
         "en" : {
@@ -4395,14 +5232,8 @@
         }
       }
     },
-    "Reload without cache" : {
+    "Reload Without Cache" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reload without cache"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4475,14 +5306,8 @@
         }
       }
     },
-    "Rename tab…" : {
+    "Rename Tab…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename tab…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4491,30 +5316,8 @@
         }
       }
     },
-    "Rename…" : {
+    "Reopen Closed Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renommer…"
-          }
-        }
-      }
-    },
-    "Reopen closed tab" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reopen closed tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4567,6 +5370,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réservé par macOS : %@."
+          }
+        }
+      }
+    },
+    "Reset Aero" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser Aero"
+          }
+        }
+      }
+    },
+    "Reset Aero?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser Aero ?"
+          }
+        }
+      }
+    },
+    "Reset Aero…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser Aero…"
           }
         }
       }
@@ -4855,6 +5688,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rose"
+          }
+        }
+      }
+    },
+    "Safari keeps its data locked." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari garde ses données sous clé."
           }
         }
       }
@@ -5164,14 +6007,8 @@
         }
       }
     },
-    "Select last tab" : {
+    "Select Last Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select last tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5180,14 +6017,8 @@
         }
       }
     },
-    "Select tab 1" : {
+    "Select Tab 1" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 1"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5196,14 +6027,8 @@
         }
       }
     },
-    "Select tab 2" : {
+    "Select Tab 2" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 2"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5212,14 +6037,8 @@
         }
       }
     },
-    "Select tab 3" : {
+    "Select Tab 3" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 3"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5228,14 +6047,8 @@
         }
       }
     },
-    "Select tab 4" : {
+    "Select Tab 4" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 4"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5244,14 +6057,8 @@
         }
       }
     },
-    "Select tab 5" : {
+    "Select Tab 5" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 5"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5260,14 +6067,8 @@
         }
       }
     },
-    "Select tab 6" : {
+    "Select Tab 6" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 6"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5276,14 +6077,8 @@
         }
       }
     },
-    "Select tab 7" : {
+    "Select Tab 7" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 7"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5292,14 +6087,8 @@
         }
       }
     },
-    "Select tab 8" : {
+    "Select Tab 8" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 8"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5372,6 +6161,16 @@
         }
       }
     },
+    "Set as default" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Définir par défaut"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "en" : {
@@ -5400,6 +6199,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages…"
+          }
+        }
+      }
+    },
+    "Setup takes about a minute." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La configuration prend environ une minute."
           }
         }
       }
@@ -5484,14 +6293,8 @@
         }
       }
     },
-    "Show all history" : {
+    "Show All History" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show all history"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5580,6 +6383,16 @@
         }
       }
     },
+    "Show or hide the sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher ou masquer la barre latérale"
+          }
+        }
+      }
+    },
     "Show password…" : {
       "localizations" : {
         "en" : {
@@ -5660,18 +6473,42 @@
         }
       }
     },
-    "Site settings…" : {
+    "Site Controls" : {
       "localizations" : {
-        "en" : {
+        "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Site settings…"
+            "value" : "Contrôles du site"
           }
-        },
+        }
+      }
+    },
+    "Site icons" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icônes des sites"
+          }
+        }
+      }
+    },
+    "Site Settings…" : {
+      "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages du site…"
+          }
+        }
+      }
+    },
+    "Skip setup" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer la configuration"
           }
         }
       }
@@ -5772,6 +6609,26 @@
         }
       }
     },
+    "Spaces and favorites" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaces et favoris"
+          }
+        }
+      }
+    },
+    "Spaces and favorites stay in %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les espaces et favoris restent dans %@"
+          }
+        }
+      }
+    },
     "Spaces organize tabs by context. Drag them to set their order in the sidebar." : {
       "localizations" : {
         "en" : {
@@ -5804,6 +6661,36 @@
         }
       }
     },
+    "Start browsing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commencer à naviguer"
+          }
+        }
+      }
+    },
+    "Start fresh" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partir de zéro"
+          }
+        }
+      }
+    },
+    "Start where you left off." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprenez où vous en étiez."
+          }
+        }
+      }
+    },
     "Stop loading" : {
       "localizations" : {
         "en" : {
@@ -5812,6 +6699,16 @@
             "value" : "Stop loading"
           }
         },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter le chargement"
+          }
+        }
+      }
+    },
+    "Stop Loading" : {
+      "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5832,6 +6729,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arrêter le chargement de la page actuelle."
+          }
+        }
+      }
+    },
+    "Storage" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage"
           }
         }
       }
@@ -5880,6 +6787,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Parcourir les onglets récents. Relâcher les touches de modification pour confirmer."
+          }
+        }
+      }
+    },
+    "Switch spaces" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer d’espace"
           }
         }
       }
@@ -5996,6 +6913,16 @@
         }
       }
     },
+    "Tabs and spaces" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglets et espaces"
+          }
+        }
+      }
+    },
     "Tabs that play media, use the camera or microphone, are in full screen, or contain unsent text stay awake. When the Mac runs low on memory, inactive tabs sleep sooner." : {
       "localizations" : {
         "en" : {
@@ -6044,6 +6971,16 @@
         }
       }
     },
+    "The control bar knows where you go." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La barre de commande sait où vous allez."
+          }
+        }
+      }
+    },
     "The extension operation could not be completed. Your saved files have been kept. Try again." : {
       "localizations" : {
         "en" : {
@@ -6056,6 +6993,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’opération sur l’extension n’a pas pu être terminée. Vos fichiers enregistrés ont été conservés. Réessayez."
+          }
+        }
+      }
+    },
+    "The favorites could not be saved. Check that there is enough disk space and try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les favoris n’ont pas pu être enregistrés. Vérifiez l’espace disque disponible, puis réessayez."
           }
         }
       }
@@ -6188,6 +7135,16 @@
         }
       }
     },
+    "This could not be cleared. Quit Aero and try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’effacer. Quittez Aero et réessayez."
+          }
+        }
+      }
+    },
     "This data requires a newer version of Aero. Your files have been kept unchanged." : {
       "localizations" : {
         "en" : {
@@ -6300,14 +7257,8 @@
         }
       }
     },
-    "Toggle favorite" : {
+    "Toggle Favorite" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toggle favorite"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6328,6 +7279,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Afficher/masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "Toggle Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher/masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "Hide Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "Show Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher la barre latérale"
           }
         }
       }
@@ -6360,6 +7341,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Essayez d’autres mots."
+          }
+        }
+      }
+    },
+    "Try them now." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez-les maintenant."
           }
         }
       }
@@ -6604,6 +7595,16 @@
         }
       }
     },
+    "Visited pages are removed from every profile. Tabs and favorites stay." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages visitées sont retirées de tous les profils. Les onglets et favoris restent."
+          }
+        }
+      }
+    },
     "Visited pages are removed from this profile’s history. Tabs, website data and sign-ins are kept." : {
       "localizations" : {
         "en" : {
@@ -6632,6 +7633,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attendez la fin des téléchargements de cet espace."
+          }
+        }
+      }
+    },
+    "Website cache" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache des sites"
+          }
+        }
+      }
+    },
+    "Website data" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données des sites"
+          }
+        }
+      }
+    },
+    "Website data left by profiles that no longer exist" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données laissées par des profils qui n’existent plus"
+          }
+        }
+      }
+    },
+    "Welcome to Aero" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bienvenue dans Aero"
+          }
+        }
+      }
+    },
+    "What comes along" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qui vous suit"
           }
         }
       }
@@ -6668,6 +7719,16 @@
         }
       }
     },
+    "Within reach." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À portée de main."
+          }
+        }
+      }
+    },
     "Yesterday" : {
       "localizations" : {
         "en" : {
@@ -6680,6 +7741,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hier"
+          }
+        }
+      }
+    },
+    "You can import later from the Profiles menu." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pourrez importer plus tard depuis le menu Profils."
+          }
+        }
+      }
+    },
+    "Your default browser" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigateur par défaut"
+          }
+        }
+      }
+    },
+    "Your favorites are in the sidebar. Press ⌘T to open a new tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vos favoris sont dans la barre latérale. Appuyez sur ⌘T pour ouvrir un onglet."
           }
         }
       }
@@ -6700,14 +7791,8 @@
         }
       }
     },
-    "Zoom in" : {
+    "Zoom In" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoom in"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6716,14 +7801,8 @@
         }
       }
     },
-    "Zoom out" : {
+    "Zoom Out" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoom out"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6744,6 +7823,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "exporter vos mots de passe"
+          }
+        }
+      }
+    },
+    "macOS asks you once to allow it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS vous le demande une fois."
+          }
+        }
+      }
+    },
+    "macOS asks you to confirm." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS vous demande de confirmer."
           }
         }
       }
@@ -6776,6 +7875,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "afficher un mot de passe enregistré"
+          }
+        }
+      }
+    },
+    "used by Aero on this Mac" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "utilisés par Aero sur ce Mac"
           }
         }
       }
@@ -7200,6 +8309,176 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "⌘Q demande une confirmation, pour qu’un raccourci malencontreux ne ferme jamais vos onglets."
+          }
+        }
+      }
+    },
+    "Pin Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler l’onglet"
+          }
+        }
+      }
+    },
+    "Move to Pinned Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer vers les onglets épinglés"
+          }
+        }
+      }
+    },
+    "Rename Group…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renommer le groupe…"
+          }
+        }
+      }
+    },
+    "Expand Group" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Développer le groupe"
+          }
+        }
+      }
+    },
+    "Collapse Group" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réduire le groupe"
+          }
+        }
+      }
+    },
+    "Edit Space…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier l’espace…"
+          }
+        }
+      }
+    },
+    "Move Left" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer vers la gauche"
+          }
+        }
+      }
+    },
+    "Move Right" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer vers la droite"
+          }
+        }
+      }
+    },
+    "Delete Space…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’espace…"
+          }
+        }
+      }
+    },
+    "Unpin Extension" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler l’extension"
+          }
+        }
+      }
+    },
+    "Pin Extension" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler l’extension"
+          }
+        }
+      }
+    },
+    "Open Extension Options" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les options de l’extension"
+          }
+        }
+      }
+    },
+    "Manage Extensions…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer les extensions…"
+          }
+        }
+      }
+    },
+    "Remove Extension" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’extension"
+          }
+        }
+      }
+    },
+    "Open in New Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans un nouvel onglet"
+          }
+        }
+      }
+    },
+    "Delete from History" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer de l’historique"
+          }
+        }
+      }
+    },
+    "Dismiss" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer"
           }
         }
       }

@@ -9,6 +9,7 @@ struct BrowserWindowView: View {
     let browser: BrowserModel
     @State private var sidebarRevealed = false
     @State private var resizingSidebarWidth: CGFloat?
+    @State private var windowControls = WindowControls()
     @Environment(\.openWindow) private var openWindow
     @Environment(\.palette) private var palette
 
@@ -18,6 +19,22 @@ struct BrowserWindowView: View {
     private var isOverlaid: Bool { browser.window.controlBar != nil || prompt != nil }
 
     var body: some View {
+        browserContent
+            // Nothing behind the onboarding keeps focus or takes keys.
+            .disabled(browser.onboarding != nil)
+            .overlay {
+                if let onboarding = browser.onboarding {
+                    OnboardingView(browser: browser, onboarding: onboarding)
+                        .transition(.opacity)
+                }
+            }
+            .browserAnimation(value: browser.onboarding == nil)
+            .environment(\.windowControls, windowControls)
+            // Menus reach the browser even while the onboarding covers it.
+            .focusedSceneValue(\.browserModel, browser)
+    }
+
+    private var browserContent: some View {
         GeometryReader { geometry in
             let maximumWidth = max(BrowserDesign.sidebarWidth, geometry.size.width / 3)
             let sidebarWidth = min(resizingSidebarWidth ?? browser.preferences.sidebarWidth, maximumWidth)
@@ -161,9 +178,6 @@ struct BrowserWindowView: View {
             browser.window.siteSettingsPresented = false
             browser.window.controlCenterPresented = false
         }
-        .sheet(item: Bindable(browser.window).tabDestination) { destination in
-            TabDestinationSheet(browser: browser, destination: destination)
-        }
         .onExitCommand {
             // Escape reaches here only after focused controls have had their dismissal opportunity.
             if browser.window.controlBar == nil, browser.window.prompt == nil,
@@ -172,8 +186,7 @@ struct BrowserWindowView: View {
                 browser.perform(.stopLoading)
             }
         }
-        .background(WindowConfiguration())
-        .focusedSceneValue(\.browserModel, browser)
+        .background(WindowConfiguration(controls: windowControls))
     }
 
     private func resizeHandle(width: CGFloat, maximum: CGFloat) -> some View {
@@ -201,6 +214,7 @@ struct WindowPromptView: View {
         case .quit: QuitPrompt(browser: browser)
         case .space(let target): SpacePrompt(browser: browser, profileID: target)
         case .removeSpace(let id): SpaceRemovalPrompt(browser: browser, spaceID: id)
+        case .moveTab(let move): TabMovePrompt(browser: browser, presentation: move)
         case .transferTab(let id, let destination): TabTransferPrompt(browser: browser, tabID: id, spaceID: destination)
         case .profile: ProfilePrompt(browser: browser)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)

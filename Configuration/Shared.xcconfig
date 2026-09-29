@@ -9,5 +9,7 @@ GENERATE_INFOPLIST_FILE = NO
 INFOPLIST_FILE = Configuration/Info.plist
 ENABLE_HARDENED_RUNTIME = YES
 CODE_SIGN_ENTITLEMENTS = Configuration/Aero.entitlements
+// One module name for every channel, so unit tests import it the same way.
+PRODUCT_MODULE_NAME = Aero
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
 #include "Version.xcconfig"

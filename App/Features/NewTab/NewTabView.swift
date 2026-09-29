@@ -14,12 +14,7 @@ struct NewTabView: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let color = browser.accent
-        let light = color.light(in: scheme)
-        // On the dark canvas the dots take the luminous accent and the densest glow toward white; on
-        // the light canvas the sparse dots are paler and the densest carry the full tint.
-        let ink = scheme == .dark ? light : color.tint.mix(with: .white, by: 0.35)
-        let core = scheme == .dark ? light.mix(with: .white, by: 0.45) : color.tint
+        let (ink, core, light) = Self.windColors(for: browser.accent, in: scheme)
         GeometryReader { geometry in
             let size = geometry.size
             let barTop = size.height * Self.barPosition
@@ -37,5 +32,14 @@ struct NewTabView: View {
             lastActivity = now
             activity += 1
         }
+    }
+
+    /// On the dark canvas the dots take the luminous accent and the densest glow toward white; on the light canvas the
+    /// sparse dots are paler and the densest carry the full tint. The onboarding's browser preview shares them.
+    static func windColors(for accent: SpaceColor, in scheme: ColorScheme) -> (ink: Color, core: Color, light: Color) {
+        let light = accent.light(in: scheme)
+        let ink = scheme == .dark ? light : accent.tint.mix(with: .white, by: 0.35)
+        let core = scheme == .dark ? light.mix(with: .white, by: 0.45) : accent.tint
+        return (ink, core, light)
     }
 }

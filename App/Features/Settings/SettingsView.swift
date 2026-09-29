@@ -41,6 +41,7 @@ struct SettingsView: View {
                     case .spaces: SpacesSettingsView(browser: browser, navigate: navigate)
                     case .passwords: PasswordsSettingsView(browser: browser, navigate: navigate)
                     case .extensions: ExtensionsSettingsView(browser: browser)
+                    case .storage: StorageSettingsView(browser: browser, navigate: navigate)
                     case .shortcuts: ShortcutSettingsView(shortcuts: browser.shortcuts)
                     }
                 }

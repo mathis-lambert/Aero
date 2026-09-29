@@ -62,12 +62,23 @@ extension BrowserModel {
 
     func copyLink() {
         guard let url = currentAddress else { return }
+        copy([url])
+        window.linkCopies += 1
+    }
+
+    /// From a tab's context menu: the address it shows, or keeps while closed.
+    func copyLink(of tab: BrowserTab) {
+        copy([tab.id == window.selectedTabID ? currentAddress ?? tab.url : tab.url])
+    }
+
+    /// Several links go on separate lines, as Safari copies them.
+    func copy(_ urls: [URL]) {
+        guard !urls.isEmpty else { return }
         let item = NSPasteboardItem()
-        item.setString(url.absoluteString, forType: .URL)
-        item.setString(url.absoluteString, forType: .string)
+        if urls.count == 1 { item.setString(urls[0].absoluteString, forType: .URL) }
+        item.setString(urls.map(\.absoluteString).joined(separator: "\n"), forType: .string)
         NSPasteboard.general.clearContents()
         NSPasteboard.general.writeObjects([item])
-        window.linkCopies += 1
         AccessibilityNotification.Announcement(String(localized: "Link copied")).post()
     }
 }

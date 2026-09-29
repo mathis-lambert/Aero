@@ -31,7 +31,7 @@ Browser mutations save asynchronously through one owned task. While one snapshot
 1. Specify failure modes and add supported-format fixtures before implementation.
 2. Append SQL that transforms existing rows and constraints. Never edit a shipped step or simply bump a number. No migration is needed for unrelated UI changes.
 3. The runner validates identity/integrity, snapshots an older database with SQLite's backup API, and executes all pending steps and version updates inside one transaction. A failed step rolls everything back; retry is safe. Newer incompatible schemas are refused before journal configuration or maintenance.
-4. Exercise upgrades including skipped versions and failure injection. Keep the resulting E2E `.xcresult` and reproduction manifest. Do not ship without an old-version fixture and semantic checks for retained identities and relationships.
+4. Exercise upgrades including skipped versions and failure injection. Keep the resulting `.xcresult` and reproduction manifest. Do not ship without an old-version fixture and semantic checks for retained identities and relationships.
 
 The runner disables foreign-key actions only around the migration transaction and checks all references before commit, then reenables enforcement, including after failure. This permits table rebuilds without cascading deletion of their children. Follow SQLite's [table reconstruction procedure](https://www.sqlite.org/lang_altertable.html#making_other_kinds_of_table_schema_changes) and recreate affected indexes, triggers and views in the migration.
 
@@ -58,3 +58,37 @@ Uninstall first persists `isRemoving`, unloads the extension, uses WebKit data-r
 `HistoryStore` opens lazily on its actor. One database contains profile-scoped pages and visits, plus an FTS5 title/address index maintained by triggers. Every operation requires a profile; cursor pagination uses `(last_visit, id)` to preserve equal-timestamp entries.
 
 Failed writes retry in order with their original timestamps, before a later clear can commit. Pending writes are memory-only and cannot survive forced termination. Read failures can retry without disabling browsing. Visits older than a year are pruned in batches of 500 on store activity, at most hourly when caught up and once a minute while catching up.
+
+## Storage settings
+
+Settings › Storage shows what Aero keeps on this Mac and lets the person clean it. Sizes are measured off the main actor when the page opens and after each action; nothing polls.
+
+| Item | Measured from | Action |
+| --- | --- | --- |
+| Website cache | Each profile's WebKit network, fetch and media caches, and Aero's own URL cache | Clear cache: WebKit's cache data types in every profile, and `URLCache.shared`. Sign-ins stay. |
+| Cookies and site data | Each profile's WebKit store minus its caches | Clear, per profile, after confirmation: every WebKit data type of that profile. Sites sign out. |
+| Data of deleted profiles | WebKit stores whose identifier is no longer a profile | Remove through `WKWebsiteDataStore.remove(forIdentifier:)`. |
+| History | `History.sqlite` and its WAL | Clear history, after confirmation: every profile's history, then the database is checkpointed and vacuumed so the space is returned. |
+| Site icons | `Caches/Favicons` | Clear: icons are fetched again as pages load. |
+| Ad blocking lists | `Caches/Filter Lists` and `Caches/Content Rules` | None: blocking needs them; they update on their own. |
+| Extensions | `Storage/Extensions` | Manage in Settings › Extensions. |
+| Tabs and spaces | The rest of `Storage` | None. |
+
+WebKit sizes are read-only estimates from the stores' folders under `~/Library/WebKit/<bundle identifier>/WebsiteDataStore`; Aero never writes those files and clears only through WebKit's public data-store APIs. Test runs use ephemeral stores, which occupy no disk. Passwords live in the keychain and are not counted.
+
+## Reset
+
+Reset Aero erases every browsing record of the channel: profiles, spaces, tabs and favorites, history, passwords, website data, extensions, icons, caches and preferences. The next launch is a fresh store, which starts the onboarding.
+
+After confirmation, the keychain items of every profile are deleted while Aero runs (a failure stops the reset and says so). Aero then records a pending reset in its preferences and quits; a helper process waits for it to exit and opens it again, so two instances never share the store. At launch, before any store or page exists, Aero deletes its `Storage` and `Caches` folders, removes every WebKit website data store it owns, and clears its preferences domain, the pending mark last. Test runs erase only their own directory, preferences suite and keychain namespace, and quit without reopening.
+
+Failure modes, covered by `StorageJourneys`:
+
+1. Measuring blocks the main actor, or sizes stay stale after an action.
+2. Clearing the cache signs the person out; clearing one profile's site data touches another profile.
+3. Clearing history leaves the file at its old size.
+4. Removing unused data removes the store of a live profile or of one being deleted.
+5. Reset leaves records, history, passwords, website data, extensions, icons, preferences or onboarding completion behind.
+6. Reset erases while pages or stores are in use, or two instances write the same store.
+7. A test run's reset touches the person's own data, preferences or keychain.
+8. A failed step reports success.

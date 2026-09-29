@@ -27,6 +27,7 @@ pinned tabs and open tabs; Command-9 selects the last one.
 | Downloads / history | Shift-Command-J / Command-Y |
 | Print / copy URL | Command-P / Shift-Command-C |
 | Next / previous in sidebar order | Option-Command-Right / Option-Command-Left |
+| Next / previous space | Control-Command-Right / Control-Command-Left |
 | Recent / reverse recent | Control-Tab / Shift-Control-Tab |
 | Tabs 1–8 / last | Command-1…8 / Command-9 |
 
@@ -65,6 +66,42 @@ to produce punctuation/digits as part of that character. Plus/equals have one no
 - Each edit encodes and replaces one complete preferences value. There is no migration framework
   or persisted copy of defaults. Future format changes must explicitly convert supported versions before replacing the blob; unknown versions remain preserved and blocked.
 
+## Menus
+
+The menu bar follows Safari's arrangement and Apple's menu guidelines: title-case English titles, an ellipsis when
+a command asks for more before acting, dividers between groups of related actions and an SF Symbol on each Aero
+item. Titles that toggle say what they will do (Show/Hide Sidebar, Add to/Remove from Favorites).
+
+| Menu | Contents |
+| --- | --- |
+| Aero | Settings…, Quit |
+| File | New Tab, Open Location…, Command Bar · Close Tab, Close Window · Import from Another Browser… · Print… |
+| Edit | Native editing, Copy Link, Find › Find…, Find Next, Find Previous |
+| View | Show/Hide Sidebar · Reload Page, Reload Without Cache, Stop Loading · Zoom In, Zoom Out, Actual Size · Show Downloads, Site Controls, Site Settings… |
+| History | Back, Forward · Reopen Closed Tab · Show All History |
+| Tabs | Next Tab, Previous Tab · Add to Favorites, Duplicate Tab, Rename Tab… · New Group with Tab, Move to Group ›, Move to Space › · Close Other Tabs, Close Tabs Below |
+| Spaces | New Space… · every space, checked when shown, under its profile's name once there are several · Next Space, Previous Space |
+
+Move to Group and Move to Space list their choices as submenus, the same ones as the tab's context menu. From the
+command bar or a shortcut, the same moves open a prompt naming the tab, marking where it is now, with the arrows
+choosing and Return moving it. Some commands stay out of the menu bar: numbered tabs and recent tabs belong to
+the keyboard, profiles and passwords to Settings, and clearing a site's cookies or cache to its controls. Their
+shortcuts always go to Aero, since a page could not pass one on to a menu item.
+
+## Context menus
+
+Context menus follow the same rules: sections go from the item itself, to where it is kept, to how it is organized,
+then closing or removing it, which comes last and is marked destructive when it deletes something.
+
+| Item | Contents |
+| --- | --- |
+| Tab or favorite | Copy Link · Duplicate Tab, Rename Tab… · Add to Favorites and Pin Tab for an open tab; Move to Pinned Tabs or Move to Favorites Grid, and Remove from Favorites, for a favorite · New Group with Tab, Move to Group ›, Move to Space › · Close Tab, while its page is open |
+| Group | Rename Group…, Collapse or Expand Group · Ungroup, which keeps its tabs pinned |
+| Space | Edit Space… · Move Left, Move Right · Delete Space… |
+| Reload button | Reload Without Cache · Clear Cookies, Clear Cache · Site Settings… |
+| Extension | Pin or Unpin Extension, Open Extension Options · Manage Extensions… · Remove Extension |
+| History entries | Open, Open in New Tab · Copy Link · Delete from History |
+
 ## Routing and lifetime
 
 Reserved browser shortcuts run only in the main browser window, outside modal sheets and marked
@@ -75,12 +112,13 @@ The Settings recorder is a local first responder, not a global event monitor. Es
 
 ## Verification
 
-The focused `ShortcutE2ETests` exercise page interception vs reserved commands, both plus/equals
-zoom inputs, sequential vs recent tab selection, favorite order, conflicting capture, protected
-native commands, explicit disable/reset, relaunch, default/override collisions, unreadable preference preservation, and expanded French/RTL Settings. Existing browsing tests
-cover page-first routing; the tooltip test checks that the sidebar now advertises Command-S.
-
-Run with `Scripts/run-e2e.sh AeroUITests/ShortcutE2ETests` and retain its result bundle and manifest.
+`ShortcutPreferencesTests` covers resolution, shipped defaults without conflicts, recording over a taken
+shortcut, explicit choices over defaults, unreadable data kept until Restore defaults, protected native
+commands, disable and restore, priority, and key identity. `KeyboardJourneys` drives page interception
+against reserved commands, both zoom inputs, sequential and recent tab selection, favorite order,
+recording a conflicting shortcut in Settings and website priority; `SidebarJourneys` checks the menus,
+context menus and tooltips, and `LocalizationJourney` the French, expanded and right-to-left Settings.
+Run them with `Scripts/test.sh full AeroTests/ShortcutPreferencesTests AeroUITests/KeyboardJourneys`.
 Physical AZERTY/QWERTY and IME composition should also be checked on those actual input sources;
 synthetic events alone do not establish hardware-layout coverage. System/global shortcuts may
 be intercepted before Aero receives an event and are not fully discoverable by the recorder.

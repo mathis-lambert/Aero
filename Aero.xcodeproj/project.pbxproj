@@ -7,12 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CA62092B7B5C7DF45A3093A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B9281A3E96A7A56412327CC /* BrowserCore */; };
+		858C612D9FA8879AA3BD6372 /* BrowserStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA8807172498D9D5F0353C2 /* BrowserStorage */; };
 		31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 69764682C66036DC0CE36654 /* BrowserCore */; };
 		CDB05B415DF02AEE4458D54F /* BrowserStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */; };
 		D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		905380914C1E74D07B98584E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F6F4DA8D93E88A08220E03B7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D3225F53B4406649474BC956;
+			remoteInfo = Aero;
+		};
 		858D0932EEACC1122B4B1EF1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F6F4DA8D93E88A08220E03B7 /* Project object */;
@@ -23,6 +32,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		06AC8D3C6FE8B3A3D6B6F100 /* AeroTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AeroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/UnitTests.xcconfig; sourceTree = "<group>"; };
 		0A999012FFB87B3EDAC99ADB /* Packages */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Packages; sourceTree = "<group>"; };
 		379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Debug.xcconfig; sourceTree = "<group>"; };
 		68A4194227BE4AB74BC3D323 /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
@@ -37,6 +48,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		CC42ED882770E5635F511C36 /* Tests/AeroTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Tests/AeroTests;
+			sourceTree = "<group>";
+		};
 		5DB0711C456FD5D72DF2498C /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
@@ -56,6 +72,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		BCE19D3FC1EF3F5BE576EA63 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0F91A57B11B30F1A7980649D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -70,6 +93,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0CA62092B7B5C7DF45A3093A /* BrowserCore in Frameworks */,
+				858C612D9FA8879AA3BD6372 /* BrowserStorage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +106,7 @@
 			children = (
 				5DB0711C456FD5D72DF2498C /* App */,
 				0A999012FFB87B3EDAC99ADB /* Packages */,
+				CC42ED882770E5635F511C36 /* Tests/AeroTests */,
 				6F99D0E977B61988ED22843D /* Tests/AeroUITests */,
 				754164850F38C1ECDAF6B8ED /* Configuration */,
 				379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */,
@@ -90,6 +116,7 @@
 				069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */,
 				A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */,
 				09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */,
+				761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */,
 				68A4194227BE4AB74BC3D323 /* docs */,
 				FE0A091FDBFB3E9C31B7A1BD /* Products */,
 			);
@@ -100,6 +127,7 @@
 			children = (
 				C2B6AF95E5FB6AF04547C8EA /* Aero.app */,
 				77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */,
+				06AC8D3C6FE8B3A3D6B6F100 /* AeroTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -107,6 +135,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		62CC2E885AFDEB8D0CB8D316 /* AeroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 123BCF5EF7CE039FC19ADE72 /* Build configuration list for PBXNativeTarget "AeroTests" */;
+			buildPhases = (
+				C4FDCD584A26C0BAA36DDE06 /* Sources */,
+				BCE19D3FC1EF3F5BE576EA63 /* Frameworks */,
+				5C6FE71BDDF39903427BD63D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C6A0004A0986C678A54592FF /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				CC42ED882770E5635F511C36 /* Tests/AeroTests */,
+			);
+			name = AeroTests;
+			productName = AeroTests;
+			productReference = 06AC8D3C6FE8B3A3D6B6F100 /* AeroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		7C1CFF113F420C27BE3F870D /* AeroUITests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A5E93B15A02AA3025AC88070 /* Build configuration list for PBXNativeTarget "AeroUITests" */;
@@ -124,6 +173,10 @@
 				6F99D0E977B61988ED22843D /* Tests/AeroUITests */,
 			);
 			name = AeroUITests;
+			packageProductDependencies = (
+				0B9281A3E96A7A56412327CC /* BrowserCore */,
+				8CA8807172498D9D5F0353C2 /* BrowserStorage */,
+			);
 			productName = AeroUITests;
 			productReference = 77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -163,6 +216,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
+					62CC2E885AFDEB8D0CB8D316 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = D3225F53B4406649474BC956;
+					};
 					7C1CFF113F420C27BE3F870D = {
 						CreatedOnToolsVersion = 27.0;
 						TestTargetID = D3225F53B4406649474BC956;
@@ -191,12 +248,20 @@
 			projectRoot = "";
 			targets = (
 				D3225F53B4406649474BC956 /* Aero */,
+				62CC2E885AFDEB8D0CB8D316 /* AeroTests */,
 				7C1CFF113F420C27BE3F870D /* AeroUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5C6FE71BDDF39903427BD63D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2AC7AB26953A78AD46B49603 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -236,6 +301,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C4FDCD584A26C0BAA36DDE06 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6805EC6AFDAFDBE18E2FF355 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -253,6 +325,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		C6A0004A0986C678A54592FF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D3225F53B4406649474BC956 /* Aero */;
+			targetProxy = 905380914C1E74D07B98584E /* PBXContainerItemProxy */;
+		};
 		8BC62B80562684797FDF3D7A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D3225F53B4406649474BC956 /* Aero */;
@@ -261,6 +338,41 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		7D15A660CB53F677D9F47E05 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		B532F4873D98B5990D6DA704 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		C9AF1115FA0C2790FDC9C542 /* Stable */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
+			buildSettings = {
+			};
+			name = Stable;
+		};
+		CCEF1A06199115347CC6C400 /* Beta */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
+			buildSettings = {
+			};
+			name = Beta;
+		};
+		147C4878E63A7DC26FBE7CB9 /* Nightly */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
+			buildSettings = {
+			};
+			name = Nightly;
+		};
 		066776A1C212750E8BE506A2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */;
@@ -371,6 +483,18 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		123BCF5EF7CE039FC19ADE72 /* Build configuration list for PBXNativeTarget "AeroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D15A660CB53F677D9F47E05 /* Debug */,
+				B532F4873D98B5990D6DA704 /* Release */,
+				C9AF1115FA0C2790FDC9C542 /* Stable */,
+				CCEF1A06199115347CC6C400 /* Beta */,
+				147C4878E63A7DC26FBE7CB9 /* Nightly */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		5D7731714D3E69D68AA8D7ED /* Build configuration list for PBXProject "Aero" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -417,6 +541,16 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0B9281A3E96A7A56412327CC /* BrowserCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
+			productName = BrowserCore;
+		};
+		8CA8807172498D9D5F0353C2 /* BrowserStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
+			productName = BrowserStorage;
+		};
 		351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;

@@ -4,7 +4,13 @@ import Foundation
 extension BrowserModel {
     /// Nothing runs behind a prompt.
     func isEnabled(_ command: BrowserCommand) -> Bool {
-        guard isReady, !isChangingStructure, window.prompt == nil, window.tabDestination == nil else { return false }
+        guard isReady, !isChangingStructure, window.prompt == nil else { return false }
+        // The onboarding covers the browser: Back goes to its previous step, only the shortcuts it teaches reach it,
+        // and nothing acts behind it.
+        if let onboarding {
+            if command == .back { return onboarding.canGoBack }
+            return onboarding.step == .gettingAround && OnboardingModel.taughtCommands.contains(command)
+        }
         switch command {
         case .back: return currentPage?.canGoBack == true
         case .forward: return currentPage?.canGoForward == true
@@ -28,6 +34,12 @@ extension BrowserModel {
 
     func perform(_ command: BrowserCommand) {
         guard isEnabled(command) else { return }
+        if let onboarding {
+            if command == .back { onboarding.back(); return }
+            onboarding.tried(command)
+            // Switching spaces is real: the preview shows the browser's own spaces.
+            guard command == .nextSpace || command == .previousSpace, session.spaces.count > 1 else { return }
+        }
         switch command {
         case .newTab:
             window.controlBar = nil
@@ -73,7 +85,7 @@ extension BrowserModel {
                 for tab in closing { closeTab(tab.id) }
             }
         case .moveToGroup, .moveToSpace:
-            if let id = window.selectedTabID { window.tabDestination = .init(tabID: id, isSpace: command == .moveToSpace) }
+            if let id = window.selectedTabID { present(.moveTab(.init(tabID: id, target: command == .moveToSpace ? .space : .group))) }
         case .nextSpace, .previousSpace:
             let spaces = session.spaces
             if let index = spaces.firstIndex(where: { $0.id == window.selectedSpaceID }) {
@@ -87,6 +99,7 @@ extension BrowserModel {
         case .toggleSidebar: window.sidebarPinned.toggle()
         case .profiles: showSettings(.section(.profiles))
         case .passwords: showSettings(.section(.passwords))
+        case .importBrowserData: beginImport()
         case .newProfile: present(.profile)
         case .newSpace: present(.space(nil))
         case .showHistory: show(.history)

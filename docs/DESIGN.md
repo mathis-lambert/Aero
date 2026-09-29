@@ -1,6 +1,6 @@
 # Design
 
-Aero uses compact, neutral chrome around the page. The Gilda Display mark and dithered wind belong to the app icon and New Tab; the chrome uses system typography and SF Symbols, with favicons for websites.
+Aero uses compact, neutral chrome around the page. The Gilda Display mark and dithered wind belong to the app icon, New Tab and the onboarding; the chrome uses system typography and SF Symbols, with favicons for websites. The onboarding's titles use Gilda Display (bundled in `Resources/Fonts` under the SIL Open Font License) on its paper and ink colors (`App/Design/BrandDesign.swift`); its controls, text and previews keep the chrome's own type, colors and components. See [Onboarding](ONBOARDING.md).
 
 ## Shared components
 
@@ -10,7 +10,7 @@ Use semantic surfaces, one consistent hairline border, and visible hover/pressed
 
 ## Layout
 
-The website fills the page frame without a top toolbar. The sidebar groups navigation, address, space identity, favorites and tabs; its footer centers the space switcher. Dragging its edge resizes or folds it, saving width only at the end. Window resizing clamps display width without changing the preference. A hidden sidebar can be revealed from the leading edge.
+The website fills the page frame without a top toolbar. The sidebar groups navigation, address, space identity, favorites and tabs; its footer centers the space switcher. Dragging its edge resizes or folds it, saving width only at the end. Window resizing clamps display width without changing the preference. A hidden sidebar can be revealed from the leading edge. The window's own close, minimize and full-screen group sits in the sidebar header, or in the onboarding's, because only AppKit's group gives its shared hover symbols and inactive look; `WindowControls` alone moves it into the latest header shown, hides it in the titlebar when no header shows it, and returns it to AppKit around full-screen transitions.
 
 Settings uses native sidebar navigation and back/forward history. Profiles and Spaces are separate sections with list-to-detail navigation. Inline edits commit automatically; destructive actions and identity changes require explicit confirmation. See [Spaces](SPACES.md).
 
