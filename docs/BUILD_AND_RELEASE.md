@@ -65,6 +65,8 @@ export APPLE_TEAM_ID='<team>'
 export APPLE_API_KEY_ID='<key ID>'
 export APPLE_API_ISSUER_ID='<issuer UUID>'
 export APPLE_API_KEY_PATH='/absolute/path/to/notarization.p8'
+export SPARKLE_PUBLIC_ED_KEY='<Sparkle public key>'
+export SPARKLE_PRIVATE_KEY_FILE='/absolute/path/to/sparkle-private-key'
 Scripts/distribute.sh v0.1.0-beta.1
 ```
 
@@ -72,7 +74,7 @@ The named tag must exist at HEAD and the checkout must be clean. A Developer ID 
 
 The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `diskutil image create from`, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
 
-The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, and the manifest. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
+The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, the manifest and the signed channel appcast. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
 
 Each notarization waits at most 30 minutes. Failure or timeout stops publication and retains the submission response. An Apple submission can continue after a timeout: use its retained ID with `notarytool info` or `log` to diagnose it. Rerunning creates a fresh output directory; it does not overwrite previous results. Keep archive backups for released versions beyond the CI retention period; the release asset retains the dSYMs.
 
@@ -84,7 +86,7 @@ Each notarization waits at most 30 minutes. Failure or timeout stops publication
 
 Preparation checks the tag and main ancestry before credentials are loaded. Automatically created nightly tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Concurrency is scoped to the ref and commit/tag: different main pushes can build independently without replacing each other in the pending queue.
 
-The `distribution` GitHub environment contains:
+The `distribution` GitHub environment contains these Apple signing credentials, plus the Sparkle signing and SSH publication settings documented in [UPDATES.md](UPDATES.md#one-time-setup-before-mergingenabling-distribution):
 
 | Kind | Name | Value |
 | --- | --- | --- |
