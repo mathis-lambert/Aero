@@ -71,7 +71,8 @@ commit may create a historical GitHub release, but cannot move the live feed bac
 2. Retrieve the existing channel appcast. Only 404 means a first publication; other
    HTTP failures stop distribution. Verify an existing feed before reusing it.
 3. `generate_appcast` signs the archive and feed, infers OS/hardware requirements and
-   embeds the same Markdown notes used by the GitHub release. It keeps up to five
+   embeds the same Markdown notes used by the GitHub release: the annotated tag's message
+   for beta and stable (BUILD_AND_RELEASE.md › Versioning and tags). It keeps up to five
    versions per compatibility branch. No extra release-notes hosting is needed.
 4. Publish the GitHub draft only after every asset, including `<channel>.xml`, uploads.
 5. A separate Linux job downloads that immutable appcast, checks its archive URLs,

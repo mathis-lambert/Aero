@@ -114,12 +114,23 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$keychain_password" "$SIGNING_KEYCHAIN" >/dev/null
           security list-keychains -d user -s "$SIGNING_KEYCHAIN" "$HOME/Library/Keychains/login.keychain-db"
           rm "$RUNNER_TEMP/aero-signing.p12"
-      - name: Generate release notes
+      # Stable and beta notes are the annotated tag's message, reviewed with the tag; nightlies list their changes.
+      - name: Select release notes
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
-          gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$RELEASE_TAG" --jq .body > "$RUNNER_TEMP/aero-release-notes.md"
-          echo "RELEASE_NOTES_FILE=$RUNNER_TEMP/aero-release-notes.md" >> "$GITHUB_ENV"
+          set -euo pipefail
+          notes="$RUNNER_TEMP/aero-release-notes.md"
+          if [[ "$RELEASE_TAG" == nightly-* ]]; then
+            gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$RELEASE_TAG" --jq .body > "$notes"
+          else
+            object=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '.object.type + " " + .object.sha')
+            [[ "$object" == "tag "* ]] || { echo 'Stable and beta tags must be annotated with their release notes.'; exit 1; }
+            gh api "repos/$GITHUB_REPOSITORY/git/tags/${object#tag }" --jq .message > "$notes"
+            grep -q '[^[:space:]]' "$notes" || { echo 'The tag message holds no release notes.'; exit 1; }
+          fi
+          echo "RELEASE_NOTES_FILE=$notes" >> "$GITHUB_ENV"
       - id: package
         run: Scripts/distribute.sh "$RELEASE_TAG"
       - name: Publish completed artifacts
