@@ -163,10 +163,10 @@ final class ShortcutE2ETests: BrowserE2ETestCase {
         attachScreenshot("native-print-sheet", of: app)
         cancel.click()
         app.menuBars.menuBarItems["Tabs"].click()
-        app.menuItems["Duplicate tab"].click()
+        app.menuItems["Duplicate Tab"].click()
         XCTAssertTrue(poll { self.tabRows.count == 2 })
         app.menuBars.menuBarItems["Tabs"].click()
-        app.menuItems["Close other tabs"].click()
+        app.menuItems["Close Other Tabs"].click()
         XCTAssertTrue(poll { self.tabRows.count == 1 })
     }
 

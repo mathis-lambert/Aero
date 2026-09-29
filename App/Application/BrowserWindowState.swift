@@ -14,7 +14,6 @@ final class BrowserWindowState {
     var prompt: WindowPrompt?
     /// Popovers on the sidebar's reload button and address; the sidebar appears for them when hidden.
     var downloadsPresented = false
-    var tabDestination: TabMovePresentation?
     var siteSettingsPresented = false
     var controlCenterPresented = false
     /// The tab or group whose name is being edited in the sidebar.
@@ -50,6 +49,7 @@ enum WindowPrompt: Identifiable {
     case profile
     case space(UUID?)
     case removeSpace(UUID)
+    case moveTab(TabMovePresentation)
     case transferTab(UUID, UUID)
     /// Carries the History page's own clearing, which then reloads it.
     case clearHistory((HistoryClearRange) -> Void)
@@ -62,6 +62,7 @@ enum WindowPrompt: Identifiable {
         case .quit: "quit"
         case .space(let target): "space.\(target?.uuidString ?? "new")"
         case .removeSpace(let id): "removeSpace.\(id)"
+        case .moveTab(let move): "moveTab.\(move.tabID)"
         case .transferTab(let id, _): "transferTab.\(id)"
         case .profile: "profile"
         case .clearHistory: "clearHistory"

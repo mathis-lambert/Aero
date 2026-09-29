@@ -4,7 +4,7 @@ The first launch introduces Aero, brings favorites, history and passwords over f
 
 ## When it appears
 
-Only on a fresh store: the first launch of a channel, before any browsing record exists. Its progress is a versioned preference (`browser.onboarding`: format version, current step, completed), so a relaunch, such as the one macOS requires after granting Full Disk Access, resumes on the same step. Completing or skipping records completion; the onboarding never shows again for that store. People who already use Aero import with **Import from another browser…** (Profiles menu and control bar), which runs the same source, choice and import steps over the browser, without resizing the window or saving progress.
+Only on a fresh store: the first launch of a channel, before any browsing record exists. Its progress is a versioned preference (`browser.onboarding`: format version, current step, completed), so a relaunch, such as the one macOS requires after granting Full Disk Access, resumes on the same step. Completing or skipping records completion; the onboarding never shows again for that store. People who already use Aero import with **Import from Another Browser…** (File menu and command bar), which runs the same source, choice and import steps over the browser, without resizing the window or saving progress.
 
 ## Presentation
 

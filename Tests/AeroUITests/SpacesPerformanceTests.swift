@@ -56,7 +56,7 @@ final class SpacesPerformanceTests: BrowserE2ETestCase {
         sampleResources("background-media")
         for _ in 0..<2 {
             app.menuBars.menuBarItems["Spaces"].click()
-            app.menuItems["Previous space"].click()
+            app.menuItems["Previous Space"].click()
         }
         XCTAssertTrue(page("Modes inline picture-in-picture inline").waitForExistence(timeout: Self.pageTimeout),
                       "The background video remains live across spaces and returns from picture in picture")
@@ -64,7 +64,7 @@ final class SpacesPerformanceTests: BrowserE2ETestCase {
 
     private func nextSpace() {
         app.menuBars.menuBarItems["Spaces"].click()
-        app.menuItems["Next space"].click()
+        app.menuItems["Next Space"].click()
     }
 
     /// The external resource sampler attributes WebKit XPC processes to this app. The runner is

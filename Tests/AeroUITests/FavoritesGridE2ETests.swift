@@ -11,7 +11,7 @@ final class FavoritesGridE2ETests: BrowserE2ETestCase {
         ] {
             open(fixture, expecting: text)
             tabRows.matching(NSPredicate(format: "label == %@", title)).firstMatch.rightClick()
-            app.menuItems["Add to Favorites"].click()
+            app.windows.menuItems["Add to Favorites"].click()
         }
         let tiles = app.buttons.matching(identifier: "sidebar.tile")
         XCTAssertEqual(tiles.count, 4)

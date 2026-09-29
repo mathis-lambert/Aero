@@ -58,10 +58,12 @@ class BrowserE2ETestCase: XCTestCase {
         XCTAssertTrue(app.webViews.staticTexts[text].waitForExistence(timeout: Self.pageTimeout), "\(fixture) loaded")
     }
 
-    /// Chooses `item` in the submenu `submenu` of the open menu, queried within that submenu.
-    func chooseInSubmenu(_ submenu: String, _ item: String) {
-        app.menuItems[submenu].click()
-        let choice = app.menuItems[submenu].menuItems[item]
+    /// Chooses `item` in the submenu `submenu` of the open menu, queried within that submenu: a context menu's
+    /// by default, or the menu bar's, whose menus share some titles.
+    func chooseInSubmenu(_ submenu: String, _ item: String, in menus: XCUIElementQuery? = nil) {
+        let menus = menus ?? app.windows
+        menus.menuItems[submenu].click()
+        let choice = menus.menuItems[submenu].menuItems[item]
         XCTAssertTrue(choice.waitForExistence(timeout: Self.renderTimeout), "\(submenu) shows \(item)")
         choice.click()
     }

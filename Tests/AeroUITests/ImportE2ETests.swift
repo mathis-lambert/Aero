@@ -1,6 +1,6 @@
 import XCTest
 
-/// docs/ONBOARDING.md › When it appears and failure mode 2: someone already using Aero imports from the Profiles menu,
+/// docs/ONBOARDING.md › When it appears and failure mode 2: someone already using Aero imports from the File menu,
 /// and importing again adds nothing twice.
 @MainActor
 final class ImportE2ETests: BrowserE2ETestCase {
@@ -14,8 +14,8 @@ final class ImportE2ETests: BrowserE2ETestCase {
     }
 
     private func importChrome(_ name: String) {
-        app.menuBars.menuBarItems["Profiles"].click()
-        app.menuItems["Import from another browser…"].click()
+        app.menuBars.menuBarItems["File"].click()
+        app.menuItems["Import from Another Browser…"].click()
         let chrome = app.buttons["onboarding.source.Google Chrome"]
         XCTAssertTrue(chrome.waitForExistence(timeout: Self.renderTimeout), "the import steps open")
         chrome.click()
@@ -44,8 +44,8 @@ final class ImportE2ETests: BrowserE2ETestCase {
 
     /// Escape cancels the import for someone already browsing.
     func testEscapeCancelsTheImport() {
-        app.menuBars.menuBarItems["Profiles"].click()
-        app.menuItems["Import from another browser…"].click()
+        app.menuBars.menuBarItems["File"].click()
+        app.menuItems["Import from Another Browser…"].click()
         XCTAssertTrue(app.buttons["onboarding.source.Google Chrome"].waitForExistence(timeout: Self.renderTimeout))
         app.typeKey(.escape, modifierFlags: [])
         XCTAssertTrue(poll(timeout: Self.pageTimeout) { !self.app.groups["onboarding"].exists })

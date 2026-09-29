@@ -178,9 +178,6 @@ struct BrowserWindowView: View {
             browser.window.siteSettingsPresented = false
             browser.window.controlCenterPresented = false
         }
-        .sheet(item: Bindable(browser.window).tabDestination) { destination in
-            TabDestinationSheet(browser: browser, destination: destination)
-        }
         .onExitCommand {
             // Escape reaches here only after focused controls have had their dismissal opportunity.
             if browser.window.controlBar == nil, browser.window.prompt == nil,
@@ -217,6 +214,7 @@ struct WindowPromptView: View {
         case .quit: QuitPrompt(browser: browser)
         case .space(let target): SpacePrompt(browser: browser, profileID: target)
         case .removeSpace(let id): SpaceRemovalPrompt(browser: browser, spaceID: id)
+        case .moveTab(let move): TabMovePrompt(browser: browser, presentation: move)
         case .transferTab(let id, let destination): TabTransferPrompt(browser: browser, tabID: id, spaceID: destination)
         case .profile: ProfilePrompt(browser: browser)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)

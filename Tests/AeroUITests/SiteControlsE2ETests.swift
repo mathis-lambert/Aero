@@ -20,8 +20,8 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(app.buttons["controlCenter.ads"].exists)
         attachScreenshot("control-center")
         app.menuButtons["controlCenter.more"].click()
-        XCTAssertTrue(app.menuItems["Clear cache"].exists && app.menuItems["Clear cookies"].exists)
-        app.windows.menuItems["Site settings…"].click()
+        XCTAssertTrue(app.menuItems["Clear Cache"].exists && app.menuItems["Clear Cookies"].exists)
+        app.windows.menuItems["Site Settings…"].click()
         XCTAssertTrue(app.popUpButtons["siteSettings.camera"].waitForExistence(timeout: Self.renderTimeout),
                       "Site settings opens inside the control center")
         app.typeKey(.escape, modifierFlags: [])
@@ -84,10 +84,10 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
         open("site.html", expecting: "No cookie")
         setCookie()
 
-        siteMenu("Clear cookies")
+        siteMenu("Clear Cookies")
         XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "Clearing cookies reloads the page without them")
         setCookie()
-        siteMenu("Site settings…")
+        siteMenu("Site Settings…")
         let cookies = app.staticTexts["siteSettings.cookies"]
         XCTAssertTrue(cookies.waitForExistence(timeout: Self.renderTimeout))
         XCTAssertTrue(poll { cookies.value as? String == "1 cookie" }, "The popover counts the site's cookies")
@@ -106,7 +106,7 @@ final class SiteControlsE2ETests: BrowserE2ETestCase {
 
         quitAndRelaunch()
         tabRows.element(boundBy: 1).click()
-        siteMenu("Site settings…")
+        siteMenu("Site Settings…")
         XCTAssertTrue(app.popUpButtons["siteSettings.camera"].waitForExistence(timeout: Self.renderTimeout))
         XCTAssertEqual(app.popUpButtons["siteSettings.camera"].value as? String, "Block", "Decisions survive a relaunch")
         XCTAssertEqual(app.popUpButtons["siteSettings.microphone"].value as? String, "Ask")

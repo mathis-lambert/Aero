@@ -123,10 +123,14 @@ struct HistoryView: View {
                 return .handled
             }
             .contextMenu(forSelectionType: HistoryEntry.ID.self) { ids in
-                Button("Open") { open(ids) }
-                Button("Open in new tab") { openInBackground(ids) }
-                Divider()
-                Button("Delete", role: .destructive) { delete(ids) }
+                if !ids.isEmpty {
+                    Button("Open", systemImage: "arrow.up.forward.square") { open(ids) }
+                    Button("Open in New Tab", systemImage: "plus.square.on.square") { openInBackground(ids) }
+                    Divider()
+                    Button("Copy Link", systemImage: BrowserCommand.copyLink.symbol) { browser.copy(selectedEntries(ids).map(\.url)) }
+                    Divider()
+                    Button("Delete from History", systemImage: "trash", role: .destructive) { delete(ids) }
+                }
             } primaryAction: { ids in
                 open(ids)
             }

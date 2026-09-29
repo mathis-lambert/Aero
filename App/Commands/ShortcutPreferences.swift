@@ -47,7 +47,7 @@ final class ShortcutPreferences {
     }
 
     func routing(for command: BrowserCommand) -> BrowserCommand.KeyRouting {
-        guard command.supportsWebsitePriority else { return command.keyRouting }
+        guard command.supportsWebsitePriority else { return .reserved }
         switch priority(for: command) {
         case .automatic: return command.keyRouting
         case .browser: return .reserved
@@ -137,11 +137,12 @@ final class ShortcutPreferences {
 
     /// These continue through native menus/responder-chain editing, not browser interception.
     func nativeConflict(_ binding: ShortcutBinding, for command: BrowserCommand) -> String? {
-        if binding == ShortcutBinding("w"), command != .closeTab { return String(localized: "Close window") }
+        if binding == ShortcutBinding("w"), command != .closeTab { return String(localized: "Close Window") }
         return Self.nativeBindings[binding]
     }
 
     private static let nativeBindings: [ShortcutBinding: String] = [
+        .init("w", [.command, .shift]): String(localized: "Close Window"),
         .init("q"): String(localized: "Quit Aero"), .init(","): String(localized: "Settings…"),
         .init("c"): String(localized: "Copy"), .init("v"): String(localized: "Paste"),
         .init("x"): String(localized: "Cut"), .init("a"): String(localized: "Select all"),

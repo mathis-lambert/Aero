@@ -56,7 +56,7 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
                       "Rows: \(labels(of: "sidebar.tab")); pinned: \(labels(of: "sidebar.favorite")); grid: \(labels(of: "sidebar.tile"))")
 
         element(tabRows, "Solid fixture").rightClick()
-        app.menuItems["Add to Favorites"].click()
+        app.windows.menuItems["Add to Favorites"].click()
         XCTAssertTrue(poll { self.labels(of: "sidebar.tile") == ["Solid fixture"] }, "Grid: \(labels(of: "sidebar.tile"))")
 
         drag(element(tabRows, "Keys fixture"), to: element(tiles, "Solid fixture"), at: Self.leadingHalf)
@@ -134,7 +134,7 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
         open("keys.html", expecting: "No shortcut yet")
 
         element(tabRows, "Solid fixture").rightClick()
-        app.menuItems["New Group with Tab"].click()
+        app.windows.menuItems["New Group with Tab"].click()
         let rename = app.textFields["sidebar.rename"]
         XCTAssertTrue(rename.waitForExistence(timeout: Self.renderTimeout), "A new group asks for its name")
         typeName("Work\n", into: rename)
@@ -152,12 +152,12 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite").count == 2 })
 
         element(favoriteRows, "Keys fixture").rightClick()
-        app.menuItems["Rename…"].click()
+        app.windows.menuItems["Rename Tab…"].click()
         typeName("Discarded", into: rename)
         app.typeKey(.escape, modifierFlags: [])
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Solid fixture", "Keys fixture"] }, "Escape keeps the name")
         element(favoriteRows, "Keys fixture").rightClick()
-        app.menuItems["Rename…"].click()
+        app.windows.menuItems["Rename Tab…"].click()
         typeName("Shortcuts\n", into: rename)
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Solid fixture", "Shortcuts"] })
         element(favoriteRows, "Shortcuts").click()
@@ -165,7 +165,7 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
         XCTAssertEqual(labels(of: "sidebar.favorite"), ["Solid fixture", "Shortcuts"], "The page's title does not replace the name")
 
         element(favoriteRows, "Shortcuts").rightClick()
-        app.menuItems["Duplicate"].click()
+        app.windows.menuItems["Duplicate Tab"].click()
         XCTAssertTrue(poll { self.labels(of: "sidebar.tab") == ["Shortcuts"] }, "The duplicate is an open tab")
         attachScreenshot("group")
 
@@ -202,12 +202,12 @@ final class EssentialsE2ETests: BrowserE2ETestCase {
     func testFavoritesWithExpandedFrenchLabels() {
         open("solid.html", expecting: "Solid fixture")
         element(tabRows, "Solid fixture").rightClick()
-        app.menuItems["Add to Favorites"].click()
+        app.windows.menuItems["Add to Favorites"].click()
         open("keys.html", expecting: "No shortcut yet")
         element(tabRows, "Keys fixture").rightClick()
-        app.menuItems["Pin as Tab"].click()
+        app.windows.menuItems["Pin Tab"].click()
         element(favoriteRows, "Keys fixture").rightClick()
-        app.menuItems["Rename…"].click()
+        app.windows.menuItems["Rename Tab…"].click()
         let name = "Documents de travail et références pour le projet"
         typeName(name + "\n", into: app.textFields["sidebar.rename"])
         app.launchArguments = TestApplication.launchArguments(language: "fr", locale: "fr_FR")

@@ -45,13 +45,14 @@ struct SpaceBar: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("sidebar.space")
         .contextMenu {
-            Button("Edit space…", systemImage: "pencil") { browser.showSettings(.space(space.id)) }
-            Button("Move left") { browser.reorderSpace(space.id, by: -1) }
+            Button("Edit Space…", systemImage: "pencil") { browser.showSettings(.space(space.id)) }
+            Divider()
+            Button("Move Left", systemImage: "arrow.left") { browser.reorderSpace(space.id, by: -1) }
                 .disabled(browser.session.spaces.first?.id == space.id)
-            Button("Move right") { browser.reorderSpace(space.id, by: 1) }
+            Button("Move Right", systemImage: "arrow.right") { browser.reorderSpace(space.id, by: 1) }
                 .disabled(browser.session.spaces.last?.id == space.id)
             Divider()
-            Button("Delete space…", role: .destructive) { browser.present(.removeSpace(space.id)) }
+            Button("Delete Space…", systemImage: "trash", role: .destructive) { browser.present(.removeSpace(space.id)) }
                 .disabled(browser.session.spaces.count <= 1)
         }
     }

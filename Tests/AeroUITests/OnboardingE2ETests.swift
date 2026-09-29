@@ -249,7 +249,7 @@ extension OnboardingE2ETests {
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(poll { self.title == "Choose what to bring." }, "Return continues")
         // The Back command, as its shortcut or menu item: the test Mac's layout may not type Command-Left Bracket.
-        app.menuBars.menuBarItems["Navigate"].click()
+        app.menuBars.menuBarItems["History"].click()
         app.menuItems["Back"].click()
         XCTAssertTrue(poll { arc.exists && arc.isSelected }, "Back goes to the previous step, keeping the choice")
         app.typeKey(.return, modifierFlags: [])

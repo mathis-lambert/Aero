@@ -106,12 +106,12 @@ final class ControlBarE2ETests: BrowserE2ETestCase {
     func testCommandsAreListedAndRunLikeTheirMenus() {
         open("solid.html", expecting: "Solid fixture")
         app.typeKey("k", modifierFlags: .command)
-        XCTAssertTrue(poll { self.items.contains("Show all history") && self.items.contains("New tab") },
+        XCTAssertTrue(poll { self.items.contains("Show All History") && self.items.contains("New Tab") },
                       "With no text, the bar lists the commands")
         attachScreenshot("control-bar-commands")
         controlBarInput.typeText("history")
-        XCTAssertTrue(poll { self.items.contains("Show all history") })
-        itemButton("Show all history").click()
+        XCTAssertTrue(poll { self.items.contains("Show All History") })
+        itemButton("Show All History").click()
         XCTAssertTrue(poll { self.labels(of: "sidebar.tab").last == "History" }, "The command opens History, like its menu item")
         XCTAssertFalse(controlBarInput.exists)
     }

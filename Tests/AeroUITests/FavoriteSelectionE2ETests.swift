@@ -8,7 +8,7 @@ final class FavoriteSelectionE2ETests: BrowserE2ETestCase {
         let orange = ScreenshotColor(red: 255, green: 90, blue: 0)
         XCTAssertTrue(poll { orange.isShown(in: row, at: CGPoint(x: 19, y: row.frame.height / 2)) })
         row.rightClick()
-        app.menuItems["Add to Favorites"].click()
+        app.windows.menuItems["Add to Favorites"].click()
         let tile = app.buttons.matching(identifier: "sidebar.tile").firstMatch
         XCTAssertTrue(tile.waitForExistence(timeout: Self.renderTimeout))
         app.webViews.firstMatch.hover()

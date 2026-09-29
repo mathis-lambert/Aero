@@ -467,14 +467,8 @@
         }
       }
     },
-    "Actual size" : {
+    "Actual Size" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actual size"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1368,14 +1362,8 @@
         }
       }
     },
-    "Clear cache" : {
+    "Clear Cache" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear cache"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1384,14 +1372,8 @@
         }
       }
     },
-    "Clear cookies" : {
+    "Clear Cookies" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear cookies"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1514,22 +1496,6 @@
         }
       }
     },
-    "Close" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fermer"
-          }
-        }
-      }
-    },
     "Close find bar" : {
       "localizations" : {
         "en" : {
@@ -1546,30 +1512,18 @@
         }
       }
     },
-    "Close following tabs" : {
+    "Close Tabs Below" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close following tabs"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fermer les onglets suivants"
+            "value" : "Fermer les onglets en dessous"
           }
         }
       }
     },
-    "Close other tabs" : {
+    "Close Other Tabs" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close other tabs"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1594,18 +1548,22 @@
         }
       }
     },
-    "Close tabs after the current tab in sidebar order. Favorite records are kept." : {
+    "Close Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close tabs after the current tab in sidebar order. Favorite records are kept."
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fermer les onglets après l’onglet actuel dans la barre latérale. Les favoris sont conservés."
+            "value" : "Fermer l’onglet"
+          }
+        }
+      }
+    },
+    "Close the tabs below the current tab in sidebar order. Favorite records are kept." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer les onglets situés sous l’onglet actuel dans la barre latérale. Les favoris sont conservés."
           }
         }
       }
@@ -1642,14 +1600,8 @@
         }
       }
     },
-    "Close window" : {
+    "Close Window" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close window"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1674,18 +1626,12 @@
         }
       }
     },
-    "Commands" : {
+    "Command Bar" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Commands"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Commandes"
+            "value" : "Barre de commandes"
           }
         }
       }
@@ -1804,6 +1750,16 @@
             "value" : "Copy link"
           }
         },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le lien"
+          }
+        }
+      }
+    },
+    "Copy Link" : {
+      "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2264,30 +2220,18 @@
         }
       }
     },
-    "Duplicate" : {
+    "Show Downloads" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duplicate"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dupliquer"
+            "value" : "Afficher les téléchargements"
           }
         }
       }
     },
-    "Duplicate tab" : {
+    "Duplicate Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Duplicate tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2308,22 +2252,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chaque profil garde ses propres cookies, connexions, historique, autorisations de sites et extensions."
-          }
-        }
-      }
-    },
-    "Edit space…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit space…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier l’espace…"
           }
         }
       }
@@ -2604,14 +2532,8 @@
         }
       }
     },
-    "Find next" : {
+    "Find Next" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find next"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2620,14 +2542,8 @@
         }
       }
     },
-    "Find previous" : {
+    "Find Previous" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find previous"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3072,7 +2988,7 @@
         }
       }
     },
-    "Import from another browser…" : {
+    "Import from Another Browser…" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -3450,14 +3366,8 @@
         }
       }
     },
-    "Manage profiles" : {
+    "Manage Profiles" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manage profiles"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3592,38 +3502,6 @@
         }
       }
     },
-    "Move left" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move left"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déplacer vers la gauche"
-          }
-        }
-      }
-    },
-    "Move right" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move right"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déplacer vers la droite"
-          }
-        }
-      }
-    },
     "Move tab" : {
       "localizations" : {
         "en" : {
@@ -3640,34 +3518,42 @@
         }
       }
     },
-    "Move tab to group…" : {
+    "Move to Group…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move tab to group…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer l’onglet vers un groupe…"
+            "value" : "Déplacer vers un groupe…"
           }
         }
       }
     },
-    "Move tab to space…" : {
+    "Move to Space…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move tab to space…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer l’onglet vers un espace…"
+            "value" : "Déplacer vers un espace…"
+          }
+        }
+      }
+    },
+    "Move" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer"
+          }
+        }
+      }
+    },
+    "Current" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actuel"
           }
         }
       }
@@ -3706,16 +3592,10 @@
     },
     "Move to Group" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move to Group"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déplacer vers le groupe"
+            "value" : "Déplacer vers un groupe"
           }
         }
       }
@@ -3890,6 +3770,16 @@
         }
       }
     },
+    "New Profile…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau profil…"
+          }
+        }
+      }
+    },
     "New profile…" : {
       "localizations" : {
         "en" : {
@@ -3918,6 +3808,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nouvel espace"
+          }
+        }
+      }
+    },
+    "New Space…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvel espace…"
           }
         }
       }
@@ -3954,6 +3854,16 @@
         }
       }
     },
+    "New Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvel onglet"
+          }
+        }
+      }
+    },
     "Next match" : {
       "localizations" : {
         "en" : {
@@ -3970,14 +3880,8 @@
         }
       }
     },
-    "Next recently used tab" : {
+    "Next Recently Used Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next recently used tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4002,14 +3906,8 @@
         }
       }
     },
-    "Next space" : {
+    "Next Space" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next space"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4018,14 +3916,8 @@
         }
       }
     },
-    "Next tab" : {
+    "Next Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4474,22 +4366,6 @@
         }
       }
     },
-    "Open in new tab" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open in new tab"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir dans un nouvel onglet"
-          }
-        }
-      }
-    },
     "Open location" : {
       "localizations" : {
         "en" : {
@@ -4502,6 +4378,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir une adresse"
+          }
+        }
+      }
+    },
+    "Open Location…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir une adresse…"
           }
         }
       }
@@ -4554,22 +4440,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir la boîte de dialogue native d’impression pour la page actuelle."
-          }
-        }
-      }
-    },
-    "Options" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Options"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Options"
           }
         }
       }
@@ -4886,22 +4756,6 @@
         }
       }
     },
-    "Pin as Tab" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pin as Tab"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Épingler comme onglet"
-          }
-        }
-      }
-    },
     "Pinned tabs and folders, in their spaces." : {
       "localizations" : {
         "fr" : {
@@ -4986,14 +4840,8 @@
         }
       }
     },
-    "Previous recently used tab" : {
+    "Previous Recently Used Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous recently used tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5018,14 +4866,8 @@
         }
       }
     },
-    "Previous space" : {
+    "Previous Space" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous space"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5034,14 +4876,8 @@
         }
       }
     },
-    "Previous tab" : {
+    "Previous Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5336,6 +5172,16 @@
         }
       }
     },
+    "Reload Page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recharger la page"
+          }
+        }
+      }
+    },
     "Reload pages" : {
       "localizations" : {
         "en" : {
@@ -5384,14 +5230,8 @@
         }
       }
     },
-    "Reload without cache" : {
+    "Reload Without Cache" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reload without cache"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5464,14 +5304,8 @@
         }
       }
     },
-    "Rename tab…" : {
+    "Rename Tab…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename tab…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5480,30 +5314,8 @@
         }
       }
     },
-    "Rename…" : {
+    "Reopen Closed Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renommer…"
-          }
-        }
-      }
-    },
-    "Reopen closed tab" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reopen closed tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6193,14 +6005,8 @@
         }
       }
     },
-    "Select last tab" : {
+    "Select Last Tab" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select last tab"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6209,14 +6015,8 @@
         }
       }
     },
-    "Select tab 1" : {
+    "Select Tab 1" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 1"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6225,14 +6025,8 @@
         }
       }
     },
-    "Select tab 2" : {
+    "Select Tab 2" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 2"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6241,14 +6035,8 @@
         }
       }
     },
-    "Select tab 3" : {
+    "Select Tab 3" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 3"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6257,14 +6045,8 @@
         }
       }
     },
-    "Select tab 4" : {
+    "Select Tab 4" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 4"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6273,14 +6055,8 @@
         }
       }
     },
-    "Select tab 5" : {
+    "Select Tab 5" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 5"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6289,14 +6065,8 @@
         }
       }
     },
-    "Select tab 6" : {
+    "Select Tab 6" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 6"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6305,14 +6075,8 @@
         }
       }
     },
-    "Select tab 7" : {
+    "Select Tab 7" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 7"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6321,14 +6085,8 @@
         }
       }
     },
-    "Select tab 8" : {
+    "Select Tab 8" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select tab 8"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6533,14 +6291,8 @@
         }
       }
     },
-    "Show all history" : {
+    "Show All History" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show all history"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6719,6 +6471,16 @@
         }
       }
     },
+    "Site Controls" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrôles du site"
+          }
+        }
+      }
+    },
     "Site icons" : {
       "localizations" : {
         "fr" : {
@@ -6729,14 +6491,8 @@
         }
       }
     },
-    "Site settings…" : {
+    "Site Settings…" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Site settings…"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6941,6 +6697,16 @@
             "value" : "Stop loading"
           }
         },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter le chargement"
+          }
+        }
+      }
+    },
+    "Stop Loading" : {
+      "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7489,14 +7255,8 @@
         }
       }
     },
-    "Toggle favorite" : {
+    "Toggle Favorite" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toggle favorite"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7517,6 +7277,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Afficher/masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "Toggle Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher/masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "Hide Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "Show Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher la barre latérale"
           }
         }
       }
@@ -7999,14 +7789,8 @@
         }
       }
     },
-    "Zoom in" : {
+    "Zoom In" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoom in"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8015,14 +7799,8 @@
         }
       }
     },
-    "Zoom out" : {
+    "Zoom Out" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoom out"
-          }
-        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8529,6 +8307,166 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "⌘Q demande une confirmation, pour qu’un raccourci malencontreux ne ferme jamais vos onglets."
+          }
+        }
+      }
+    },
+    "Pin Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler l’onglet"
+          }
+        }
+      }
+    },
+    "Move to Pinned Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer vers les onglets épinglés"
+          }
+        }
+      }
+    },
+    "Rename Group…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renommer le groupe…"
+          }
+        }
+      }
+    },
+    "Expand Group" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Développer le groupe"
+          }
+        }
+      }
+    },
+    "Collapse Group" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réduire le groupe"
+          }
+        }
+      }
+    },
+    "Edit Space…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier l’espace…"
+          }
+        }
+      }
+    },
+    "Move Left" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer vers la gauche"
+          }
+        }
+      }
+    },
+    "Move Right" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer vers la droite"
+          }
+        }
+      }
+    },
+    "Delete Space…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’espace…"
+          }
+        }
+      }
+    },
+    "Unpin Extension" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler l’extension"
+          }
+        }
+      }
+    },
+    "Pin Extension" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler l’extension"
+          }
+        }
+      }
+    },
+    "Open Extension Options" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les options de l’extension"
+          }
+        }
+      }
+    },
+    "Manage Extensions…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer les extensions…"
+          }
+        }
+      }
+    },
+    "Remove Extension" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’extension"
+          }
+        }
+      }
+    },
+    "Open in New Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans un nouvel onglet"
+          }
+        }
+      }
+    },
+    "Delete from History" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer de l’historique"
           }
         }
       }

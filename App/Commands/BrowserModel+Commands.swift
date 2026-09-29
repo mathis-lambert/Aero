@@ -4,7 +4,7 @@ import Foundation
 extension BrowserModel {
     /// Nothing runs behind a prompt.
     func isEnabled(_ command: BrowserCommand) -> Bool {
-        guard isReady, !isChangingStructure, window.prompt == nil, window.tabDestination == nil else { return false }
+        guard isReady, !isChangingStructure, window.prompt == nil else { return false }
         // The onboarding covers the browser: Back goes to its previous step, only the shortcuts it teaches reach it,
         // and nothing acts behind it.
         if let onboarding {
@@ -85,7 +85,7 @@ extension BrowserModel {
                 for tab in closing { closeTab(tab.id) }
             }
         case .moveToGroup, .moveToSpace:
-            if let id = window.selectedTabID { window.tabDestination = .init(tabID: id, isSpace: command == .moveToSpace) }
+            if let id = window.selectedTabID { present(.moveTab(.init(tabID: id, target: command == .moveToSpace ? .space : .group))) }
         case .nextSpace, .previousSpace:
             let spaces = session.spaces
             if let index = spaces.firstIndex(where: { $0.id == window.selectedSpaceID }) {

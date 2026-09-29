@@ -70,12 +70,16 @@ struct ExtensionMenu: View {
 
     var body: some View {
         if let profileID = browser.profile?.id {
-            Button(record.isPinned ? "Unpin" : "Pin") { Task { await browser.setPinned(!record.isPinned, record, inProfile: profileID) } }
+            Button(record.isPinned ? "Unpin Extension" : "Pin Extension", systemImage: record.isPinned ? "pin.slash" : "pin") {
+                Task { await browser.setPinned(!record.isPinned, record, inProfile: profileID) }
+            }
             if let options = extensions.contexts[record.id]?.optionsPageURL {
-                Button("Options") { _ = browser.openTab(options, inProfile: profileID, selected: true) }
+                Button("Open Extension Options", systemImage: "gearshape") { _ = browser.openTab(options, inProfile: profileID, selected: true) }
             }
             Divider()
-            Button("Remove") { Task { await browser.removeExtension(record, inProfile: profileID) } }
+            Button("Manage Extensions…", systemImage: "puzzlepiece.extension") { browser.showSettings(.section(.extensions)) }
+            Divider()
+            Button("Remove Extension", systemImage: "trash", role: .destructive) { Task { await browser.removeExtension(record, inProfile: profileID) } }
         }
     }
 }

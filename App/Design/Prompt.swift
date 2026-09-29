@@ -87,7 +87,8 @@ extension View {
                         .accessibilityHidden(true)
                     content(item)
                 }
-                .background(KeyboardToPrompt())
+                // One per prompt: a prompt that replaces another takes the keyboard from it too.
+                .background(KeyboardToPrompt().id(item.id))
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
         }
