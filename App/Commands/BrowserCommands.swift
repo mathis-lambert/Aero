@@ -12,6 +12,11 @@ struct BrowserMenuCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button(BrowserCommand.checkForUpdates.title) { application.perform(.checkForUpdates) }
+                .keyboardShortcut(application.shortcuts.shortcut(for: .checkForUpdates))
+                .disabled(!application.isEnabled(.checkForUpdates))
+        }
         CommandGroup(replacing: .appSettings) {
             Button("Settings…", systemImage: "gear") { application.showSettings(.section(.general)); openWindow(id: SettingsView.windowID) }
                 .keyboardShortcut(",")

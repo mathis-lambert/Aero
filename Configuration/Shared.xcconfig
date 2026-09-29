@@ -13,3 +13,8 @@ CODE_SIGN_ENTITLEMENTS = Configuration/Aero.entitlements
 PRODUCT_MODULE_NAME = Aero
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
 #include "Version.xcconfig"
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks
+// Only the signed distribution script enables the updater and supplies its public key.
+AERO_UPDATES_ENABLED = NO
+SPARKLE_PUBLIC_ED_KEY =
+AERO_UPDATE_FEED = https:/$()/getaero.app/updates/$(AERO_CHANNEL).xml

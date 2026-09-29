@@ -9,6 +9,13 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  update-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: python3 -m unittest discover -s Tests/Distribution -v
+      - run: bash -n Scripts/publish-update.sh Scripts/sparkle-tools.sh
   build:
     runs-on: xcode-27
     timeout-minutes: 30
@@ -19,6 +26,7 @@ jobs:
       - run: |
           Scripts/check-toolchain.sh
           xcodebuild -downloadComponent MetalToolchain
+      - run: zsh -n Scripts/distribute.sh
       - run: Scripts/build.sh build
       - run: Scripts/build.sh dmg
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

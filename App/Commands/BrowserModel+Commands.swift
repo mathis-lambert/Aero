@@ -4,6 +4,7 @@ import Foundation
 extension BrowserModel {
     /// Nothing runs behind a prompt.
     func isEnabled(_ command: BrowserCommand) -> Bool {
+        if command == .checkForUpdates { return updater.canCheck && window.prompt == nil && onboarding == nil && !isChangingStructure }
         guard isReady, !isChangingStructure, window.prompt == nil else { return false }
         // The onboarding covers the browser: Back goes to its previous step, only the shortcuts it teaches reach it,
         // and nothing acts behind it.
@@ -41,6 +42,7 @@ extension BrowserModel {
             guard command == .nextSpace || command == .previousSpace, session.spaces.count > 1 else { return }
         }
         switch command {
+        case .checkForUpdates: updater.check()
         case .newTab:
             window.controlBar = nil
             selectTab(nil)

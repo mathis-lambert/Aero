@@ -14,6 +14,7 @@ struct AeroApp: App {
                 .task {
                     delegate.browser = browser
                     await browser.start()
+                    if browser.onboarding == nil { browser.updater.start() }
                 }
         }
         .windowStyle(.hiddenTitleBar)
@@ -44,7 +45,14 @@ final class BrowserAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let browser else { return .terminateNow }
-        Task { sender.reply(toApplicationShouldTerminate: await browser.flush()) }
+        guard browser.updater.confirmRelaunchIfNeeded(activeDownloads: browser.downloads.activeCount) else {
+            return .terminateCancel
+        }
+        Task {
+            let saved = await browser.flush()
+            if !saved { browser.updater.cancelRelaunch() }
+            sender.reply(toApplicationShouldTerminate: saved)
+        }
         return .terminateLater
     }
 }

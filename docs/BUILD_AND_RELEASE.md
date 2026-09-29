@@ -48,7 +48,7 @@ Preferences and caches are scoped to the bundle identifier. Profile records and 
 
 ## Versioning and tags
 
-`Configuration/Version.xcconfig` owns the next marketing version. Info.plist reads it through `MARKETING_VERSION`. Published beta and stable tags must match that version. `CFBundleVersion` for publication is the full-history commit count, while `AeroRevision` records the full commit SHA. Local builds use build number 1 and the CLI records its revision; direct Xcode builds identify the revision as `local`.
+`Configuration/Version.xcconfig` owns the next marketing version. Info.plist reads it through `MARKETING_VERSION`. Published beta and stable tags must match that version. `CFBundleVersion` for publication is `<full-history-commit-count>.0` (or `<count>.<beta-number>` for beta tags), while `AeroRevision` records the full commit SHA. Local builds use build number 1 and the CLI records its revision; direct Xcode builds identify the revision as `local`.
 
 Accepted tags:
 
@@ -80,7 +80,7 @@ Each notarization waits at most 30 minutes. Failure or timeout stops publication
 
 `ci.yml` builds Debug and packages a local Release DMG on main and pull requests. It has read-only repository access and no Apple secrets. It retains outputs for 7 days. Tests run through `Scripts/test.sh` in a logged-in GUI session (docs/TESTING.md); the hosted build workflow does not claim UI test coverage.
 
-`distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release is a no-op; failed builds reuse their immutable tag.
+`distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release republishes its signed appcast without rebuilding; failed builds reuse their immutable tag.
 
 Preparation checks the tag and main ancestry before credentials are loaded. Automatically created nightly tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Concurrency is scoped to the ref and commit/tag: different main pushes can build independently without replacing each other in the pending queue.
 
@@ -114,3 +114,10 @@ Passkeys and any future managed entitlements are separate features. Add only app
 - [Apple: notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)
 - [GitHub: Apple certificates on runners](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications)
 - [GitHub: workflow triggering and GITHUB_TOKEN](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)
+
+## Automatic updates
+
+Distribution also generates a signed Sparkle appcast and publishes it to GetAero after
+the GitHub release is available. Configure the Sparkle keys and restricted SSH publisher
+**before merging changes that enable this pipeline**. See [UPDATES.md](UPDATES.md) for
+application behavior, signing, server setup, failure handling and validation.
