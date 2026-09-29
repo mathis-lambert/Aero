@@ -12,7 +12,7 @@ Open `Aero.xcodeproj`, select **Aero Dev**, then Run. Or:
 Scripts/build.sh run                         # Debug
 Scripts/build.sh run --configuration Release # Optimized, still Aero Dev
 Scripts/build.sh dmg                         # Local Release DMG
-Scripts/run-e2e.sh [AeroUITests/<TestClass>…]
+Scripts/test.sh [unit|smoke|full|performance]  # See docs/TESTING.md
 ```
 
 Build products and logs go to `build/` (ignored by Git). UI tests require a logged-in GUI session; they use isolated data and ephemeral website stores. Dev, nightly, beta and stable each keep separate data. Cloning a release tag still builds Aero Dev by default.
@@ -38,7 +38,8 @@ Not implemented yet: separate popup windows.
 
 ## Documentation
 
-- [Browsing](docs/BROWSING.md): navigation behavior, limits and local E2E fixtures.
+- [Browsing](docs/BROWSING.md): navigation behavior and limits.
+- [Testing](docs/TESTING.md): unit tests, journeys, plans and fixtures.
 - [Profiles and spaces](docs/SPACES.md): ownership, settings and identity transitions.
 - [Storage](docs/STORAGE.md): locations, schema changes and recovery.
 - [Performance](docs/PERFORMANCE.md): page budgets, hibernation and measurement commands.

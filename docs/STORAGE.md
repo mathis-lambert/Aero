@@ -31,7 +31,7 @@ Browser mutations save asynchronously through one owned task. While one snapshot
 1. Specify failure modes and add supported-format fixtures before implementation.
 2. Append SQL that transforms existing rows and constraints. Never edit a shipped step or simply bump a number. No migration is needed for unrelated UI changes.
 3. The runner validates identity/integrity, snapshots an older database with SQLite's backup API, and executes all pending steps and version updates inside one transaction. A failed step rolls everything back; retry is safe. Newer incompatible schemas are refused before journal configuration or maintenance.
-4. Exercise upgrades including skipped versions and failure injection. Keep the resulting E2E `.xcresult` and reproduction manifest. Do not ship without an old-version fixture and semantic checks for retained identities and relationships.
+4. Exercise upgrades including skipped versions and failure injection. Keep the resulting `.xcresult` and reproduction manifest. Do not ship without an old-version fixture and semantic checks for retained identities and relationships.
 
 The runner disables foreign-key actions only around the migration transaction and checks all references before commit, then reenables enforcement, including after failure. This permits table rebuilds without cascading deletion of their children. Follow SQLite's [table reconstruction procedure](https://www.sqlite.org/lang_altertable.html#making_other_kinds_of_table_schema_changes) and recreate affected indexes, triggers and views in the migration.
 
@@ -82,7 +82,7 @@ Reset Aero erases every browsing record of the channel: profiles, spaces, tabs a
 
 After confirmation, the keychain items of every profile are deleted while Aero runs (a failure stops the reset and says so). Aero then records a pending reset in its preferences and quits; a helper process waits for it to exit and opens it again, so two instances never share the store. At launch, before any store or page exists, Aero deletes its `Storage` and `Caches` folders, removes every WebKit website data store it owns, and clears its preferences domain, the pending mark last. Test runs erase only their own directory, preferences suite and keychain namespace, and quit without reopening.
 
-Failure modes, covered by `StorageSettingsE2ETests`:
+Failure modes, covered by `StorageJourneys`:
 
 1. Measuring blocks the main actor, or sizes stay stale after an action.
 2. Clearing the cache signs the person out; clearing one profile's site data touches another profile.

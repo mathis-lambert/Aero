@@ -1,0 +1,8 @@
+// Swift Testing bundle hosted by Aero Dev, so it can reach the app's internal types (docs/TESTING.md).
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Manual
+GENERATE_INFOPLIST_FILE = YES
+PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser.unittests
+PRODUCT_NAME = $(TARGET_NAME)
+TEST_HOST = $(BUILT_PRODUCTS_DIR)/Aero Dev.app/Contents/MacOS/Aero Dev
+BUNDLE_LOADER = $(TEST_HOST)

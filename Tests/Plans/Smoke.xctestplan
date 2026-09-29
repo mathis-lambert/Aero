@@ -1,0 +1,49 @@
+{
+  "configurations" : [
+    {
+      "id" : "9F4E2972-6148-40BC-8E75-C0302655BCA7",
+      "name" : "Default",
+      "options" : {}
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "AERO_TEST_DATA",
+        "value" : "$(TARGET_TEMP_DIR)/AeroTestsHost"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Aero.xcodeproj",
+      "identifier" : "D3225F53B4406649474BC956",
+      "name" : "Aero"
+    },
+    "testTimeoutsEnabled" : true,
+    "defaultTestExecutionTimeAllowance" : 240
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Aero.xcodeproj",
+        "identifier" : "62CC2E885AFDEB8D0CB8D316",
+        "name" : "AeroTests"
+      }
+    },
+    {
+      "selectedTests" : [
+        "OnboardingJourneys/testArcImportFromTheKeyboardLandsInTheBrowser()",
+        "BrowsingJourneys/testTheControlBarOpensSearchesAndSwitches()",
+        "KeyboardJourneys/testPagesKeepTheirShortcutsAndAeroKeepsItsOwn()",
+        "SidebarJourneys/testGroupsMenusAndTheMovePrompt()",
+        "SpacesJourneys/testSpacesShareTheirProfileAndProfilesKeepIdentitiesApart()",
+        "SettingsJourneys/testChoicesSurviveQuitting()"
+      ],
+      "target" : {
+        "containerPath" : "container:Aero.xcodeproj",
+        "identifier" : "7C1CFF113F420C27BE3F870D",
+        "name" : "AeroUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -112,12 +112,13 @@ The Settings recorder is a local first responder, not a global event monitor. Es
 
 ## Verification
 
-The focused `ShortcutE2ETests` exercise page interception vs reserved commands, both plus/equals
-zoom inputs, sequential vs recent tab selection, favorite order, conflicting capture, protected
-native commands, explicit disable/reset, relaunch, default/override collisions, unreadable preference preservation, and expanded French/RTL Settings. Existing browsing tests
-cover page-first routing; the tooltip test checks that the sidebar now advertises Command-S.
-
-Run with `Scripts/run-e2e.sh AeroUITests/ShortcutE2ETests` and retain its result bundle and manifest.
+`ShortcutPreferencesTests` covers resolution, shipped defaults without conflicts, recording over a taken
+shortcut, explicit choices over defaults, unreadable data kept until Restore defaults, protected native
+commands, disable and restore, priority, and key identity. `KeyboardJourneys` drives page interception
+against reserved commands, both zoom inputs, sequential and recent tab selection, favorite order,
+recording a conflicting shortcut in Settings and website priority; `SidebarJourneys` checks the menus,
+context menus and tooltips, and `LocalizationJourney` the French, expanded and right-to-left Settings.
+Run them with `Scripts/test.sh full AeroTests/ShortcutPreferencesTests AeroUITests/KeyboardJourneys`.
 Physical AZERTY/QWERTY and IME composition should also be checked on those actual input sources;
 synthetic events alone do not establish hardware-layout coverage. System/global shortcuts may
 be intercepted before Aero receives an event and are not fully discoverable by the recorder.

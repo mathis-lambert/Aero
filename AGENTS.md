@@ -36,9 +36,9 @@ Packages/BrowserKit/
     BrowserWebKit/      # WebKit integration and loaded page lifecycle
     BrowserStorage/     # Application persistence
   Tests/                # Tests for each package target
-Tests/                  # Application integration and UI tests
+Tests/                  # App unit tests, UI journeys, fixtures and test plans (docs/TESTING.md)
 Configuration/          # Build settings, property lists, entitlements
-Scripts/                # Development tools: E2E runner, memory measurement, icon and filter list generation, notarized release; never run by the app
+Scripts/                # Development tools: test runner, memory measurement, icon and filter list generation, notarized release; never run by the app
 docs/                   # Project documentation and specifications
 ```
 
@@ -123,20 +123,19 @@ docs/                   # Project documentation and specifications
 2. Put feature UI and presentation behavior together. Add only the core rules, WebKit integration, or storage changes the feature needs.
 3. Register user actions in the command system and provide localized, accessible presentation.
 4. Define relevant cancellation, failure and restoration behavior. Avoid stale events and duplicate side effects.
-5. Verify complex behavior with E2E tests under the testing policy below and inspect affected native interactions. Measure performance when the change affects page lifetime, rendering, caches, or background work.
+5. Verify behavior at the lowest level that can observe it, under the testing policy below, and inspect affected native interactions. Measure performance when the change affects page lifetime, rendering, caches, or background work.
 
 ## Validation and project status
 
-- Never write unit tests after you write code.
-- Highly prefer E2E tests as the sole testing mechanism. Use them to verify complex features work. At the end of E2E tests, produce a verifiable and repeatable artifact: retain the `.xcresult` bundle with relevant screenshots or attachments, and record the exact command, revision, environment, and fixture setup needed to reproduce it.
-- If you must test a system in isolation, first write down all the ways it could fail, then write the code. Before implementation, document the failure modes and write the isolated tests that exercise them.
-- Keep an isolated test only when it catches a concrete bug that the E2E suite misses. Do not add tests that merely mirror implementation, check trivial values, or duplicate E2E coverage. Use Swift Testing for justified isolated tests and XCTest/XCUITest for E2E tests.
+- Test each behavior once, at the lowest level that can observe it (docs/TESTING.md). Unit tests (Swift Testing) cover rules with many cases or failure modes: in the package for its modules, in `Tests/AeroTests` for the app's own. Before writing such code, list its failure modes and write the tests that exercise them. Never test views, trivial values or the implementation's shape.
+- UI journeys (XCUITest) cover only what needs the real app: WebKit, focus and keyboard routing, menus, windows, drag and drop, persistence across launches. Extend the journey that already goes there before adding one; seed the state it does not verify; wait for conditions, not time; keep each journey under four minutes.
+- Every UI run retains its `.xcresult` with the relevant screenshots and a manifest of the exact command, revision, environment and fixtures.
 - Prioritize profile isolation, tab lifecycle, session recovery, command routing, and prevention of user-data loss.
-- Run the smallest relevant checks, plus the application build when changing shared APIs or integration. Report exactly what ran and what remains unverified.
+- Run the smallest relevant plan: `unit` after each change, `smoke` while developing, `full` before a commit or pull request, plus the application build when changing shared APIs or integration. Report exactly what ran and what remains unverified.
 - The application is `Aero.xcodeproj`, with shared `Aero Dev`, `Aero Nightly`, `Aero Beta` and `Aero` schemes and a local `Packages/BrowserKit` package. Use Xcode 27.0 (27A266a) with its Metal Toolchain component (`xcodebuild -downloadComponent MetalToolchain`; build-time only), Apple Swift 6.4, Swift 6 language mode, macOS 26.0+, and arm64.
 - Build: `Scripts/build.sh build`; `run` launches Aero Dev, `dmg` packages a local optimized build. Both Debug and Release use the dev identity. Toolchain requirements are checked by the script and Xcode build phase.
 - Package tests: `swift test --package-path Packages/BrowserKit`. Live WebKit tests need access to macOS WebKit services. In a restricted execution environment, use writable compiler caches and disclose any environment-related limits.
-- E2E: `Scripts/run-e2e.sh [test-identifier…]` uses Aero Dev and requires a logged-in GUI session. It retains a unique `.xcresult` and reproduction manifest in `/tmp`. `AERO_TEST_DATA` isolates records and makes website stores ephemeral. Fixtures are described in `docs/BROWSING.md`.
+- Tests: `Scripts/test.sh [unit|smoke|full|performance] [test-identifier…]` runs the package tests and the matching plan of `Tests/Plans` with Aero Dev; journeys require a logged-in GUI session. It retains a unique `.xcresult` and reproduction manifest in `/tmp`. `AERO_TEST_DATA` isolates records and makes website stores ephemeral. See `docs/TESTING.md`.
 - Distribution: follow `docs/BUILD_AND_RELEASE.md`. `Scripts/distribute.sh <tag-at-HEAD>` prepares signed, notarized DMGs from a clean checkout; GitHub Actions publishes them. Signing secrets belong to the `distribution` environment. Never add personal signing settings to source builds.
 - Performance: tab hibernation, signposts, the launch test and `Scripts/measure-memory.swift` are described in `docs/PERFORMANCE.md`.
 - Current scope: one main window, multiple spaces per profile, English/French catalogs, transactional SQLite browser state with forward migrations and recovery (`docs/STORAGE.md`), logically profile-scoped SQLite history (`docs/STORAGE.md`), session-only downloads, and a native light/dark/system appearance. Dev, nightly, beta and stable bundle IDs/data locations are separate, independently of compiler optimization. Extensions run per profile on WebKit's engine, with inert declarations for the APIs it lacks (`docs/EXTENSIONS.md`). What is not implemented yet is listed in the README.

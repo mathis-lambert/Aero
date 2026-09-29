@@ -95,7 +95,8 @@ public actor BrowserStore {
         committed = nil; revision = 0; loaded = false
     }
 
-    func close() { database = nil; lock = nil; committed = nil; loaded = false; revision = 0 }
+    /// Releases the file and its lock, so another process may open the store.
+    public func close() { database = nil; lock = nil; committed = nil; loaded = false; revision = 0 }
 
     private func open() throws -> SQLiteDatabase {
         if let database { return database }

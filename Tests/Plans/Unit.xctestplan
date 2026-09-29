@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "AF224517-5E9F-4E84-BB7F-87FC7135F089",
+      "name" : "Default",
+      "options" : {}
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "AERO_TEST_DATA",
+        "value" : "$(TARGET_TEMP_DIR)/AeroTestsHost"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Aero.xcodeproj",
+      "identifier" : "D3225F53B4406649474BC956",
+      "name" : "Aero"
+    },
+    "testTimeoutsEnabled" : true,
+    "defaultTestExecutionTimeAllowance" : 60
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Aero.xcodeproj",
+        "identifier" : "62CC2E885AFDEB8D0CB8D316",
+        "name" : "AeroTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -24,7 +24,7 @@ display settings, or disable WebKit's background, power or thermal throttling. H
 can increase energy use. See [WebKit's API request](https://bugs.webkit.org/show_bug.cgi?id=294338) and
 the [SPI declaration](https://github.com/WebKit/WebKit/blob/main/Source/WebKit/UIProcess/API/Cocoa/WKPreferencesPrivate.h).
 
-`RenderingE2ETests/testPageFrameCadenceAndSmoothScroll` records a bounded local page's median and
+`RenderingPerformanceTests/testPageFrameCadenceAndSmoothScroll` records a bounded local page's median and
 p95 `requestAnimationFrame` interval, display capabilities, window geometry and power state. It also
 checks that smooth scrolling actually moved the page. Its attachment is a callback-cadence measure,
 not a physical display/compositor FPS measurement. It has no hard 120 FPS assertion: an external
@@ -34,14 +34,19 @@ Place Aero on that display with the native Window menu before the run. The caden
 numeric report rather than cropping a window screenshot: XCUITest's window capture can fail on a
 secondary display even when the page is responsive. Screen capability is not a substitute for the
 recorded intervals.
-`ControlBarE2ETests/testHistoryDoesNotWaitForSlowSuggestions` delays suggestions by 2.5 seconds and
+`BrowsingJourneys/testSuggestionsFollowTheEngineAndStayPrivate` delays suggestions by 2.5 seconds and
 checks that local history appears first and a cancelled query cannot restore stale results.
 
-Run the cadence test with `Scripts/run-e2e.sh AeroUITests/RenderingE2ETests`. For a Release measure,
-use the documented `xcodebuild` command below with `-only-testing:AeroUITests/RenderingE2ETests`
-and a unique `-resultBundlePath`. Run launch metrics separately from functional tests: Xcode can
-complete a mixed suite without collecting launch metrics, so inspect the metrics rather than
-treating a passing test as a timing result.
+Every measurement runs in the Performance plan, in Release: `Scripts/test.sh performance`, or one of them with
+`Scripts/test.sh performance AeroUITests/RenderingPerformanceTests`. Functional plans never include them: Xcode can
+complete a mixed suite without collecting launch metrics, so inspect the metrics rather than treating a passing
+test as a timing result.
+
+## Onboarding
+
+`Scripts/test.sh performance AeroUITests/OnboardingPerformanceTests` measures application CPU during
+five seconds of idle onboarding, after an interaction and its 20-second rest delay. It runs once in Release
+and retains the metric and a screenshot; it does not measure physical frame presentation or total GPU energy.
 
 ## Tab hibernation
 
@@ -69,12 +74,8 @@ Limits: only the main frame is inspected for unsent text.
 Report the build configuration, hardware, and scenario (idle, navigation, many tabs, media) with any number.
 
 - **Signposts:** subsystem `app.getaero.browser`; categories `Launch`, `PageLifecycle`, `Storage`. Record with Instruments' os_signpost or Points of Interest instruments to see launch-to-session-ready, session load/write, and page creation, restoration and hibernation.
-- **Cold launch:** `LaunchPerformanceTests` measures launch until the window is responsive. Use the Release configuration:
-  ```sh
-  xcodebuild -project Aero.xcodeproj -scheme 'Aero Dev' -configuration Release \
-    -destination 'platform=macOS,arch=arm64' -derivedDataPath build/DerivedData \
-    -only-testing:AeroUITests/LaunchPerformanceTests test
-  ```
+- **Cold launch:** `LaunchPerformanceTests` measures launch until the window is responsive:
+  `Scripts/test.sh performance AeroUITests/LaunchPerformanceTests`.
 - **Memory:** `swift Scripts/measure-memory.swift` reports the footprint of Aero Dev by default (pass `Aero` to inspect stable), plus the WebKit processes attributed to it. Add `--sample 1` to sample over time and `--detailed` for per-category memory. WebKit processes of other apps, such as Safari, are excluded.
 
 ## Spaces
@@ -84,13 +85,12 @@ Only the current sidebar and its two neighbors are constructed. Equatable sideba
 Opaque WebKit interaction data is retained only when represented as Data, within a global 32-entry/16-MiB budget. Evicted or unsupported interaction state falls back to the saved URL. Arbitrary web-app state is not promised to survive hibernation. Same-profile tab moves keep their live page and identity. Cross-profile transitions discard interaction state.
 
 `SpacesPerformanceTests/testManySpacesKeepLazyPagesAndStableSwitching` seeds 4 profiles,
-13 spaces and 240 tab records in the isolated test database. It checks lazy startup, loads local
+13 spaces and 240 tab records through `BrowserStore` before launch. It checks lazy startup, loads local
 pages across spaces, records application CPU/memory metrics during repeated switching, then
 checks a playing video survives a background-space round trip. Run it explicitly in Release:
 
 ```sh
-AERO_E2E_CONFIGURATION=Release AERO_E2E_DERIVED_DATA=/tmp/aero-release-audit \
-  Scripts/run-e2e.sh AeroUITests/SpacesPerformanceTests
+Scripts/test.sh performance AeroUITests/SpacesPerformanceTests
 ```
 
 The test emits `AERO_SPACES_STAGE` markers with eight-second observation windows for an external

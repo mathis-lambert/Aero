@@ -78,7 +78,7 @@ Each notarization waits at most 30 minutes. Failure or timeout stops publication
 
 ## GitHub Actions
 
-`ci.yml` builds Debug and packages a local Release DMG on main and pull requests. It has read-only repository access and no Apple secrets. It retains outputs for 7 days. UI tests run through `Scripts/run-e2e.sh` in a logged-in GUI session; the hosted build workflow does not claim E2E coverage.
+`ci.yml` builds Debug and packages a local Release DMG on main and pull requests. It has read-only repository access and no Apple secrets. It retains outputs for 7 days. Tests run through `Scripts/test.sh` in a logged-in GUI session (docs/TESTING.md); the hosted build workflow does not claim UI test coverage.
 
 `distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release is a no-op; failed builds reuse their immutable tag.
 
@@ -103,7 +103,7 @@ Public repositories use free standard hosted runner compute; larger runners are 
 
 Before changing this pipeline, account for: missing toolchain/components; absent signing credentials; wrong PKCS#12 password or team; malformed/moved tags; dirty source; mismatched version; shallow history; missing channel metadata; shared user-data paths; failed or timed-out notarization; missing tickets; damaged signatures; partial uploads; retries replacing published assets; and secrets appearing in logs or artifacts.
 
-Validate a source Debug build and Release DMG without a Developer ID identity, inspect channel metadata, and run focused session/storage and appearance E2E tests with retained xcresult and reproduction manifests. Inspect the mounted DMG and copy its app to a temporary install directory before launch. Official acceptance also requires the signed pipeline and a real downloaded/quarantined install, ideally on another Mac, including an offline launch. Verify channel website-data isolation through browsing before claiming it as experimentally validated. Test the custom Finder icon after installation; Xcode removes its resource-fork metadata from reused build products before signing.
+Validate a source Debug build and Release DMG without a Developer ID identity, inspect channel metadata, and run `StorageJourneys` and `SettingsJourneys` with retained xcresult and reproduction manifests. Inspect the mounted DMG and copy its app to a temporary install directory before launch. Official acceptance also requires the signed pipeline and a real downloaded/quarantined install, ideally on another Mac, including an offline launch. Verify channel website-data isolation through browsing before claiming it as experimentally validated. Test the custom Finder icon after installation; Xcode removes its resource-fork metadata from reused build products before signing.
 
 Passkeys and any future managed entitlements are separate features. Add only approved capabilities and the required provisioning profiles to their explicit channel identities; do not make ordinary source builds depend on publication credentials.
 

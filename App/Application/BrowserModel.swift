@@ -56,7 +56,7 @@ final class BrowserModel {
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
     /// Test runs only: the fixture server that stands in for every search engine.
     private let searchTestEndpoint: URL?
-    /// Test runs never touch the Mac's own browsers, keychain, URL cache or app bundle.
+    /// Test runs use fixture browsers and isolated records, keychain items and network caches.
     let isTestRun: Bool
     /// Where other browsers are looked for: fixture folders in test runs.
     let importSourceRoots: (applicationSupport: URL, safari: URL)

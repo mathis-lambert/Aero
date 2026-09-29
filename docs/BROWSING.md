@@ -44,6 +44,4 @@ Downloads use sanitized unique filenames in Downloads, with quarantine and sourc
 
 ## Testing
 
-`Scripts/run-e2e.sh [AeroUITests/<TestClass>…]` runs local fixtures from `Tests/AeroUITests/Fixtures`, served by `FixtureServer` on localhost. `AERO_TEST_DATA` isolates records and downloads and makes website stores ephemeral; `AERO_TEST_SEARCH` redirects search endpoints to fixtures.
-
-The runner retains a unique `/tmp/aero-e2e-*.xcresult`, a reproduction manifest and working-tree patch. Focused suites include `BrowsingE2ETests`, `EssentialsE2ETests`, `HistoryE2ETests`, `ControlBarE2ETests` and `ProfilesE2ETests`. Test source is the authoritative scenario list. Use [Performance](PERFORMANCE.md) for measurements; physical haptics, device permissions and external service compatibility need manual checks.
+`BrowsingJourneys`, `KeyboardJourneys` and `SidebarJourneys` drive these behaviors against local pages; `SidebarTabsTests` covers tab order and drop targets. See [Testing](TESTING.md) for fixtures and plans, and [Performance](PERFORMANCE.md) for measurements. Physical haptics, device permissions and external service compatibility need manual checks.
