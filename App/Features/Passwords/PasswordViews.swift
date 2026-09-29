@@ -114,34 +114,17 @@ struct PasswordOfferView: View {
                 }
             }
             Hairline()
-            HStack(spacing: 8) {
-                if !offer.isUpdate {
-                    Button("Never") { browser.answerPasswordOffer(.never) }
-                        .buttonStyle(QuietButtonStyle())
-                        .font(BrowserDesign.Typography.caption)
-                        .foregroundStyle(palette.secondary)
-                        .tooltip(Text("Never for this site"))
-                        .accessibilityLabel(Text("Never for this site"))
-                        .accessibilityIdentifier("passwords.never")
+            // Longer translations put the two answers on their own row, above Never.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    never
+                    Spacer(minLength: 0)
+                    answers
                 }
-                Spacer(minLength: 0)
-                Button { browser.answerPasswordOffer(.notNow) } label: {
-                    HStack(spacing: 8) { Text("Not now"); Keycaps(.cancelAction).accessibilityHidden(true) }
+                VStack(alignment: .trailing, spacing: 8) {
+                    HStack(spacing: 8) { answers }
+                    never
                 }
-                    .buttonStyle(PanelButtonStyle())
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityLabel(Text("Not now"))
-                    .accessibilityIdentifier("passwords.notNow")
-                Button { browser.answerPasswordOffer(.save) } label: {
-                    HStack(spacing: 8) {
-                        Text(offer.isUpdate ? "Update" : "Save")
-                        Keycaps(.defaultAction, onAccent: true).accessibilityHidden(true)
-                    }
-                }
-                    .buttonStyle(PanelButtonStyle(prominent: true))
-                    .keyboardShortcut(.defaultAction)
-                    .accessibilityLabel(offer.isUpdate ? Text("Update") : Text("Save"))
-                    .accessibilityIdentifier("passwords.save")
             }
             .disabled(browser.passwords.isSavingOffer)
         }
@@ -152,5 +135,38 @@ struct PasswordOfferView: View {
         .background(KeyboardToPrompt())
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("passwords.offer")
+    }
+
+    @ViewBuilder private var never: some View {
+        if !offer.isUpdate {
+            Button("Never") { browser.answerPasswordOffer(.never) }
+                .buttonStyle(QuietButtonStyle())
+                .font(BrowserDesign.Typography.caption)
+                .foregroundStyle(palette.secondary)
+                .fixedSize()
+                .tooltip(Text("Never for this site"))
+                .accessibilityLabel(Text("Never for this site"))
+                .accessibilityIdentifier("passwords.never")
+        }
+    }
+
+    @ViewBuilder private var answers: some View {
+        Button { browser.answerPasswordOffer(.notNow) } label: {
+            HStack(spacing: 8) { Text("Not now"); Keycaps(.cancelAction).accessibilityHidden(true) }
+        }
+            .buttonStyle(PanelButtonStyle())
+            .keyboardShortcut(.cancelAction)
+            .accessibilityLabel(Text("Not now"))
+            .accessibilityIdentifier("passwords.notNow")
+        Button { browser.answerPasswordOffer(.save) } label: {
+            HStack(spacing: 8) {
+                Text(offer.isUpdate ? "Update" : "Save")
+                Keycaps(.defaultAction, onAccent: true).accessibilityHidden(true)
+            }
+        }
+            .buttonStyle(PanelButtonStyle(prominent: true))
+            .keyboardShortcut(.defaultAction)
+            .accessibilityLabel(offer.isUpdate ? Text("Update") : Text("Save"))
+            .accessibilityIdentifier("passwords.save")
     }
 }
