@@ -72,6 +72,11 @@ struct FlyingFavicons: View {
             guard old == 0, new > 0, onboarding.step == .importing, !reduceMotion else { return }
             launch()
         }
+        .task(id: flights.map(\.id)) {
+            guard !flights.isEmpty else { return }
+            do { try await Task.sleep(for: .seconds(0.9 + Double(flights.count) * 0.07 + 0.3)) } catch { return }
+            flights = []
+        }
     }
 
     private func launch() {
@@ -83,10 +88,6 @@ struct FlyingFavicons: View {
             Flight(url: link.url, from: CGPoint(x: origin.midX, y: origin.midY),
                    to: CGPoint(x: target.minX + 16, y: target.minY + target.height * CGFloat(index) / CGFloat(max(1, min(links.count, Self.most) - 1))),
                    delay: Double(index) * 0.07, lift: .random(in: 30...70), spin: .random(in: -12...12))
-        }
-        Task {
-            try? await Task.sleep(for: .seconds(0.9 + Double(flights.count) * 0.07 + 0.3))
-            flights = []
         }
     }
 }

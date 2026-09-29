@@ -55,7 +55,7 @@ struct OnboardingBrowserTwin: View {
         .task(id: recentTabTries) {
             guard recentTabTries > 0 else { return }
             showsRecentTabs = true
-            try? await Task.sleep(for: .seconds(1.4))
+            do { try await Task.sleep(for: .seconds(1.4)) } catch { return }
             showsRecentTabs = false
         }
         .accessibilityElement(children: .contain)
