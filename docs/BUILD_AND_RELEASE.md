@@ -72,7 +72,7 @@ Accepted tags:
 - `vX.Y.Z-beta.N`: numbered beta, N starts at 1.
 - `vX.Y.Z`: stable.
 
-No leading zeroes in numeric versions. Every published tag must point to a commit reachable from main. Increment the marketing version through review before the next product version. Beta identifiers belong to the tag and release name, not to Apple's numeric marketing version field.
+No leading zeroes in numeric versions. Every published tag must point to a commit reachable from main. Beta and stable tags are annotated, and their message is the release notes, in Markdown: the GitHub release and the signed appcast both use it, so the update prompt shows exactly what was reviewed. Create them with `git tag -a vX.Y.Z --cleanup=verbatim -F notes.md <commit>`. Publication fails for a lightweight tag or an empty message. Nightly notes are generated from the changes since the previous release. Increment the marketing version through review before the next product version. Beta identifiers belong to the tag and release name, not to Apple's numeric marketing version field.
 
 ## Official packaging
 

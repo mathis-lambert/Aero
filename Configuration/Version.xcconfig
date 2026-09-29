@@ -1,4 +1,4 @@
 // Next product version. Distribution tags must match this value.
-MARKETING_VERSION = 0.1.0
+MARKETING_VERSION = 0.1.1
 CURRENT_PROJECT_VERSION = 1
 AERO_REVISION = local
