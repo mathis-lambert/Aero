@@ -42,6 +42,11 @@ final class SettingsJourneys: E2ETestCase {
         reveal(app.buttons[Self.iconVariant]).click()
         XCTAssertTrue(app.buttons[Self.iconVariant].isSelected)
         XCTAssertTrue(poll { FileManager.default.fileExists(atPath: self.customIconFile.path) }, "The icon is set on the app itself, so it shows while Aero is closed")
+        selectSettingsSection("updates")
+        XCTAssertTrue(app.staticTexts["updates.disabled"].waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertFalse(app.buttons["updates.check"].isEnabled, "Test builds cannot reach the production updater")
+        XCTAssertFalse(app.switches["updates.automaticChecks"].exists, "Disabled updaters have no misleading preferences")
+        attachScreenshot("updates disabled in development", of: app)
         selectSettingsSection("Tabs")
         let hibernation = app.switches["settings.hibernation.enabled"], idleLimit = app.popUpButtons["settings.hibernation.idleLimit"]
         XCTAssertTrue(hibernation.waitForExistence(timeout: Self.renderTimeout))

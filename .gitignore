@@ -12,3 +12,6 @@ xcuserdata/
 # Signing credentials are machine-local, never source files.
 *.p12
 *.p8
+
+# Python distribution-tool bytecode.
+__pycache__/

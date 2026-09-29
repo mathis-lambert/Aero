@@ -35,6 +35,7 @@ struct SettingsView: View {
                 case .passwordImport(let id): PasswordImportSettingsView(browser: browser, profileID: id, navigate: navigate)
                 case .section(let section):
                     switch section {
+                    case .updates: UpdateSettingsView(browser: browser)
                     case .general: GeneralSettingsView(browser: browser)
                     case .tabs: PerformanceSettingsView(browser: browser)
                     case .profiles: ProfilesSettingsView(browser: browser, navigate: navigate)

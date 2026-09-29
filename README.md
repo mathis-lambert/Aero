@@ -1,6 +1,6 @@
 # Aero
 
-A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. Apple Silicon, macOS 26.0 or newer, no external runtime dependencies.
+A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. For Apple Silicon and macOS 26.0 or newer. Signed automatic updates use Sparkle.
 
 ## Build from source
 
@@ -46,4 +46,5 @@ Not implemented yet: separate popup windows.
 - [Shortcuts](docs/SHORTCUTS.md): defaults, overrides and keyboard routing.
 - [Site controls](docs/SITE_CONTROLS.md): permissions, blocking and picture in picture.
 - [Extensions](docs/EXTENSIONS.md): installation, WebKit limits and native messaging.
+- [Software updates](docs/UPDATES.md): channel isolation, signing and publication setup.
 - [Design](docs/DESIGN.md) and [contributor rules](AGENTS.md).

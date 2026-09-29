@@ -4,6 +4,7 @@ import SwiftUI
 extension BrowserCommand {
     var title: String {
         switch self {
+        case .checkForUpdates: String(localized: "Check for Updates…")
         case .zoomIn: String(localized: "Zoom In")
         case .zoomOut: String(localized: "Zoom Out")
         case .resetZoom: String(localized: "Actual Size")
@@ -62,6 +63,7 @@ extension BrowserCommand {
 
     var summary: String {
         switch self {
+        case .checkForUpdates: String(localized: "Check for a newer version of Aero.")
         case .newTab: String(localized: "Open a new tab in the current space.")
         case .openLocation: String(localized: "Focus the current address to enter a URL or search.")
         case .commandPalette: String(localized: "Search tabs, history, and browser commands.")
@@ -110,6 +112,7 @@ extension BrowserCommand {
 
     var symbol: String {
         switch self {
+        case .checkForUpdates: "arrow.triangle.2.circlepath"
         case .zoomIn: "plus.magnifyingglass"
         case .zoomOut: "minus.magnifyingglass"
         case .resetZoom: "1.magnifyingglass"

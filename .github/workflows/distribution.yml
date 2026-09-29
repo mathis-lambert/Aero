@@ -22,6 +22,7 @@ jobs:
     outputs:
       tag: ${{ steps.select.outputs.tag }}
       revision: ${{ steps.select.outputs.revision }}
+      published: ${{ steps.select.outputs.published }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -56,14 +57,14 @@ jobs:
           fi
           if draft=$(gh release view "$tag" --json isDraft --jq '.isDraft' 2>/dev/null); then
             [[ "$draft" == false ]] || { echo 'An incomplete draft exists; inspect it before retrying.'; exit 1; }
-            echo 'Release already published; nothing to do.'
-            exit 0
+            echo 'Release already published; retry only feed publication.'
+            echo 'published=true' >> "$GITHUB_OUTPUT"
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "revision=$revision" >> "$GITHUB_OUTPUT"
   distribute:
     needs: prepare
-    if: needs.prepare.outputs.tag != ''
+    if: needs.prepare.outputs.tag != '' && needs.prepare.outputs.published != 'true'
     runs-on: xcode-27
     timeout-minutes: 100
     environment: distribution
@@ -75,6 +76,7 @@ jobs:
       APPLE_API_KEY_ID: ${{ vars.APPLE_API_KEY_ID }}
       APPLE_API_ISSUER_ID: ${{ vars.APPLE_API_ISSUER_ID }}
       RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      SPARKLE_PUBLIC_ED_KEY: ${{ vars.SPARKLE_PUBLIC_ED_KEY }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -83,8 +85,10 @@ jobs:
       - run: |
           Scripts/check-toolchain.sh
           xcodebuild -downloadComponent MetalToolchain
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
       - name: Set credential paths
         run: |
+          echo "SPARKLE_PRIVATE_KEY_FILE=$RUNNER_TEMP/aero-sparkle-key" >> "$GITHUB_ENV"
           echo "APPLE_API_KEY_PATH=$RUNNER_TEMP/aero-notary.p8" >> "$GITHUB_ENV"
           echo "SIGNING_KEYCHAIN=$RUNNER_TEMP/aero-signing.keychain-db" >> "$GITHUB_ENV"
       - name: Import signing credentials
@@ -92,10 +96,13 @@ jobs:
           CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           API_PRIVATE_KEY: ${{ secrets.APPLE_API_PRIVATE_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         shell: bash
         run: |
           set -euo pipefail
+          test -n "$SPARKLE_PUBLIC_ED_KEY" && test -n "$SPARKLE_PRIVATE_KEY"
           umask 077
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$SPARKLE_PRIVATE_KEY_FILE"
           keychain_password=$(openssl rand -hex 32)
           echo "::add-mask::$keychain_password"
           printf '%s' "$CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/aero-signing.p12"
@@ -107,6 +114,12 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$keychain_password" "$SIGNING_KEYCHAIN" >/dev/null
           security list-keychains -d user -s "$SIGNING_KEYCHAIN" "$HOME/Library/Keychains/login.keychain-db"
           rm "$RUNNER_TEMP/aero-signing.p12"
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$RELEASE_TAG" --jq .body > "$RUNNER_TEMP/aero-release-notes.md"
+          echo "RELEASE_NOTES_FILE=$RUNNER_TEMP/aero-release-notes.md" >> "$GITHUB_ENV"
       - id: package
         run: Scripts/distribute.sh "$RELEASE_TAG"
       - name: Publish completed artifacts
@@ -121,7 +134,7 @@ jobs:
           flags=(--latest=false --prerelease)
           if [[ "$CHANNEL" == stable ]]; then flags=(--latest); fi
           gh release create "$RELEASE_TAG" "$OUTPUT"/public/* --verify-tag --target "$REVISION" \
-            --title "Aero $RELEASE_TAG" --generate-notes --draft "${flags[@]}"
+            --title "Aero $RELEASE_TAG" --notes-file "$OUTPUT/release-notes.md" --draft "${flags[@]}"
           gh release edit "$RELEASE_TAG" --draft=false "${flags[@]}"
       - name: Retain archive, symbols and diagnostics
         if: always()
@@ -141,4 +154,25 @@ jobs:
         shell: bash
         run: |
           if [[ -f "$RUNNER_TEMP/aero-signing.keychain-db" ]]; then security delete-keychain "$RUNNER_TEMP/aero-signing.keychain-db"; fi
-          rm -f "$RUNNER_TEMP/aero-signing.p12" "$RUNNER_TEMP/aero-notary.p8"
+          rm -f "$RUNNER_TEMP/aero-signing.p12" "$RUNNER_TEMP/aero-notary.p8" "$RUNNER_TEMP/aero-sparkle-key"
+
+  publish-feed:
+    needs: [prepare, distribute]
+    if: always() && needs.prepare.result == 'success' && (needs.distribute.result == 'success' || needs.prepare.outputs.published == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: distribution
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Publish signed appcast
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+          UPDATE_HOST: ${{ secrets.UPDATE_HOST }}
+          UPDATE_USER: ${{ secrets.UPDATE_USER }}
+          UPDATE_PORT: ${{ secrets.UPDATE_PORT }}
+          UPDATE_SSH_KEY: ${{ secrets.UPDATE_SSH_KEY }}
+          UPDATE_KNOWN_HOSTS: ${{ secrets.UPDATE_KNOWN_HOSTS }}
+        run: Scripts/publish-update.sh "$RELEASE_TAG"

@@ -21,10 +21,11 @@ enum SettingsRoute: Hashable {
 }
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, tabs, profiles, spaces, passwords, extensions, storage, shortcuts
+    case general, tabs, profiles, spaces, passwords, extensions, storage, shortcuts, updates
     var id: Self { self }
     var title: String {
         switch self {
+        case .updates: String(localized: "Software Updates")
         case .general: String(localized: "General")
         case .tabs: String(localized: "Tabs")
         case .profiles: String(localized: "Profiles")
@@ -37,6 +38,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     }
     var symbol: String {
         switch self {
+        case .updates: "arrow.triangle.2.circlepath"
         case .general: "gearshape"
         case .tabs: "square.on.square"
         case .profiles: "person.crop.circle"

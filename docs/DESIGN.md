@@ -2,6 +2,9 @@
 
 Aero uses compact, neutral chrome around the page. The Gilda Display mark and dithered wind belong to the app icon, New Tab and the onboarding; the chrome uses system typography and SF Symbols, with favicons for websites. The onboarding's titles use Gilda Display (bundled in `Resources/Fonts` under the SIL Open Font License) on its paper and ink colors (`App/Design/BrandDesign.swift`); its controls, text and previews keep the chrome's own type, colors and components. See [Onboarding](ONBOARDING.md).
 
+The DMG installation window uses the same light paper, ink and Gilda Display identity.
+Its artwork and Finder layout live in `Scripts/DMG`; see [Build and release](BUILD_AND_RELEASE.md#installer-window).
+
 ## Shared components
 
 Tokens and reusable components live in `App/Design`. `BrowserDesign` owns shared dimensions, typography and motion; `BrowserPalette` owns semantic colors. Keep one-off layout values local rather than turning them into tokens. Source definitions are authoritative for numeric values.

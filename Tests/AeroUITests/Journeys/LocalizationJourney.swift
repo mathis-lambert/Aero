@@ -40,6 +40,10 @@ final class LocalizationJourney: E2ETestCase {
 
         openSettings("General")
         attachScreenshot("settings general", of: app)
+        selectSettingsSection("updates")
+        XCTAssertTrue(app.staticTexts["updates.disabled"].waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertTrue(app.buttons["updates.check"].isHittable, "The update action fits expanded French in RTL")
+        attachScreenshot("software updates expanded French RTL", of: app)
         selectSettingsSection("profiles")
         app.buttons["profiles.row.Personal"].click()
         replaceText(of: app.textFields["profiles.name"], with: "Profil personnel et documentation\n")

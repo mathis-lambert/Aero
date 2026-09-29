@@ -18,6 +18,7 @@ final class BrowserModel {
     private(set) var loadFailed = false
     let window = BrowserWindowState()
     private let appIcon: AppIcon
+    let updater: AppUpdater
     let preferences: BrowserPreferences
     let favicons: FaviconCache
     let history: BrowserHistory
@@ -78,6 +79,7 @@ final class BrowserModel {
         appIcon = AppIcon(variant: preferences.appIcon)
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
         isTestRun = testing != nil
+        updater = AppUpdater(isTestRun: testing != nil)
         showsOnboarding = testing == nil || environment["AERO_TEST_ONBOARDING"] == "1"
         if let testDirectory {
             let root = environment["AERO_TEST_IMPORT_SOURCES"].map { URL(fileURLWithPath: $0, isDirectory: true) }
@@ -205,6 +207,7 @@ final class BrowserModel {
 
     func endOnboarding() {
         onboarding = nil
+        updater.start()
     }
 
     /// The onboarding's import steps alone, for someone already using Aero (docs/ONBOARDING.md › When it appears).

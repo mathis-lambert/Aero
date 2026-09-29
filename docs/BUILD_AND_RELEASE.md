@@ -31,7 +31,23 @@ Scripts/build.sh dmg
 
 `dmg` defaults to Release; the other commands default to Debug. `--configuration Debug|Release` selects optimization without changing the dev identity. Source builds accept a dirty checkout. Logs, a source patch (including untracked files), a manifest and optional DMG are retained in a unique `build/artifacts/` directory. DerivedData lives in `build/DerivedData/`. Nothing installs into Applications automatically.
 
-The local DMG contains Aero Dev and a shortcut to Applications. Its filename explicitly says `local`; it is not a notarized public release. Ad hoc signing may cause macOS to ask for privacy permissions again after rebuilds.
+The local DMG contains Aero Dev and a shortcut to Applications. Packaging requires `uv`; `uv run --locked Scripts/DMG/build.py` installs the locked build-only dependencies in an isolated environment. Ordinary application builds do not require Python or uv. Its filename explicitly says `local`; it is not a notarized public release. Ad hoc signing may cause macOS to ask for privacy permissions again after rebuilds.
+
+## Installer window
+
+`Scripts/DMG/` owns the Finder layout. The same layout packages every channel:
+a 640 × 360 window, two native draggable icons, a directional arrow, and the
+onboarding's paper/ink colors and Gilda Display mark. The static TIFF includes
+1× and 2× representations. Finder owns window controls, localized file labels
+and drag-and-drop accessibility. The artwork contains only the Aero brand name.
+
+`render.swift` generates artwork from the bundled font. `dmgbuild` 1.6.7 writes the
+Finder metadata without a GUI session, so CI does not automate Finder. Its two small
+transitive dependencies and hashes are locked in `build.py.lock`. These tools are used
+only during packaging and add no runtime dependency to Aero. Upgrade them deliberately
+and inspect the mounted DMG after changes. The app is already signed when copied;
+the DMG is signed and notarized after layout. Keep Finder metadata off the app bundle
+itself to preserve its signature.
 
 ## Channels and data
 
@@ -48,7 +64,7 @@ Preferences and caches are scoped to the bundle identifier. Profile records and 
 
 ## Versioning and tags
 
-`Configuration/Version.xcconfig` owns the next marketing version. Info.plist reads it through `MARKETING_VERSION`. Published beta and stable tags must match that version. `CFBundleVersion` for publication is the full-history commit count, while `AeroRevision` records the full commit SHA. Local builds use build number 1 and the CLI records its revision; direct Xcode builds identify the revision as `local`.
+`Configuration/Version.xcconfig` owns the next marketing version. Info.plist reads it through `MARKETING_VERSION`. Published beta and stable tags must match that version. `CFBundleVersion` for publication is `<full-history-commit-count>.0` (or `<count>.<beta-number>` for beta tags), while `AeroRevision` records the full commit SHA. Local builds use build number 1 and the CLI records its revision; direct Xcode builds identify the revision as `local`.
 
 Accepted tags:
 
@@ -65,14 +81,16 @@ export APPLE_TEAM_ID='<team>'
 export APPLE_API_KEY_ID='<key ID>'
 export APPLE_API_ISSUER_ID='<issuer UUID>'
 export APPLE_API_KEY_PATH='/absolute/path/to/notarization.p8'
+export SPARKLE_PUBLIC_ED_KEY='<Sparkle public key>'
+export SPARKLE_PRIVATE_KEY_FILE='/absolute/path/to/sparkle-private-key'
 Scripts/distribute.sh v0.1.0-beta.1
 ```
 
 The named tag must exist at HEAD and the checkout must be clean. A Developer ID Application signing identity must be present in the keychain. The script does not create tags, modify the checkout or publish releases.
 
-The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `diskutil image create from`, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
+The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `dmgbuild` and Apple’s disk-image tools, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
 
-The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, and the manifest. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
+The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, the manifest and the signed channel appcast. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
 
 Each notarization waits at most 30 minutes. Failure or timeout stops publication and retains the submission response. An Apple submission can continue after a timeout: use its retained ID with `notarytool info` or `log` to diagnose it. Rerunning creates a fresh output directory; it does not overwrite previous results. Keep archive backups for released versions beyond the CI retention period; the release asset retains the dSYMs.
 
@@ -80,11 +98,11 @@ Each notarization waits at most 30 minutes. Failure or timeout stops publication
 
 `ci.yml` builds Debug and packages a local Release DMG on main and pull requests. It has read-only repository access and no Apple secrets. It retains outputs for 7 days. Tests run through `Scripts/test.sh` in a logged-in GUI session (docs/TESTING.md); the hosted build workflow does not claim UI test coverage.
 
-`distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release is a no-op; failed builds reuse their immutable tag.
+`distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release republishes its signed appcast without rebuilding; failed builds reuse their immutable tag.
 
 Preparation checks the tag and main ancestry before credentials are loaded. Automatically created nightly tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Concurrency is scoped to the ref and commit/tag: different main pushes can build independently without replacing each other in the pending queue.
 
-The `distribution` GitHub environment contains:
+The `distribution` GitHub environment contains these Apple signing credentials, plus the Sparkle signing and SSH publication settings documented in [UPDATES.md](UPDATES.md#one-time-setup-before-mergingenabling-distribution):
 
 | Kind | Name | Value |
 | --- | --- | --- |
@@ -114,3 +132,10 @@ Passkeys and any future managed entitlements are separate features. Add only app
 - [Apple: notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)
 - [GitHub: Apple certificates on runners](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications)
 - [GitHub: workflow triggering and GITHUB_TOKEN](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)
+
+## Automatic updates
+
+Distribution also generates a signed Sparkle appcast and publishes it to GetAero after
+the GitHub release is available. Configure the Sparkle keys and restricted SSH publisher
+**before merging changes that enable this pipeline**. See [UPDATES.md](UPDATES.md) for
+application behavior, signing, server setup, failure handling and validation.

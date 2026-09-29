@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A01100000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A01100000000000000000002 /* Sparkle */; };
 		0CA62092B7B5C7DF45A3093A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B9281A3E96A7A56412327CC /* BrowserCore */; };
 		858C612D9FA8879AA3BD6372 /* BrowserStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA8807172498D9D5F0353C2 /* BrowserStorage */; };
 		31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 69764682C66036DC0CE36654 /* BrowserCore */; };
@@ -86,6 +87,7 @@
 				31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */,
 				CDB05B415DF02AEE4458D54F /* BrowserStorage in Frameworks */,
 				D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */,
+				A01100000000000000000001 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +204,7 @@
 				69764682C66036DC0CE36654 /* BrowserCore */,
 				351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */,
 				B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */,
+				A01100000000000000000002 /* Sparkle */,
 			);
 			productName = Aero;
 			productReference = C2B6AF95E5FB6AF04547C8EA /* Aero.app */;
@@ -240,6 +243,7 @@
 			mainGroup = 2EB2D8158FC6EF9EB19CB439;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				A01100000000000000000003 /* Sparkle */,
 				AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -533,6 +537,14 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		A01100000000000000000003 /* Sparkle */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {kind = exactVersion; version = 2.10.0; };
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCLocalSwiftPackageReference section */
 		AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -541,6 +553,11 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A01100000000000000000002 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A01100000000000000000003 /* Sparkle */;
+			productName = Sparkle;
+		};
 		0B9281A3E96A7A56412327CC /* BrowserCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
