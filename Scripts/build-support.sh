@@ -35,11 +35,9 @@ write_manifest() {
 }
 
 create_dmg() {
-    local source_app="$1" destination="$2" stage
-    stage=$(mktemp -d "$output/dmg-stage-XXXXXX")
-    ditto "$source_app" "$stage/${source_app:t}"
-    ln -s /Applications "$stage/Applications"
-    diskutil image create from --volumeName "${source_app:t:r}" --format UDZO "$stage" "$destination"
+    local source_app="$1" destination="$2" background="$output/dmg-background.tiff"
+    (( $+commands[uv] )) || fail 'DMG packaging requires uv (https://docs.astral.sh/uv/).'
+    swift -swift-version 6 Scripts/DMG/render.swift "$background"
+    uv run --locked Scripts/DMG/build.py "$source_app" "$background" "$destination"
     hdiutil verify "$destination"
-    rm -rf "$stage"
 }

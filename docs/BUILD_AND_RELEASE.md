@@ -31,7 +31,23 @@ Scripts/build.sh dmg
 
 `dmg` defaults to Release; the other commands default to Debug. `--configuration Debug|Release` selects optimization without changing the dev identity. Source builds accept a dirty checkout. Logs, a source patch (including untracked files), a manifest and optional DMG are retained in a unique `build/artifacts/` directory. DerivedData lives in `build/DerivedData/`. Nothing installs into Applications automatically.
 
-The local DMG contains Aero Dev and a shortcut to Applications. Its filename explicitly says `local`; it is not a notarized public release. Ad hoc signing may cause macOS to ask for privacy permissions again after rebuilds.
+The local DMG contains Aero Dev and a shortcut to Applications. Packaging requires `uv`; `uv run --locked Scripts/DMG/build.py` installs the locked build-only dependencies in an isolated environment. Ordinary application builds do not require Python or uv. Its filename explicitly says `local`; it is not a notarized public release. Ad hoc signing may cause macOS to ask for privacy permissions again after rebuilds.
+
+## Installer window
+
+`Scripts/DMG/` owns the Finder layout. The same layout packages every channel:
+a 640 × 360 window, two native draggable icons, a directional arrow, and the
+onboarding's paper/ink colors and Gilda Display mark. The static TIFF includes
+1× and 2× representations. Finder owns window controls, localized file labels
+and drag-and-drop accessibility. The artwork contains only the Aero brand name.
+
+`render.swift` generates artwork from the bundled font. `dmgbuild` 1.6.7 writes the
+Finder metadata without a GUI session, so CI does not automate Finder. Its two small
+transitive dependencies and hashes are locked in `build.py.lock`. These tools are used
+only during packaging and add no runtime dependency to Aero. Upgrade them deliberately
+and inspect the mounted DMG after changes. The app is already signed when copied;
+the DMG is signed and notarized after layout. Keep Finder metadata off the app bundle
+itself to preserve its signature.
 
 ## Channels and data
 
@@ -72,7 +88,7 @@ Scripts/distribute.sh v0.1.0-beta.1
 
 The named tag must exist at HEAD and the checkout must be clean. A Developer ID Application signing identity must be present in the keychain. The script does not create tags, modify the checkout or publish releases.
 
-The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `diskutil image create from`, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
+The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `dmgbuild` and Apple’s disk-image tools, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
 
 The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, the manifest and the signed channel appcast. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
 
