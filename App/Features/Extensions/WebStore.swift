@@ -1,3 +1,4 @@
+import BrowserCore
 import Foundation
 
 /// The Chrome Web Store: its extension pages, and its update service, which serves packages and says
@@ -15,11 +16,9 @@ enum WebStore {
     static func extensionID(on url: URL) -> String? {
         guard url.host() == host else { return nil }
         let parts = url.pathComponents
-        guard parts.count >= 3, parts[1] == "detail", let last = parts.last, isIdentifier(last) else { return nil }
+        guard parts.count >= 3, parts[1] == "detail", let last = parts.last, InstalledExtension.isValidIdentifier(last) else { return nil }
         return last
     }
-
-    static func isIdentifier(_ text: String) -> Bool { text.count == 32 && text.allSatisfy { ("a"..."p").contains($0) } }
 
     static func package(_ identifier: String) async throws -> Data {
         let (data, response) = try await session.data(from: query(identifier, version: nil, redirect: true))
