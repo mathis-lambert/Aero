@@ -123,11 +123,12 @@ final class FaviconCache {
         }
     }
 
-    /// A visible saved login may have no open tab. Ask only that host for its conventional icon,
+    /// A visible site icon may have no open tab. Ask only that host for its conventional icon,
     /// once while its bounded cache entry lives, and never if an icon is already on disk.
     func fetchMissing(_ key: FaviconKey, at url: URL) {
         let favicon = favicon(for: key)
-        guard favicon.image == nil, !favicon.attemptedFallback, refreshTasks[key] == nil else { return }
+        // Evicting an entry does not finish its request; keep one owned request per site.
+        guard favicon.image == nil, !favicon.attemptedFallback, refreshTasks[key] == nil, fallbackTasks[key] == nil else { return }
         favicon.attemptedFallback = true
         let candidates = FaviconCandidate.ranked(from: [], pageURL: url)
         guard !candidates.isEmpty else { return }
