@@ -50,4 +50,3 @@ final class CompatibilityHarness {
     /// The routes and bodies requested so far, as JSON.
     var requests: String { string("JSON.stringify(requests)") ?? "" }
 }
-
