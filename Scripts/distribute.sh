@@ -41,12 +41,14 @@ build_number="$(git rev-list --count HEAD).0"
 sparkle_tools="$output/sparkle-tools"
 Scripts/sparkle-tools.sh "$sparkle_tools"
 archive="$output/$product.xcarchive"
+# The global Developer ID identity also reaches SwiftPM resource bundles, so sign them manually.
 command=(xcodebuild ARCHS=arm64 -project Aero.xcodeproj -scheme "$product" -configuration "$configuration"
     -onlyUsePackageVersionsFromResolvedFile
     -destination 'generic/platform=macOS' -derivedDataPath "$PWD/build/DistributionDerivedData"
     -archivePath "$archive" "CURRENT_PROJECT_VERSION=$build_number" "AERO_REVISION=$revision"
     AERO_UPDATES_ENABLED=YES "SPARKLE_PUBLIC_ED_KEY=$SPARKLE_PUBLIC_ED_KEY"
-    "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" 'CODE_SIGN_IDENTITY=Developer ID Application' archive)
+    "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" 'CODE_SIGN_STYLE=Manual'
+    'CODE_SIGN_IDENTITY=Developer ID Application' archive)
 write_manifest
 "${command[@]}" 2>&1 | tee "$output/archive.log"
 cat > "$output/ExportOptions.plist" <<PLIST
