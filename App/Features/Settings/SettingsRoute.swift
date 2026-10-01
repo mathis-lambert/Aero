@@ -9,6 +9,7 @@ enum SettingsRoute: Hashable {
     case passwordProfile(UUID)
     case passwordLogin(SavedLogin)
     case passwordImport(UUID)
+    case `extension`(profileID: UUID, extensionID: String)
 
     var section: SettingsSection {
         switch self {
@@ -16,6 +17,7 @@ enum SettingsRoute: Hashable {
         case .profile: .profiles
         case .space: .spaces
         case .passwordProfile, .passwordLogin, .passwordImport: .passwords
+        case .extension: .extensions
         }
     }
 }

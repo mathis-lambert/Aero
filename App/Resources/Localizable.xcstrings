@@ -11,6 +11,70 @@
         }
       }
     },
+    "%@ browser integration was not found" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ browser integration was not found"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’intégration de %@ au navigateur est introuvable"
+          }
+        }
+      }
+    },
+    "%@ closed the connection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ closed the connection"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a fermé la connexion"
+          }
+        }
+      }
+    },
+    "%@ could not be started" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ could not be started"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ n’a pas pu être lancé"
+          }
+        }
+      }
+    },
+    "%@ does not accept Aero yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ does not accept Aero yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ n’accepte pas encore Aero"
+          }
+        }
+      }
+    },
     "%@ encrypts them so no other app can read them. Each of its profiles becomes a space." : {
       "localizations" : {
         "fr" : {
@@ -451,6 +515,22 @@
         }
       }
     },
+    "Access" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès"
+          }
+        }
+      }
+    },
     "Access to the keychain was not allowed." : {
       "localizations" : {
         "en" : {
@@ -631,6 +711,22 @@
         }
       }
     },
+    "Address bar keywords" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Address bar keywords"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots-clés dans la barre d’adresse"
+          }
+        }
+      }
+    },
     "Ads and trackers" : {
       "localizations" : {
         "en" : {
@@ -764,6 +860,22 @@
         }
       }
     },
+    "Already used by %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already used by %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà utilisé par %@."
+          }
+        }
+      }
+    },
     "Amber" : {
       "localizations" : {
         "en" : {
@@ -776,6 +888,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ambre"
+          }
+        }
+      }
+    },
+    "An extension chosen here fills and saves this profile’s passwords on websites, and Aero stops offering its own. The passwords saved in Aero stay here." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An extension chosen here fills and saves this profile’s passwords on websites, and Aero stops offering its own. The passwords saved in Aero stay here."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une extension choisie ici remplit et enregistre les mots de passe de ce profil sur les sites, et Aero ne propose plus les siens. Les mots de passe enregistrés dans Aero restent ici."
           }
         }
       }
@@ -916,6 +1044,22 @@
         }
       }
     },
+    "AutoFill" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AutoFill"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplissage automatique"
+          }
+        }
+      }
+    },
     "Automatic" : {
       "localizations" : {
         "en" : {
@@ -1028,6 +1172,38 @@
         }
       }
     },
+    "Block content on pages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block content on pages"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquer du contenu sur les pages"
+          }
+        }
+      }
+    },
+    "Blocking web requests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocking web requests"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocage des requêtes web"
+          }
+        }
+      }
+    },
     "Blue" : {
       "localizations" : {
         "en" : {
@@ -1040,6 +1216,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "Bookmarks and reading list" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bookmarks and reading list"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signets et liste de lecture"
           }
         }
       }
@@ -1090,6 +1282,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "On rapatrie tout."
+          }
+        }
+      }
+    },
+    "Browser settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Browser settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages du navigateur"
           }
         }
       }
@@ -1178,6 +1386,22 @@
         }
       }
     },
+    "Capturing tabs, pages or the screen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturing tabs, pages or the screen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture d’onglets, de pages ou de l’écran"
+          }
+        }
+      }
+    },
     "Change browsing profile?" : {
       "localizations" : {
         "en" : {
@@ -1206,6 +1430,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modifier les autorisations et les préférences du site actuel."
+          }
+        }
+      }
+    },
+    "Change what you copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change what you copy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier ce que vous copiez"
           }
         }
       }
@@ -1348,6 +1588,38 @@
         }
       }
     },
+    "Chrome Web Store" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chrome Web Store"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chrome Web Store"
+          }
+        }
+      }
+    },
+    "Chrome Web Store link or extension ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chrome Web Store link or extension ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lien Chrome Web Store ou identifiant de l’extension"
+          }
+        }
+      }
+    },
     "Clear" : {
       "localizations" : {
         "en" : {
@@ -1484,6 +1756,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Effacer les données d’un profil vous déconnecte de ses sites."
+          }
+        }
+      }
+    },
+    "Clearing browsing data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clearing browsing data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacement des données de navigation"
           }
         }
       }
@@ -1634,6 +1922,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Barre de commandes"
+          }
+        }
+      }
+    },
+    "Communicate with apps on this Mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Communicate with apps on this Mac"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Communiquer avec des apps de ce Mac"
+          }
+        }
+      }
+    },
+    "Connected to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected to %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecté à %@"
           }
         }
       }
@@ -1798,6 +2118,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier l’adresse de la page actuelle dans le presse-papiers."
+          }
+        }
+      }
+    },
+    "Could not be loaded" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not be loaded"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "N’a pas pu être chargée"
+          }
+        }
+      }
+    },
+    "Could not start" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not start"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "N’a pas pu démarrer"
           }
         }
       }
@@ -1974,6 +2326,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aube"
+          }
+        }
+      }
+    },
+    "Debugging pages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debugging pages"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débogage des pages"
           }
         }
       }
@@ -2174,6 +2542,38 @@
         }
       }
     },
+    "Desktop app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desktop app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App de bureau"
+          }
+        }
+      }
+    },
+    "Developer tools panels" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer tools panels"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panneaux des outils de développement"
+          }
+        }
+      }
+    },
     "Disable shortcut" : {
       "localizations" : {
         "en" : {
@@ -2218,6 +2618,646 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Téléchargements"
+          }
+        }
+      }
+    },
+    "Extension Settings…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extension Settings…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages de l’extension…"
+          }
+        }
+      }
+    },
+    "Extensions in the %@ profile." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions in the %@ profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions du profil %@."
+          }
+        }
+      }
+    },
+    "Fill passwords in “%@” with this extension" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill passwords in “%@” with this extension"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplir les mots de passe de « %@ » avec cette extension"
+          }
+        }
+      }
+    },
+    "Fill passwords with" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill passwords with"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplir les mots de passe avec"
+          }
+        }
+      }
+    },
+    "Fill your passwords in place of Aero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill your passwords in place of Aero"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplir vos mots de passe à la place d’Aero"
+          }
+        }
+      }
+    },
+    "In 1Password, open Settings › Browser › Add Browser and choose Aero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In 1Password, open Settings › Browser › Add Browser and choose Aero."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans 1Password, ouvrez Réglages › Navigateur › Ajouter un navigateur et choisissez Aero."
+          }
+        }
+      }
+    },
+    "In Bitwarden, enable Settings › Allow browser integration. Touch ID requires the Mac App Store version." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Bitwarden, enable Settings › Allow browser integration. Touch ID requires the Mac App Store version."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans Bitwarden, activez Réglages › Autoriser l’intégration au navigateur. Touch ID nécessite la version du Mac App Store."
+          }
+        }
+      }
+    },
+    "Its data in this profile will be deleted." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Its data in this profile will be deleted."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses données dans ce profil seront supprimées."
+          }
+        }
+      }
+    },
+    "Keyboard shortcuts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard shortcuts"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raccourcis clavier"
+          }
+        }
+      }
+    },
+    "Know your location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Know your location"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connaître votre position"
+          }
+        }
+      }
+    },
+    "Load an unpacked extension" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load an unpacked extension"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charger une extension non empaquetée"
+          }
+        }
+      }
+    },
+    "Manage your downloads" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage your downloads"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer vos téléchargements"
+          }
+        }
+      }
+    },
+    "Manage your other extensions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage your other extensions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer vos autres extensions"
+          }
+        }
+      }
+    },
+    "No extensions in this profile yet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No extensions in this profile yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune extension dans ce profil pour l’instant."
+          }
+        }
+      }
+    },
+    "No website, unless you click its button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No website, unless you click its button"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun site, sauf quand vous cliquez sur son bouton"
+          }
+        }
+      }
+    },
+    "Not available in Aero" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available in Aero"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non disponible dans Aero"
+          }
+        }
+      }
+    },
+    "Not available in Aero: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available in Aero: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non disponible dans Aero : %@"
+          }
+        }
+      }
+    },
+    "Not connected to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected to %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non connectée à %@"
+          }
+        }
+      }
+    },
+    "Not connected to %@ yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected to %@ yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore connecté à %@"
+          }
+        }
+      }
+    },
+    "On · Limited features" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On · Limited features"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activée · Fonctions limitées"
+          }
+        }
+      }
+    },
+    "Open %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir %@"
+          }
+        }
+      }
+    },
+    "Open extension options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open extension options"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les options de l’extension"
+          }
+        }
+      }
+    },
+    "Open the extension" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the extension"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir l’extension"
+          }
+        }
+      }
+    },
+    "Options" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
+          }
+        }
+      }
+    },
+    "Providing voices for text to speech" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Providing voices for text to speech"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fournir des voix de synthèse vocale"
+          }
+        }
+      }
+    },
+    "Proxy settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proxy settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages de proxy"
+          }
+        }
+      }
+    },
+    "Push messages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push messages"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages push"
+          }
+        }
+      }
+    },
+    "Read and change cookies" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read and change cookies"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire et modifier les cookies"
+          }
+        }
+      }
+    },
+    "Read and change your browsing history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read and change your browsing history"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire et modifier votre historique de navigation"
+          }
+        }
+      }
+    },
+    "Read what you copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read what you copy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire ce que vous copiez"
+          }
+        }
+      }
+    },
+    "Read your browsing history" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read your browsing history"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire votre historique de navigation"
+          }
+        }
+      }
+    },
+    "Reload from folder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload from folder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recharger depuis le dossier"
+          }
+        }
+      }
+    },
+    "Removal did not finish" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removal did not finish"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La suppression n’a pas abouti"
+          }
+        }
+      }
+    },
+    "Remove extension" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove extension"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’extension"
+          }
+        }
+      }
+    },
+    "Remove extension…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove extension…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’extension…"
+          }
+        }
+      }
+    },
+    "Remove this extension and its data?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this extension and its data?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer cette extension et ses données ?"
+          }
+        }
+      }
+    },
+    "Replacing the New Tab page" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replacing the New Tab page"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacement de la page Nouvel onglet"
+          }
+        }
+      }
+    },
+    "Reported errors (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reported errors (%lld)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreurs signalées (%lld)"
+          }
+        }
+      }
+    },
+    "Restore default shortcut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore default shortcut"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rétablir le raccourci par défaut"
+          }
+        }
+      }
+    },
+    "Running" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active"
           }
         }
       }
@@ -4008,22 +5048,6 @@
         }
       }
     },
-    "No extensions in this profile. Add them from the Chrome Web Store, through the control center of an extension's page." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No extensions in this profile. Add them from the Chrome Web Store, through the control center of an extension's page."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune extension dans ce profil. Ajoutez-en depuis le Chrome Web Store, avec le centre de contrôle de la page d’une extension."
-          }
-        }
-      }
-    },
     "No history" : {
       "localizations" : {
         "en" : {
@@ -4758,22 +5782,6 @@
         }
       }
     },
-    "Pin" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pin"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Épingler"
-          }
-        }
-      }
-    },
     "Pinned tabs and folders, in their spaces." : {
       "localizations" : {
         "fr" : {
@@ -5170,22 +6178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rétablir"
-          }
-        }
-      }
-    },
-    "Reload" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reload"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recharger"
           }
         }
       }
@@ -6415,6 +7407,38 @@
         }
       }
     },
+    "Show in the address bar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in the address bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans la barre d’adresse"
+          }
+        }
+      }
+    },
+    "Show notifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show notifications"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher des notifications"
+          }
+        }
+      }
+    },
     "Show or hide the browser sidebar." : {
       "localizations" : {
         "en" : {
@@ -6505,6 +7529,22 @@
         }
       }
     },
+    "Side panel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Side panel"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panneau latéral"
+          }
+        }
+      }
+    },
     "Sign In" : {
       "localizations" : {
         "en" : {
@@ -6517,6 +7557,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connexion"
+          }
+        }
+      }
+    },
+    "Signing in with a browser account" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signing in with a browser account"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion avec un compte du navigateur"
           }
         }
       }
@@ -6755,6 +7811,38 @@
         }
       }
     },
+    "Starting…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starting…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage…"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "État"
+          }
+        }
+      }
+    },
     "Stop loading" : {
       "localizations" : {
         "en" : {
@@ -6961,6 +8049,22 @@
         }
       }
     },
+    "Tab groups and recently closed tabs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab groups and recently closed tabs"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes d’onglets et onglets fermés récemment"
+          }
+        }
+      }
+    },
     "Tabs" : {
       "localizations" : {
         "en" : {
@@ -7041,6 +8145,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La barre de commande sait où vous allez."
+          }
+        }
+      }
+    },
+    "The extension may not talk to apps on this Mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The extension may not talk to apps on this Mac"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’extension n’a pas le droit de communiquer avec les apps de ce Mac"
           }
         }
       }
@@ -7451,6 +8571,54 @@
         }
       }
     },
+    "Turn Off" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactiver"
+          }
+        }
+      }
+    },
+    "Turn On" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer"
+          }
+        }
+      }
+    },
+    "Turn off shortcut" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn off shortcut"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactiver le raccourci"
+          }
+        }
+      }
+    },
     "Type or paste an emoji" : {
       "localizations" : {
         "en" : {
@@ -7463,6 +8631,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisissez ou collez un emoji"
+          }
+        }
+      }
+    },
+    "Unavailable: %@ uses this shortcut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unavailable: %@ uses this shortcut."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indisponible : %@ utilise ce raccourci."
           }
         }
       }
@@ -7511,22 +8695,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dégrouper"
-          }
-        }
-      }
-    },
-    "Unpin" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unpin"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Désépingler"
           }
         }
       }
@@ -7675,18 +8843,66 @@
         }
       }
     },
-    "Uses: %@" : {
+    "Version %@ asks for more access." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uses: %@"
+            "value" : "Version %@ asks for more access."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utilise : %@"
+            "value" : "La version %@ demande plus d’accès."
+          }
+        }
+      }
+    },
+    "Version %@ needs review" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ needs review"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ à valider"
+          }
+        }
+      }
+    },
+    "Version %@ · %@ folder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ · %@ folder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@ · dossier %2$@"
+          }
+        }
+      }
+    },
+    "Version %@ · Chrome Web Store" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ · Chrome Web Store"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ · Chrome Web Store"
           }
         }
       }
@@ -7935,6 +9151,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "exporter vos mots de passe"
+          }
+        }
+      }
+    },
+    "iCloud Passwords requires Apple to approve Aero." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud Passwords requires Apple to approve Aero."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mots de passe iCloud nécessite l’approbation d’Aero par Apple."
           }
         }
       }
@@ -8405,6 +9637,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce profil a été supprimé avant l’enregistrement de ses mots de passe."
+          }
+        }
+      }
+    },
+    "“%@” asks to be removed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” asks to be removed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » demande à être supprimée"
+          }
+        }
+      }
+    },
+    "“%@” asks to remove “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” asks to remove “%2$@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %1$@ » demande à supprimer « %2$@ »"
+          }
+        }
+      }
+    },
+    "“%@” asks to turn off “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” asks to turn off “%2$@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %1$@ » demande à désactiver « %2$@ »"
+          }
+        }
+      }
+    },
+    "“%@” asks to turn on “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” asks to turn on “%2$@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %1$@ » demande à activer « %2$@ »"
           }
         }
       }

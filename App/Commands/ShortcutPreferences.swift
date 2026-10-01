@@ -11,6 +11,8 @@ final class ShortcutPreferences {
         var version = 1
         var overrides: [String: [ShortcutBinding]] = [:]
         var priorities: [String: ShortcutPriority]?
+        /// Extension commands the person changed, by `<extension>/<command>`: a binding, or none to turn it off.
+        var extensionOverrides: [String: ShortcutBinding?]?
     }
     private static let key = "browser.shortcuts"
     private let defaults: UserDefaults
@@ -38,6 +40,45 @@ final class ShortcutPreferences {
     }
 
     func shortcut(for command: BrowserCommand) -> KeyboardShortcut? { effective[command]?.first?.shortcut }
+
+    /// What already uses the shortcut: one of Aero's commands or a system one. Extensions cannot take it.
+    func owner(of binding: ShortcutBinding) -> String? {
+        if let command = BrowserCommand.allCases.first(where: { effective[$0, default: []].contains(binding) }) { return command.title }
+        return Self.nativeBindings[binding]
+    }
+
+    // MARK: - Extension commands
+
+    func extensionShortcut(command: String, of extensionID: String) -> ExtensionShortcutChoice {
+        guard let choice = document.extensionOverrides?[Self.extensionKey(command, extensionID)] else { return .default }
+        return choice.map(ExtensionShortcutChoice.binding) ?? .none
+    }
+
+    func setExtensionShortcut(_ choice: ExtensionShortcutChoice, command: String, of extensionID: String) {
+        var next = document
+        var overrides = next.extensionOverrides ?? [:]
+        switch choice {
+        case .default: overrides.removeValue(forKey: Self.extensionKey(command, extensionID))
+        case .none: overrides[Self.extensionKey(command, extensionID)] = .some(nil)
+        case .binding(let binding):
+            // Chrome's rule: a key with Command, Option or Control, and nothing Aero or the system already uses.
+            guard binding.key.count == 1, !binding.modifiers.intersection([.command, .option, .control]).isEmpty, owner(of: binding) == nil else { return }
+            overrides[Self.extensionKey(command, extensionID)] = binding
+        }
+        next.extensionOverrides = overrides.isEmpty ? nil : overrides
+        save(next)
+    }
+
+    /// A removed extension's choices go with it.
+    func forgetExtension(_ extensionID: String) {
+        guard let overrides = document.extensionOverrides, overrides.keys.contains(where: { $0.hasPrefix(extensionID + "/") }) else { return }
+        var next = document
+        let kept = overrides.filter { !$0.key.hasPrefix(extensionID + "/") }
+        next.extensionOverrides = kept.isEmpty ? nil : kept
+        save(next)
+    }
+
+    private static func extensionKey(_ command: String, _ extensionID: String) -> String { extensionID + "/" + command }
     func isCustomized(_ command: BrowserCommand) -> Bool {
         document.overrides[command.rawValue] != nil || document.priorities?[command.rawValue] != nil
     }
@@ -152,4 +193,10 @@ final class ShortcutPreferences {
         .init("\t"): String(localized: "Switch applications"), .init("\t", [.command, .shift]): String(localized: "Switch applications"),
         .init(" "): String(localized: "Spotlight"), .init("`"): String(localized: "Switch windows")
     ]
+}
+
+/// An extension command's shortcut as the person set it: the extension's own, another, or none.
+enum ExtensionShortcutChoice: Equatable {
+    case `default`, none
+    case binding(ShortcutBinding)
 }

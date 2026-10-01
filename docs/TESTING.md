@@ -7,7 +7,8 @@ that can observe it.
 ## Layout
 
 ```text
-Packages/BrowserKit/Tests/   Swift Testing, one target per module: models, formats, stores, WebKit helpers
+Packages/BrowserKit/Tests/   Swift Testing, one target per module: models, formats, stores, WebKit helpers, extensions
+  BrowserExtensionsTests/Fixtures/   an extension checking, in WebKit, what Aero adds to its engine
 Tests/
   AeroTests/                 Swift Testing, hosted by Aero Dev: the app's own rules
     Shortcuts/               resolution, conflicts, persistence, priority, key identity
@@ -35,6 +36,9 @@ Tests/
 - **Journey** what needs the real app: WebKit, keyboard focus and routing, menus, windows, drag and drop, the
   Settings window, persistence across launches. Before adding a test, add a step to the journey that already goes
   there. Do not check in a journey what a unit test checks.
+- **Extension compatibility** uses controlled Chrome-format example extensions checked into the repository. Test
+  browser API contracts and app integration; never a vendor's UI, private messages or a moving store release.
+  Select the relevant tests in `BrowserExtensionsTests` (docs/EXTENSIONS.md › Verification).
 - **Performance** only in its plan, in Release, with the numbers reported alongside the hardware (docs/PERFORMANCE.md).
 
 ## Writing journeys

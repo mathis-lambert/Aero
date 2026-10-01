@@ -5,6 +5,8 @@ import SwiftUI
 /// Every question the browser asks uses it, so they look and behave the same. See docs/DESIGN.md › Prompts.
 struct Prompt<Content: View, Actions: View>: View {
     private static var minimumWidth: CGFloat { 400 }
+    /// Long titles and messages wrap instead of widening the card.
+    private static var maximumWidth: CGFloat { 520 }
 
     let title: Text
     var message: Text?
@@ -36,14 +38,41 @@ struct Prompt<Content: View, Actions: View>: View {
             }
             // A focused field keeps Escape from the Cancel button's shortcut, so it cancels from here.
             content.onExitCommand { cancel?.action() }
-            HStack(spacing: 8) {
-                Spacer(minLength: 0)
-                actions
-            }
+            // Trailing, with no leading gap: a prompt's leftmost action lines up with its text.
+            HStack(spacing: 8) { actions }
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(24)
-        .frame(minWidth: Self.minimumWidth, alignment: .leading)
-        .fixedSize()
+        .modifier(BoundedWidth(minimum: Self.minimumWidth, maximum: Self.maximumWidth))
+    }
+}
+
+/// Sizes the card to its content's natural width within the bounds; longer text wraps at the maximum.
+private struct BoundedWidth: ViewModifier {
+    let minimum: CGFloat
+    let maximum: CGFloat
+
+    func body(content: Content) -> some View {
+        BoundedWidthLayout(minimum: minimum, maximum: maximum) { content }
+    }
+}
+
+private struct BoundedWidthLayout: Layout {
+    let minimum: CGFloat
+    let maximum: CGFloat
+
+    private func width(of subviews: Subviews) -> CGFloat {
+        min(max(subviews.first?.sizeThatFits(.unspecified).width ?? minimum, minimum), maximum)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = width(of: subviews)
+        let height = subviews.first?.sizeThatFits(ProposedViewSize(width: width, height: nil)).height ?? 0
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        subviews.first?.place(at: bounds.origin, anchor: .topLeading, proposal: ProposedViewSize(width: bounds.width, height: nil))
     }
 }
 

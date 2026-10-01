@@ -1,5 +1,6 @@
 import AppKit
 import BrowserCore
+import BrowserExtensions
 import BrowserStorage
 import BrowserWebKit
 import Foundation
@@ -40,6 +41,9 @@ final class BrowserModel {
     var openedFavorites: Set<UUID> = []
 
     let pages: WebPageRegistry
+    /// Every profile's extensions (docs/EXTENSIONS.md).
+    let extensions: ExtensionRegistry
+    let extensionNotifications: ExtensionNotifications
     let store: BrowserStore
     let storageLocation: StorageLocation
     /// This launch finishes a reset: website data stores are removed before any page exists.
@@ -106,10 +110,13 @@ final class BrowserModel {
         let downloads = DownloadCoordinator(directory: downloadsFolder, fallbackFilename: String(localized: "Download"))
         let contentBlocker = ContentBlocker(directory: location.caches.appendingPathComponent("Content Rules", isDirectory: true))
         // Test runs reach only the hosts a test provides, never the Mac's own.
-        let nativeHosts = testing == nil ? NativeMessagingHost.chromeFolders
+        let nativeHosts = testing == nil ? NativeMessagingHost.defaultFolders
             : environment["AERO_TEST_NATIVE_HOSTS"].map { [URL(fileURLWithPath: $0, isDirectory: true)] } ?? []
-        pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: folder.appendingPathComponent("Extensions", isDirectory: true),
-                                nativeHostFolders: nativeHosts, ephemeral: testing != nil, hibernation: preferences.hibernation)
+        let pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, ephemeral: testing != nil, hibernation: preferences.hibernation)
+        self.pages = pages
+        extensions = ExtensionRegistry(folder: folder.appendingPathComponent("Extensions", isDirectory: true), nativeHostFolders: nativeHosts,
+                                       ephemeral: testing != nil) { pages.dataStore(for: $0) }
+        extensionNotifications = ExtensionNotifications(isTestRun: testing != nil)
         // Test runs never download from the internet: only the fixture list, when a test provides one.
         let testFilterList = testing == nil ? nil : environment["AERO_TEST_FILTERS"].flatMap(URL.init(string:))
         if let contentBlocker, testing == nil || testFilterList != nil {
@@ -119,7 +126,11 @@ final class BrowserModel {
         isResetting = resetting
         resetFailed = resetting && !erased
         pages.delegate = self
-        pages.extensionHost = self
+        pages.extensions = self
+        extensions.host = self
+        history.onVisited = { [weak self] profileID, entry in self?.extensions.extensionsIfMade(for: profileID)?.historyDidVisit(entry) }
+        history.onRemoved = { [weak self] profileID, urls, all in self?.extensions.extensionsIfMade(for: profileID)?.historyDidRemove(urls, all: all) }
+        extensionNotifications.browser = self
         signIns.browser = self
     }
 
@@ -350,7 +361,7 @@ final class BrowserModel {
         guard let tab = tabs.first(where: { $0.id == id }), NavigationInput.isTabURL(url) else { return }
         session.updateTab(id: id, url: url, title: "")
         if InternalPage(url: url) != nil { pages.close(tabID: id) }
-        else if InternalPage(url: tab.url) == nil, window.selectedTabID == id { currentPage?.load(url) }
+        else if InternalPage(url: tab.url) == nil, window.selectedTabID == id { pages.load(url, inTab: id) }
         persist()
         selectTab(id)
     }
@@ -369,7 +380,7 @@ final class BrowserModel {
     func updateTab(_ id: UUID, url: URL, title: String) {
         guard let existing = session.tabs.first(where: { $0.id == id }), existing.url != url || existing.title != title else { return }
         session.updateTab(id: id, url: url, title: title)
-        extensionsDidUpdate(existing)
+        extensionsDidChange(existing, existing.url != url ? [.URL, .title] : .title)
         if !title.isEmpty, let profileID = profileID(of: existing) {
             history.updateTitle(title, for: url, profileID: profileID)
         }
@@ -456,19 +467,26 @@ final class BrowserModel {
     func moveTab(_ id: UUID, to place: TabPlace, before targetID: UUID?) {
         guard !isChangingStructure else { return }
         let wasFavorite = session.tabs.first { $0.id == id }?.isFavorite
+        let index = extensionIndex(of: id)
         guard session.move(id: id, to: place, before: targetID) else { return }
+        if let moved = tab(id) {
+            if extensionIndex(of: id) != index { extensionsDidMove(moved, fromIndex: index) }
+            if wasFavorite != place.isFavorite { extensionsDidChange(moved, .pinned) }
+        }
         if wasFavorite == false, place.isFavorite { openedFavorites.insert(id) }
         if !place.isFavorite { openedFavorites.remove(id) }
         if wasFavorite != place.isFavorite { pages.refreshHibernationSchedule() }
         persist()
     }
 
-    func duplicateTab(_ id: UUID) {
-        guard !isChangingStructure else { return }
-        guard let copy = session.duplicate(id: id) else { return }
+    @discardableResult
+    func duplicateTab(_ id: UUID, select: Bool = true) -> UUID? {
+        guard !isChangingStructure else { return nil }
+        guard let copy = session.duplicate(id: id) else { return nil }
         extensionsDidOpen(copy)
         persist()
-        selectTab(copy.id)
+        if select { selectTab(copy.id) }
+        return copy.id
     }
 
     /// Giving back the shown title leaves the tab named by its page.

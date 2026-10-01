@@ -48,6 +48,10 @@ The bridge takes the origin from `WKScriptMessage.frameInfo`, never from the mes
 
 When a sign-in field of the selected tab gains focus and the profile has logins for the site, a list of accounts appears under the field, drawn by Aero over the page. Choosing one fills that frame only, after the script checks the frame is still at the same origin, through the fields' native setters with the input and change events a keystroke fires. Nothing is filled without a click. A frame from another origin than the page gets offers for its own origin, never the page's. The list closes when the person types in the field or presses Escape, when the field loses focus, the tab changes or the page navigates. It never takes the keyboard from the page.
 
+## AutoFill
+
+Each profile fills passwords with Aero or with one of its extensions that runs in websites, such as a password manager. Adding such an extension offers to let it fill the profile's passwords, already on for a password manager (docs/EXTENSIONS.md › Password managers); an extension may also take them or give them back with Chrome's `privacy.services.passwordSavingEnabled`; and Settings › Passwords › the profile › AutoFill changes the choice. With an extension chosen, Aero neither shows its list on sign-in fields nor offers to save, so the two never compete on the same field; the extension fills and saves with its own data. The logins saved in Aero stay in the keychain and are offered again when the profile goes back to Aero. A turned-off or failed extension leaves the profile to Aero meanwhile; removing it resets the choice. The choice is stored with the profile.
+
 ## Saving
 
 After a username-only step, Aero keeps the account in memory, scoped to its tab, profile and origin. The next password submission in that scope can use it within five minutes if the password page has no account field. An account on the password page takes precedence. A password submission in another scope discards the pending account, and closing the tab clears it. Nothing is saved until the password is submitted.

@@ -13,6 +13,7 @@
 		31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 69764682C66036DC0CE36654 /* BrowserCore */; };
 		CDB05B415DF02AEE4458D54F /* BrowserStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */; };
 		D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */; };
+		E7A1C0DE5A1E4B0F8C2D3E41 /* BrowserExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = E7A1C0DE5A1E4B0F8C2D3E42 /* BrowserExtensions */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +88,7 @@
 				31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */,
 				CDB05B415DF02AEE4458D54F /* BrowserStorage in Frameworks */,
 				D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */,
+				E7A1C0DE5A1E4B0F8C2D3E41 /* BrowserExtensions in Frameworks */,
 				A01100000000000000000001 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -204,6 +206,7 @@
 				69764682C66036DC0CE36654 /* BrowserCore */,
 				351F5C6BAE464B2FBED0D8E0 /* BrowserStorage */,
 				B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */,
+				E7A1C0DE5A1E4B0F8C2D3E42 /* BrowserExtensions */,
 				A01100000000000000000002 /* Sparkle */,
 			);
 			productName = Aero;
@@ -582,6 +585,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
 			productName = BrowserWebKit;
+		};
+		E7A1C0DE5A1E4B0F8C2D3E42 /* BrowserExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */;
+			productName = BrowserExtensions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

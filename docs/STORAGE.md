@@ -1,6 +1,6 @@
 # Storage
 
-Browser state and history use SQLite; preferences use UserDefaults; caches are disposable files. The browser baseline is application ID `0x41455232`, version 1, with no legacy reader or importer. Future shipped schemas evolve through ordered transactional migrations.
+Browser state and history use SQLite; preferences use UserDefaults; caches are disposable files. The browser baseline is application ID `0x41455232`, version 1, with no legacy reader or importer; version 2 adds each profile's password extension. Future shipped schemas evolve through ordered transactional migrations.
 
 ## Ownership and layout
 

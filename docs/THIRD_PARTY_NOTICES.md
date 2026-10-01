@@ -1,6 +1,6 @@
 # Third-party notices
 
-`App/Application/NativeWindowControls.swift` adapts the native window-control positioning from Search by Office Commun.
+`App/Application/NativeWindowControls.swift` adapts the native window-control positioning from Search by Office Commun. Extension popup presentation and compatibility policies under `Packages/BrowserKit/Sources/BrowserExtensions` also draw on Search's implementation.
 
 ## Search
 

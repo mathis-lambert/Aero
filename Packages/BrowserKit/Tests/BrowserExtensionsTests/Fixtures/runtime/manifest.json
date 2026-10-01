@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "Aero Runtime Fixture",
+    "version": "1.0",
+    "description": "Checks, from its service worker, what Aero adds to WebKit's extension engine; its button title reports the result.",
+    "action": { "default_title": "running" },
+    "background": { "service_worker": "worker.js" },
+    "permissions": ["idle", "management", "offscreen", "privacy", "storage"],
+    "optional_permissions": ["notifications", "tabs"]
+}

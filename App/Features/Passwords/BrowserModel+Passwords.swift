@@ -8,6 +8,8 @@ import Foundation
 extension BrowserModel {
     func page(_ tabID: UUID, passwordForm event: PasswordFormEvent, in frame: PasswordFrame) {
         guard let tab = session.tabs.first(where: { $0.id == tabID }), let profileID = profileID(of: tab) else { return }
+        // The profile's chosen extension fills and saves its passwords; Aero offers neither.
+        guard passwordExtension(inProfile: profileID) == nil else { return }
         switch event {
         case .focused(let field, let placement):
             // Only the tab in front, and only a page that may have logins: never a browser page.
@@ -32,6 +34,41 @@ extension BrowserModel {
                 return self.profileID(of: current) == profileID
             }
         }
+    }
+
+    // MARK: - AutoFill
+
+    /// The extension filling the profile's passwords in place of Aero, while it runs. A turned-off or failed
+    /// extension leaves the profile to Aero. See docs/PASSWORDS.md › AutoFill.
+    func passwordExtension(inProfile profileID: UUID) -> String? {
+        guard let id = session.profiles.first(where: { $0.id == profileID })?.passwordExtension,
+              installedExtension(id, inProfile: profileID)?.isEnabled == true,
+              extensions.extensionsIfMade(for: profileID)?.contexts[id] != nil else { return nil }
+        return id
+    }
+
+    /// The profile's extensions that may fill passwords: those that run in websites.
+    func passwordExtensionCandidates(inProfile profileID: UUID) -> [(id: String, name: String)] {
+        guard let loaded = extensions.extensionsIfMade(for: profileID)?.contexts else { return [] }
+        return installedExtensions(inProfile: profileID).compactMap { record in
+            guard record.isEnabled, let webExtension = loaded[record.id]?.webExtension, webExtension.hasInjectedContent else { return nil }
+            return (record.id, webExtension.displayName ?? record.id)
+        }
+    }
+
+    var offersToSavePasswords: Bool { preferences.offersToSavePasswords }
+
+    /// The one way the profile's choice changes: Settings, an installation, or an extension through
+    /// `privacy.services.passwordSavingEnabled`.
+    func setPasswordExtension(_ extensionID: String?, inProfile profileID: UUID) {
+        guard !isChangingStructure else { return }
+        let previous = passwordExtension(inProfile: profileID)
+        session.setPasswordExtension(extensionID, profileID: profileID)
+        let current = passwordExtension(inProfile: profileID)
+        if current != previous { extensions.extensionsIfMade(for: profileID)?.passwordExtensionDidChange(to: current) }
+        // A list Aero shows on a field of the profile goes with the change.
+        if let tabID = window.selectedTabID, let tab = tab(tabID), self.profileID(of: tab) == profileID { passwords.fieldBlurred(tabID: tabID) }
+        persist()
     }
 
     /// The offer's answer. Never for this site is the site's Save passwords decision, like any other permission.

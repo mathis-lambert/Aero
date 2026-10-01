@@ -33,6 +33,8 @@ struct SettingsView: View {
                 case .passwordProfile(let id): PasswordProfileSettingsView(browser: browser, profileID: id, navigate: navigate)
                 case .passwordLogin(let login): PasswordLoginSettingsView(browser: browser, login: login, replaceRoute: replaceCurrentRoute, didDelete: leaveDeletedPassword)
                 case .passwordImport(let id): PasswordImportSettingsView(browser: browser, profileID: id, navigate: navigate)
+                case .extension(let profileID, let extensionID):
+                    ExtensionSettingsDetail(browser: browser, profileID: profileID, extensionID: extensionID)
                 case .section(let section):
                     switch section {
                     case .updates: UpdateSettingsView(browser: browser)
@@ -41,7 +43,7 @@ struct SettingsView: View {
                     case .profiles: ProfilesSettingsView(browser: browser, navigate: navigate)
                     case .spaces: SpacesSettingsView(browser: browser, navigate: navigate)
                     case .passwords: PasswordsSettingsView(browser: browser, navigate: navigate)
-                    case .extensions: ExtensionsSettingsView(browser: browser)
+                    case .extensions: ExtensionsSettingsView(browser: browser, navigate: navigate)
                     case .storage: StorageSettingsView(browser: browser, navigate: navigate)
                     case .shortcuts: ShortcutSettingsView(shortcuts: browser.shortcuts)
                     }
@@ -66,6 +68,7 @@ struct SettingsView: View {
         .onChange(of: browser.window.settingsRequest) { navigate(to: browser.window.settingsRoute) }
         .onChange(of: browser.session.spaces.map(\.id)) { pruneHistory() }
         .onChange(of: browser.profiles.map(\.id)) { pruneHistory() }
+        .onChange(of: browser.session.profiles.flatMap { $0.extensions.filter { !$0.isRemoving }.map(\.id) }) { pruneHistory() }
         .onChange(of: browser.window.settingsRoute) { _, route in navigate(to: route) }
         .navigationSplitViewStyle(.balanced)
         .frame(width: 960, height: 620)
@@ -83,6 +86,8 @@ struct SettingsView: View {
         case .passwordProfile(let id): browser.profiles.first { $0.id == id }?.name ?? String(localized: "Passwords")
         case .passwordLogin(let login): login.origin.host
         case .passwordImport: String(localized: "Import passwords")
+        case .extension(let profileID, let extensionID):
+            browser.extensions.extensionsIfMade(for: profileID)?.contexts[extensionID]?.webExtension.displayName ?? String(localized: "Extensions")
         }
     }
 
@@ -103,6 +108,7 @@ struct SettingsView: View {
         case .space(let id): browser.session.spaces.contains { $0.id == id }
         case .passwordProfile(let id), .passwordImport(let id): browser.profiles.contains { $0.id == id }
         case .passwordLogin(let login): browser.profiles.contains { $0.id == login.profileID }
+        case .extension(let profileID, let extensionID): browser.installedExtension(extensionID, inProfile: profileID) != nil
         }
     }
 

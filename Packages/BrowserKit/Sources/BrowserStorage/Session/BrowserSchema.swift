@@ -44,5 +44,7 @@ extension DatabaseSchema {
             value TEXT NOT NULL, PRIMARY KEY(profile_id, extension_id, kind, value),
             FOREIGN KEY(profile_id, extension_id) REFERENCES extensions(profile_id, id) ON DELETE CASCADE
         ) STRICT;
+        """, """
+        ALTER TABLE profiles ADD COLUMN password_extension TEXT;
         """])
 }

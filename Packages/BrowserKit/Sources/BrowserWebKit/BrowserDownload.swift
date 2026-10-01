@@ -14,7 +14,7 @@ public final class BrowserDownload: Identifiable {
     static let unknownSizeStep: Int64 = 256 * 1024
 
     public let id = UUID()
-    package let sourceURL: URL?
+    public let sourceURL: URL?
     public internal(set) var filename: String
     public internal(set) var destination: URL?
     public internal(set) var state = State.downloading
@@ -23,7 +23,10 @@ public final class BrowserDownload: Identifiable {
     /// `nil` while the server has not announced a size.
     public internal(set) var totalBytes: Int64?
 
-    @ObservationIgnored let sourceTabID: UUID
+    /// `nil` for a download an extension started.
+    @ObservationIgnored let sourceTabID: UUID?
+    /// The name an extension asked for, in place of the one the server suggests.
+    @ObservationIgnored var requestedFilename: String?
     @ObservationIgnored let dataStore: WKWebsiteDataStore?
     @ObservationIgnored var download: WKDownload?
     @ObservationIgnored var resumeData: Data?
@@ -31,7 +34,7 @@ public final class BrowserDownload: Identifiable {
     @ObservationIgnored var resumingView: WKWebView?
     @ObservationIgnored var progressObservation: NSKeyValueObservation?
 
-    init(download: WKDownload, sourceTabID: UUID, fallbackFilename: String) {
+    init(download: WKDownload, sourceTabID: UUID?, fallbackFilename: String) {
         self.download = download
         self.sourceTabID = sourceTabID
         sourceURL = download.originalRequest?.url

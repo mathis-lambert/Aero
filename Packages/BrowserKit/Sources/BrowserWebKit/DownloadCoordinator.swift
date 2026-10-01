@@ -15,7 +15,8 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
     public private(set) var lastStarted: BrowserDownload.ID?
     public var activeCount: Int { downloads.count { $0.state == .downloading } }
 
-    @ObservationIgnored private let directory: URL
+    /// Where downloads are saved.
+    @ObservationIgnored public let directory: URL
     @ObservationIgnored private let fallbackFilename: String
 
     /// `fallbackFilename` names files the server did not name; it is display text, so the app localizes it.
@@ -28,11 +29,28 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         downloads.contains { $0.sourceTabID == tabID && $0.state == .downloading }
     }
 
-    func track(_ download: WKDownload, from tabID: UUID) {
+    @discardableResult
+    func track(_ download: WKDownload, from tabID: UUID?) -> BrowserDownload {
         let record = BrowserDownload(download: download, sourceTabID: tabID, fallbackFilename: fallbackFilename)
         downloads.insert(record, at: 0)
         lastStarted = record.id
         attach(download, to: record)
+        return record
+    }
+
+    /// A download an extension asked for, with the website data of its profile, listed with the others.
+    /// `filename`, when given, replaces the name the server suggests.
+    public func start(_ request: URLRequest, in store: WKWebsiteDataStore, filename: String?) async -> BrowserDownload {
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = store
+        configuration.applicationNameForUserAgent = BrowserIdentity.applicationNameForUserAgent
+        let view = WKWebView(frame: .zero, configuration: configuration)
+        let download = await view.startDownload(using: request)
+        let record = track(download, from: nil)
+        record.requestedFilename = filename
+        // The view starts the transfer; the download keeps its own connection once it has begun.
+        record.resumingView = view
+        return record
     }
 
     public func cancel(_ record: BrowserDownload) {
@@ -49,7 +67,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
               record.resumeData != nil || record.sourceURL != nil, let store = record.dataStore else { return }
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
-        configuration.applicationNameForUserAgent = BrowserPage.userAgentName
+        configuration.applicationNameForUserAgent = BrowserIdentity.applicationNameForUserAgent
         let view = WKWebView(frame: .zero, configuration: configuration)
         record.resumingView = view
         record.state = .downloading
@@ -121,7 +139,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         } catch {
             return nil
         }
-        let name = DownloadFilename.available(suggested: suggestedFilename, fallback: fallbackFilename) { candidate in
+        let name = DownloadFilename.available(suggested: record.requestedFilename ?? suggestedFilename, fallback: fallbackFilename) { candidate in
             let url = directory.appendingPathComponent(candidate)
             return FileManager.default.fileExists(atPath: url.path)
                 || downloads.contains { $0 !== record && $0.state == .downloading && $0.destination == url }

@@ -12,6 +12,8 @@ import Testing
 // 6. Disabling or restoring does not last, or restoring keeps a priority override.
 // 7. A command without a menu item accepts website priority, which would leave its shortcut dead.
 // 8. Plus and equals, or letter case, make two identities for one key.
+// 9. An extension command takes a shortcut Aero or macOS uses, loses the person's choice after a relaunch, or keeps
+//    it after the extension is removed (docs/EXTENSIONS.md › The browser's part).
 
 /// Each test gets its own preferences suite, removed when it ends.
 @MainActor
@@ -126,5 +128,40 @@ final class ShortcutPreferencesTests {
         #expect(ShortcutBinding("\u{19}", [.control, .shift]) == ShortcutBinding("\t", [.control, .shift]))
         #expect(!ShortcutBinding("t", .option).isValid, "A shortcut needs Command or Control")
         #expect(!ShortcutBinding("tt").isValid)
+    }
+
+    // MARK: - Extension commands
+
+    private let extensionID = String(repeating: "a", count: 32)
+
+    @Test func extensionChoicesLastAndDefaultToTheExtensionsOwn() {
+        let first = preferences()
+        #expect(first.extensionShortcut(command: "open", of: extensionID) == .default)
+        first.setExtensionShortcut(.binding(ShortcutBinding("y", [.command, .shift])), command: "open", of: extensionID)
+        first.setExtensionShortcut(.none, command: "_execute_action", of: extensionID)
+        let relaunched = preferences()
+        #expect(relaunched.extensionShortcut(command: "open", of: extensionID) == .binding(ShortcutBinding("y", [.command, .shift])))
+        #expect(relaunched.extensionShortcut(command: "_execute_action", of: extensionID) == .none)
+        relaunched.setExtensionShortcut(.default, command: "open", of: extensionID)
+        #expect(preferences().extensionShortcut(command: "open", of: extensionID) == .default)
+    }
+
+    @Test func anExtensionCannotTakeAShortcutAeroOrMacOSUses() {
+        let preferences = preferences()
+        #expect(preferences.owner(of: ShortcutBinding("t")) == BrowserCommand.newTab.title)
+        #expect(preferences.owner(of: ShortcutBinding("q")) != nil, "Quit is the system's")
+        #expect(preferences.owner(of: ShortcutBinding("y", [.command, .shift])) == nil)
+        preferences.setExtensionShortcut(.binding(ShortcutBinding("t")), command: "open", of: extensionID)
+        #expect(preferences.extensionShortcut(command: "open", of: extensionID) == .default)
+    }
+
+    @Test func removingAnExtensionForgetsOnlyItsChoices() {
+        let preferences = preferences()
+        let other = String(repeating: "b", count: 32)
+        preferences.setExtensionShortcut(.none, command: "open", of: extensionID)
+        preferences.setExtensionShortcut(.none, command: "open", of: other)
+        preferences.forgetExtension(extensionID)
+        #expect(preferences.extensionShortcut(command: "open", of: extensionID) == .default)
+        #expect(preferences.extensionShortcut(command: "open", of: other) == .none)
     }
 }

@@ -11,7 +11,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     private static let webKitErrorDomain = "WebKitErrorDomain"
     private static let frameLoadInterruptedByPolicyChange = 102
 
-    public let webView: WKWebView
+    public var webView: WKWebView { pageView }
+    private let pageView: PageWebView
     public private(set) var isLoading = false
     public private(set) var progress = 0.0
     public private(set) var canGoBack = false
@@ -26,7 +27,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     /// Set by the registry, which owns the tab identity behind each event.
     @ObservationIgnored var onMetadata: ((URL, String) -> Void)?
-    @ObservationIgnored var onVisit: ((URL) -> Void)?
+    /// The page started or finished loading.
+    @ObservationIgnored var onLoadingChange: (() -> Void)?
+    @ObservationIgnored var onVisit: ((HistoryNavigation) -> Void)?
     @ObservationIgnored var onDownload: ((WKDownload) -> Void)?
     @ObservationIgnored var onIcons: (([FaviconLink], URL) -> Void)?
     @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
@@ -34,12 +37,19 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onApplicationLink: ((URL) -> Void)?
     /// The page's owner takes the addresses it returns `true` for instead of loading them, such as a sign-in's callback.
     @ObservationIgnored public var interceptsNavigation: ((URL) -> Bool)?
+    @ObservationIgnored var onPageNavigation: ((URLRequest, URL?) -> Bool)?
+    @ObservationIgnored var extensionOrigin: URL?
+    @ObservationIgnored private let extensionReturn = ExtensionReturnNavigation()
+    var navigationRevision: Int { extensionReturn.revision }
     @ObservationIgnored var onClose: (() -> Void)?
     @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
-    /// The Chrome Web Store's install button for this page's address, after an install when pressed.
-    @ObservationIgnored var onWebStoreButton: ((_ pressed: Bool) async -> WebStoreButton?)?
     /// Reports of the page's sign-in and sign-up forms. See docs/PASSWORDS.md.
     @ObservationIgnored var onPasswordForm: ((PasswordFormEvent, PasswordFrame) -> Void)?
+    /// The extensions' items for the context menu the page is opening.
+    @ObservationIgnored var onContextMenu: (() -> [NSMenuItem])? {
+        get { pageView.extensionMenuItems }
+        set { pageView.extensionMenuItems = newValue }
+    }
     @ObservationIgnored weak var contentBlocker: ContentBlocker?
     /// The blocker's state last applied, so a navigation that changes nothing sends WebKit nothing.
     @ObservationIgnored private var contentBlockingState: Int?
@@ -47,20 +57,14 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private var movedToPictureInPicture = false
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []
     @ObservationIgnored private var requestedURL: URL?
-    /// The address of the last recorded visit; reloads and restores of it add no visit.
+    /// Suppresses repeated KVO updates of the same committed document.
     @ObservationIgnored private var visitedURL: URL?
+    @ObservationIgnored var historyTransition = HistoryTransition.autoTopLevel
+    @ObservationIgnored var historyReferrer: URL?
+    @ObservationIgnored private var requestedHistoryTransition: HistoryTransition?
+    @ObservationIgnored private var restoresHistory = false
     @ObservationIgnored private var firstFrameTimeout: Task<Void, Never>?
     @ObservationIgnored var documentGeneration = 0
-
-    /// Safari's user agent suffix. Without it, sites such as Google see an unknown WebKit browser and
-    /// serve their basic, legacy pages. The installed Safari's version matches the system's engine.
-    static let userAgentName = "Version/\(safariVersion) Safari/605.1.15"
-
-    private static var safariVersion: String {
-        ["/System/Cryptexes/App/System/Applications/Safari.app", "/Applications/Safari.app"].lazy
-            .compactMap { Bundle(path: $0)?.infoDictionary?["CFBundleShortVersionString"] as? String }
-            .first ?? "27.0"
-    }
 
     /// macOS WebKit turns picture in picture off in every web view and has no public setting for it;
     /// this is the private preference Safari sets. Without it, picture in picture is simply absent.
@@ -69,12 +73,12 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     private static func isPageURL(_ url: URL) -> Bool { NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) }
 
     /// `passkeys` carries passkey requests when the build is entitled to them; without it, pages are
-    /// told passkeys are unavailable. See docs/PASSWORDS.md › Passkeys.
-    static func configuration(store: WKWebsiteDataStore, extensions: WKWebExtensionController?, passkeys: PasskeyCeremony?) -> WKWebViewConfiguration {
+    /// told passkeys are unavailable. See docs/PASSWORDS.md › Passkeys. The profile's extensions are added by the
+    /// registry's `PageExtensions`.
+    static func configuration(store: WKWebsiteDataStore, passkeys: PasskeyCeremony?) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
-        configuration.webExtensionController = extensions
-        configuration.applicationNameForUserAgent = userAgentName
+        configuration.applicationNameForUserAgent = BrowserIdentity.applicationNameForUserAgent
         configuration.preferences.isElementFullscreenEnabled = true
         PageRendering.configure(configuration.preferences)
         configuration.allowsAirPlayForMediaPlayback = true
@@ -83,8 +87,6 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             configuration.preferences.setValue(true, forKey: "allowsPictureInPictureMediaPlayback")
         }
         configuration.userContentController.addUserScript(PageScripts.editedFieldTracker)
-        configuration.userContentController.addUserScript(PageScripts.webStoreButton)
-        configuration.userContentController.addScriptMessageHandler(WebStoreBridge(), contentWorld: PageScripts.world, name: PageScripts.webStoreHandlerName)
         configuration.userContentController.addUserScript(PasswordScripts.forms)
         configuration.userContentController.add(PasswordFormBridge(), contentWorld: PageScripts.world, name: PasswordScripts.handlerName)
         if let passkeys {
@@ -98,7 +100,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     init(configuration: WKWebViewConfiguration) {
-        webView = WKWebView(frame: .zero, configuration: configuration)
+        pageView = PageWebView(frame: .zero, configuration: configuration)
         super.init()
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -122,12 +124,19 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     /// `headers` are sent with this request only, such as those a sign-in asks for.
-    public func load(_ url: URL, headers: [String: String] = [:]) {
-        guard Self.isPageURL(url) else { fail(.unsupportedNavigation); return }
-        failure = nil
-        requestedURL = url
+    public func load(_ url: URL, headers: [String: String] = [:], transition: HistoryTransition = .typed) {
         var request = URLRequest(url: url)
         for (field, value) in headers { request.setValue(value, forHTTPHeaderField: field) }
+        load(request, transition: transition)
+    }
+
+    func load(_ request: URLRequest, transition: HistoryTransition = .typed, referrer: URL? = nil) {
+        guard let url = request.url, Self.isPageURL(url) else { fail(.unsupportedNavigation); return }
+        failure = nil
+        requestedURL = url
+        requestedHistoryTransition = transition
+        historyReferrer = referrer
+        restoresHistory = false
         webView.load(request)
     }
 
@@ -136,11 +145,13 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         failure = nil
         requestedURL = url
         visitedURL = url
+        restoresHistory = true
         webView.interactionState = interactionState
     }
 
     public func reload() {
         failure = nil
+        requestedHistoryTransition = .reload
         if webView.url != nil { webView.reload() }
         else if let requestedURL { load(requestedURL) }
     }
@@ -198,16 +209,18 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     func dispose() {
         documentGeneration += 1
         onMetadata = nil
+        onLoadingChange = nil
         onVisit = nil
         onDownload = nil
         onIcons = nil
         onPopup = nil
         onApplicationLink = nil
         interceptsNavigation = nil
+        onPageNavigation = nil
         onClose = nil
         onPermission = nil
-        onWebStoreButton = nil
         onPasswordForm = nil
+        onContextMenu = nil
         contentBlocker = nil
         firstFrameTimeout?.cancel()
         observations.removeAll()
@@ -218,7 +231,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     private func refresh() {
+        let wasLoading = isLoading
         isLoading = webView.isLoading
+        if isLoading != wasLoading { onLoadingChange?() }
         progress = webView.estimatedProgress
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
@@ -227,14 +242,14 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         if NavigationInput.isExtensionURL(url) { onMetadata?(url, webView.title ?? ""); return }
         guard NavigationInput.isWebURL(url) else { return }
         // An address change outside a load is a same-document navigation (`pushState`).
-        if !webView.isLoading { recordVisit(url) }
+        if !webView.isLoading { recordVisit(url, transition: .link, referrer: visitedURL) }
         onMetadata?(url, webView.title ?? "")
     }
 
-    private func recordVisit(_ url: URL) {
-        guard url != visitedURL else { return }
+    private func recordVisit(_ url: URL, transition: HistoryTransition, referrer: URL?, newDocument: Bool = false) {
+        guard newDocument || url != visitedURL else { return }
         visitedURL = url
-        onVisit?(url)
+        onVisit?(HistoryNavigation(url: url, transition: transition, referrer: referrer, isWithinDocument: !newDocument))
     }
 
     private func fail(_ failure: PageFailure) {
@@ -281,6 +296,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     // MARK: - WKNavigationDelegate
 
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        if let navigation { extensionReturn.started(navigation, at: webView.url) }
         documentGeneration += 1
         failure = nil
         refresh()
@@ -288,20 +304,27 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         awaitFirstFrame()
-        if let url = webView.url, NavigationInput.isWebURL(url) { recordVisit(url) }
+        if restoresHistory { restoresHistory = false; return }
+        if let url = webView.url, NavigationInput.isWebURL(url) {
+            recordVisit(url, transition: historyTransition, referrer: historyReferrer, newDocument: true)
+        }
     }
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        extensionReturn.finished(navigation)
+        restoresHistory = false
         refresh()
         readDeclaredIcons()
     }
 
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error) {
+        extensionReturn.finished(navigation)
         if Self.isFailure(error) { fail(.loadFailed) }
         refresh()
     }
 
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
+        extensionReturn.finished(navigation)
         if Self.isFailure(error) { fail(.loadFailed) }
         refresh()
     }
@@ -321,6 +344,22 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
         guard let url = navigationAction.request.url else { return .cancel }
         if interceptsNavigation?(url) == true { return .cancel }
+        let source = extensionReturn.source(for: navigationAction)
+        if navigationAction.targetFrame?.isMainFrame == true {
+            let requested = requestedHistoryTransition
+            requestedHistoryTransition = nil
+            switch navigationAction.navigationType {
+            case .linkActivated: historyTransition = .link
+            case .formSubmitted: historyTransition = .formSubmit
+            case .formResubmitted: historyTransition = requested == .reload ? .reload : .formSubmit
+            case .reload: historyTransition = .reload
+            case .backForward: historyTransition = .autoTopLevel
+            case .other: historyTransition = requested ?? .link
+            @unknown default: historyTransition = .autoTopLevel
+            }
+            if requested == nil { historyReferrer = navigationAction.sourceFrame.request.url.flatMap { NavigationInput.isWebURL($0) ? $0 : nil } }
+        }
+        if navigationAction.targetFrame?.isMainFrame == true, onPageNavigation?(navigationAction.request, source) == true { return .cancel }
         if navigationAction.shouldPerformDownload { return .download }
         let isMainFrame = navigationAction.targetFrame?.isMainFrame != false
         switch NavigationInput.target(of: url) {
@@ -335,6 +374,12 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             if isMainFrame { fail(.unsupportedNavigation) }
             return .cancel
         }
+    }
+
+    public func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
+        guard let navigation, let redirect = extensionReturn.redirected(navigation, to: webView.url),
+              onPageNavigation?(redirect.request, redirect.source) == true else { return }
+        webView.stopLoading()
     }
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse) async -> WKNavigationResponsePolicy {
@@ -389,24 +434,16 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 }
 
-/// What the Chrome Web Store's install button says, and whether it can be pressed.
-public struct WebStoreButton: Sendable {
-    public let title: String
-    public let isEnabled: Bool
+/// A page's view: WebKit's, with the extensions' items added to its context menu, after WebKit's own, as Safari shows
+/// them.
+final class PageWebView: WKWebView {
+    var extensionMenuItems: (() -> [NSMenuItem])?
 
-    public init(title: String, isEnabled: Bool) {
-        self.title = title
-        self.isEnabled = isEnabled
-    }
-}
-
-/// Answers the store script from Aero's world, which pages cannot post to. It carries no extension
-/// identifier: the page it asks for is found from the web view.
-private final class WebStoreBridge: NSObject, WKScriptMessageHandlerWithReply {
-    @MainActor
-    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) async -> (Any?, String?) {
-        guard message.frameInfo.isMainFrame, let page = message.webView?.navigationDelegate as? BrowserPage,
-              let button = await page.onWebStoreButton?(message.body as? String == "install") else { return (nil, nil) }
-        return (["title": button.title, "enabled": button.isEnabled], nil)
+    override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
+        super.willOpenMenu(menu, with: event)
+        let items = extensionMenuItems?() ?? []
+        guard !items.isEmpty else { return }
+        menu.addItem(.separator())
+        for item in items { menu.addItem(item) }
     }
 }

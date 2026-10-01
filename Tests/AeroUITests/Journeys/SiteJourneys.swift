@@ -99,8 +99,9 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(page("Modes inline picture-in-picture inline").exists, "A site turned off stays inline")
     }
 
-    /// Installing asks for what the extension wants; its content script, button, popup, worker and native host run
-    /// in its profile only; a rejected update keeps the running version; removal lasts across relaunches.
+    /// Installing asks for what the extension wants; its detail page says it runs and reached its native host; its
+    /// content script, button, popup, worker and native host run in its profile only; a rejected update keeps the
+    /// running version; removal, confirmed on its page, lasts across relaunches.
     func testAnExtensionRunsInItsProfileOnly() throws {
         try launch()
         openSettings("Extensions")
@@ -110,8 +111,26 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(accept.waitForExistence(timeout: Self.pageTimeout), "Installing shows what the extension asks for")
         attachScreenshot("extension review")
         accept.click()
-        XCTAssertTrue(app.groups["extensions.row"].waitForExistence(timeout: Self.pageTimeout))
-        app.buttons["extensions.pin"].click()
+        let row = app.descendants(matching: .any)["extensions.row"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: Self.pageTimeout))
+        let enabled = app.descendants(matching: .any)["extensions.list.enabled"].firstMatch
+        XCTAssertTrue(enabled.isHittable, "Extensions can be disabled directly from the list")
+        enabled.click()
+        XCTAssertTrue(poll { enabled.value as? Int == 0 }, "The saved extension state becomes disabled")
+        enabled.click()
+        XCTAssertTrue(poll { enabled.value as? Int == 1 }, "The saved extension state becomes enabled")
+        let details = app.buttons["extensions.list.details"]
+        XCTAssertTrue(poll { details.isEnabled }, "Loading completes before opening its details")
+        details.click()
+        let pin = app.descendants(matching: .any)["extensions.pin"].firstMatch
+        XCTAssertTrue(pin.waitForExistence(timeout: Self.renderTimeout), "Its detail page opens from its row")
+        XCTAssertTrue(app.staticTexts["Running"].waitForExistence(timeout: Self.pageTimeout), "Its detail page says it runs")
+        XCTAssertTrue(poll(timeout: Self.pageTimeout) {
+            (self.app.staticTexts["extensions.desktopApp"].value as? String ?? self.app.staticTexts["extensions.desktopApp"].label).hasPrefix("Connected")
+        }, "It says the extension reached the app behind its native host")
+        attachScreenshot("extension detail")
+        pin.click()
+        app.buttons["settings.back"].click()
         chooseFolder("update")
         XCTAssertTrue(app.buttons["extensionRequest.cancel"].waitForExistence(timeout: Self.pageTimeout), "An update asks again")
         app.buttons["extensionRequest.cancel"].click()
@@ -130,8 +149,31 @@ final class SiteJourneys: E2ETestCase {
         app.typeKey(.escape, modifierFlags: [])
         button.click()
         XCTAssertTrue(page("Popup fixture").waitForExistence(timeout: Self.pageTimeout), "Its popup opens from its button")
+        let grow = app.webViews.buttons["Grow popup"]
+        // WebKit's popover, which WebKit sizes to the page within Chrome's bounds.
+        let popup = app.popovers.containing(.button, identifier: "Grow popup").firstMatch
+        XCTAssertTrue(poll { popup.exists && popup.frame.width >= 360 }, "The popup takes the example's declared width")
+        attachScreenshot("extension popup before resize", of: app)
+        grow.click()
+        attachScreenshot("extension popup after resize", of: app)
+        XCTAssertTrue(poll { popup.exists && popup.frame.width > 700 }, "The popup follows its page as it grows")
+        // The popover's frame includes its system border around the page's 800 × 600 points.
+        let border: CGFloat = 40
+        XCTAssertLessThanOrEqual(popup.frame.width, 800 + border, "Its page cannot expand beyond Chrome's popup width")
+        XCTAssertLessThanOrEqual(popup.frame.height, 600 + border, "Its page cannot expand beyond Chrome's popup height")
         attachScreenshot("extension popup")
         app.typeKey(.escape, modifierFlags: [])
+
+        button.click()
+        app.webViews.buttons["Open connection example"].click()
+        let provider = app.webViews.buttons["Go to example provider"]
+        XCTAssertTrue(provider.waitForExistence(timeout: Self.pageTimeout), "An extension opens its connection page in a tab")
+        provider.click()
+        XCTAssertTrue(page("Example web provider").waitForExistence(timeout: Self.pageTimeout), "An extension page can navigate to a website")
+        app.webViews.buttons["Return to example extension"].click()
+        XCTAssertTrue(page("Worker connected after return").waitForExistence(timeout: Self.pageTimeout), "A public extension return recreates its context configuration and reaches its worker")
+        attachScreenshot("extension web connection return")
+        app.typeKey("w", modifierFlags: .command)
 
         quitAndRelaunch()
         tabRows.firstMatch.click()
@@ -142,8 +184,26 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertFalse(button.exists)
 
         space("Main").click()
+        relaunch { $0.french = true; $0.expandedStrings = true; $0.rightToLeft = true }
+        openSettings("extensions")
+        let localizedRow = app.descendants(matching: .any)["extensions.row"].firstMatch
+        XCTAssertTrue(localizedRow.waitForExistence(timeout: Self.renderTimeout))
+        let listActions = app.descendants(matching: .any)["extensions.list.actions"].firstMatch
+        XCTAssertTrue(listActions.isHittable && enabled.isHittable, "List actions fit expanded French in RTL")
+        attachScreenshot("extensions expanded French RTL", of: app)
+        details.click()
+        XCTAssertTrue(pin.waitForExistence(timeout: Self.renderTimeout) && pin.isHittable, "The pin control fits expanded French in RTL")
+        let remove = app.buttons["extensions.remove"]
+        reveal(remove)
+        XCTAssertTrue(remove.isHittable, "The removal action remains reachable with expanded French in RTL")
+        attachScreenshot("extension detail expanded French RTL", of: app)
+        closeSettings()
+        relaunch { $0.french = false; $0.expandedStrings = false; $0.rightToLeft = false }
         openSettings("Extensions")
-        app.buttons["extensions.remove"].click()
+        XCTAssertTrue(listActions.waitForExistence(timeout: Self.renderTimeout))
+        listActions.click()
+        app.menuItems["Remove extension…"].click()
+        app.sheets.buttons["Remove extension"].click()
         XCTAssertTrue(app.staticTexts["extensions.empty"].waitForExistence(timeout: Self.pageTimeout))
         closeSettings()
         quitAndRelaunch()

@@ -9,6 +9,7 @@ import WebKit
 public final class WebPageRegistry {
     struct LivePage {
         let page: BrowserPage
+        let profileID: UUID
         var lastActive: ContinuousClock.Instant
         var lastExemption: ContinuousClock.Instant?
         /// Set for popups: the page whose `window.opener` they may still use.
@@ -22,7 +23,8 @@ public final class WebPageRegistry {
         set { policy.settings = newValue; refreshHibernationSchedule() }
     }
     public weak var delegate: WebPageRegistryDelegate?
-    public weak var extensionHost: WebExtensionHost?
+    /// Set before the first page is created.
+    public weak var extensions: PageExtensions?
     public let downloads: DownloadCoordinator
     /// Present only in builds entitled to passkeys.
     public let passkeys: PasskeyCeremony? = PasskeyCeremony.isAvailable ? PasskeyCeremony() : nil
@@ -37,25 +39,17 @@ public final class WebPageRegistry {
     private var hibernatedStates: [UUID: Data] = [:]
     private var stateOrder: [UUID] = []
     private(set) var stores: [UUID: WKWebsiteDataStore] = [:]
-    private var extensions: [UUID: ProfileExtensions] = [:]
     private var pressureMonitor: MemoryPressureMonitor?
     let ephemeral: Bool
-    private let extensionsFolder: URL
-    private let nativeHostFolders: [URL]
 
-    /// `nativeHostFolders` are searched for native messaging host manifests, in order.
-    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL, nativeHostFolders: [URL],
-                            ephemeral: Bool, hibernation: HibernationSettings = .default) {
+    public convenience init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, ephemeral: Bool, hibernation: HibernationSettings = .default) {
         let limit = HibernationPolicy.liveBackgroundPageLimit(forPhysicalMemory: ProcessInfo.processInfo.physicalMemory)
-        self.init(downloads: downloads, contentBlocker: contentBlocker, extensionsFolder: extensionsFolder, nativeHostFolders: nativeHostFolders,
-                  ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
+        self.init(downloads: downloads, contentBlocker: contentBlocker, ephemeral: ephemeral, hibernation: hibernation, liveBackgroundPageLimit: limit)
     }
 
-    package init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, extensionsFolder: URL = FileManager.default.temporaryDirectory,
-                 nativeHostFolders: [URL] = [], ephemeral: Bool, hibernation: HibernationSettings, liveBackgroundPageLimit: Int) {
+    package init(downloads: DownloadCoordinator, contentBlocker: ContentBlocker? = nil, ephemeral: Bool, hibernation: HibernationSettings,
+                 liveBackgroundPageLimit: Int) {
         self.downloads = downloads
-        self.extensionsFolder = extensionsFolder
-        self.nativeHostFolders = nativeHostFolders
         self.contentBlocker = contentBlocker
         self.ephemeral = ephemeral
         policy = HibernationPolicy(settings: hibernation, liveBackgroundPageLimit: liveBackgroundPageLimit)
@@ -75,19 +69,8 @@ public final class WebPageRegistry {
         return store
     }
 
-    /// Made with the profile's first page, so every page of the profile runs its extensions.
-    public func extensions(for profileID: UUID) -> ProfileExtensions {
-        if let existing = extensions[profileID] { return existing }
-        let created = ProfileExtensions(profileID: profileID, folder: extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true),
-                                        nativeHostFolders: nativeHostFolders, store: dataStore(for: profileID), ephemeral: ephemeral, host: extensionHost) { [weak self] in
-            self?.livePages[$0]?.page
-        }
-        extensions[profileID] = created
-        return created
-    }
-
-    /// The profile's extensions if they were made, for views and tab events, which must not make them.
-    public func extensionsIfMade(for profileID: UUID) -> ProfileExtensions? { extensions[profileID] }
+    /// The tab's page while it is loaded; hibernated and closed tabs have none.
+    public func livePage(_ tabID: UUID) -> BrowserPage? { livePages[tabID]?.page }
 
 
     /// Makes the tab's page visible, creating or restoring it when needed.
@@ -101,7 +84,7 @@ public final class WebPageRegistry {
             livePages[tab.id]?.lastActive = .now
         } else {
             page = makePage(for: tab, profileID: profileID)
-            livePages[tab.id] = LivePage(page: page, lastActive: .now)
+            livePages[tab.id] = LivePage(page: page, profileID: profileID, lastActive: .now)
         }
         page.returnVideoFromPictureInPicture()
         refreshHibernationSchedule()
@@ -160,34 +143,42 @@ public final class WebPageRegistry {
     }
 
     private func makePage(for tab: BrowserTab, profileID: UUID) -> BrowserPage {
-        let extensions = extensions(for: profileID)
         // An extension's own page needs its context's configuration.
-        let configuration = NavigationInput.isExtensionURL(tab.url) ? extensions.configuration(for: tab.url) : nil
-        let page = BrowserPage(configuration: configuration ?? BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions.controller, passkeys: passkeys))
-        connect(page, to: tab.id)
+        let extensionPage = NavigationInput.isExtensionURL(tab.url) ? extensions?.configuration(forExtensionPage: tab.url, inProfile: profileID) : nil
+        let page = BrowserPage(configuration: extensionPage ?? websiteConfiguration(forProfile: profileID))
+        page.extensionOrigin = extensionPage == nil ? nil : tab.url
+        connect(page, to: tab.id, profileID: profileID)
         if let state = hibernatedStates[tab.id] {
             discardState(tab.id)
             page.restore(state, url: tab.url)
             Self.signposter.emitEvent(Diagnostics.Signpost.pageRestored)
         } else {
-            page.load(tab.url)
+            page.load(tab.url, transition: .autoTopLevel)
             Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
         }
         return page
     }
 
-    private func connect(_ page: BrowserPage, to tabID: UUID) {
+    /// A website page's configuration: the profile's data store, Aero's page scripts and the profile's extensions.
+    public func websiteConfiguration(forProfile profileID: UUID) -> WKWebViewConfiguration {
+        let configuration = BrowserPage.configuration(store: dataStore(for: profileID), passkeys: passkeys)
+        extensions?.configure(configuration, forProfile: profileID)
+        return configuration
+    }
+
+    private func connect(_ page: BrowserPage, to tabID: UUID, profileID: UUID) {
         page.onMetadata = { [weak self] url, title in self?.delegate?.page(tabID, didUpdateURL: url, title: title) }
-        page.onVisit = { [weak self] url in self?.delegate?.page(tabID, didVisit: url) }
+        page.onLoadingChange = { [weak self] in self?.delegate?.pageDidChangeLoading(tabID) }
+        page.onVisit = { [weak self] visit in self?.delegate?.page(tabID, didVisit: visit) }
         page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
         page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
         page.onApplicationLink = { [weak self] url in self?.delegate?.page(tabID, requestsApplicationFor: url) }
         page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
-        page.onWebStoreButton = { [weak self, weak page] pressed in
-            guard let url = page?.webView.url, let delegate = self?.delegate else { return nil }
-            if pressed { await delegate.page(tabID, didPressWebStoreButtonAt: url) }
-            return delegate.page(tabID, webStoreButtonAt: url)
+        page.onContextMenu = { [weak self] in self?.extensions?.menuItems(forTab: tabID, inProfile: profileID) ?? [] }
+        page.onPageNavigation = { [weak self, weak page] target, origin in
+            guard let self, let page else { return false }
+            return self.transition(page, tabID: tabID, profileID: profileID, to: target, from: origin)
         }
         page.onPasswordForm = { [weak self] event, frame in self?.delegate?.page(tabID, passwordForm: event, in: frame) }
         page.contentBlocker = contentBlocker
@@ -201,22 +192,79 @@ public final class WebPageRegistry {
     /// process and user scripts, and keeps `window.opener` connected. WebKit then loads the
     /// popup's request into the returned view itself.
     private func openPopup(from openerTabID: UUID, configuration: WKWebViewConfiguration, url: URL?) -> WKWebView? {
-        guard livePages[openerTabID] != nil, let tab = delegate?.page(openerTabID, requestsPopupTabFor: url) else { return nil }
+        guard let opener = livePages[openerTabID], let tab = delegate?.page(openerTabID, requestsPopupTabFor: url) else { return nil }
         let popup = BrowserPage(configuration: configuration)
-        connect(popup, to: tab.id)
-        livePages[tab.id] = LivePage(page: popup, lastActive: .now, openerTabID: openerTabID)
+        popup.extensionOrigin = opener.page.extensionOrigin
+        connect(popup, to: tab.id, profileID: opener.profileID)
+        livePages[tab.id] = LivePage(page: popup, profileID: opener.profileID, lastActive: .now, openerTabID: openerTabID)
         Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
-        delegate?.pageDidOpenPopup(tab.id)
+        delegate?.pageDidOpenPopup(tab.id, from: openerTabID)
         return popup.webView
+    }
+
+    /// Switches between the website and extension configurations at the page lifecycle owner.
+    /// Replacing inside a navigation delegate call is deferred and guarded against newer navigation or closure.
+    private func transition(_ page: BrowserPage, tabID: UUID, profileID: UUID, to request: URLRequest, from origin: URL?) -> Bool {
+        guard let target = request.url else { return false }
+        let targetIsExtension = NavigationInput.isExtensionURL(target)
+        let sameExtension = page.extensionOrigin.map { $0.scheme == target.scheme && $0.host() == target.host() } == true
+        if sameExtension || (!targetIsExtension && page.extensionOrigin == nil) { return false }
+        let configuration: WKWebViewConfiguration
+        if targetIsExtension {
+            guard let origin, extensions?.allowsWebsiteReturn(to: target, from: origin, inProfile: profileID) == true,
+                  let extensionPage = extensions?.configuration(forExtensionPage: target, inProfile: profileID) else { return false }
+            configuration = extensionPage
+        } else {
+            guard NavigationInput.isWebURL(target) else { return false }
+            configuration = websiteConfiguration(forProfile: profileID)
+        }
+        let revision = page.navigationRevision
+        let generation = page.documentGeneration
+        let transition = page.historyTransition, referrer = page.historyReferrer
+        Task { @MainActor [weak self, weak page] in
+            await Task.yield()
+            guard let self, let page, self.livePages[tabID]?.page === page,
+                  page.navigationRevision == revision, page.documentGeneration == generation else { return }
+            self.replacePage(tabID, with: configuration, request: request, transition: transition, referrer: referrer)
+        }
+        return true
+    }
+
+    /// Programmatic navigation uses the same configuration boundary without a website resource grant.
+    public func load(_ url: URL, inTab tabID: UUID) {
+        guard let live = livePages[tabID] else { return }
+        let targetIsExtension = NavigationInput.isExtensionURL(url)
+        let sameExtension = live.page.extensionOrigin.map { $0.scheme == url.scheme && $0.host() == url.host() } == true
+        if sameExtension || (!targetIsExtension && live.page.extensionOrigin == nil) { live.page.load(url); return }
+        let configuration: WKWebViewConfiguration
+        if targetIsExtension {
+            guard let contextConfiguration = extensions?.configuration(forExtensionPage: url, inProfile: live.profileID) else { return }
+            configuration = contextConfiguration
+        } else {
+            guard NavigationInput.isWebURL(url) else { return }
+            configuration = websiteConfiguration(forProfile: live.profileID)
+        }
+        replacePage(tabID, with: configuration, request: URLRequest(url: url))
+    }
+
+    private func replacePage(_ tabID: UUID, with configuration: WKWebViewConfiguration, request: URLRequest,
+                             transition: HistoryTransition = .typed, referrer: URL? = nil) {
+        guard let live = livePages[tabID], let url = request.url else { return }
+        let replacement = BrowserPage(configuration: configuration)
+        replacement.extensionOrigin = NavigationInput.isExtensionURL(url) ? url : nil
+        connect(replacement, to: tabID, profileID: live.profileID)
+        live.page.dispose()
+        livePages[tabID] = LivePage(page: replacement, profileID: live.profileID, lastActive: .now, openerTabID: live.openerTabID)
+        delegate?.page(tabID, didUpdateURL: url, title: "")
+        delegate?.pageDidReplace(tabID)
+        replacement.load(request, transition: transition, referrer: referrer)
     }
 
     /// A page outside any tab, for another app's sign-in (docs/OTHER_APPS.md › Sign-in for other apps). It uses the
     /// profile's website data and extensions, or, for a private sign-in, a store of its own that ends with the page.
     /// It records no history and opens no popups.
     public func makeSignInPage(profileID: UUID, isPrivate: Bool) -> BrowserPage {
-        let configuration = isPrivate
-            ? BrowserPage.configuration(store: .nonPersistent(), extensions: nil, passkeys: passkeys)
-            : BrowserPage.configuration(store: dataStore(for: profileID), extensions: extensions(for: profileID).controller, passkeys: passkeys)
+        let configuration = isPrivate ? BrowserPage.configuration(store: .nonPersistent(), passkeys: passkeys) : websiteConfiguration(forProfile: profileID)
         let page = BrowserPage(configuration: configuration)
         page.contentBlocker = contentBlocker
         Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
@@ -239,30 +287,10 @@ public final class WebPageRegistry {
 }
 
 extension WebPageRegistry {
-    /// Only unreferenced package directories are disposable; recovery references also retain packages.
-    public func removeUnusedExtensionPackages(inProfile profileID: UUID, keeping identifiers: Set<UUID>) async throws {
-        let folder = extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true)
-        try await Task.detached {
-            guard FileManager.default.fileExists(atPath: folder.path) else { return }
-            for child in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
-                if let id = UUID(uuidString: child.lastPathComponent), identifiers.contains(id) { continue }
-                try FileManager.default.removeItem(at: child)
-            }
-        }.value
-    }
-
-    /// Called only after all spaces have left the profile and the deletion intent has committed.
-    public func removeProfile(_ profileID: UUID, extensions records: [InstalledExtension]) async throws {
-        if !records.isEmpty {
-            let owner = extensions(for: profileID)
-            for record in records { try await owner.remove(record) }
-        }
-        extensions[profileID] = nil
+    /// Called only after all spaces have left the profile, its extensions are removed and the deletion intent has
+    /// committed.
+    public func removeProfile(_ profileID: UUID) async throws {
         stores[profileID] = nil
         if !ephemeral { try await WKWebsiteDataStore.remove(forIdentifier: profileID) }
-        let folder = extensionsFolder.appendingPathComponent(profileID.uuidString, isDirectory: true)
-        try await Task.detached {
-            if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) }
-        }.value
     }
 }

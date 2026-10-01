@@ -12,7 +12,7 @@ public enum NavigationTarget: Equatable, Sendable {
 
 public enum NavigationInput {
     /// Schemes a website may never navigate to or hand to another app.
-    private static let blockedSchemes: Set<String> = ["file", "javascript", "data", "vbscript", InternalPage.scheme, "webkit-extension", "http", "https"]
+    private static let blockedSchemes: Set<String> = ["file", "javascript", "data", "vbscript", InternalPage.scheme, "chrome-extension", "webkit-extension", "http", "https"]
 
     public static func target(of url: URL) -> NavigationTarget {
         if isWebURL(url) || isExtensionURL(url) { return .page }
@@ -27,8 +27,8 @@ public enum NavigationInput {
     }
 
     /// An extension's own page, such as its options or onboarding.
-    package static func isExtensionURL(_ url: URL) -> Bool {
-        url.scheme?.lowercased() == "webkit-extension" && !(url.host ?? "").isEmpty
+    public static func isExtensionURL(_ url: URL) -> Bool {
+        ["chrome-extension", "webkit-extension"].contains(url.scheme?.lowercased() ?? "") && !(url.host ?? "").isEmpty
     }
 
     /// Addresses a tab may hold: websites, extensions' pages and the browser's internal pages.

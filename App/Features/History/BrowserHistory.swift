@@ -13,13 +13,19 @@ final class BrowserHistory {
     @ObservationIgnored private var pendingTitles: [UUID: [URL: String]] = [:]
     @ObservationIgnored private var pendingWrites: [@Sendable (HistoryStore) async throws -> Void] = []
     private(set) var writeFailed = false
+    @ObservationIgnored var onVisited: ((UUID, HistoryEntry) -> Void)?
+    @ObservationIgnored var onRemoved: ((UUID, [URL], Bool) -> Void)?
 
     init(store: HistoryStore) { self.store = store }
     isolated deinit { titleTask?.cancel() }
 
-    func recordVisit(to url: URL, profileID: UUID) {
+    func recordVisit(to url: URL, profileID: UUID, transition: HistoryTransition = .autoTopLevel, referrer: URL? = nil) {
         let date = Date.now
-        _ = enqueue { try await $0.recordVisit(to: url, title: nil, profileID: profileID, at: date) }
+        _ = enqueue { [weak self] store in
+            if let entry = try await store.recordVisit(to: url, title: nil, profileID: profileID, at: date, transition: transition, referrer: referrer) {
+                await self?.didRecord(entry, profileID: profileID)
+            }
+        }
     }
 
     func updateTitle(_ title: String, for url: URL, profileID: UUID) {
@@ -33,13 +39,24 @@ final class BrowserHistory {
 
     func delete(_ ids: some Collection<HistoryEntry.ID>, profileID: UUID) async throws {
         let ids = Array(ids)
-        try await enqueue { try await $0.delete(ids, profileID: profileID) }.value
+        try await enqueue { [weak self] store in
+            let urls = try await store.delete(ids, profileID: profileID)
+            await self?.didRemove(urls, profileID: profileID, all: false)
+        }.value
     }
 
     func clear(profileID: UUID, since date: Date?) async throws {
         // Do not let pending titles repopulate metadata after explicit erasure.
         pendingTitles[profileID] = nil
-        try await enqueue { try await $0.clear(profileID: profileID, since: date) }.value
+        try await enqueue { [weak self] store in
+            if let date {
+                let urls = try await store.deleteVisits(profileID: profileID, from: date, through: .distantFuture)
+                await self?.didRemove(urls, profileID: profileID, all: false)
+            } else {
+                try await store.clear(profileID: profileID, since: nil)
+                await self?.didRemove([], profileID: profileID, all: true)
+            }
+        }.value
     }
 
     func compact() async throws {
@@ -62,6 +79,41 @@ final class BrowserHistory {
     func flush() async throws {
         writePendingTitles()
         try await enqueue().value
+    }
+
+    func search(profileID: UUID, text: String, since start: Date, until end: Date, limit: Int) async throws -> [HistoryEntry] {
+        try await flush()
+        return try await store.search(profileID: profileID, text: text, since: start, until: end, limit: limit)
+    }
+
+    func visits(to url: URL, profileID: UUID) async throws -> [HistoryVisit] {
+        try await flush()
+        return try await store.visits(to: url, profileID: profileID)
+    }
+
+    func mostVisited(profileID: UUID, limit: Int) async throws -> [HistoryEntry] {
+        try await flush()
+        return try await store.mostVisited(profileID: profileID, limit: limit)
+    }
+
+    func deleteVisits(profileID: UUID, from start: Date, through end: Date) async throws {
+        try await enqueue { [weak self] store in
+            let urls = try await store.deleteVisits(profileID: profileID, from: start, through: end)
+            await self?.didRemove(urls, profileID: profileID, all: false)
+        }.value
+    }
+
+    func delete(url: URL, profileID: UUID) async throws {
+        pendingTitles[profileID]?[url] = nil
+        try await enqueue { [weak self] store in
+            let urls = try await store.delete(url: url, profileID: profileID)
+            await self?.didRemove(urls, profileID: profileID, all: false)
+        }.value
+    }
+
+    private func didRecord(_ entry: HistoryEntry, profileID: UUID) { onVisited?(profileID, entry) }
+    private func didRemove(_ urls: [URL], profileID: UUID, all: Bool) {
+        if all || !urls.isEmpty { onRemoved?(profileID, urls, all) }
     }
 
     private func writePendingTitles() {

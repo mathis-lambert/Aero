@@ -34,6 +34,7 @@ Packages/BrowserKit/
   Sources/
     BrowserCore/        # Models, navigation rules, command definitions
     BrowserWebKit/      # WebKit integration and loaded page lifecycle
+    BrowserExtensions/  # Web extensions: packages, runtime, compatibility layer, native messaging
     BrowserStorage/     # Application persistence
   Tests/                # Tests for each package target
 Tests/                  # App unit tests, UI journeys, fixtures and test plans (docs/TESTING.md)
@@ -43,7 +44,7 @@ docs/                   # Project documentation and specifications
 ```
 
 - `BrowserCore` may use Foundation but must not depend on SwiftUI, AppKit, WebKit, or a persistence framework.
-- `BrowserWebKit` and `BrowserStorage` depend on `BrowserCore`, not on each other or on the application.
+- `BrowserWebKit`, `BrowserExtensions` and `BrowserStorage` depend on `BrowserCore`, not on each other or on the application. Pages receive their extensions through `PageExtensions`, which the application provides.
 - The application assembles these components and coordinates their interactions.
 - `BrowserWebKit` owns website data stores; `BrowserStorage` owns browser records such as history and session metadata. Do not copy or manipulate WebKit's internal storage files.
 - Keep feature-specific views, presentation models, and helpers together under `App/Features/<Feature>/`. Do not create global `Views`, `ViewModels`, or `Helpers` dumping grounds.
@@ -138,6 +139,6 @@ docs/                   # Project documentation and specifications
 - Tests: `Scripts/test.sh [unit|smoke|full|performance] [test-identifier…]` runs the package tests and the matching plan of `Tests/Plans` with Aero Dev; journeys require a logged-in GUI session. It retains a unique `.xcresult` and reproduction manifest in `/tmp`. `AERO_TEST_DATA` isolates records and makes website stores ephemeral. See `docs/TESTING.md`.
 - Distribution: follow `docs/BUILD_AND_RELEASE.md`. `Scripts/distribute.sh <tag-at-HEAD>` prepares signed, notarized DMGs from a clean checkout; GitHub Actions publishes them. Signing secrets belong to the `distribution` environment. Never add personal signing settings to source builds.
 - Performance: tab hibernation, signposts, the launch test and `Scripts/measure-memory.swift` are described in `docs/PERFORMANCE.md`.
-- Current scope: one main window (plus a window per sign-in another app starts, `docs/OTHER_APPS.md`), multiple spaces per profile, English/French catalogs, transactional SQLite browser state with forward migrations and recovery (`docs/STORAGE.md`), logically profile-scoped SQLite history (`docs/STORAGE.md`), session-only downloads, and a native light/dark/system appearance. Dev, nightly, beta and stable bundle IDs/data locations are separate, independently of compiler optimization. Extensions run per profile on WebKit's engine, with inert declarations for the APIs it lacks (`docs/EXTENSIONS.md`). What is not implemented yet is listed in the README.
+- Current scope: one main window (plus a window per sign-in another app starts, `docs/OTHER_APPS.md`), multiple spaces per profile, English/French catalogs, transactional SQLite browser state with forward migrations and recovery (`docs/STORAGE.md`), logically profile-scoped SQLite history (`docs/STORAGE.md`), session-only downloads, and a native light/dark/system appearance. Dev, nightly, beta and stable bundle IDs/data locations are separate, independently of compiler optimization. Extensions run per profile on WebKit's engine, with a compatibility layer for the APIs it lacks (`docs/EXTENSIONS.md`). What is not implemented yet is listed in the README.
 - Aero is distributed outside the Mac App Store and is not sandboxed: the app icon choice writes to its own bundle. Website content stays in WebKit's sandboxed processes. Sparkle updates each signed distribution within its own channel (`docs/UPDATES.md`). Future multi-window behavior remains open.
 - Keep this file concise and current. Put detailed feature specifications in `docs/`; add nested `AGENTS.md` files only for genuinely different local requirements.

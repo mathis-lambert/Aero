@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import WebKit
 
 /// A layout-aware menu key equivalent, not a physical key code or a translated display label.
 struct ShortcutBinding: Codable, Hashable {
@@ -57,4 +58,16 @@ struct ShortcutBinding: Codable, Hashable {
     private static let flags: [(Modifiers, NSEvent.ModifierFlags)] = [
         (.command, .command), (.option, .option), (.control, .control), (.shift, .shift)
     ]
+
+    @MainActor
+    init?(command: WKWebExtension.Command) {
+        guard let key = command.activationKey, key.count == 1 else { return nil }
+        var modifiers: ShortcutBinding.Modifiers = []
+        let flags = command.modifierFlags
+        if flags.contains(.command) { modifiers.insert(.command) }
+        if flags.contains(.option) { modifiers.insert(.option) }
+        if flags.contains(.control) { modifiers.insert(.control) }
+        if flags.contains(.shift) { modifiers.insert(.shift) }
+        self.init(key, modifiers)
+    }
 }

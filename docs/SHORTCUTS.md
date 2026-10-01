@@ -99,7 +99,7 @@ then closing or removing it, which comes last and is marked destructive when it 
 | Group | Rename Group…, Collapse or Expand Group · Ungroup, which keeps its tabs pinned |
 | Space | Edit Space… · Move Left, Move Right · Delete Space… |
 | Reload button | Reload Without Cache · Clear Cookies, Clear Cache · Site Settings… |
-| Extension | Pin or Unpin Extension, Open Extension Options · Manage Extensions… · Remove Extension |
+| Extension | The extension's own items · Pin or Unpin Extension, Open Extension Options · Extension Settings…, Manage Extensions… · Remove Extension |
 | History entries | Open, Open in New Tab · Copy Link · Delete from History |
 
 ## Routing and lifetime
@@ -109,6 +109,9 @@ text composition. Find, the command bar and copy URL default to page-first throu
 The MRU gesture commits when its configured non-Shift modifiers are released, not a hardcoded
 Control key. Opening another window/sheet also ends the gesture on the next keyboard event.
 The Settings recorder is a local first responder, not a global event monitor. Escape or changing selection cancels unfinished capture.
+Extension commands run after reserved browser shortcuts and before the page. Aero and system bindings remain reserved.
+Overrides are stored in `extensionOverrides`, keyed by extension and command, and deleted with the extension.
+See [Extensions](EXTENSIONS.md#the-browsers-part).
 
 ## Verification
 

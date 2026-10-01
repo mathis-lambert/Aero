@@ -26,10 +26,47 @@ private func location() -> URL { FileManager.default.temporaryDirectory.appendin
                                        grantedPermissions: ["storage"], grantedSites: ["https://example.test/*"])
     installed.isPinned = true
     session.setExtension(installed, profileID: work.id)
+    session.setPasswordExtension(installed.id, profileID: work.id)
+    session.setPasswordExtension("missing", profileID: work.id)
+    #expect(session.profiles.first { $0.id == work.id }?.passwordExtension == installed.id, "Only an installed extension fills passwords")
     try await store.save(session, revision: 2)
     try await store.save(BrowserSession(profileName: "Stale"), revision: 1)
     await store.close()
     #expect(try await BrowserStore(directory: folder).load() == session)
+}
+
+// Failure modes: the upgrade loses profiles or extensions, invents a password extension, or a removed extension keeps
+// filling passwords.
+@Test func upgradeKeepsProfilesAndFillsPasswordsWithAeroUntilAnExtensionIsChosen() async throws {
+    let folder = location()
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let file = folder.appendingPathComponent("Browser.sqlite")
+    let profile = UUID(), space = UUID(), extensionID = String(repeating: "b", count: 32)
+    do {
+        let baseline = try SQLiteDatabase(file: file)
+        let schema = try #require(Bundle.module.url(forResource: "Fixtures/BrowserV1", withExtension: "sql"))
+        try baseline.execute(String(contentsOf: schema, encoding: .utf8))
+        try baseline.execute("PRAGMA application_id = \(0x41455232); PRAGMA user_version = 1; UPDATE state SET initialized = 1")
+        try baseline.run("INSERT INTO profiles (id, name, removing, position) VALUES (?, 'Personal', 0, 0)", [.text(profile.uuidString)])
+        try baseline.run("INSERT INTO spaces (id, profile_id, name, color, position) VALUES (?, ?, 'Main', '#0AB3FF', 0)",
+                         [.text(space.uuidString), .text(profile.uuidString)])
+        try baseline.run("INSERT INTO extensions (profile_id, id, version, package_id, enabled, pinned, removing, position) VALUES (?, ?, '1', ?, 1, 0, 0, 0)",
+                         [.text(profile.uuidString), .text(extensionID), .text(UUID().uuidString)])
+    }
+    let store = BrowserStore(directory: folder)
+    var session = try #require(try await store.load())
+    #expect(session.profiles.map(\.id) == [profile])
+    #expect(session.profiles[0].extensions.map(\.id) == [extensionID])
+    #expect(session.profiles[0].passwordExtension == nil, "Aero fills passwords after the upgrade")
+    session.setPasswordExtension(extensionID, profileID: profile)
+    try await store.save(session, revision: 1)
+    #expect(try await store.load()?.profiles[0].passwordExtension == extensionID)
+    session.removeExtension(extensionID, profileID: profile)
+    #expect(session.profiles[0].passwordExtension == nil, "A removed extension stops filling passwords")
+    try await store.save(session, revision: 2)
+    await store.close()
+    #expect(try await BrowserStore(directory: folder).load()?.profiles[0].passwordExtension == nil)
 }
 
 @Test func failedStateTransactionIsRetryable() async throws {

@@ -59,6 +59,7 @@ extension BrowserModel {
                 if command == .resetZoom { page.resetZoom() }
                 else { page.changeZoom(increasing: command == .zoomIn) }
                 window.zoomFeedback = PageZoomFeedback(tabID: tabID, scale: page.zoom)
+                if let tab = selectedTab { extensionsDidChange(tab, .zoomFactor) }
             }
         case .reloadFromOrigin: currentPage?.reloadFromOrigin()
         case .stopLoading: currentPage?.stop()

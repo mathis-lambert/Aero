@@ -35,6 +35,18 @@ struct PasswordProfileSettingsView: View {
                         }
                     }
 
+                    FormSection("AutoFill", footer: "An extension chosen here fills and saves this profile’s passwords on websites, and Aero stops offering its own. The passwords saved in Aero stay here.") {
+                        Picker("Fill passwords with", selection: Binding(
+                            get: { browser.passwordExtension(inProfile: profileID) },
+                            set: { browser.setPasswordExtension($0, inProfile: profileID) })) {
+                            Text("Aero").tag(String?.none)
+                            ForEach(browser.passwordExtensionCandidates(inProfile: profileID), id: \.id) { candidate in
+                                Text(verbatim: candidate.name).tag(Optional(candidate.id))
+                            }
+                        }
+                        .accessibilityIdentifier("passwords.autofill")
+                    }
+
                     FormSection("Saved passwords") {
                         TextField("Search passwords", text: $query)
                             .textFieldStyle(.roundedBorder)
