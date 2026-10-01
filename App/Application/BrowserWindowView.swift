@@ -10,8 +10,9 @@ struct BrowserWindowView: View {
     @State private var sidebarRevealed = false
     @State private var resizingSidebarWidth: CGFloat?
     @State private var windowControls = WindowControls()
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     @Environment(\.palette) private var palette
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     /// The prompt shown in this window; an extension request asked from Settings shows there.
     private var prompt: WindowPrompt? { browser.window.prompt.flatMap { $0.isInSettings ? nil : $0 } }
@@ -37,9 +38,9 @@ struct BrowserWindowView: View {
             .onChange(of: showsFirstLaunch) { _, shows in
                 guard let window = WindowConfiguration.mainWindow else { return }
                 // After SwiftUI has applied the new limits: resizing inside its update re-enters it.
-                Task { [weak window] in
+                Task { [weak window, reduceMotion] in
                     guard let window, window.isVisible, shows == showsFirstLaunch else { return }
-                    OnboardingWindow.resize(window, forOnboarding: shows)
+                    OnboardingWindow.resize(window, forOnboarding: shows, animated: !reduceMotion)
                 }
             }
             .environment(\.windowControls, windowControls)
@@ -59,6 +60,7 @@ struct BrowserWindowView: View {
                 .overlay(alignment: .topLeading) {
                     NativeWindowControls().frame(width: BrowserDesign.windowControlsWidth, height: 44)
                 }
+                .prompt(prompt, onCancel: browser.dismissPrompt) { WindowPromptView(browser: browser, prompt: $0) }
         case .ready:
             if let onboarding = browser.onboarding, onboarding.mode == .firstLaunch {
                 OnboardingView(browser: browser, onboarding: onboarding)
@@ -200,9 +202,8 @@ struct BrowserWindowView: View {
         .browserAnimation(value: sidebarRevealed)
         .browserAnimation(value: browser.window.controlBar != nil)
         .browserAnimation(value: browser.window.find.isPresented)
-        .downloadsDockBadge(activeCount: browser.downloads.activeCount)
         .downloadFlights(browser.downloads)
-        .onChange(of: browser.window.settingsRequest) { openWindow(id: SettingsView.windowID) }
+        .onChange(of: browser.window.settingsRequest) { openSettings() }
         .prompt(prompt, onCancel: browser.dismissPrompt) { WindowPromptView(browser: browser, prompt: $0) }
         .onChange(of: browser.window.sidebarPinned) { _, _ in
             sidebarRevealed = false
@@ -248,13 +249,15 @@ struct WindowPromptView: View {
         switch prompt {
         case .quit: QuitPrompt(browser: browser)
         case .space(let target): SpacePrompt(browser: browser, profileID: target)
-        case .removeSpace(let id): SpaceRemovalPrompt(browser: browser, spaceID: id)
+        case .removeSpace(let id, _): SpaceRemovalPrompt(browser: browser, spaceID: id)
         case .moveTab(let move): TabMovePrompt(browser: browser, presentation: move)
         case .transferTab(let id, let destination): TabTransferPrompt(browser: browser, tabID: id, spaceID: destination)
-        case .profile: ProfilePrompt(browser: browser)
+        case .profile(_, let onCreated): ProfilePrompt(browser: browser, onCreated: onCreated)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)
         case .extensionRequest(let request): ExtensionRequestPrompt(browser: browser, request: request)
         case .applicationLink(let link): ApplicationLinkPrompt(browser: browser, link: link)
+        case .confirmation(let confirmation): ConfirmationPrompt(browser: browser, confirmation: confirmation)
+        case .pageDialog(let request): PageDialogCard(dialog: request.dialog) { browser.answer(request, $0) }
         case .error(let message):
             Prompt(title: Text("Something needs your attention"), message: Text(verbatim: message)) {
                 PromptConfirmButton(title: "OK") { browser.dismissPrompt() }

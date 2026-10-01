@@ -19,6 +19,9 @@ public final class ContentBlocker {
         didSet { generation += 1 }
     }
     private var generation = 0
+    /// The lists last put on each page's controller, so only those are taken off: extensions add their own
+    /// (`declarativeNetRequest`) to the same controllers.
+    private let applied = NSMapTable<WKUserContentController, NSArray>.weakToStrongObjects()
     private var installation: Task<Void, any Error>?
     /// Called once new lists are in use, so open pages can take them.
     var onInstall: (() -> Void)?
@@ -48,8 +51,10 @@ public final class ContentBlocker {
     func state(enabled: Bool) -> Int { enabled ? generation : -1 }
 
     func apply(to controller: WKUserContentController, enabled: Bool) {
-        controller.removeAllContentRuleLists()
-        if enabled { lists.forEach(controller.add) }
+        for case let list as WKContentRuleList in applied.object(forKey: controller) ?? [] { controller.remove(list) }
+        let current = enabled ? lists : []
+        current.forEach(controller.add)
+        applied.setObject(current as NSArray, forKey: controller)
     }
 
     /// Identifiers are `filters-<stamp>-<index>-<count>`, so a partial set is never taken for a whole one.

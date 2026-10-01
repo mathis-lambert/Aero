@@ -228,6 +228,25 @@ private func chromiumHistory(in folder: Folder, _ pages: [(url: String, title: S
     #expect(history.pages.first?.url.absoluteString == "https://example.com/0")
 }
 
+/// docs/PASSWORDS.md › Failure mode 12: a running Chromium browser holds its databases in exclusive locking mode with
+/// recent rows only in the write-ahead log. The original cannot be read; the import reads a copy, log included.
+@Test func historyOfARunningBrowserIsReadFromACopy() throws {
+    let folder = Folder()
+    let file = try chromiumHistory(in: folder, [("https://saved.example.com/", "Saved", [now])])
+    let running = try SQLiteDatabase(file: file)
+    try running.execute("PRAGMA journal_mode = WAL")
+    try running.execute("PRAGMA wal_autocheckpoint = 0")
+    try running.execute("PRAGMA locking_mode = EXCLUSIVE")
+    try running.run("INSERT INTO urls VALUES (2, 'https://recent.example.com/', 'Recent', 1, ?)", [.integer(chromiumTime(now))])
+    try running.run("INSERT INTO visits (url, visit_time) VALUES (2, ?)", [.integer(chromiumTime(now))])
+    #expect(throws: (any Error).self) {
+        _ = try SQLiteDatabase(file: file, readOnly: true).query("SELECT count(*) FROM urls") { $0.integer(0) }
+    }
+    let history = try ChromiumHistory.read(file, limits: limits)
+    #expect(Set(history.pages.map(\.url.absoluteString)) == ["https://saved.example.com/", "https://recent.example.com/"])
+    withExtendedLifetime(running) {}
+}
+
 @Test func damagedHistoryIsUnreadable() throws {
     let folder = Folder()
     let garbage = try folder.file("History", Data("not a database".utf8))

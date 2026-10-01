@@ -11,7 +11,7 @@ struct SettingsNameField: View {
 
     var body: some View {
         TextField("Name", text: $text)
-            .identityField(focused: focused, tint: .accentColor)
+            .labelsHidden()
             .focused($focused)
             .accessibilityIdentifier(identifier)
             .onAppear { text = name }

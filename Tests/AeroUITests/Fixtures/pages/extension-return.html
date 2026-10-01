@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Example web provider</title>
+<p>Example web provider</p>
+<button id="return">Return to example extension</button>
+<script>
+document.getElementById('return').addEventListener('click', () => {
+    location.href = new URLSearchParams(location.search).get('target');
+});
+</script>

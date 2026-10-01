@@ -1,6 +1,7 @@
 import AppKit
 import Observation
 import Sparkle
+import SwiftUI
 
 /// Application-owned adapter for Sparkle's native UI and preferences. No independent timers,
 /// downloads or install state: Sparkle owns those, and the app delegate owns termination.
@@ -12,7 +13,8 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate {
     private(set) var automaticallyDownloads = false
     private(set) var lastCheck: Date?
     private(set) var startupError: String?
-    private var isRelaunching = false
+    /// Sparkle is quitting Aero to install an update and open it again.
+    private(set) var isRelaunching = false
     @ObservationIgnored private var controller: SPUStandardUpdaterController?
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []
 
@@ -70,23 +72,31 @@ final class AppUpdater: NSObject, SPUUpdaterDelegate {
         isRelaunching = false
     }
 
-    /// An update never silently discards live website work. A normal quit keeps its existing flow.
-    func confirmRelaunchIfNeeded(activeDownloads: Int) -> Bool {
-        guard isRelaunching else { return true }
-        let alert = NSAlert()
-        alert.messageText = String(localized: "Restart Aero to update?")
-        alert.informativeText = activeDownloads > 0
-            ? String(localized: "Downloads are still running. Restarting will cancel them. Save any work on websites before continuing.")
-            : String(localized: "Your tabs will reopen, but unsaved work on websites and active calls may be lost. Save your work before continuing.")
-        alert.addButton(withTitle: String(localized: "Cancel"))
-        alert.addButton(withTitle: String(localized: "Restart"))
-        guard alert.runModal() == .alertSecondButtonReturn else {
-            cancelRelaunch()
-            return false
-        }
-        return true
-    }
-
     /// Sparkle can retry a relaunch after applicationShouldTerminate cancels it.
     func cancelRelaunch() { isRelaunching = false }
+}
+
+extension BrowserModel {
+    /// An update never silently discards live website work: before Sparkle restarts Aero, the window asks. A normal
+    /// quit keeps its own flow.
+    func confirmUpdateRelaunch() async -> Bool {
+        guard updater.isRelaunching else { return true }
+        // A prompt cannot show while the browser rearranges itself; the relaunch waits for the next attempt.
+        guard !isChangingStructure else {
+            updater.cancelRelaunch()
+            return false
+        }
+        showMainWindow()
+        let message = downloads.activeCount > 0
+            ? Text("Downloads are still running. Restarting will cancel them. Save any work on websites before continuing.")
+            : Text("Your tabs will reopen, but unsaved work on websites and active calls may be lost. Save your work before continuing.")
+        let confirmed = await withCheckedContinuation { continuation in
+            present(.confirmation(Confirmation(id: "updateRelaunch", title: Text("Restart Aero to update?"), message: message,
+                                               confirmTitle: "Restart", identifier: "updates.confirmRestart", inSettings: false,
+                                               confirm: { continuation.resume(returning: true) },
+                                               cancel: { continuation.resume(returning: false) })))
+        }
+        if !confirmed { updater.cancelRelaunch() }
+        return confirmed
+    }
 }

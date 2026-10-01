@@ -107,6 +107,14 @@ public struct BrowserSession: Equatable, Sendable {
     public mutating func removeExtension(_ extensionID: String, profileID: UUID) {
         guard let index = profiles.firstIndex(where: { $0.id == profileID }) else { return }
         profiles[index].extensions.removeAll { $0.id == extensionID }
+        if profiles[index].passwordExtension == extensionID { profiles[index].passwordExtension = nil }
+    }
+
+    /// Lets one of the profile's extensions fill its passwords, or Aero when `extensionID` is `nil`.
+    public mutating func setPasswordExtension(_ extensionID: String?, profileID: UUID) {
+        guard let index = profiles.firstIndex(where: { $0.id == profileID }),
+              extensionID.map({ id in profiles[index].extensions.contains { $0.id == id && !$0.isRemoving } }) ?? true else { return }
+        profiles[index].passwordExtension = extensionID
     }
 
     public mutating func resetPermissions(at origin: SiteOrigin, profileID: UUID) {

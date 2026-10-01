@@ -48,8 +48,14 @@ extension WebPageRegistry {
             let blocker = await page.hibernationBlocker()
             Self.signposter.endInterval(Diagnostics.Signpost.hibernationCheck, interval)
             guard !Task.isCancelled, livePages[tabID]?.page === page, tabID != activeTabID else { continue }
-            if blocker == nil, !hasPopupRelationship(tabID), !downloads.isDownloading(from: tabID) { hibernate(tabID) }
-            else { livePages[tabID]?.lastExemption = .now }
+            guard blocker == nil, !hasPopupRelationship(tabID), !downloads.isDownloading(from: tabID) else {
+                livePages[tabID]?.lastExemption = .now
+                continue
+            }
+            // Best effort: a page whose storage cannot be read hibernates without it.
+            let storage = try? await page.webView.fetchData(of: .sessionStorage)
+            guard !Task.isCancelled, livePages[tabID]?.page === page, tabID != activeTabID else { continue }
+            hibernate(tabID, sessionStorage: storage)
         }
     }
 }

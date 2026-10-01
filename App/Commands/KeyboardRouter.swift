@@ -37,10 +37,11 @@ final class KeyboardRouter {
         }
         // Native text composition and Escape dismissal always keep their normal responder behavior.
         if let input = NSApp.keyWindow?.firstResponder as? NSTextInputClient, input.hasMarkedText() { return false }
+        // Extensions' commands come after Aero's own reserved shortcuts and before the page.
         guard let binding = ShortcutBinding(event: event),
               let command = BrowserCommand.allCases.first(where: {
                   browser.shortcuts.routing(for: $0) == .reserved && browser.shortcuts.effective[$0, default: []].contains(binding)
-              }), browser.isEnabled(command) else { return false }
+              }), browser.isEnabled(command) else { return browser.performExtensionCommand(for: event) }
         // The onboarding shows the gesture instead of switching the tabs behind it.
         if command == .recentTab || command == .previousRecentTab, browser.onboarding == nil {
             guard browser.window.controlBar == nil, browser.window.renaming == nil else { return false }

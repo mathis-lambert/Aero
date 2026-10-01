@@ -6,6 +6,7 @@ final class SQLiteDatabase {
     enum Value { case integer(Int64), real(Double), text(String), null }
     struct Row {
         fileprivate let statement: OpaquePointer
+        func isNull(_ column: Int32) -> Bool { sqlite3_column_type(statement, column) == SQLITE_NULL }
         func integer(_ column: Int32) -> Int64 { sqlite3_column_int64(statement, column) }
         func real(_ column: Int32) -> Double { sqlite3_column_double(statement, column) }
         func text(_ column: Int32) -> String { optionalText(column) ?? "" }

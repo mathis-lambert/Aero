@@ -15,6 +15,7 @@ struct AeroApp: App {
                 .autocorrectionDisabled()
         }
         .windowStyle(.hiddenTitleBar)
+        .windowBackgroundDragBehavior(.disabled)
         .windowResizability(.contentSize)
         // Startup chooses the first screen and its size before opening the window.
         .defaultLaunchBehavior(.suppressed)
@@ -28,23 +29,17 @@ struct AeroApp: App {
         }
         // Links go to the application delegate; a scene handling them would present its window again.
         .handlesExternalEvents(matching: [])
-        .onChange(of: browser.mainWindowRequests) {
-            // Opens a closed window; one that exists is only brought forward by AppKit, from Stage Manager's strip too.
-            if let window = WindowConfiguration.mainWindow { window.makeKeyAndOrderFront(nil) }
-            else { openWindow(id: BrowserWindowView.windowID) }
-        }
+        // Opens the window, or brings the open one forward.
+        .onChange(of: browser.mainWindowRequests) { openWindow(id: BrowserWindowView.windowID) }
         .commands { BrowserMenuCommands(application: browser, quit: browser.requestQuit) }
 
-        Window("Settings", id: SettingsView.windowID) {
+        Settings {
             SettingsView(browser: browser)
                 .browserMotionPreferences()
                 .autocorrectionDisabled()
         }
         .windowResizability(.contentSize)
         .windowToolbarStyle(.unifiedCompact)
-        .handlesExternalEvents(matching: [])
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
     }
 }
 
@@ -76,10 +71,11 @@ final class BrowserAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard browser.updater.confirmRelaunchIfNeeded(activeDownloads: browser.downloads.activeCount) else {
-            return .terminateCancel
-        }
         Task {
+            guard await browser.confirmUpdateRelaunch() else {
+                sender.reply(toApplicationShouldTerminate: false)
+                return
+            }
             let saved = await browser.flush()
             if !saved { browser.updater.cancelRelaunch() }
             sender.reply(toApplicationShouldTerminate: saved)

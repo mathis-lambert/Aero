@@ -2,7 +2,8 @@ import AppKit
 
 /// Puts the chosen icon on the app bundle, as pasting one in the Finder's Get Info does, so the
 /// Finder, the Dock, Launchpad and Spotlight show it even while Aero is closed.
-/// Automatic leaves the bundle artwork intact and follows the app appearance in the running Dock.
+/// Automatic leaves the bundle artwork intact. In the running Dock the system draws it, in every icon style, unless
+/// Aero's own appearance differs from the system's: the Dock then shows the artwork of Aero's appearance.
 @MainActor
 final class AppIcon {
     private var variant: AppIconVariant?
@@ -17,6 +18,11 @@ final class AppIcon {
     }
 
     private func updateRunningIcon() {
+        if variant == nil, NSApp.appearance == nil {
+            NSApp.applicationIconImage = nil
+            renderedVariant = nil
+            return
+        }
         let resolved = variant ?? .system(dark: NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua)
         guard renderedVariant != resolved, let image = Self.image(for: resolved) else { return }
         NSApp.applicationIconImage = image

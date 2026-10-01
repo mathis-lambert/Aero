@@ -161,7 +161,7 @@ struct OnboardingBrowserTwin: View {
                         .animation(.spring(duration: 0.45, bounce: 0.18).delay(onboarding.step == .importing ? 0.75 + Double(index) * 0.06 : 0)),
                                             removal: .opacity))
             }
-            Hairline().padding(.vertical, 6).padding(.horizontal, BrowserDesign.rowInset)
+            Divider().padding(.vertical, 6).padding(.horizontal, BrowserDesign.rowInset)
             HStack(spacing: BrowserDesign.rowInset) {
                 Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
                 Text("New tab")
@@ -240,7 +240,7 @@ struct OnboardingBrowserTwin: View {
             .padding(.horizontal, 16)
             .frame(height: ControlBarView.fieldHeight)
             if controlBarShown {
-                Hairline()
+                Divider()
                 VStack(spacing: 2) {
                     ForEach(Array([BrowserCommand.newTab, .newSpace, .showHistory, .toggleSidebar].enumerated()), id: \.offset) { index, command in
                         HStack(spacing: BrowserDesign.rowInset) {

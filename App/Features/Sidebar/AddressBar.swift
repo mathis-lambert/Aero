@@ -1,4 +1,5 @@
 import BrowserCore
+import BrowserExtensions
 import SwiftUI
 
 /// The selected tab's address, which opens the control bar, and on a website its Copy link and
@@ -45,7 +46,7 @@ struct AddressBar: View {
             .accessibilityIdentifier("sidebar.location")
             if browser.currentSite != nil {
                 HStack(spacing: 0) {
-                    if let profileID = browser.profile?.id, let extensions = browser.pages.extensionsIfMade(for: profileID) {
+                    if let profileID = browser.profile?.id, let extensions = browser.extensions.extensionsIfMade(for: profileID) {
                         ForEach(browser.installedExtensions(inProfile: profileID).filter { $0.isEnabled && $0.isPinned }.prefix(Self.pinnedLimit)) { record in
                             ExtensionButton(browser: browser, extensions: extensions, record: record, size: Self.buttonSize, anchorsPopup: true)
                         }

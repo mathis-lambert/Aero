@@ -1,5 +1,4 @@
 import AppKit
-import CoreText
 import SwiftUI
 
 /// The brand's paper, ink and faces, used by the onboarding (docs/ONBOARDING.md › Presentation) and never by the
@@ -19,22 +18,12 @@ extension EnvironmentValues {
     var brand: BrandPalette { BrandPalette(scheme: colorScheme) }
 }
 
-/// Gilda Display for titles, bundled under the SIL Open Font License (`Resources/Fonts`); everything else uses the
-/// system face. Registered for the process on first use.
+/// Gilda Display for titles, bundled under the SIL Open Font License (`Resources/Fonts`) and registered by macOS from
+/// Info.plist's `ATSApplicationFontsPath`; everything else uses the system face.
 enum BrandType {
-    private static let registered: Bool = {
-        if let url = Bundle.main.url(forResource: "GildaDisplay-Regular", withExtension: "ttf") {
-            CTFontManagerRegisterFontURLs([url] as CFArray, .process, true, nil)
-        }
-        return true
-    }()
-
-    static func title(_ size: CGFloat) -> Font { _ = registered; return .custom("Gilda Display", fixedSize: size) }
+    static func title(_ size: CGFloat) -> Font { .custom("Gilda Display", fixedSize: size) }
     /// For shapes drawn into the wind.
-    static func titleFont(_ size: CGFloat) -> NSFont {
-        _ = registered
-        return NSFont(name: "GildaDisplay-Regular", size: size) ?? .systemFont(ofSize: size)
-    }
+    static func titleFont(_ size: CGFloat) -> NSFont { NSFont(name: "GildaDisplay-Regular", size: size) ?? .systemFont(ofSize: size) }
 }
 
 /// The feather of the alternate app icon (`Scripts/generate-app-icon.swift`, which draws the same one): bare quill,

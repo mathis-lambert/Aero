@@ -48,7 +48,7 @@ struct SpacePage: View, @MainActor Equatable {
                 // The line takes drops for the loose favorites above it, which may be none.
                 VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
                     ForEach(tabs.loose) { row($0, selectedTabID: selectedTabID, lifted: lifted) }
-                    Hairline().padding(.vertical, 6)
+                    Divider().padding(.vertical, 6)
                         .frame(minHeight: tabs.loose.isEmpty ? 30 : nil)
                         .accessibilityIdentifier("sidebar.pinnedDropZone")
                 }

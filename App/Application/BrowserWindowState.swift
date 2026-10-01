@@ -46,9 +46,10 @@ enum RenameTarget: Equatable {
 /// See docs/DESIGN.md › Prompts.
 enum WindowPrompt: Identifiable {
     case quit
-    case profile
+    /// `onCreated` runs once the profile is saved; asked from Settings, it shows there.
+    case profile(inSettings: Bool = false, onCreated: ((UUID) -> Void)? = nil)
     case space(UUID?)
-    case removeSpace(UUID)
+    case removeSpace(UUID, inSettings: Bool = false)
     case moveTab(TabMovePresentation)
     case transferTab(UUID, UUID)
     /// Carries the History page's own clearing, which then reloads it.
@@ -56,24 +57,34 @@ enum WindowPrompt: Identifiable {
     /// Shown in the Settings window when asked from there.
     case extensionRequest(ExtensionRequest)
     case applicationLink(ApplicationLink)
+    case confirmation(Confirmation)
+    /// A page's `alert`, `confirm` or `prompt`, for the selected tab.
+    case pageDialog(PageDialogRequest)
     case error(String)
 
     var id: String {
         switch self {
         case .quit: "quit"
         case .space(let target): "space.\(target?.uuidString ?? "new")"
-        case .removeSpace(let id): "removeSpace.\(id)"
+        case .removeSpace(let id, _): "removeSpace.\(id)"
         case .moveTab(let move): "moveTab.\(move.tabID)"
         case .transferTab(let id, _): "transferTab.\(id)"
         case .profile: "profile"
         case .clearHistory: "clearHistory"
         case .extensionRequest(let request): "extension.\(request.id)"
         case .applicationLink(let link): "applicationLink.\(link.tabID).\(link.url.absoluteString)"
+        case .confirmation(let confirmation): "confirmation.\(confirmation.id)"
+        case .pageDialog(let request): "pageDialog.\(request.id)"
         case .error(let message): "error.\(message)"
         }
     }
 
     var isInSettings: Bool {
-        if case .extensionRequest(let request) = self { request.inSettings } else { false }
+        switch self {
+        case .extensionRequest(let request): request.inSettings
+        case .confirmation(let confirmation): confirmation.inSettings
+        case .profile(let inSettings, _), .removeSpace(_, let inSettings): inSettings
+        default: false
+        }
     }
 }

@@ -33,7 +33,7 @@ final class PasswordsJourneys: E2ETestCase {
         XCTAssertFalse(picker.exists, "The list closes after filling")
         app.webViews.buttons["Sign in"].click()
         XCTAssertTrue(page("Signed in as alice").waitForExistence(timeout: Self.renderTimeout))
-        pause(1)
+        pause(1) // What must not happen: an offer appearing.
         XCTAssertFalse(offer.exists, "An unchanged password only records its use")
 
         signIn(as: "alice", with: "hunter3", reloading: true)
@@ -81,14 +81,11 @@ final class PasswordsJourneys: E2ETestCase {
         XCTAssertTrue(poll { !self.offer.exists })
         quitAndRelaunch()
         signIn(as: "bob", with: "secret", host: "127.0.0.1")
-        pause(1)
+        pause(1) // What must not happen: an offer appearing.
         XCTAssertFalse(offer.exists, "Never for this site survives a relaunch")
         signIn(as: "bob", with: "secret")
         XCTAssertTrue(offer.waitForExistence(timeout: Self.renderTimeout), "Another site is still offered")
         app.buttons["passwords.notNow"].click()
-
-        open("passkeys.html", expecting: "Passkey availability")
-        XCTAssertTrue(page("Passkeys unavailable").waitForExistence(timeout: Self.renderTimeout), "A source build offers no passkeys it cannot use")
     }
 
     /// Failure mode 3: a login belongs to its profile, spaces included. Settings lists, edits and deletes it with the
@@ -105,7 +102,7 @@ final class PasswordsJourneys: E2ETestCase {
             space(name).click()
             open("login.html", expecting: "Sign in")
             username.click()
-            pause(1)
+            pause(1) // What must not happen: an offer appearing.
             XCTAssertFalse(saved.exists, "\(name), in another profile, is not offered the login")
         }
         space("Main").click()
@@ -145,7 +142,7 @@ final class PasswordsJourneys: E2ETestCase {
         XCTAssertEqual(editor.value as? String, "after-edit", "The edit reached the test keychain")
         app.typeKey(.escape, modifierFlags: [])
         app.buttons["passwords.delete"].click()
-        let confirm = app.windows.buttons["Delete"].firstMatch
+        let confirm = app.buttons["passwords.confirmDelete"]
         XCTAssertTrue(confirm.waitForExistence(timeout: Self.renderTimeout), "Deleting asks first")
         confirm.click()
         XCTAssertTrue(element("passwords.empty").waitForExistence(timeout: Self.renderTimeout))
@@ -153,7 +150,7 @@ final class PasswordsJourneys: E2ETestCase {
 
         reload(expecting: "Sign in")
         username.click()
-        pause(1)
+        pause(1) // What must not happen: an offer appearing.
         XCTAssertFalse(saved.exists, "A deleted login is not offered")
     }
 

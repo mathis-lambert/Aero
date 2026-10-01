@@ -30,6 +30,16 @@
             <key>CFBundleURLSchemes</key><array><string>http</string><string>https</string></array>
         </dict>
     </array>
+    <!-- Web pages and archives of this Mac open in tabs, as Open With and File › Open File… do (docs/BROWSING.md › Files). -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key><string>Web page</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>LSHandlerRank</key><string>Alternate</string>
+            <key>LSItemContentTypes</key><array><string>public.html</string><string>public.xhtml</string><string>com.apple.webarchive</string></array>
+        </dict>
+    </array>
     <!-- Other apps' ASWebAuthenticationSession sign-ins, when Aero is the default browser. -->
     <key>ASWebAuthenticationSessionWebBrowserSupportCapabilities</key>
     <dict>
@@ -42,6 +52,8 @@
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <!-- Downloaded files are quarantined so Gatekeeper checks them, as with Safari. -->
     <key>LSFileQuarantineEnabled</key><true/>
+    <!-- The brand face of the onboarding, registered by macOS at launch. -->
+    <key>ATSApplicationFontsPath</key><string>.</string>
     <key>UTExportedTypeDeclarations</key>
     <array><dict>
         <key>UTTypeIdentifier</key><string>app.getaero.browser.tab</string>

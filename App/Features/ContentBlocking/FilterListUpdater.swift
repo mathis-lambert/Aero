@@ -19,9 +19,10 @@ final class FilterListUpdater {
         Source(name: "easyprivacy", url: URL(string: "https://easylist.to/easylist/easyprivacy.txt")!)
     ]
     private static let checkInterval: TimeInterval = 24 * 60 * 60
-    private static let retryDelay = Duration.seconds(60 * 60)
     private static let requestTimeout: TimeInterval = 60
     private static let resourceTimeout: TimeInterval = 300
+    /// EasyList is a few megabytes; a larger answer is not a filter list.
+    private nonisolated static let maximumBytes = 32 * 1024 * 1024
     private static let logger = Logger(subsystem: Diagnostics.subsystem, category: Diagnostics.Category.contentBlocking)
 
     private let sources: [Source]
@@ -34,6 +35,7 @@ final class FilterListUpdater {
     /// Only the versions stay in memory; the lists themselves are read again when an update needs them.
     private var versions: [String: Int] = [:]
     private var task: Task<Void, Never>?
+    private var daily: DailyActivity?
 
     init(blocker: ContentBlocker, store: FilterListStore, preferences: BrowserPreferences, testSource: URL?) {
         sources = testSource.map { [Source(name: "test", url: $0)] } ?? Self.sources
@@ -46,23 +48,21 @@ final class FilterListUpdater {
 
     isolated deinit { task?.cancel() }
 
+    /// Lists a day old or more are checked at once; then macOS asks once a day.
     func start() {
         guard task == nil else { return }
         task = Task { [weak self] in
             await self?.installSavedLists()
-            while !Task.isCancelled {
-                guard self != nil else { return }
-                let checked = self?.preferences.filterListsCheckedAt ?? .distantPast
-                let remaining = Self.checkInterval - Date.now.timeIntervalSince(checked)
-                if remaining > 0 {
-                    do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
-                    continue
-                }
-                guard let updated = await self?.update() else { return }
-                if updated { self?.preferences.filterListsCheckedAt = .now }
-                else { do { try await Task.sleep(for: Self.retryDelay) } catch { return } }
-            }
+            guard let self else { return }
+            if Date.now.timeIntervalSince(preferences.filterListsCheckedAt ?? .distantPast) >= Self.checkInterval { _ = await check() }
+            daily = DailyActivity(identifier: "filter-lists") { [weak self] in await self?.check() ?? true }
         }
+    }
+
+    private func check() async -> Bool {
+        let updated = await update()
+        if updated { preferences.filterListsCheckedAt = .now }
+        return updated
     }
 
     /// In its own function, so the lists' text is released once they are compiled.
@@ -76,7 +76,7 @@ final class FilterListUpdater {
     private func update() async -> Bool {
         var newer: [String: FilterList] = [:]
         for source in sources {
-            guard let list = await download(source.url) else { return false }
+            guard let list = await Self.download(source.url, with: session) else { return false }
             if list.version > versions[source.name] ?? 0 { newer[source.name] = list }
         }
         guard !newer.isEmpty else { return true }
@@ -101,10 +101,17 @@ final class FilterListUpdater {
         }
     }
 
-    /// A failed download keeps the lists in use; the check is retried later.
-    private func download(_ url: URL) async -> FilterList? {
-        guard let (data, response) = try? await session.data(from: url),
-              (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+    /// A failed or oversized download keeps the lists in use; the check is retried later. Read off the main actor.
+    @concurrent private nonisolated static func download(_ url: URL, with session: URLSession) async -> FilterList? {
+        guard let (bytes, response) = try? await session.bytes(from: url), (response as? HTTPURLResponse)?.statusCode == 200,
+              response.expectedContentLength <= Self.maximumBytes else { return nil }
+        var data = Data()
+        do {
+            for try await byte in bytes {
+                data.append(byte)
+                guard data.count <= Self.maximumBytes else { return nil }
+            }
+        } catch { return nil }
         return FilterList(text: String(decoding: data, as: UTF8.self))
     }
 

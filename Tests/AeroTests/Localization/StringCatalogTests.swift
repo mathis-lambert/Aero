@@ -20,8 +20,9 @@ struct StringCatalogTests {
         #expect(!entries.isEmpty, "The catalog contains translations")
     }
 
-    /// Literals passed to the localizing initializers the app uses. Interpolated ones are keyed by format and skipped.
-    private var localizedLiteral: Regex<(Substring, Substring)> { /(?:String\(localized: |\bText\(|\bButton\(|\bLabel\(|\bMenu\(|\bSection\(|\bToggle\(|\bPicker\(|\bTextField\(|\.help\(|\.accessibilityLabel\(|LocalizedStringKey\(|LocalizedStringResource\()"((?:[^"\\]|\\.)*)"/ }
+    /// Literals passed to the localizing initializers the app uses, its own views that take localized text included.
+    /// Interpolated ones are keyed by format and skipped.
+    private var localizedLiteral: Regex<(Substring, Substring)> { /(?:String\(localized: |\bText\(|\bButton\(|\bLabel\(|\bMenu\(|\bSection\(|\bToggle\(|\bPicker\(|\bTextField\(|\.accessibilityLabel\(|LocalizedStringKey\(|LocalizedStringResource\(|\bEyebrow\(|\bBodyText\(|\bHeadline\(|\bFormSection\(|\bPromptConfirmButton\(title: |confirmTitle: |footer: |\bShortcutRow\(.*?label: |alternative: )"((?:[^"\\]|\\.)*)"/ }
 
     private func localizations(_ key: String) -> [String: Any] { entries[key]?["localizations"] as? [String: Any] ?? [:] }
 

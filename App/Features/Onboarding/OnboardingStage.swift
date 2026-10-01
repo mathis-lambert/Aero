@@ -222,7 +222,7 @@ private struct MappingCard: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 if let source { BrowserIcon(bundleIdentifier: source.bundleIdentifier).frame(width: 18, height: 18) }
-                Text(verbatim: source.map(OnboardingView.shortName) ?? "")
+                Text(verbatim: source?.shortName ?? "")
                 Spacer(minLength: 12)
                 HStack(spacing: 8) {
                     Image(nsImage: AppIconImage.current).resizable().frame(width: 18, height: 18)
@@ -233,7 +233,7 @@ private struct MappingCard: View {
             .font(BrowserDesign.Typography.label).foregroundStyle(palette.secondary)
             .padding(.horizontal, 16)
             .frame(height: 40)
-            Hairline()
+            Divider()
             VStack(spacing: 0) {
                 ForEach(Array(rows.prefix(Self.shownRows).enumerated()), id: \.offset) { index, row in
                     let color = row.space.color ?? SpaceColor.presets[index % SpaceColor.presets.count].color
@@ -266,7 +266,7 @@ private struct MappingCard: View {
                     .opacity(arrived ? 1 : 0)
                     .offset(x: arrived ? 0 : -10)
                     .animation(reduceMotion ? nil : .spring(duration: 0.45, bounce: 0.12).delay(Double(index) * 0.045), value: arrived)
-                    if index < min(rows.count, Self.shownRows) - 1 { Hairline().padding(.leading, 16) }
+                    if index < min(rows.count, Self.shownRows) - 1 { Divider().padding(.leading, 16) }
                 }
             }
             .padding(.vertical, 4)
@@ -371,7 +371,7 @@ private struct AppIconPlate: View {
                     .scaleEffect(absorbed ? 1.45 : 1).opacity(absorbed ? 0 : (isDefault ? 0.9 : 0))
                     .animation(reduceMotion ? nil : .easeOut(duration: 1).delay(0.6), value: absorbed)
                 Image(nsImage: AppIconImage.current).resizable().frame(width: 168, height: 168)
-                    .keyframeAnimator(initialValue: 1.0, trigger: absorbed) { content, scale in content.scaleEffect(scale) } keyframes: { _ in
+                    .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion ? false : absorbed) { content, scale in content.scaleEffect(scale) } keyframes: { _ in
                         KeyframeTrack { CubicKeyframe(1, duration: 0.55); SpringKeyframe(1.07, duration: 0.25); SpringKeyframe(1, duration: 0.4) }
                     }
                     .overlay(alignment: .bottomTrailing) {
@@ -379,7 +379,7 @@ private struct AppIconPlate: View {
                             .frame(width: 40, height: 40).background(.tint, in: Circle())
                             .overlay(Circle().strokeBorder(brand.paper, lineWidth: 4))
                             .scaleEffect(isDefault ? 1 : 0.01).opacity(isDefault ? 1 : 0)
-                            .animation(.spring(duration: 0.5, bounce: 0.3).delay(isDefault && !reduceMotion ? 0.7 : 0), value: isDefault)
+                            .animation(reduceMotion ? nil : .spring(duration: 0.5, bounce: 0.3).delay(isDefault ? 0.7 : 0), value: isDefault)
                             .offset(x: 6, y: 6)
                     }
                     .shadow(color: .black.opacity(0.18), radius: 25, y: 24)

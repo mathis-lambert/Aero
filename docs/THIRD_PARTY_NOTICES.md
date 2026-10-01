@@ -1,6 +1,12 @@
 # Third-party notices
 
-`App/Application/NativeWindowControls.swift` adapts the native window-control positioning from Search by Office Commun.
+`App/Application/NativeWindowControls.swift` adapts the native window-control positioning from Search by Office Commun. Extension popup presentation and compatibility policies under `Packages/BrowserKit/Sources/BrowserExtensions` also draw on Search's implementation.
+
+Bundled resources keep their own licenses:
+
+- `App/Resources/FilterLists/easylist.txt` and `easyprivacy.txt`: EasyList and EasyPrivacy, © The EasyList authors, dual-licensed under GPLv3 and CC BY-SA 3.0 (https://easylist.to). Settings › General credits them where ad blocking is turned on.
+- `App/Resources/PublicSuffixList/public_suffix_list.dat`: the Public Suffix List, Mozilla Public License 2.0 (https://publicsuffix.org).
+- `App/Resources/Fonts/GildaDisplay-Regular.ttf`: Gilda Display, © 2012 The Gilda Display Project Authors, SIL Open Font License 1.1; the license is `App/Resources/Fonts/OFL-gildadisplay.txt`.
 
 ## Search
 

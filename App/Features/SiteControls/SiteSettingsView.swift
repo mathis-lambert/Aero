@@ -29,7 +29,7 @@ struct SiteSettingsView: View {
             VStack(alignment: .leading, spacing: 8) {
                 heading("Cookies and site data")
                 if let usage {
-                    Text(usage.cookies == 0 ? String(localized: "No cookies") : String(localized: "\(usage.cookies) cookies"))
+                    Text("\(usage.cookies) cookies")
                         .accessibilityIdentifier("siteSettings.cookies")
                     if usage.storesOtherData {
                         Text("Other site data is stored").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)

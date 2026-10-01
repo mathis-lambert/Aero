@@ -40,7 +40,7 @@ struct ControlBarView: View {
         VStack(spacing: 0) {
             field
             if !items.isEmpty {
-                Hairline()
+                Divider()
                 results(items, selected: selected)
             }
         }

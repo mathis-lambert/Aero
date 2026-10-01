@@ -123,12 +123,6 @@ private struct BrowserAnimation<Value: Equatable>: ViewModifier {
     }
 }
 
-struct Hairline: View {
-    @Environment(\.palette) private var palette
-
-    var body: some View { Rectangle().fill(palette.line).frame(height: 1) }
-}
-
 extension SpaceColor {
     /// Offered before a custom color, in order; the first is the initial color.
     static let presets: [(color: SpaceColor, name: LocalizedStringResource)] = [

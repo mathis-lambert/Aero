@@ -14,7 +14,7 @@ final class StorageJourneys: E2ETestCase {
     }
 
     private func confirm(_ button: String) {
-        let action = app.sheets.buttons[button].firstMatch
+        let action = app.buttons[button == "Restore previous state" ? "storage.confirmRestore" : "storage.confirm"].firstMatch
         XCTAssertTrue(action.waitForExistence(timeout: Self.renderTimeout), "\(button) asks first")
         action.click()
     }

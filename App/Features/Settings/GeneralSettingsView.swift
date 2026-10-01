@@ -9,7 +9,7 @@ struct GeneralSettingsView: View {
         Form {
             Section {
                 Picker("Language", selection: Binding(get: { browser.preferences.language }, set: { browser.preferences.setLanguage($0) })) {
-                    ForEach(BrowserLanguage.allCases) { Text($0.label).tag($0) }
+                    ForEach(AppLanguage.choices) { $0.name.tag($0) }
                 }
                 .accessibilityIdentifier("settings.language")
                 if browser.preferences.needsLanguageRestart {
@@ -52,6 +52,13 @@ struct GeneralSettingsView: View {
                     Text("⌘Q asks for confirmation, so a stray shortcut never closes your tabs.")
                 }
                 .accessibilityIdentifier("settings.confirmsQuit")
+            }
+            Section {
+                Toggle(isOn: Binding(get: { browser.preferences.developerMode }, set: browser.setDeveloperMode)) {
+                    Text("Developer mode")
+                    Text("Inspect Element opens Web Inspector on pages and extensions, with the extensions’ developer tools panels.")
+                }
+                .accessibilityIdentifier("settings.developerMode")
             }
             Section {
                 AppIconPicker(browser: browser)

@@ -102,7 +102,7 @@ final class BrowsingJourneys: E2ETestCase {
         app.typeKey("a", modifierFlags: .command)
         controlBarInput.typeText("zzzz")
         XCTAssertTrue(poll { !self.items.contains("Alpine Lake") })
-        pause(3)
+        pause(3) // Longer than the delayed answer, which must not appear.
         XCTAssertFalse(items.contains("Alpine Lake"), "A cancelled query cannot republish old history")
         server.delaySuggestions(by: 0)
         app.typeKey("a", modifierFlags: .command)
@@ -135,6 +135,23 @@ final class BrowsingJourneys: E2ETestCase {
         app.webViews.buttons["Close popup"].click()
         XCTAssertTrue(page("Opener received message").waitForExistence(timeout: Self.pageTimeout), "The opener got the popup's message and is selected again")
         XCTAssertEqual(tabRows.count, 2, "window.close() closes the popup tab")
+        app.webViews.buttons["Open popup window"].click()
+        let popupWindow = app.windows.containing(.any, identifier: "popupWindow").firstMatch
+        XCTAssertTrue(popupWindow.waitForExistence(timeout: Self.pageTimeout), "A sized popup opens in a window of its own")
+        XCTAssertEqual(tabRows.count, 2, "…and not as a tab")
+        XCTAssertTrue(popupWindow.webViews.staticTexts["Popup fixture"].waitForExistence(timeout: Self.pageTimeout))
+        attachScreenshot("popup window", of: popupWindow)
+        popupWindow.webViews.buttons["Close popup"].click()
+        XCTAssertTrue(poll { !popupWindow.exists }, "window.close() closes the popup window")
+
+        // A page blocked in `prompt()` cannot be read by accessibility, which would stall the runner:
+        // PageDialogTests covers dialogs on the page's side.
+        open("dialogs.html", expecting: "Not asked")
+        app.webViews.buttons["Choose file"].click()
+        let panel = app.sheets.firstMatch
+        XCTAssertTrue(panel.waitForExistence(timeout: Self.renderTimeout), "A file input opens the system's open panel")
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertFalse(panel.waitForExistence(timeout: 1))
 
         open("find.html", expecting: "Nothing selected")
         app.typeKey("f", modifierFlags: .command)

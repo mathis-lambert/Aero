@@ -3,22 +3,22 @@ import Foundation
 import Observation
 import SwiftUI
 
-enum BrowserLanguage: String, CaseIterable, Identifiable {
-    case system, english, french
-    var id: Self { self }
-    var localeIdentifier: String? {
-        switch self {
-        case .system: nil
-        case .english: "en"
-        case .french: "fr"
-        }
-    }
-    var label: LocalizedStringKey {
-        switch self {
-        case .system: "System language"
-        case .english: "English"
-        case .french: "Français"
-        }
+/// Aero's language: the system's, or one Aero is translated into. It is Apple's per-app language, the one System
+/// Settings › General › Language & Region › Applications sets, which the bundle resolves at launch.
+struct AppLanguage: Hashable, Identifiable {
+    /// `nil` follows the system.
+    let identifier: String?
+    var id: String { identifier ?? "" }
+
+    static let system = AppLanguage(identifier: nil)
+    /// The system's language, then those of the bundle's translations.
+    static let choices: [AppLanguage] = [.system] + Bundle.main.localizations.filter { $0 != "Base" }.sorted().map(AppLanguage.init)
+
+    /// A language as it names itself, as System Settings lists it.
+    var name: Text {
+        guard let identifier else { return Text("System language") }
+        let locale = Locale(identifier: identifier)
+        return Text(verbatim: locale.localizedString(forIdentifier: identifier)?.capitalized(with: locale) ?? identifier)
     }
 }
 
@@ -48,7 +48,6 @@ final class BrowserPreferences {
     private enum Key {
         static let testSuitePrefix = "app.getaero.browser.tests."
         static let sidebarWidth = "browser.sidebarWidth"
-        static let language = "browser.language"
         static let appearance = "browser.appearance"
         static let searchEngine = "browser.searchEngine"
         static let searchSuggestions = "browser.searchSuggestions"
@@ -61,6 +60,7 @@ final class BrowserPreferences {
         static let blocksAds = "browser.blocksAds"
         static let automaticPictureInPicture = "browser.automaticPictureInPicture"
         static let offersToSavePasswords = "browser.passwords.offersToSave"
+        static let developerMode = "browser.developerMode"
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
         static let onboarding = "browser.onboarding"
         static let resetPending = "browser.resetPending"
@@ -68,8 +68,8 @@ final class BrowserPreferences {
 
     let shortcuts: ShortcutPreferences
     private let defaults: UserDefaults
-    private let launchLanguage: BrowserLanguage
-    private(set) var language: BrowserLanguage
+    private let launchLanguage: AppLanguage
+    private(set) var language: AppLanguage
     var sidebarWidth: Double {
         didSet { defaults.set(sidebarWidth, forKey: Key.sidebarWidth) }
     }
@@ -100,6 +100,10 @@ final class BrowserPreferences {
     var automaticPictureInPicture: Bool {
         didSet { defaults.set(automaticPictureInPicture, forKey: Key.automaticPictureInPicture) }
     }
+    /// Web Inspector for pages and extensions; on by default in development builds.
+    var developerMode: Bool {
+        didSet { defaults.set(developerMode, forKey: Key.developerMode) }
+    }
     /// Sites without their own Save passwords decision follow it.
     var offersToSavePasswords: Bool {
         didSet { defaults.set(offersToSavePasswords, forKey: Key.offersToSavePasswords) }
@@ -129,10 +133,11 @@ final class BrowserPreferences {
 
     init(testNamespace: String?) {
         defaults = Self.defaults(testNamespace: testNamespace)
+        let domain = Self.domain(testNamespace: testNamespace)
         let savedWidth = defaults.double(forKey: Key.sidebarWidth)
         sidebarWidth = savedWidth.isFinite ? max(BrowserDesign.sidebarWidth, savedWidth) : BrowserDesign.sidebarWidth
         shortcuts = ShortcutPreferences(defaults: defaults)
-        let language = defaults.string(forKey: Key.language).flatMap(BrowserLanguage.init(rawValue:)) ?? .system
+        let language = AppLanguage(identifier: (defaults.persistentDomain(forName: domain)?[Key.appleLanguages] as? [String])?.first)
         self.language = language
         launchLanguage = language
         appearance = defaults.string(forKey: Key.appearance).flatMap(BrowserAppearance.init(rawValue:)) ?? .system
@@ -144,6 +149,11 @@ final class BrowserPreferences {
         blocksAds = defaults.object(forKey: Key.blocksAds) as? Bool ?? true
         automaticPictureInPicture = defaults.object(forKey: Key.automaticPictureInPicture) as? Bool ?? true
         offersToSavePasswords = defaults.object(forKey: Key.offersToSavePasswords) as? Bool ?? true
+        #if DEBUG
+        developerMode = defaults.object(forKey: Key.developerMode) as? Bool ?? true
+        #else
+        developerMode = defaults.object(forKey: Key.developerMode) as? Bool ?? false
+        #endif
         filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
     }
 
@@ -162,19 +172,20 @@ final class BrowserPreferences {
         defaults(testNamespace: testNamespace).bool(forKey: Key.resetPending)
     }
 
+    private static func domain(testNamespace: String?) -> String {
+        testNamespace.map { Key.testSuitePrefix + $0 } ?? Bundle.main.bundleIdentifier ?? ""
+    }
+
     /// Every preference of this channel or test run, the pending mark included.
     static func erase(testNamespace: String?) {
-        let domain = testNamespace.map { Key.testSuitePrefix + $0 } ?? Bundle.main.bundleIdentifier ?? ""
-        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.removePersistentDomain(forName: domain(testNamespace: testNamespace))
         defaults(testNamespace: testNamespace).synchronize()
     }
 
-    func setLanguage(_ language: BrowserLanguage) {
+    /// Takes effect at the next launch, rather than partially translating a running app.
+    func setLanguage(_ language: AppLanguage) {
         self.language = language
-        defaults.set(language.rawValue, forKey: Key.language)
-        // Apple's bundle localization is resolved at launch. Persist a per-app language
-        // override instead of swapping bundles or partially translating a running UI.
-        if let identifier = language.localeIdentifier { defaults.set([identifier], forKey: Key.appleLanguages) }
+        if let identifier = language.identifier { defaults.set([identifier], forKey: Key.appleLanguages) }
         else { defaults.removeObject(forKey: Key.appleLanguages) }
     }
 

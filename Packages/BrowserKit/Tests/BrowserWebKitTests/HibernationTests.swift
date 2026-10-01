@@ -59,3 +59,38 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
         """, contentWorld: PageScripts.world)
     #expect(await page.hibernationBlocker() == .unsavedInput)
 }
+
+// Developer mode reaches open pages and those created later; off, Web Inspector is unavailable.
+@Test @MainActor func developerModeMakesEveryPageInspectable() throws {
+    let registry = makeRegistry()
+    let first = activate(try makeTab(), in: registry)
+    #expect(!first.webView.isInspectable)
+    registry.pagesAreInspectable = true
+    #expect(first.webView.isInspectable)
+    #expect(activate(try makeTab(), in: registry).webView.isInspectable)
+    registry.pagesAreInspectable = false
+    #expect(!first.webView.isInspectable)
+}
+
+// Failure mode: a hibernated tab comes back without its `sessionStorage`, which a tab keeps while it lives, so a
+// page loses what it saved for the session.
+@Test @MainActor func hibernationKeepsSessionStorage() async throws {
+    let server = try HistoryPageServer(response: "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 30\r\nConnection: close\r\n\r\n<title>Stored</title><p>ok</p>")
+    let registry = makeRegistry()
+    let tab = BrowserTab(spaceID: UUID(), url: server.url)
+    let page = activate(tab, in: registry)
+    try await waitUntilLoaded(page)
+    _ = try await page.webView.callAsyncJavaScript("sessionStorage.setItem('draft', 'kept'); return true", contentWorld: .page)
+    activate(try makeTab(), in: registry)
+    await registry.hibernateDuePages()
+    #expect(registry.livePages[tab.id] == nil)
+    let restored = activate(tab, in: registry)
+    try await waitUntilLoaded(restored)
+    let deadline = ContinuousClock.now + loadTimeout
+    var value: String?
+    while value != "kept", ContinuousClock.now < deadline {
+        value = try? await restored.webView.callAsyncJavaScript("return sessionStorage.getItem('draft')", contentWorld: .page) as? String
+        if value != "kept" { try await Task.sleep(for: pollInterval) }
+    }
+    #expect(value == "kept")
+}

@@ -1,11 +1,21 @@
 import AppKit
-import SwiftUI
+import BrowserWebKit
+import Observation
 
-extension View {
-    /// Shows the number of active downloads on the Dock icon, like Safari.
-    func downloadsDockBadge(activeCount: Int) -> some View {
-        onChange(of: activeCount, initial: true) { _, count in
-            NSApp.dockTile.badgeLabel = count > 0 ? count.formatted() : nil
+/// Shows the number of active downloads on the Dock icon, like Safari, whether or not the browser window is open.
+@MainActor
+final class DockBadge {
+    private let downloads: DownloadCoordinator
+
+    init(downloads: DownloadCoordinator) {
+        self.downloads = downloads
+        update()
+    }
+
+    private func update() {
+        let count = withObservationTracking { downloads.activeCount } onChange: { [weak self] in
+            Task { @MainActor in self?.update() }
         }
+        NSApplication.shared.dockTile.badgeLabel = count > 0 ? count.formatted() : nil
     }
 }

@@ -19,7 +19,7 @@ Settings uses native sidebar navigation and back/forward history. Profiles and S
 
 ## Prompts
 
-Use the shared `Prompt` presentation, with one card surface, a concise title, optional explanation and trailing actions. Return confirms, Escape or clicking outside cancels. The underlying window must not receive input. Replacing a pending extension prompt must resolve its request rather than leave a caller waiting. System file, print and certificate panels remain native sheets.
+Every question uses the shared `Prompt` presentation, over the window where it was asked (the browser or Settings), with one card surface, a concise title, optional explanation and trailing actions; a confirmation before an irreversible action is a `Confirmation`. No system alert or confirmation dialog is used. Return confirms, Escape or clicking outside cancels. The underlying window must not receive input. Replacing a pending extension prompt must resolve its request rather than leave a caller waiting. System file, print and certificate panels remain native sheets.
 
 ## Tooltips and keycaps
 
@@ -37,4 +37,4 @@ Browser-owned text fields disable automatic correction. Web pages retain WebKit'
 swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>
 ```
 
-The font is not stored in the repository. Settings previews use bundled artwork, never the current custom bundle icon. Automatic removes the custom icon; the running Dock icon follows effective appearance. Alternate icons write to Aero's own bundle, requiring an unsandboxed app. The build removes the custom icon before signing. Missing artwork or an unwritable bundle must leave the system icon usable.
+The font is not stored in the repository. Settings previews use bundled artwork, never the current custom bundle icon. Automatic removes the custom icon; the system draws the running Dock icon in every icon style, and Aero draws the artwork of its own appearance only when it differs from the system's. Alternate icons write to Aero's own bundle, requiring an unsandboxed app. The build removes the custom icon before signing. Missing artwork or an unwritable bundle must leave the system icon usable.

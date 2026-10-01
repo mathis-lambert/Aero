@@ -7,7 +7,7 @@ extension BrowserModel {
     /// Only web addresses are kept: another app cannot make Aero open a local file or one of its own pages. The main
     /// window comes forward even while a link waits, so the onboarding or import holding it is what the person sees.
     func openFromOtherApp(_ urls: [URL]) {
-        let links = urls.filter(NavigationInput.isWebURL)
+        let links = urls.filter { NavigationInput.isWebURL($0) || NavigationInput.isLocalFileURL($0) }
         guard !links.isEmpty else { return }
         pendingLinks += links
         openPendingLinks()

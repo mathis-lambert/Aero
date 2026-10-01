@@ -11,7 +11,7 @@ struct ApplicationLink {
     /// The app macOS opens `url` with.
     let application: URL
 
-    var applicationName: String { FileManager.default.displayName(atPath: application.path).replacing(/\.app$/, with: "") }
+    var applicationName: String { application.applicationName }
 }
 
 extension BrowserModel {

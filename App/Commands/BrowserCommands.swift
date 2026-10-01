@@ -17,16 +17,13 @@ struct BrowserMenuCommands: Commands {
                 .keyboardShortcut(application.shortcuts.shortcut(for: .checkForUpdates))
                 .disabled(!application.isEnabled(.checkForUpdates))
         }
-        CommandGroup(replacing: .appSettings) {
-            Button("Settings…", systemImage: "gear") { application.showSettings(.section(.general)); openWindow(id: SettingsView.windowID) }
-                .keyboardShortcut(",")
-        }
         CommandGroup(replacing: .appTermination) {
             Button("Quit Aero", action: quit).keyboardShortcut("q")
         }
         CommandGroup(replacing: .newItem) {
             command(.newTab)
             command(.openLocation)
+            command(.openFile)
             command(.commandPalette)
         }
         // One window: Close All has nothing more to close.
@@ -34,6 +31,9 @@ struct BrowserMenuCommands: Commands {
             closeTab
             Button("Close Window", systemImage: "macwindow") { NSApp.keyWindow?.performClose(nil) }
                 .keyboardShortcut("w", modifiers: [.command, .shift])
+            Divider()
+            command(.savePage)
+            command(.exportAsPDF)
             Divider()
             command(.importBrowserData)
         }

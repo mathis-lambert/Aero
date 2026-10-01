@@ -8,6 +8,8 @@ public struct BrowserProfile: Identifiable, Equatable, Sendable {
     public package(set) var isRemoving = false
     public package(set) var sitePermissions: [SiteOrigin: [SitePermission: SiteDecision]] = [:]
     public package(set) var extensions: [InstalledExtension] = []
+    /// The extension that fills passwords on websites in place of Aero's own, or `nil` for Aero. docs/PASSWORDS.md › AutoFill.
+    public package(set) var passwordExtension: String?
 
     public init(id: UUID = UUID(), name: String) {
         self.id = id

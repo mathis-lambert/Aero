@@ -50,7 +50,7 @@ and retains the metric and a screenshot; it does not measure physical frame pres
 
 ## Tab hibernation
 
-A tab is a durable record; its `WKWebView` is a live resource owned by `WebPageRegistry`. Hibernation releases the web view and its WebContent process while keeping the tab, its history and scroll position (`interactionState`, kept in memory). Activating the tab restores that state; after a relaunch, tabs reload from their URL.
+A tab is a durable record; its `WKWebView` is a live resource owned by `WebPageRegistry`. Hibernation releases the web view and its WebContent process while keeping the tab, its history and scroll position (`interactionState`) and its `sessionStorage` (WebKit's `fetchData(of:)`), kept in memory. Activating the tab restores that state; after a relaunch, tabs reload from their URL.
 
 `HibernationPolicy` (BrowserCore) decides, from pure inputs, which live pages are due:
 
@@ -82,7 +82,7 @@ Report the build configuration, hardware, and scenario (idle, navigation, many t
 
 Only the current sidebar and its two neighbors are constructed. Equatable sidebar content is independent of the gesture offset; model observation still invalidates changed records. Gestures only update a translation until committing selection. No neighbor preloads WebKit. The one global hibernation owner and RAM-derived page budget cover every space/profile; active media, captures, unsaved input and downloads remain exempt, so this is not a hard cap on total memory. Unused profiles do not instantiate extension controllers at startup.
 
-Opaque WebKit interaction data is retained only when represented as Data, within a global 32-entry/16-MiB budget. Evicted or unsupported interaction state falls back to the saved URL. Arbitrary web-app state is not promised to survive hibernation. Same-profile tab moves keep their live page and identity. Cross-profile transitions discard interaction state.
+Opaque WebKit interaction data and session storage are retained only when represented as Data, within a global 32-entry/16-MiB budget; a file's tab reloads instead, so its folder access is granted again. Evicted or unsupported interaction state falls back to the saved URL. Arbitrary web-app state is not promised to survive hibernation. Same-profile tab moves keep their live page and identity. Cross-profile transitions discard interaction state.
 
 `SpacesPerformanceTests/testManySpacesKeepLazyPagesAndStableSwitching` seeds 4 profiles,
 13 spaces and 240 tab records through `BrowserStore` before launch. It checks lazy startup, loads local

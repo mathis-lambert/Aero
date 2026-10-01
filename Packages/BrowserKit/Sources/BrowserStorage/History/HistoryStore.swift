@@ -5,7 +5,10 @@ import Foundation
 /// The database opens on first use; a file it cannot read is left untouched.
 public actor HistoryStore {
 
-    package static let retention: TimeInterval = 365 * 24 * 60 * 60
+    /// History keeps a year of visits: the oldest kept at `now`.
+    package static func retentionStart(_ now: Date = .now) -> Date {
+        Calendar.current.date(byAdding: .year, value: -1, to: now) ?? now
+    }
     package static let maximumTitleLength = 512
     package static let maximumURLLength = 2048
     public static let pageSize = 200
@@ -17,10 +20,13 @@ public actor HistoryStore {
         self.file = file
     }
 
-    public func recordVisit(to url: URL, title: String?, profileID: UUID, at date: Date = .now) throws {
-        guard let address = Self.address(url) else { return }
+    @discardableResult
+    public func recordVisit(to url: URL, title: String?, profileID: UUID, at date: Date = .now,
+                            transition: HistoryTransition = .autoTopLevel, referrer: URL? = nil) throws -> HistoryEntry? {
+        guard let address = Self.address(url) else { return nil }
         let database = try open()
         let page: [SQLiteDatabase.Value] = [.text(profileID.uuidString), .text(address)]
+        var recorded: HistoryEntry?
         try database.transaction {
             try database.run("""
                 INSERT INTO pages (profile_id, url, title, last_visit) VALUES (?, ?, ?, ?)
@@ -28,9 +34,24 @@ public actor HistoryStore {
                     last_visit = max(last_visit, excluded.last_visit),
                     title = CASE WHEN excluded.title = '' THEN title ELSE excluded.title END
                 """, page + [.text(Self.bounded(title)), .real(date.timeIntervalSinceReferenceDate)])
-            try database.run("INSERT INTO visits (page_id, visited_at) SELECT id, ? FROM pages WHERE profile_id = ? AND url = ?",
-                             [.real(date.timeIntervalSinceReferenceDate)] + page)
+            let referringVisit: SQLiteDatabase.Value
+            if let referrer {
+                let visit = try database.query("""
+                    SELECT visits.id FROM visits JOIN pages ON pages.id = visits.page_id
+                    WHERE pages.profile_id = ? AND pages.url = ? AND visits.visited_at <= ?
+                    ORDER BY visits.visited_at DESC, visits.id DESC LIMIT 1
+                    """, [.text(profileID.uuidString), .text(referrer.absoluteString), .real(date.timeIntervalSinceReferenceDate)]) { $0.integer(0) }.first
+                referringVisit = visit.map(SQLiteDatabase.Value.integer) ?? .null
+            } else { referringVisit = .null }
+            try database.run("INSERT INTO visits (page_id, visited_at, transition, referring_visit_id) SELECT id, ?, ?, ? FROM pages WHERE profile_id = ? AND url = ?",
+                             [.real(date.timeIntervalSinceReferenceDate), .text(transition.rawValue), referringVisit] + page)
+            recorded = try database.query("""
+                SELECT pages.id, pages.url, pages.title, pages.last_visit,
+                       (SELECT count(*) FROM visits WHERE visits.page_id = pages.id)
+                FROM pages WHERE profile_id = ? AND url = ?
+                """, page, row: Self.countedEntry).first
         }
+        return recorded
     }
 
     /// Another browser's history, in one transaction: pages merge by profile and address, keeping the latest
@@ -38,7 +59,7 @@ public actor HistoryStore {
     /// older than the retention are left out. See docs/ONBOARDING.md › Writing.
     public func importPages(_ pages: [ImportedPage], profileID: UUID) throws {
         let database = try open()
-        let cutoff = Date.now.addingTimeInterval(-Self.retention).timeIntervalSinceReferenceDate
+        let cutoff = Self.retentionStart().timeIntervalSinceReferenceDate
         try database.transaction {
             for imported in pages {
                 guard let address = Self.address(imported.url), imported.lastVisit.timeIntervalSinceReferenceDate >= cutoff else { continue }
@@ -94,13 +115,85 @@ public actor HistoryStore {
                                   bindings, row: Self.entry)
     }
 
-    public func delete(_ ids: [HistoryEntry.ID], profileID: UUID) throws {
+    @discardableResult
+    public func delete(_ ids: [HistoryEntry.ID], profileID: UUID) throws -> [URL] {
         let database = try open()
+        var removed: [URL] = []
         try database.transaction {
             for id in ids {
-                try database.run("DELETE FROM pages WHERE id = ? AND profile_id = ?", [.integer(id), .text(profileID.uuidString)])
+                let values: [SQLiteDatabase.Value] = [.integer(id), .text(profileID.uuidString)]
+                removed += try database.query("SELECT url FROM pages WHERE id = ? AND profile_id = ?", values) { URL(string: $0.text(0)) }
+                try database.run("DELETE FROM pages WHERE id = ? AND profile_id = ?", values)
             }
         }
+        return removed
+    }
+
+    /// Chrome-format history consumers query the last visit of each page, with its actual visit count.
+    public func search(profileID: UUID, text: String, since start: Date, until end: Date, limit: Int) throws -> [HistoryEntry] {
+        let database = try open()
+        var values: [SQLiteDatabase.Value] = [.text(profileID.uuidString), .real(start.timeIntervalSinceReferenceDate), .real(end.timeIntervalSinceReferenceDate)]
+        var source = "pages"
+        var filter = "pages.profile_id = ? AND pages.last_visit >= ? AND pages.last_visit <= ?"
+        if let match = Self.matchExpression(text) {
+            source = "pages_fts JOIN pages ON pages.id = pages_fts.rowid"
+            filter += " AND pages_fts MATCH ?"
+            values.append(.text(match))
+        }
+        values.append(.integer(Int64(max(0, limit))))
+        return try database.query("""
+            SELECT pages.id, pages.url, pages.title, pages.last_visit,
+                   (SELECT count(*) FROM visits WHERE visits.page_id = pages.id)
+            FROM \(source) WHERE \(filter) ORDER BY pages.last_visit DESC, pages.id DESC LIMIT ?
+            """, values, row: Self.countedEntry)
+    }
+
+    public func visits(to url: URL, profileID: UUID) throws -> [HistoryVisit] {
+        try open().query("""
+            SELECT visits.id, visits.page_id, visits.visited_at, visits.transition, visits.referring_visit_id
+            FROM visits JOIN pages ON pages.id = visits.page_id
+            WHERE pages.profile_id = ? AND pages.url = ? ORDER BY visits.visited_at DESC, visits.id DESC
+            """, [.text(profileID.uuidString), .text(url.absoluteString)]) { row in
+                guard let transition = HistoryTransition(rawValue: row.text(3)) else { throw StorageError.invalidData }
+                return HistoryVisit(id: row.integer(0), pageID: row.integer(1), date: Date(timeIntervalSinceReferenceDate: row.real(2)),
+                                    transition: transition, referringVisitID: row.isNull(4) ? nil : row.integer(4))
+            }
+    }
+
+    public func mostVisited(profileID: UUID, limit: Int) throws -> [HistoryEntry] {
+        try open().query("""
+            SELECT pages.id, pages.url, pages.title, pages.last_visit, count(visits.id)
+            FROM pages JOIN visits ON visits.page_id = pages.id WHERE pages.profile_id = ?
+            GROUP BY pages.id ORDER BY count(visits.id) DESC, pages.last_visit DESC, pages.id DESC LIMIT ?
+            """, [.text(profileID.uuidString), .integer(Int64(max(0, limit)))], row: Self.countedEntry)
+    }
+
+    @discardableResult
+    public func delete(url: URL, profileID: UUID) throws -> [URL] {
+        let database = try open()
+        var removed: [URL] = []
+        try database.transaction {
+            let values: [SQLiteDatabase.Value] = [.text(profileID.uuidString), .text(url.absoluteString)]
+            removed = try database.query("SELECT url FROM pages WHERE profile_id = ? AND url = ?", values) { URL(string: $0.text(0)) }
+            try database.run("DELETE FROM pages WHERE profile_id = ? AND url = ?", values)
+        }
+        return removed
+    }
+
+    /// Deleting a finite range preserves each page's visits outside it and repairs its last-visit metadata.
+    @discardableResult
+    public func deleteVisits(profileID: UUID, from start: Date, through end: Date) throws -> [URL] {
+        let database = try open()
+        let profile = SQLiteDatabase.Value.text(profileID.uuidString)
+        var removed: [URL] = []
+        try database.transaction {
+            try database.run("DELETE FROM visits WHERE visited_at >= ? AND visited_at <= ? AND page_id IN (SELECT id FROM pages WHERE profile_id = ?)",
+                             [.real(start.timeIntervalSinceReferenceDate), .real(end.timeIntervalSinceReferenceDate), profile])
+            removed = try database.query("SELECT url FROM pages WHERE profile_id = ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id)", [profile]) { URL(string: $0.text(0)) }
+            try database.run("DELETE FROM pages WHERE profile_id = ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id)", [profile])
+            try database.run("UPDATE pages SET last_visit = (SELECT max(visited_at) FROM visits WHERE page_id = pages.id) WHERE profile_id = ?", [profile])
+        }
+        return removed
     }
 
     /// Removes visits since `date` (everything when `nil`); pages keep their older visits.
@@ -146,7 +239,7 @@ public actor HistoryStore {
         if Date.now >= nextMaintenance {
             // Maintenance is bounded and best effort. Contention must not disable reads.
             do {
-                let cutoff = Date.now.addingTimeInterval(-Self.retention).timeIntervalSinceReferenceDate
+                let cutoff = Self.retentionStart().timeIntervalSinceReferenceDate
                 try db.transaction {
                     try db.run("DELETE FROM visits WHERE id IN (SELECT id FROM visits WHERE visited_at < ? LIMIT 500)", [.real(cutoff)])
                     try db.run("DELETE FROM pages WHERE id IN (SELECT id FROM pages WHERE last_visit < ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id) LIMIT 500)", [.real(cutoff)])
@@ -188,6 +281,10 @@ public actor HistoryStore {
                     INSERT INTO pages_fts (pages_fts, rowid, title, url) VALUES ('delete', old.id, old.title, old.url);
                     INSERT INTO pages_fts (rowid, title, url) VALUES (new.id, new.title, new.url);
                 END;
+                """, """
+                ALTER TABLE visits ADD COLUMN transition TEXT NOT NULL DEFAULT 'auto_toplevel';
+                ALTER TABLE visits ADD COLUMN referring_visit_id INTEGER REFERENCES visits(id) ON DELETE SET NULL;
+                CREATE INDEX visits_referring ON visits(referring_visit_id);
                 """])
 
     // MARK: - Values
@@ -213,5 +310,11 @@ public actor HistoryStore {
         guard let url = URL(string: row.text(1)) else { return nil }
         return HistoryEntry(id: row.integer(0), url: url, title: row.text(2),
                             lastVisit: Date(timeIntervalSinceReferenceDate: row.real(3)))
+    }
+
+    private static func countedEntry(_ row: SQLiteDatabase.Row) -> HistoryEntry? {
+        guard let url = URL(string: row.text(1)) else { return nil }
+        return HistoryEntry(id: row.integer(0), url: url, title: row.text(2),
+                            lastVisit: Date(timeIntervalSinceReferenceDate: row.real(3)), visitCount: Int(row.integer(4)))
     }
 }

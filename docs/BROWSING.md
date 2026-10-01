@@ -30,13 +30,25 @@ Icons are fetched anonymously, downsampled off the main actor and cached by prof
 
 ## Popups
 
-Popups use WebKit's supplied configuration and open in the opener's space, preserving `window.opener`, messaging and OAuth. Only script-opened tabs may close themselves. Loaded popup relationships prevent hibernation. Separate popup windows are not supported. A popup or link for another scheme is handled as in [Other apps](OTHER_APPS.md) › Links to other apps.
+Popups use WebKit's supplied configuration, preserving `window.opener`, messaging and OAuth. A `window.open` that asks for a size opens in a window of its own, as in Safari, sized as asked within the visible screen and centered over the browser: it shows the site and its connection, asks its dialogs over itself, records no history, and ends with `window.close()`, its window, or its profile. Its downloads, links for other apps, site permissions and further popups belong to the opener's tab; Aero's password filling does not reach it. Other popups open as tabs in the opener's space. Only script-opened tabs may close themselves. Loaded popup relationships prevent hibernation. A popup or link for another scheme is handled as in [Other apps](OTHER_APPS.md) › Links to other apps.
+
+## Page dialogs
+
+A page's `alert`, `confirm` and `prompt` ask in the window with the shared prompt, titled with the site of the frame that asks, never a name the page gives. A background tab's dialog waits until the tab is shown and no other question is; leaving or closing the tab dismisses it, and a dismissed `confirm` or `prompt` answers as cancelled. From a page's second dialog on, the person can stop its dialogs until it loads another document. Messages are cut at 2,048 characters. A file input opens the system's open panel as a sheet, for files or folders and one or several as the input asks. `PageDialogTests` covers dialogs on WebKit (a page blocked in a dialog cannot be read by accessibility, so no journey shows the prompt); `BrowsingJourneys` the open panel.
+
+## Files
+
+File › Open File… (⌘O), Open With in the Finder, or another app opens web pages, web archives, images, PDFs and text of this Mac in a new tab. A file reads only its own folder; a website never navigates to a file. Files leave no history. File › Save As… (⇧⌘S) saves the page as a web archive, and Export as PDF… the whole page as a PDF.
+
+## Developer mode
+
+Settings › General › Developer mode makes every page, extension background, popup, window and offscreen document inspectable: Inspect Element in the context menu opens Web Inspector, where extensions add their developer tools panels (`devtools_page`). It is off by default, except in development builds, and applies at once to open pages.
 
 ## Find and downloads
 
 Find searches the selected page with wrapping, case-insensitive matching. Escape restores page focus; switching tabs closes it. Results report presence, not a count. Page-first shortcuts let web editors handle their own find.
 
-Downloads use sanitized unique filenames in Downloads, with quarantine and source metadata. Closing a tab does not cancel them. The downloads popover supports cancel, retry, Show in Finder and clearing inactive entries. The list lasts only for the session; tests write inside their isolated data directory.
+Downloads use sanitized unique filenames in Downloads, with quarantine and source metadata; Finder and the Dock show their progress on the file, as for Safari's. Closing a tab does not cancel them. The downloads popover supports cancel, retry, Show in Finder and clearing inactive entries. The list lasts only for the session; tests write inside their isolated data directory.
 
 ## Quitting
 

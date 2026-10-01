@@ -11,6 +11,16 @@ extension URL {
     }
 }
 
+extension URL {
+    /// An application bundle's name as macOS shows it in menus and the Dock.
+    var applicationName: String {
+        let bundle = Bundle(url: self)
+        let name = bundle?.localizedInfoDictionary?["CFBundleDisplayName"] ?? bundle?.infoDictionary?["CFBundleDisplayName"]
+            ?? bundle?.infoDictionary?["CFBundleName"]
+        return name as? String ?? deletingPathExtension().lastPathComponent
+    }
+}
+
 extension BrowserTab {
     var displayTitle: String {
         if let name { return name }

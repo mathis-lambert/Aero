@@ -7,15 +7,18 @@ let package = Package(
     products: [
         .library(name: "BrowserCore", targets: ["BrowserCore"]),
         .library(name: "BrowserStorage", targets: ["BrowserStorage"]),
-        .library(name: "BrowserWebKit", targets: ["BrowserWebKit"])
+        .library(name: "BrowserWebKit", targets: ["BrowserWebKit"]),
+        .library(name: "BrowserExtensions", targets: ["BrowserExtensions"])
     ],
     targets: [
         .target(name: "BrowserCore"),
         .target(name: "BrowserStorage", dependencies: ["BrowserCore"]),
         .target(name: "BrowserWebKit", dependencies: ["BrowserCore"]),
+        .target(name: "BrowserExtensions", dependencies: ["BrowserCore"], resources: [.copy("Compatibility/Resources")]),
         .testTarget(name: "BrowserCoreTests", dependencies: ["BrowserCore"]),
-        .testTarget(name: "BrowserStorageTests", dependencies: ["BrowserStorage", "BrowserCore"]),
-        .testTarget(name: "BrowserWebKitTests", dependencies: ["BrowserWebKit", "BrowserCore"])
+        .testTarget(name: "BrowserStorageTests", dependencies: ["BrowserStorage", "BrowserCore"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "BrowserWebKitTests", dependencies: ["BrowserWebKit", "BrowserCore"]),
+        .testTarget(name: "BrowserExtensionsTests", dependencies: ["BrowserExtensions", "BrowserCore"], resources: [.copy("Fixtures")])
     ],
     swiftLanguageModes: [.v6]
 )

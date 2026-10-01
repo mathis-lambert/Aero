@@ -38,7 +38,9 @@ extension BrowserModel {
             try await history.clear(profileID: profile.id, since: nil)
             try await favicons.removeProfile(profile.id)
             try await passwords.store.removeAll(profileID: profile.id)
-            try await pages.removeProfile(profile.id, extensions: profile.extensions)
+            try await extensions.removeProfile(profile.id, extensions: profile.extensions)
+            for popup in popupWindows where popup.profileID == profile.id { popup.close() }
+            try await pages.removeProfile(profile.id)
             try session.removeProfile(profile.id)
             revision += 1
             try await store.save(session, revision: revision)

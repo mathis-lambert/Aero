@@ -105,16 +105,18 @@ class E2ETestCase: XCTestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: Self.pageTimeout), "Return quits")
     }
 
-    /// The store is an actor: its write runs apart while this thread keeps the run loop turning.
+    /// The store is an actor: its write runs apart while the test waits for it, with a deadline.
     private func write(_ records: Seed) throws {
-        let root = dataRoot!
+        let root = try XCTUnwrap(dataRoot)
         let outcome = OSAllocatedUnfairLock<Result<Void, any Error>?>(initialState: nil)
+        let written = expectation(description: "The seed is written")
         Task.detached {
             do { try await records.write(to: root); outcome.withLock { $0 = .success(()) } }
             catch { outcome.withLock { $0 = .failure(error) } }
+            written.fulfill()
         }
-        while outcome.withLock({ $0 }) == nil { RunLoop.current.run(until: .now.addingTimeInterval(0.01)) }
-        try outcome.withLock { $0 }?.get()
+        wait(for: [written], timeout: Self.launchTimeout)
+        try XCTUnwrap(outcome.withLock { $0 }, "The seed was not written in time").get()
     }
 
     private func waitForScreen() {
@@ -140,6 +142,11 @@ class E2ETestCase: XCTestCase {
     func space(_ name: String) -> XCUIElement { app.buttons.matching(identifier: "sidebar.space")[name] }
 
     func element(_ identifier: String) -> XCUIElement { app.descendants(matching: .any)[identifier] }
+
+    /// A native toggle's state, which accessibility reports as 1 or 0.
+    func isOn(_ toggle: XCUIElement) -> Bool {
+        (toggle.value as? NSNumber)?.boolValue ?? (toggle.value as? String == "1")
+    }
 
     /// Labels of the elements with `identifier`, in reading order, from one snapshot of the app, so a
     /// list that reloads during the query cannot fail it halfway.

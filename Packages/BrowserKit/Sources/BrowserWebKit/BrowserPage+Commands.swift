@@ -16,6 +16,12 @@ extension BrowserPage {
 
     public func resetZoom() { webView.pageZoom = 1 }
 
+    /// A zoom an extension sets, within the steps' range.
+    public func setZoom(_ factor: Double) {
+        guard let lowest = Self.zoomLevels.first, let highest = Self.zoomLevels.last else { return }
+        webView.pageZoom = min(max(factor, lowest), highest)
+    }
+
     public func reloadFromOrigin() {
         if webView.url != nil { webView.reloadFromOrigin() }
         else { reload() }

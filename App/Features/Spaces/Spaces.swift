@@ -30,7 +30,7 @@ extension BrowserModel {
                 let replacement = session.tabs.filter { $0.spaceID == original.id }
                 let selectedIndex = affected.firstIndex { $0.id == window.selectedTabID }
                 for tab in affected {
-                    pages.extensionsIfMade(for: original.profileID)?.didCloseTab(tab.id)
+                    extensions.extensionsIfMade(for: original.profileID)?.didCloseTab(tab.id)
                     pages.close(tabID: tab.id)
                     openedFavorites.remove(tab.id)
                     recentTabs.removeAll { $0 == tab.id }
@@ -65,7 +65,7 @@ extension BrowserModel {
         do {
             try await commitStructure { try $0.removeSpace(id) }
             for tab in affected {
-                if let oldProfileID { pages.extensionsIfMade(for: oldProfileID)?.didCloseTab(tab.id) }
+                if let oldProfileID { extensions.extensionsIfMade(for: oldProfileID)?.didCloseTab(tab.id) }
                 pages.close(tabID: tab.id)
                 openedFavorites.remove(tab.id)
                 recentTabs.removeAll { $0 == tab.id }
@@ -112,7 +112,7 @@ extension BrowserModel {
             pages.close(tabID: id)
             openedFavorites.remove(id)
             recentTabs.removeAll { $0 == id }
-            if let oldProfile { pages.extensionsIfMade(for: oldProfile)?.didCloseTab(id) }
+            if let oldProfile { extensions.extensionsIfMade(for: oldProfile)?.didCloseTab(id) }
             extensionsDidOpen(moved)
         }
         lastSelection[tab.spaceID] = nil

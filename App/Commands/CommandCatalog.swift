@@ -49,6 +49,9 @@ extension BrowserCommand {
         case .profiles: String(localized: "Manage Profiles")
         case .passwords: String(localized: "Passwords")
         case .importBrowserData: String(localized: "Import from Another Browser…")
+        case .openFile: String(localized: "Open File…")
+        case .savePage: String(localized: "Save As…")
+        case .exportAsPDF: String(localized: "Export as PDF…")
         case .showHistory: String(localized: "Show All History")
         case .findInPage: String(localized: "Find…")
         case .findNext: String(localized: "Find Next")
@@ -79,6 +82,9 @@ extension BrowserCommand {
         case .newSpace: String(localized: "Create a space for your tabs.")
         case .profiles: String(localized: "Manage browsing identities and their spaces.")
         case .passwords: String(localized: "Show the passwords saved in this profile.")
+        case .openFile: String(localized: "Open a web page, image or PDF from this Mac in a new tab.")
+        case .savePage: String(localized: "Save the page as a web archive, with its images and styles.")
+        case .exportAsPDF: String(localized: "Save the whole page as a PDF document.")
         case .importBrowserData: String(localized: "Bring favorites, history and passwords from another browser.")
         case .showHistory: String(localized: "Open browsing history for the current profile.")
         case .findInPage: String(localized: "Find text on the current page.")
@@ -157,6 +163,9 @@ extension BrowserCommand {
         case .profiles: "person.crop.circle"
         case .passwords: "key"
         case .importBrowserData: "square.and.arrow.down"
+        case .openFile: "doc"
+        case .savePage: "square.and.arrow.down.on.square"
+        case .exportAsPDF: "doc.richtext"
         case .showHistory: "clock"
         case .findInPage: "text.magnifyingglass"
         case .findNext: "chevron.down"
@@ -193,7 +202,7 @@ extension BrowserCommand {
         case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
-             .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: .page
+             .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings, .savePage, .exportAsPDF: .page
         default: .navigation
         }
     }
@@ -231,6 +240,8 @@ extension BrowserCommand {
         case .reloadFromOrigin: return [.init("r", [.command, .shift])]
         case .stopLoading: return [.init(".")]
         case .printPage: return [.init("p")]
+        case .openFile: return [.init("o")]
+        case .savePage: return [.init("s", [.command, .shift])]
         case .showDownloads: return [.init("j", [.command, .shift])]
         case .nextTab: return [.init(String(KeyEquivalent.rightArrow.character), [.command, .option])]
         case .previousTab: return [.init(String(KeyEquivalent.leftArrow.character), [.command, .option])]

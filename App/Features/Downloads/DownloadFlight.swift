@@ -2,7 +2,7 @@ import AppKit
 import BrowserWebKit
 import SwiftUI
 
-/// A new download's file thrown in an arc into the downloads button. See docs/BROWSING.md.
+/// A new download's file thrown in an arc into the downloads button, as Safari throws it into the Dock.
 enum DownloadFlight {
     static let duration: TimeInterval = 0.9
 }

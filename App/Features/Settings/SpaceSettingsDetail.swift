@@ -7,33 +7,25 @@ struct SpaceSettingsDetail: View {
     let spaceID: UUID
     @State private var draft = SpaceDraft()
     @State private var pendingProfile: UUID?
-    @State private var confirmsIdentityChange = false
-    @State private var confirmsRemoval = false
-    @State private var creatingProfile = false
     @State private var pendingAppearance: Task<Void, Never>?
-    @Environment(\.palette) private var palette
 
     private var space: BrowserSpace? { browser.session.spaces.first { $0.id == spaceID } }
 
     var body: some View {
-        ScrollView {
+        Form {
             if space != nil {
-                VStack(alignment: .leading, spacing: 28) {
-                    SpaceForm(draft: $draft, profiles: browser.profiles, createProfile: { creatingProfile = true }, commitName: saveName)
-                    Hairline()
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button { confirmsRemoval = true } label: { Label("Delete space…", systemImage: "trash") }
-                            .buttonStyle(PanelButtonStyle())
-                            .disabled(browser.session.spaces.count <= 1)
-                            .accessibilityIdentifier("spaces.delete")
-                        Text(browser.session.spaces.count <= 1 ? "Keep at least one space." : "Its tabs and groups will be removed. Profile data will be kept.")
-                            .font(BrowserDesign.Typography.caption)
-                            .foregroundStyle(palette.secondary)
-                    }
+                Section {
+                    SpaceForm(draft: $draft, profiles: browser.profiles,
+                              createProfile: { browser.present(.profile(inSettings: true) { id in draft.profileID = id }) }, commitName: saveName)
+                        .padding(.vertical, 8)
                 }
-                .frame(width: BrowserDesign.formWidth, alignment: .leading)
-                .padding(.vertical, 32)
-                .frame(maxWidth: .infinity)
+                Section {
+                    Button(role: .destructive) { browser.present(.removeSpace(spaceID, inSettings: true)) } label: { Label("Delete space…", systemImage: "trash") }
+                        .disabled(browser.session.spaces.count <= 1)
+                        .accessibilityIdentifier("spaces.delete")
+                } footer: {
+                    Text(browser.session.spaces.count <= 1 ? "Keep at least one space." : "Its tabs and groups will be removed. Profile data will be kept.")
+                }
             }
         }
         .disabled(browser.isChangingStructure || !browser.extensionsReady)
@@ -55,24 +47,7 @@ struct SpaceSettingsDetail: View {
         .onChange(of: draft.emoji) { _, _ in saveAppearance() }
         .onChange(of: draft.profileID) { _, id in if let id { chooseProfile(id) } }
         .onChange(of: space?.profileID) { _, id in draft.profileID = id }
-        .sheet(isPresented: $creatingProfile) {
-            ProfilePrompt(browser: browser, usesSheetBackground: true, onCreated: { id in
-                creatingProfile = false
-                draft.profileID = id
-            }, onCancel: { creatingProfile = false })
-        }
-        .confirmationDialog("Change browsing profile?", isPresented: $confirmsIdentityChange) {
-            Button("Reload pages") { if let id = pendingProfile { reassign(to: id) } }
-            Button("Cancel", role: .cancel) { keepProfile() }
-        } message: { Text("Pages will reload with this profile. Unsaved input may be lost.") }
-        .confirmationDialog("Delete space?", isPresented: $confirmsRemoval) {
-            Button("Delete space", role: .destructive) {
-                Task {
-                    await browser.removeSpace(spaceID)
-                    if self.space == nil { browser.showSettings(.section(.spaces)) }
-                }
-            }
-        } message: { Text("Its tabs and groups will be removed. Profile data will be kept.") }
+        .onChange(of: space == nil) { _, removed in if removed { browser.showSettings(.section(.spaces)) } }
     }
 
     /// An empty or overlong name reverts.
@@ -91,10 +66,13 @@ struct SpaceSettingsDetail: View {
     }
 
     private func chooseProfile(_ id: UUID) {
-        guard let space, id != space.profileID, !confirmsIdentityChange else { return }
+        guard let space, id != space.profileID, pendingProfile == nil else { return }
         if browser.session.tabs.contains(where: { $0.spaceID == spaceID }) {
             pendingProfile = id
-            confirmsIdentityChange = true
+            browser.present(.confirmation(Confirmation(id: "spaceProfile.\(spaceID)", title: Text("Change browsing profile?"),
+                                                       message: Text("Pages will reload with this profile. Unsaved input may be lost."),
+                                                       confirmTitle: "Reload pages", identifier: "spaces.confirmProfile",
+                                                       confirm: { reassign(to: id) }, cancel: keepProfile)))
         } else { reassign(to: id) }
     }
 

@@ -15,7 +15,7 @@ extension BrowserModel {
         switch command {
         case .back: return currentPage?.canGoBack == true
         case .forward: return currentPage?.canGoForward == true
-        case .reload, .reloadFromOrigin, .zoomIn, .zoomOut, .resetZoom, .printPage: return currentPage != nil
+        case .reload, .reloadFromOrigin, .zoomIn, .zoomOut, .resetZoom, .printPage, .savePage, .exportAsPDF: return currentPage != nil
         case .stopLoading: return currentPage?.isLoading == true
         case .duplicateTab, .renameTab, .toggleFavorite, .newGroup: return selectedTab != nil
         case .moveToSpace: return selectedTab != nil && session.spaces.count > 1
@@ -45,8 +45,11 @@ extension BrowserModel {
         case .checkForUpdates: updater.check()
         case .newTab:
             window.controlBar = nil
-            selectTab(nil)
-            window.inputFocusRequest = UUID()
+            if let page = profile.flatMap({ extensionNewTabPage(inProfile: $0.id) }) { open(page) }
+            else {
+                selectTab(nil)
+                window.inputFocusRequest = UUID()
+            }
         // The New Tab page's own bar takes both shortcuts, so a second bar never opens over it.
         case .openLocation:
             if let selectedTab { window.controlBar = ControlBarPresentation(target: .currentTab, initialText: selectedTab.url.absoluteString) }
@@ -59,6 +62,7 @@ extension BrowserModel {
                 if command == .resetZoom { page.resetZoom() }
                 else { page.changeZoom(increasing: command == .zoomIn) }
                 window.zoomFeedback = PageZoomFeedback(tabID: tabID, scale: page.zoom)
+                if let tab = selectedTab { extensionsDidChange(tab, .zoomFactor) }
             }
         case .reloadFromOrigin: currentPage?.reloadFromOrigin()
         case .stopLoading: currentPage?.stop()
@@ -102,7 +106,10 @@ extension BrowserModel {
         case .profiles: showSettings(.section(.profiles))
         case .passwords: showSettings(.section(.passwords))
         case .importBrowserData: beginImport()
-        case .newProfile: present(.profile)
+        case .openFile: chooseFileToOpen()
+        case .savePage: if let page = currentPage { savePage(page, as: .webArchive) }
+        case .exportAsPDF: if let page = currentPage { savePage(page, as: .pdf) }
+        case .newProfile: present(.profile())
         case .newSpace: present(.space(nil))
         case .showHistory: show(.history)
         case .findInPage, .findNext, .findPrevious: find(command)

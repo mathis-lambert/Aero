@@ -117,11 +117,6 @@ struct HistoryView: View {
             .scrollContentBackground(.hidden)
             .focused($focus, equals: .list)
             .onDeleteCommand { delete(selection) }
-            .onKeyPress(keys: [.delete, .deleteForward]) { _ in
-                guard !selection.isEmpty else { return .ignored }
-                delete(selection)
-                return .handled
-            }
             .contextMenu(forSelectionType: HistoryEntry.ID.self) { ids in
                 if !ids.isEmpty {
                     Button("Open", systemImage: "arrow.up.forward.square") { open(ids) }

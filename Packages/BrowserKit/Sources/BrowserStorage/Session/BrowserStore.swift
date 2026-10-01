@@ -126,9 +126,10 @@ public actor BrowserStore {
     private static func read(_ db: SQLiteDatabase) throws -> BrowserSession? {
         let initialized = try db.query("SELECT initialized FROM state WHERE id = 1") { $0.integer(0) }
         guard initialized == [0] || initialized == [1] else { throw StorageError.invalidData }
-        var profiles = try db.query("SELECT id, name, removing FROM profiles ORDER BY position") { row -> BrowserProfile in
+        var profiles = try db.query("SELECT id, name, removing, password_extension FROM profiles ORDER BY position") { row -> BrowserProfile in
             var profile = try BrowserProfile(id: row.uuid(0), name: row.text(1))
             profile.isRemoving = row.integer(2) != 0
+            profile.passwordExtension = row.optionalText(3)
             return profile
         }
         if initialized == [0] {
@@ -156,6 +157,9 @@ public actor BrowserStore {
                 record.isEnabled = row.integer(4) != 0; record.isPinned = row.integer(5) != 0
                 record.isRemoving = row.integer(6) != 0; record.pendingVersion = row.optionalText(7)
                 return record
+            }
+            if let chosen = profiles[index].passwordExtension, !profiles[index].extensions.contains(where: { $0.id == chosen }) {
+                throw StorageError.invalidData
             }
         }
         var spaces = try db.query("SELECT id, profile_id, name, color, emoji FROM spaces ORDER BY position") { row -> BrowserSpace in
@@ -205,8 +209,8 @@ public actor BrowserStore {
             let old = oldProfiles[profile.id]
             let id = SQLiteDatabase.Value.text(profile.id.uuidString)
             if old != profile || previous?.profiles.indices.contains(position) != true || previous?.profiles[position].id != profile.id {
-                try db.run("INSERT INTO profiles (id,name,removing,position) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,removing=excluded.removing,position=excluded.position",
-                           [id, .text(profile.name), .integer(profile.isRemoving ? 1 : 0), .integer(Int64(position))])
+                try db.run("INSERT INTO profiles (id,name,removing,password_extension,position) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,removing=excluded.removing,password_extension=excluded.password_extension,position=excluded.position",
+                           [id, .text(profile.name), .integer(profile.isRemoving ? 1 : 0), profile.passwordExtension.map { .text($0) } ?? .null, .integer(Int64(position))])
             }
             if old?.sitePermissions != profile.sitePermissions {
                 try db.run("DELETE FROM site_permissions WHERE profile_id = ?", [id])

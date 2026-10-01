@@ -5,6 +5,8 @@ import Foundation
 /// where its spaces and favorites come from (`favorites`). See docs/ONBOARDING.md › Sources.
 public struct ChromiumBrowser: Hashable, Sendable {
     public let name: String
+    /// The name people use, as large titles show it: "Chrome" for Google Chrome.
+    public let shortName: String
     public let bundleIdentifier: String
     /// The user data folder, under ~/Library/Application Support.
     let folder: String
@@ -14,17 +16,17 @@ public struct ChromiumBrowser: Hashable, Sendable {
     public let favorites: ImportSource.Favorites
 
     public static let all = [
-        ChromiumBrowser(name: "Google Chrome", bundleIdentifier: "com.google.Chrome", folder: "Google/Chrome",
+        ChromiumBrowser(name: "Google Chrome", shortName: "Chrome", bundleIdentifier: "com.google.Chrome", folder: "Google/Chrome",
                         service: "Chrome Safe Storage", account: "Chrome", favorites: .bookmarks),
-        ChromiumBrowser(name: "Arc", bundleIdentifier: "company.thebrowser.Browser", folder: "Arc/User Data",
+        ChromiumBrowser(name: "Arc", shortName: "Arc", bundleIdentifier: "company.thebrowser.Browser", folder: "Arc/User Data",
                         service: "Arc Safe Storage", account: "Arc", favorites: .spaces),
-        ChromiumBrowser(name: "Dia", bundleIdentifier: "company.thebrowser.dia", folder: "Dia/User Data",
+        ChromiumBrowser(name: "Dia", shortName: "Dia", bundleIdentifier: "company.thebrowser.dia", folder: "Dia/User Data",
                         service: "Dia Safe Storage", account: "Dia", favorites: .unreadable),
-        ChromiumBrowser(name: "Brave", bundleIdentifier: "com.brave.Browser", folder: "BraveSoftware/Brave-Browser",
+        ChromiumBrowser(name: "Brave", shortName: "Brave", bundleIdentifier: "com.brave.Browser", folder: "BraveSoftware/Brave-Browser",
                         service: "Brave Safe Storage", account: "Brave", favorites: .bookmarks),
-        ChromiumBrowser(name: "Microsoft Edge", bundleIdentifier: "com.microsoft.edgemac", folder: "Microsoft Edge",
+        ChromiumBrowser(name: "Microsoft Edge", shortName: "Edge", bundleIdentifier: "com.microsoft.edgemac", folder: "Microsoft Edge",
                         service: "Microsoft Edge Safe Storage", account: "Microsoft Edge", favorites: .bookmarks),
-        ChromiumBrowser(name: "Vivaldi", bundleIdentifier: "com.vivaldi.Vivaldi", folder: "Vivaldi",
+        ChromiumBrowser(name: "Vivaldi", shortName: "Vivaldi", bundleIdentifier: "com.vivaldi.Vivaldi", folder: "Vivaldi",
                         service: "Vivaldi Safe Storage", account: "Vivaldi", favorites: .bookmarks)
     ]
 
