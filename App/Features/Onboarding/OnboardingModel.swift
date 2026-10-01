@@ -205,12 +205,14 @@ final class OnboardingModel {
     /// What the wind writes in the Getting around step: the last shortcut tried, or the space switched to.
     var lastShortcutSymbol: String {
         switch lastTried {
-        case .commandPalette: "⌘K"
-        case .toggleSidebar: "⌘S"
-        case .recentTab: "⌃⇥"
-        case .nextSpace, .previousSpace: browser.space?.name ?? "⌃⌘→"
-        default: "⌘"
+        case .nextSpace, .previousSpace: browser.space?.name ?? keys(of: .nextSpace)
+        case let command?: keys(of: command)
+        case nil: "⌘"
         }
+    }
+
+    private func keys(of command: BrowserCommand) -> String {
+        browser.shortcuts.shortcut(for: command)?.keys.joined() ?? "⌘"
     }
 
     // MARK: - Default browser

@@ -113,7 +113,7 @@ struct PasswordOfferView: View {
                     }
                 }
             }
-            Hairline()
+            Divider()
             // Longer translations put the two answers on their own row, above Never.
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 8) {

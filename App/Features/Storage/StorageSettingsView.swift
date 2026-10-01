@@ -7,112 +7,71 @@ struct StorageSettingsView: View {
     @State private var usage: StorageUsage?
     /// The action running; every other one waits.
     @State private var working: String?
-    @State private var confirmation: Confirmation?
     @State private var failure: String?
     @Environment(\.palette) private var palette
 
-    private enum Confirmation: Identifiable {
-        case siteData(UUID, String), history, reset
-        var id: String {
-            switch self {
-            case .siteData(let id, _): "siteData.\(id)"
-            case .history: "history"
-            case .reset: "reset"
-            }
-        }
-    }
-
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
-                overview
-                FormSection("Caches", footer: "Caches fill again as you browse. Sign-ins stay.") {
-                    rows {
+        Form {
+            Group {
+                Section { overview }
+                Section {
                         row(.websiteCache, detail: "Pages, images and scripts kept to open sites faster.") { clearButton("websiteCache") { await browser.clearWebsiteCache() } }
                         row(.icons, detail: "Fetched again as pages load.") { clearButton("icons") { try await browser.clearIcons() } }
                         row(.blockingLists, detail: "Needed to block ads and trackers; kept up to date on their own.") { EmptyView() }
-                    }
-                }
-                FormSection("Website data", footer: "Clearing a profile’s data signs you out of its sites.") {
-                    rows {
+                } header: { Text("Caches") } footer: { Text("Caches fill again as you browse. Sign-ins stay.") }
+                Section {
                         ForEach(browser.profiles) { profile in
                             StorageRow(title: Text(verbatim: profile.name), detail: Text("Cookies and site data"),
                                        size: usage?.siteData[profile.id] ?? (usage == nil ? nil : 0), identifier: "siteData.\(profile.name)") {
                                 ProfileMonogram(name: profile.name, size: 22)
                             } action: {
-                                actionButton("Clear…", identifier: "siteData.\(profile.name)") { confirmation = .siteData(profile.id, profile.name) }
+                                actionButton("Clear…", identifier: "siteData.\(profile.name)") {
+                                    confirm(id: "siteData", title: Text("Clear the cookies and site data of \(profile.name)?"),
+                                            message: Text("Its sites will sign you out and forget their settings. Other profiles keep theirs."),
+                                            action: "Clear site data") { [browser] in await browser.clearSiteData(profileID: profile.id) }
+                                }
                             }
                         }
                         if let unused = usage?.unusedSiteData, unused > 0 {
                             StorageRow(title: Text("Deleted profiles"), detail: Text("Website data left by profiles that no longer exist"), size: unused, identifier: "unusedSiteData") {
-                                Image(systemName: "person.crop.circle.badge.xmark").foregroundStyle(palette.secondary)
+                                Image(systemName: "person.crop.circle.badge.xmark").foregroundStyle(.secondary)
                             } action: {
                                 clearButton("unusedSiteData", title: "Remove") { try await browser.removeUnusedSiteData() }
                             }
                         }
-                    }
-                }
-                FormSection("History") {
-                    rows {
+                } header: { Text("Website data") } footer: { Text("Clearing a profile’s data signs you out of its sites.") }
+                Section("History") {
                         row(.history, detail: "Every profile’s visited pages.") {
-                            actionButton("Clear…", identifier: "history") { confirmation = .history }
+                            actionButton("Clear…", identifier: "history") {
+                                confirm(id: "history", title: Text("Clear the history of every profile?"),
+                                        message: Text("Visited pages are removed from every profile. Tabs and favorites stay."),
+                                        action: "Clear history") { [browser] in try await browser.clearAllHistory() }
+                            }
                         }
-                    }
                 }
-                FormSection("Aero") {
-                    rows {
+                Section("Aero") {
                         row(.extensions, detail: "Installed extensions and their files.") {
                             actionButton("Manage…", identifier: "extensions") { navigate(.section(.extensions)) }
                         }
                         row(.records, detail: "Profiles, spaces, tabs and favorites.") { EmptyView() }
-                    }
                 }
-                Hairline()
-                VStack(alignment: .leading, spacing: 8) {
-                    Button { confirmation = .reset } label: { Label("Reset Aero…", systemImage: "arrow.counterclockwise") }
-                        .buttonStyle(PanelButtonStyle())
+                Section {
+                    Button(role: .destructive) {
+                        confirm(id: "reset", title: Text("Reset Aero?"),
+                                message: Text("Profiles, spaces, tabs, history, passwords, website data, extensions and settings will be erased. Aero then quits and opens as new."),
+                                action: "Reset Aero") { [browser] in try await browser.reset() }
+                    } label: { Label("Reset Aero…", systemImage: "arrow.counterclockwise") }
                         .accessibilityIdentifier("storage.reset")
+                } footer: {
                     Text("Erases every profile, space, tab, favorite, history, password, website data, extension and setting. Aero then opens as new.")
-                        .font(BrowserDesign.Typography.caption)
-                        .foregroundStyle(palette.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
                 if let failure {
-                    Text(failure).font(BrowserDesign.Typography.caption).foregroundStyle(palette.miss).accessibilityIdentifier("storage.failure")
+                    Section { Text(failure).foregroundStyle(palette.miss).accessibilityIdentifier("storage.failure") }
                 }
             }
             .disabled(working != nil)
-            .frame(maxWidth: BrowserDesign.listWidth, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 24)
-            .frame(maxWidth: .infinity)
         }
         .task { await measure() }
-        .confirmationDialog(confirmationTitle, isPresented: Binding { confirmation != nil } set: { if !$0 { confirmation = nil } }, presenting: confirmation) { item in
-            switch item {
-            case .siteData(let id, _):
-                Button("Clear site data", role: .destructive) { run("siteData") { await browser.clearSiteData(profileID: id) } }
-            case .history:
-                Button("Clear history", role: .destructive) { run("history") { try await browser.clearAllHistory() } }
-            case .reset:
-                Button("Reset Aero", role: .destructive) { run("reset") { try await browser.reset() } }
-            }
-        } message: { item in
-            switch item {
-            case .siteData: Text("Its sites will sign you out and forget their settings. Other profiles keep theirs.")
-            case .history: Text("Visited pages are removed from every profile. Tabs and favorites stay.")
-            case .reset: Text("Profiles, spaces, tabs, history, passwords, website data, extensions and settings will be erased. Aero then quits and opens as new.")
-            }
-        }
-    }
-
-    private var confirmationTitle: String {
-        switch confirmation {
-        case .siteData(_, let name): String(localized: "Clear the cookies and site data of \(name)?")
-        case .history: String(localized: "Clear the history of every profile?")
-        case .reset: String(localized: "Reset Aero?")
-        case nil: ""
-        }
     }
 
     // MARK: - Overview
@@ -127,12 +86,12 @@ struct StorageSettingsView: View {
                         .monospacedDigit()
                         .contentTransition(.numericText())
                         .accessibilityIdentifier("storage.total")
-                    Text("used by Aero on this Mac").font(BrowserDesign.Typography.chrome).foregroundStyle(palette.secondary)
+                    Text("used by Aero on this Mac").foregroundStyle(.secondary)
                 } else {
-                    Text("Measuring…").font(BrowserDesign.Typography.chrome).foregroundStyle(palette.secondary)
+                    Text("Measuring…").foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 8)
-                SectionActionButton("Show in Finder", symbol: "folder") { browser.revealStorage() }
+                Button { browser.revealStorage() } label: { Label("Show in Finder", systemImage: "folder") }
             }
             StorageBar(usage: usage)
         }
@@ -140,10 +99,6 @@ struct StorageSettingsView: View {
     }
 
     // MARK: - Rows
-
-    private func rows(@ViewBuilder _ content: () -> some View) -> some View {
-        VStack(spacing: 6) { content() }
-    }
 
     private func row(_ item: StorageItem, detail: LocalizedStringKey, @ViewBuilder action: () -> some View) -> some View {
         StorageRow(title: Text(item.title), detail: Text(detail), size: usage?.size(of: item), identifier: item.rawValue) {
@@ -153,12 +108,16 @@ struct StorageSettingsView: View {
 
     private func actionButton(_ title: LocalizedStringKey, identifier: String, action: @escaping () -> Void) -> some View {
         Button(title, action: action)
-            .buttonStyle(PanelButtonStyle())
             .accessibilityIdentifier("storage.clear.\(identifier)")
     }
 
     private func clearButton(_ identifier: String, title: LocalizedStringKey = "Clear", _ action: @escaping () async throws -> Void) -> some View {
         actionButton(title, identifier: identifier) { run(identifier, action) }
+    }
+
+    private func confirm(id: String, title: Text, message: Text, action: LocalizedStringKey, _ perform: @escaping () async throws -> Void) {
+        browser.present(.confirmation(Confirmation(id: "storage.\(id)", title: title, message: message, confirmTitle: action,
+                                                   identifier: "storage.confirm") { run(id, perform) }))
     }
 
     /// One action at a time; the sizes are measured again once it ends.
@@ -224,7 +183,7 @@ private struct StorageBar: View {
                     let size = usage?.size(of: item) ?? 0
                     Rectangle().fill(item.color)
                         .frame(width: max(3, width * CGFloat(size) / CGFloat(total)))
-                        .help(Text("\(Text(item.title)): \(size.formatted(.byteCount(style: .file)))"))
+                        .tooltip(Text("\(Text(item.title)): \(size.formatted(.byteCount(style: .file)))"))
                 }
                 Spacer(minLength: 0)
             }
@@ -236,7 +195,7 @@ private struct StorageBar: View {
     }
 }
 
-/// A card like the other Settings lists: an icon, what it is, its size and its action.
+/// A row of the form: an icon, what it is, its size and its action.
 private struct StorageRow<Icon: View, Action: View>: View {
     let title: Text
     let detail: Text
@@ -245,26 +204,21 @@ private struct StorageRow<Icon: View, Action: View>: View {
     let identifier: String
     @ViewBuilder var icon: Icon
     @ViewBuilder var action: Action
-    @Environment(\.palette) private var palette
 
     var body: some View {
         HStack(spacing: BrowserDesign.rowInset) {
             icon.frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
-                title.font(BrowserDesign.Typography.chrome.weight(.medium)).lineLimit(1)
-                detail.font(BrowserDesign.Typography.caption).foregroundStyle(palette.secondary).fixedSize(horizontal: false, vertical: true)
+                title.lineLimit(1)
+                detail.font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 8)
             Text(size.map { $0.formatted(.byteCount(style: .file)) } ?? "–")
-                .font(BrowserDesign.Typography.chrome)
                 .monospacedDigit()
-                .foregroundStyle(palette.secondary)
+                .foregroundStyle(.secondary)
                 .contentTransition(.numericText())
                 .accessibilityIdentifier("storage.size.\(identifier)")
             action
         }
-        .padding(.horizontal, 12)
-        .frame(minHeight: 52)
-        .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
     }
 }

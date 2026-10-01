@@ -15,6 +15,8 @@ public protocol ExtensionHost: AnyObject {
     /// The tab's view while its page is loaded; hibernated tabs have none.
     func webView(forTab tabID: UUID) -> WKWebView?
     func openTab(_ url: URL, inProfile profileID: UUID, selected: Bool) -> UUID?
+    /// Shows the New Tab page in one of the profile's spaces, as a window opened without addresses does.
+    func showNewTab(inProfile profileID: UUID)
     /// Selects the tab, switching to its space.
     func activateTab(_ tabID: UUID)
     func removeTab(_ tabID: UUID)
@@ -72,6 +74,8 @@ public protocol ExtensionHost: AnyObject {
     /// Shows a notification from an extension; `identifier` is unique within the extension.
     func showNotification(_ notification: ExtensionNotification) async throws
     func removeNotification(_ identifier: String, of extensionID: String, inProfile profileID: UUID)
+    /// The identifiers of the extension's notifications macOS still shows.
+    func shownNotifications(of extensionID: String, inProfile profileID: UUID) async -> Set<String>
     /// Whether the system lets Aero show notifications; not yet asked counts as allowed, as it asks on the first one.
     func notificationsAllowed() async -> Bool
     /// Starts a download an extension asked for, listed with the others, using the profile's website data.
@@ -107,7 +111,12 @@ public struct ExtensionNotification: Sendable {
 @MainActor
 public protocol ExtensionDownload: AnyObject {
     var sourceURL: URL? { get }
+    /// The address the server answered from, after redirects.
+    var finalURL: URL? { get }
+    var mimeType: String? { get }
     var destination: URL? { get }
+    var endTime: Date? { get }
+    var canResume: Bool { get }
     var state: ExtensionDownloadState { get }
     var receivedBytes: Int64 { get }
     var totalBytes: Int64? { get }

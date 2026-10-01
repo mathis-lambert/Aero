@@ -10,7 +10,8 @@ import Testing
         "permissions": ["storage", "sidePanel", "identity", "idle", "offscreen", "notifications"],
         "optional_permissions": ["bookmarks", "downloads", "identity.email", "privacy", "contentSettings"],
         "side_panel": ["default_path": "panel.html"],
-        "chrome_url_overrides": ["newtab": "tab.html"],
+        "chrome_url_overrides": ["history": "history.html"],
+        "devtools_page": "devtools.html",
         "omnibox": ["keyword": "x"]
     ]
     #expect(ExtensionCapabilities.unavailableFeatures(of: manifest) == [.sidePanel, .pageOverrides, .bookmarks, .siteSettings, .addressBarKeyword])
@@ -18,7 +19,8 @@ import Testing
 }
 
 @Test func anExtensionUsingOnlyWhatAeroProvidesLosesNothing() {
-    let manifest: [String: Any] = ["permissions": ["tabs", "storage", "idle", "offscreen", "downloads", "notifications", "clipboardRead", "nativeMessaging"]]
+    let manifest: [String: Any] = ["permissions": ["tabs", "storage", "idle", "offscreen", "downloads", "notifications", "clipboardRead", "nativeMessaging"],
+                                   "chrome_url_overrides": ["newtab": "tab.html"], "devtools_page": "devtools.html"]
     #expect(ExtensionCapabilities.unavailableFeatures(of: manifest).isEmpty)
 }
 

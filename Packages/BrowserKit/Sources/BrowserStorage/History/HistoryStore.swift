@@ -5,7 +5,10 @@ import Foundation
 /// The database opens on first use; a file it cannot read is left untouched.
 public actor HistoryStore {
 
-    package static let retention: TimeInterval = 365 * 24 * 60 * 60
+    /// History keeps a year of visits: the oldest kept at `now`.
+    package static func retentionStart(_ now: Date = .now) -> Date {
+        Calendar.current.date(byAdding: .year, value: -1, to: now) ?? now
+    }
     package static let maximumTitleLength = 512
     package static let maximumURLLength = 2048
     public static let pageSize = 200
@@ -56,7 +59,7 @@ public actor HistoryStore {
     /// older than the retention are left out. See docs/ONBOARDING.md › Writing.
     public func importPages(_ pages: [ImportedPage], profileID: UUID) throws {
         let database = try open()
-        let cutoff = Date.now.addingTimeInterval(-Self.retention).timeIntervalSinceReferenceDate
+        let cutoff = Self.retentionStart().timeIntervalSinceReferenceDate
         try database.transaction {
             for imported in pages {
                 guard let address = Self.address(imported.url), imported.lastVisit.timeIntervalSinceReferenceDate >= cutoff else { continue }
@@ -236,7 +239,7 @@ public actor HistoryStore {
         if Date.now >= nextMaintenance {
             // Maintenance is bounded and best effort. Contention must not disable reads.
             do {
-                let cutoff = Date.now.addingTimeInterval(-Self.retention).timeIntervalSinceReferenceDate
+                let cutoff = Self.retentionStart().timeIntervalSinceReferenceDate
                 try db.transaction {
                     try db.run("DELETE FROM visits WHERE id IN (SELECT id FROM visits WHERE visited_at < ? LIMIT 500)", [.real(cutoff)])
                     try db.run("DELETE FROM pages WHERE id IN (SELECT id FROM pages WHERE last_visit < ? AND NOT EXISTS (SELECT 1 FROM visits WHERE page_id = pages.id) LIMIT 500)", [.real(cutoff)])

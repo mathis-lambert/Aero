@@ -17,16 +17,23 @@ extension ProfileExtensions: WKWebExtensionControllerDelegate {
     }
 
     /// A popup window gets a window of its own; a normal one opens its addresses as tabs of the main window, Aero's
-    /// only browser window.
+    /// only browser window, where the tabs it names already are. Without addresses or tabs it shows the New Tab page,
+    /// as a new window would.
     public func webExtensionController(_ controller: WKWebExtensionController, openNewWindowUsing configuration: WKWebExtension.WindowConfiguration,
                                        for extensionContext: WKWebExtensionContext) async throws -> (any WKWebExtensionWindow)? {
-        guard let host else { return nil }
+        guard let host else { throw ExtensionRequestFailure.unsupported("A window") }
         if configuration.shouldBePrivate { throw ExtensionRequestFailure.unsupported("A private window") }
+        if configuration.windowType == .popup, !configuration.tabs.isEmpty { throw ExtensionRequestFailure.unsupported("Moving tabs into a popup window") }
         guard configuration.windowType == .popup, let url = configuration.tabURLs.first else {
-            for (index, url) in configuration.tabURLs.enumerated() {
-                _ = host.openTab(url, inProfile: profileID, selected: index == 0 && configuration.shouldBeFocused)
+            let opened = configuration.tabURLs.compactMap { host.openTab($0, inProfile: profileID, selected: false) }
+            if configuration.shouldBeFocused {
+                if let first = opened.first ?? configuration.tabs.compactMap({ ($0 as? BrowserTabAdapter)?.id }).first {
+                    host.activateTab(first)
+                } else {
+                    host.showNewTab(inProfile: profileID)
+                }
+                try await mainWindow.focus(for: extensionContext)
             }
-            if configuration.shouldBeFocused { try await mainWindow.focus(for: extensionContext) }
             return mainWindow
         }
         let pageConfiguration = extensionContext.webViewConfiguration.flatMap { url.host() == extensionContext.baseURL.host() ? $0 : nil }
@@ -51,7 +58,12 @@ extension ProfileExtensions: WKWebExtensionControllerDelegate {
 
     public func webExtensionController(_ controller: WKWebExtensionController, openNewTabUsing configuration: WKWebExtension.TabConfiguration,
                                        for extensionContext: WKWebExtensionContext) async throws -> (any WKWebExtensionTab)? {
-        guard let url = configuration.url, let tabID = host?.openTab(url, inProfile: profileID, selected: configuration.shouldBeActive) else { return nil }
+        // Without an address, Chrome opens the New Tab page: an extension's, or Aero's own, which is no tab.
+        guard let url = configuration.url ?? newTabPageURL(order: host?.installedExtensions(inProfile: profileID).filter(\.isEnabled).map(\.id) ?? []) else {
+            host?.showNewTab(inProfile: profileID)
+            return nil
+        }
+        guard let tabID = host?.openTab(url, inProfile: profileID, selected: configuration.shouldBeActive) else { return nil }
         if configuration.shouldBePinned { host?.setPinned(true, tab: tabID) }
         return tab(tabID)
     }
@@ -86,7 +98,6 @@ extension ProfileExtensions: WKWebExtensionControllerDelegate {
         let websites = matchPatterns.filter(ExtensionSiteAccess.permits)
         guard !websites.isEmpty else { return ([], nil) }
         let granted = await host?.requestPermissions([], sites: Set(websites.map(\.string)), for: extensionContext.uniqueIdentifier, inProfile: profileID) == true
-        if granted { restrictAfterGrant(extensionContext) }
         return (granted ? websites : [], nil)
     }
 
@@ -101,17 +112,7 @@ extension ProfileExtensions: WKWebExtensionControllerDelegate {
         }
         guard patterns.count == websites.count else { return ([], nil) }
         let granted = await host?.requestPermissions([], sites: Set(patterns), for: extensionContext.uniqueIdentifier, inProfile: profileID) == true
-        if granted { restrictAfterGrant(extensionContext) }
         return (granted ? websites : [], nil)
-    }
-
-    func restrictAfterGrant(_ context: WKWebExtensionContext) {
-        Task { @MainActor [weak self, weak context] in
-            await Task.yield()
-            guard let self, let context, self.contexts[context.uniqueIdentifier] === context else { return }
-            do { try ExtensionSiteAccess.restrict(context) }
-            catch { Self.logger.error("Cannot restrict extension host permissions: \(error.localizedDescription, privacy: .public)") }
-        }
     }
 
     // MARK: - Native messaging

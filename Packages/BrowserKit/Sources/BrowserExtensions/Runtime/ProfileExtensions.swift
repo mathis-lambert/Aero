@@ -26,6 +26,13 @@ public final class ProfileExtensions: NSObject {
     @ObservationIgnored weak var registry: ExtensionRegistry?
     @ObservationIgnored let idle: IdleMonitor
     var host: ExtensionHost? { registry?.host }
+    var isInspectable: Bool { registry?.isInspectable ?? false }
+
+    func inspectabilityDidChange() {
+        for context in contexts.values { context.isInspectable = isInspectable }
+        for window in windows { window.webView.isInspectable = isInspectable }
+        offscreen.isInspectable = isInspectable
+    }
 
     /// Grants for permissions implemented by Aero rather than WebKit.
     @ObservationIgnored var providedGrants: [String: Set<String>] = [:]
@@ -148,9 +155,7 @@ public final class ProfileExtensions: NSObject {
         context.uniqueIdentifier = record.id
         guard let origin = URL(string: "chrome-extension://\(record.id)/") else { throw ExtensionBridge.Failure.invalidRequest }
         context.baseURL = origin
-        #if DEBUG
-        context.isInspectable = true
-        #endif
+        context.isInspectable = isInspectable
         context.grantedPermissions = Dictionary(uniqueKeysWithValues: record.grantedPermissions.map { (WKWebExtension.Permission($0), Date.distantFuture) })
         try ExtensionSiteAccess.restore(record.grantedSites, on: context)
         providedGrants[record.id] = Set(record.grantedPermissions).intersection(ExtensionCapabilities.providedPermissions)
@@ -218,6 +223,12 @@ public final class ProfileExtensions: NSObject {
 
     // MARK: - Buttons
 
+    /// The New Tab page an enabled extension replaces Aero's with: the most recently added one's, as in Chrome.
+    /// `order` is the profile's extensions in the order they were added.
+    public func newTabPageURL(order: [String]) -> URL? {
+        order.reversed().lazy.compactMap { self.contexts[$0]?.overrideNewTabPageURL }.first
+    }
+
     /// The extension's button for the selected tab.
     public func action(for extensionID: String) -> WKWebExtension.Action? {
         contexts[extensionID]?.action(for: host?.selectedTabID(inProfile: profileID).map(tab))
@@ -231,9 +242,7 @@ public final class ProfileExtensions: NSObject {
             closePopup(of: extensionID)
             return
         }
-        let selected = host?.selectedTabID(inProfile: profileID).map(tab)
-        if let selected { context.userGesturePerformed(in: selected) }
-        context.performAction(for: selected)
+        context.performAction(for: host?.selectedTabID(inProfile: profileID).map(tab))
     }
 
     /// Shows WebKit's popover for the action, one at a time.
@@ -242,11 +251,11 @@ public final class ProfileExtensions: NSObject {
         guard let popover = action.popupPopover else { return }
         popover.behavior = .transient
         popups[context.uniqueIdentifier] = (action, popover)
-        action.hasUnreadBadgeText = false
         host?.presentPopup(popover, for: context.uniqueIdentifier, inProfile: profileID)
     }
 
-    /// Closing WebKit's popover lets WebKit unload the page; the next popup loads the current popup page.
+    /// Unloads the popup page at once: WebKit would close it only when the popover's dismissal ends, too late for an
+    /// action performed right after (`ExtensionPopupTests`). The next popup loads the current popup page.
     func closePopup(of extensionID: String) {
         guard let popup = popups.removeValue(forKey: extensionID) else { return }
         popup.popover.close()
@@ -273,15 +282,16 @@ public final class ProfileExtensions: NSObject {
         setShortcut(declared.key, modifiers: declared.modifiers, forCommand: identifier, of: extensionID)
     }
 
-    /// Runs a matching command only when the app allows its binding.
+    /// Runs a matching command only when the app allows its binding. WebKit performs the action for `_execute_action`;
+    /// its shortcut closes a popup that shows, like the button.
     public func perform(_ event: NSEvent, allowed: (WKWebExtension.Command) -> Bool) -> Bool {
         for context in contexts.values {
             guard let command = context.command(for: event), allowed(command) else { continue }
-            if command.id == "_execute_action" || command.id == "_execute_browser_action" {
-                performAction(for: context.uniqueIdentifier)
-                return true
+            if command.id == "_execute_action" || command.id == "_execute_browser_action", popups[context.uniqueIdentifier]?.popover.isShown == true {
+                closePopup(of: context.uniqueIdentifier)
+            } else {
+                context.performCommand(command)
             }
-            context.performCommand(command)
             return true
         }
         return false

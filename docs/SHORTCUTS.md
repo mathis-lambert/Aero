@@ -75,7 +75,7 @@ item. Titles that toggle say what they will do (Show/Hide Sidebar, Add to/Remove
 | Menu | Contents |
 | --- | --- |
 | Aero | Settings…, Quit |
-| File | New Tab, Open Location…, Command Bar · Close Tab, Close Window · Import from Another Browser… · Print… |
+| File | New Tab, Open Location…, Open File…, Command Bar · Close Tab, Close Window · Save As…, Export as PDF… · Import from Another Browser… · Print… |
 | Edit | Native editing, Copy Link, Find › Find…, Find Next, Find Previous |
 | View | Show/Hide Sidebar · Reload Page, Reload Without Cache, Stop Loading · Zoom In, Zoom Out, Actual Size · Show Downloads, Site Controls, Site Settings… |
 | History | Back, Forward · Reopen Closed Tab · Show All History |
@@ -99,7 +99,7 @@ then closing or removing it, which comes last and is marked destructive when it 
 | Group | Rename Group…, Collapse or Expand Group · Ungroup, which keeps its tabs pinned |
 | Space | Edit Space… · Move Left, Move Right · Delete Space… |
 | Reload button | Reload Without Cache · Clear Cookies, Clear Cache · Site Settings… |
-| Extension | The extension's own items · Pin or Unpin Extension, Open Extension Options · Extension Settings…, Manage Extensions… · Remove Extension |
+| Extension | The extension's own items · Pin or Unpin Extension, Open Extension Options · Extension Settings…, Manage Extensions… · Remove Extension… |
 | History entries | Open, Open in New Tab · Copy Link · Delete from History |
 
 ## Routing and lifetime

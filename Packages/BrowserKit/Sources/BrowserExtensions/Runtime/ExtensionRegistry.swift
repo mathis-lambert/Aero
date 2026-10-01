@@ -8,6 +8,11 @@ import WebKit
 public final class ExtensionRegistry {
     public weak var host: ExtensionHost?
     private var profiles: [UUID: ProfileExtensions] = [:]
+    /// Developer mode: backgrounds, popups, windows and offscreen documents can be inspected, and extensions add
+    /// their developer tools panels to Web Inspector (`devtools_page`).
+    public var isInspectable = false {
+        didSet { for profile in profiles.values { profile.inspectabilityDidChange() } }
+    }
     private let folder: URL
     private let nativeHostFolders: [URL]
     private let ephemeral: Bool

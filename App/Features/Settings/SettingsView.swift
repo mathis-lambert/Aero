@@ -2,7 +2,6 @@ import SwiftUI
 
 /// A dedicated native window owns the traffic lights, navigation toolbar and resizing.
 struct SettingsView: View {
-    static let windowID = "settings"
     private static let historyLimit = 32
     let browser: BrowserModel
     @State private var history: [SettingsRoute] = [.section(.general)]
@@ -45,7 +44,7 @@ struct SettingsView: View {
                     case .passwords: PasswordsSettingsView(browser: browser, navigate: navigate)
                     case .extensions: ExtensionsSettingsView(browser: browser, navigate: navigate)
                     case .storage: StorageSettingsView(browser: browser, navigate: navigate)
-                    case .shortcuts: ShortcutSettingsView(shortcuts: browser.shortcuts)
+                    case .shortcuts: ShortcutSettingsView(browser: browser)
                     }
                 }
             }

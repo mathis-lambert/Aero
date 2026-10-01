@@ -8,8 +8,13 @@ struct HistoryDay: Identifiable {
     let entries: [HistoryEntry]
 
     var title: Text {
-        if Calendar.current.isDateInToday(id) { return Text("Today") }
-        if Calendar.current.isDateInYesterday(id) { return Text("Yesterday") }
+        if Calendar.current.isDateInToday(id) || Calendar.current.isDateInYesterday(id) {
+            // The system's own "Today" and "Yesterday", in the person's language.
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.doesRelativeDateFormatting = true
+            return Text(verbatim: formatter.string(from: id))
+        }
         let includesYear = !Calendar.current.isDate(id, equalTo: .now, toGranularity: .year)
         let style = Date.FormatStyle.dateTime.weekday(.wide).day().month(.wide)
         return Text(id, format: includesYear ? style.year() : style)

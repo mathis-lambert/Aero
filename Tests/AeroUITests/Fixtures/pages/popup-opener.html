@@ -6,6 +6,7 @@
 </head>
 <body>
 <button id="open" onclick="window.open('/popup.html', 'aero-popup')">Open popup</button>
+<button id="window" onclick="window.open('/popup.html', 'aero-window', 'width=420,height=360')">Open popup window</button>
 <p id="status">Waiting for popup</p>
 <script>
 window.addEventListener("message", (event) => {

@@ -22,7 +22,9 @@ final class ExtensionWindow: NSObject, WKWebExtensionWindow, NSWindowDelegate {
         self.extensionID = extensionID
         self.owner = owner
         webView = WKWebView(frame: .zero, configuration: configuration)
-        let size = frame.isNull || frame.size.width < Self.minimumSize.width || frame.size.height < Self.minimumSize.height ? Self.defaultSize : frame.size
+        // WebKit leaves each component the extension did not give as NaN; a given size is clamped, as Chrome does.
+        let size = CGSize(width: frame.width.isNaN ? Self.defaultSize.width : max(frame.width, Self.minimumSize.width),
+                          height: frame.height.isNaN ? Self.defaultSize.height : max(frame.height, Self.minimumSize.height))
         window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled, .closable, .miniaturizable, .resizable],
                           backing: .buffered, defer: false)
         super.init()
@@ -31,12 +33,14 @@ final class ExtensionWindow: NSObject, WKWebExtensionWindow, NSWindowDelegate {
         window.contentView = webView
         window.delegate = self
         window.title = owner.contexts[extensionID]?.webExtension.displayName ?? ""
-        if frame.isNull || frame.origin == .zero { window.center() } else { window.setFrameOrigin(frame.origin) }
+        window.center()
+        var origin = window.frame.origin
+        if !frame.origin.x.isNaN { origin.x = frame.origin.x }
+        if !frame.origin.y.isNaN { origin.y = frame.origin.y }
+        window.setFrameOrigin(origin)
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        #if DEBUG
-        webView.isInspectable = true
-        #endif
+        webView.isInspectable = owner.isInspectable
         titleObservation = webView.observe(\.title) { [weak self] webView, _ in
             MainActor.assumeIsolated {
                 guard let self, let title = webView.title, !title.isEmpty else { return }
@@ -76,7 +80,6 @@ final class ExtensionWindow: NSObject, WKWebExtensionWindow, NSWindowDelegate {
     func tabs(for context: WKWebExtensionContext) -> [any WKWebExtensionTab] { [tab] }
     func activeTab(for context: WKWebExtensionContext) -> (any WKWebExtensionTab)? { tab }
     func windowType(for context: WKWebExtensionContext) -> WKWebExtension.WindowType { .popup }
-    func isPrivate(for context: WKWebExtensionContext) -> Bool { false }
     func frame(for context: WKWebExtensionContext) -> CGRect { window.frame }
     func screenFrame(for context: WKWebExtensionContext) -> CGRect { window.screen?.frame ?? NSScreen.main?.frame ?? .null }
 
@@ -127,7 +130,8 @@ extension ExtensionWindow: WKNavigationDelegate, WKUIDelegate {
     func webViewDidClose(_ webView: WKWebView) { close() }
 }
 
-/// The page of an extension's popup window, as WebKit presents it to extensions.
+/// The page of an extension's popup window, as WebKit presents it to extensions. Title, address, loading, size, zoom,
+/// navigation and snapshots are WebKit's defaults, read from and applied to `webView`.
 final class ExtensionWindowTab: NSObject, WKWebExtensionTab {
     unowned let owner: ExtensionWindow
 
@@ -135,25 +139,7 @@ final class ExtensionWindowTab: NSObject, WKWebExtensionTab {
 
     func window(for context: WKWebExtensionContext) -> (any WKWebExtensionWindow)? { owner }
     func indexInWindow(for context: WKWebExtensionContext) -> Int { 0 }
-    func title(for context: WKWebExtensionContext) -> String? { owner.webView.title }
-    func url(for context: WKWebExtensionContext) -> URL? { owner.webView.url }
-    func isSelected(for context: WKWebExtensionContext) -> Bool { true }
     func webView(for context: WKWebExtensionContext) -> WKWebView? { owner.webView }
-    func isLoadingComplete(for context: WKWebExtensionContext) -> Bool { !owner.webView.isLoading }
-    func zoomFactor(for context: WKWebExtensionContext) -> Double { owner.webView.pageZoom }
-    func size(for context: WKWebExtensionContext) -> CGSize { owner.webView.bounds.size }
-
     func activate(for context: WKWebExtensionContext) async throws { owner.show(focused: true) }
     func close(for context: WKWebExtensionContext) async throws { owner.close() }
-    func loadURL(_ url: URL, for context: WKWebExtensionContext) async throws { owner.webView.load(URLRequest(url: url)) }
-    func reload(fromOrigin: Bool, for context: WKWebExtensionContext) async throws {
-        if fromOrigin { owner.webView.reloadFromOrigin() } else { owner.webView.reload() }
-    }
-    func goBack(for context: WKWebExtensionContext) async throws { owner.webView.goBack() }
-    func goForward(for context: WKWebExtensionContext) async throws { owner.webView.goForward() }
-    func setZoomFactor(_ zoomFactor: Double, for context: WKWebExtensionContext) async throws { owner.webView.pageZoom = zoomFactor }
-
-    func snapshot(using configuration: WKSnapshotConfiguration, for context: WKWebExtensionContext) async throws -> NSImage? {
-        try await owner.webView.takeSnapshot(configuration: configuration)
-    }
 }

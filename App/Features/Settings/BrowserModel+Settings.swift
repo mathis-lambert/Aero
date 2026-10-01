@@ -7,6 +7,17 @@ extension BrowserModel {
         window.settingsRequest = UUID()
     }
 
+    func setDeveloperMode(_ enabled: Bool) {
+        preferences.developerMode = enabled
+        applyDeveloperMode()
+    }
+
+    /// Pages and extensions can be inspected from their context menu. See docs/BROWSING.md › Developer mode.
+    func applyDeveloperMode() {
+        pages.pagesAreInspectable = preferences.developerMode
+        extensions.isInspectable = preferences.developerMode
+    }
+
     func renameProfile(_ id: UUID, to name: String) {
         guard !isChangingStructure else { return }
         do { try session.editProfile(id: id, name: name); persist() }

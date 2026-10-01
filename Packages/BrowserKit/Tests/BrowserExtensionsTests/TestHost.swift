@@ -31,6 +31,8 @@ final class TestHost: ExtensionHost {
         if selected { selectedTabID = tab.id }
         return tab.id
     }
+    var newTabRequests = 0
+    func showNewTab(inProfile profileID: UUID) { newTabRequests += 1 }
     func activateTab(_ tabID: UUID) {}
     func removeTab(_ tabID: UUID) {}
     func copyTab(_ tabID: UUID) -> UUID? { nil }
@@ -63,6 +65,7 @@ final class TestHost: ExtensionHost {
     func installFromWebStore(_ extensionID: String, inProfile profileID: UUID) async {}
     func showNotification(_ notification: ExtensionNotification) async throws {}
     func removeNotification(_ identifier: String, of extensionID: String, inProfile profileID: UUID) {}
+    func shownNotifications(of extensionID: String, inProfile profileID: UUID) async -> Set<String> { [] }
     func notificationsAllowed() async -> Bool { true }
     var passwordExtension: String?
     let offersToSavePasswords = true

@@ -254,7 +254,8 @@ extension Passwords {
     /// Copies a password, then removes it from the pasteboard unless something else replaced it.
     func copyToPasteboard(_ password: String) {
         let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
+        // Kept on this Mac: Universal Clipboard never carries a password to another device.
+        pasteboard.prepareForNewContents(with: .currentHostOnly)
         pasteboard.setString(password, forType: .string)
         let change = pasteboard.changeCount
         Task {

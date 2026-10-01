@@ -15,6 +15,10 @@ public final class BrowserDownload: Identifiable {
 
     public let id = UUID()
     public let sourceURL: URL?
+    /// The address the server answered from, after redirects.
+    public internal(set) var finalURL: URL?
+    public internal(set) var mimeType: String?
+    public internal(set) var endTime: Date?
     public internal(set) var filename: String
     public internal(set) var destination: URL?
     public internal(set) var state = State.downloading
@@ -30,6 +34,8 @@ public final class BrowserDownload: Identifiable {
     @ObservationIgnored let dataStore: WKWebsiteDataStore?
     @ObservationIgnored var download: WKDownload?
     @ObservationIgnored var resumeData: Data?
+    /// WebKit kept what the transfer needs to continue where it stopped.
+    public var canResume: Bool { resumeData != nil }
     /// A detached view that resumes a download whose page is gone; released when it ends.
     @ObservationIgnored var resumingView: WKWebView?
     @ObservationIgnored var progressObservation: NSKeyValueObservation?

@@ -105,7 +105,7 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     let first = fixture.store()
     try await first.recordVisit(to: url("https://example.com/kept"), title: "Kept", profileID: profile, at: now)
     try await first.recordVisit(to: url("https://example.com/old"), title: "Old", profileID: profile,
-                                at: now - HistoryStore.retention - day)
+                                at: HistoryStore.retentionStart(now) - day)
     #expect(try await fixture.store().entries(profileID: profile).map(\.title) == ["Kept"])
 }
 

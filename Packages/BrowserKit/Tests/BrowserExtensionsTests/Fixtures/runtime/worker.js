@@ -87,6 +87,10 @@ const pause = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mil
             && (await chrome.privacy.services.autofillAddressEnabled.get({})).levelOfControl === "not_controllable";
     });
     await check("inventory", async () => (await chrome.management.getAll()).some((item) => item.id === chrome.runtime.id && item.enabled));
+    await check("required removal keeps the rest", async () => {
+        try { await chrome.permissions.remove({ permissions: ["idle", "tabs"] }); return false; }
+        catch (error) { return error.message.includes("required") && await chrome.permissions.contains({ permissions: ["tabs"] }); }
+    });
     await check("removed", async () => await chrome.permissions.remove({ permissions: ["notifications"] })
         && !(await chrome.permissions.contains({ permissions: ["notifications"] })));
     chrome.action.setTitle({ title: failures.length > 0 ? failures.join("; ") : "ok" });

@@ -17,7 +17,8 @@ enum ExtensionRequestFailure: LocalizedError {
 }
 
 /// One of the profile's tabs in the main window, as WebKit presents it to extensions. It holds the tab's identifier
-/// only; every answer is read from the host, so a closed tab answers as gone.
+/// only; every answer is read from the host, so a closed tab answers as gone. A hibernated tab has no view, so its
+/// record answers where WebKit's defaults would read a web view.
 final class BrowserTabAdapter: NSObject, WKWebExtensionTab {
     let id: UUID
     unowned let owner: ProfileExtensions
@@ -94,8 +95,6 @@ final class MainWindowAdapter: NSObject, WKWebExtensionWindow {
         owner.host?.selectedTabID(inProfile: owner.profileID).map(owner.tab)
     }
 
-    func windowType(for context: WKWebExtensionContext) -> WKWebExtension.WindowType { .normal }
-    func isPrivate(for context: WKWebExtensionContext) -> Bool { false }
     func frame(for context: WKWebExtensionContext) -> CGRect { window?.frame ?? .null }
     func screenFrame(for context: WKWebExtensionContext) -> CGRect { window?.screen?.frame ?? NSScreen.main?.frame ?? .null }
 

@@ -32,7 +32,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onVisit: ((HistoryNavigation) -> Void)?
     @ObservationIgnored var onDownload: ((WKDownload) -> Void)?
     @ObservationIgnored var onIcons: (([FaviconLink], URL) -> Void)?
-    @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?) -> WKWebView?)?
+    @ObservationIgnored var onPopup: ((WKWebViewConfiguration, URL?, WKWindowFeatures) -> WKWebView?)?
     /// An address for another app, which the page does not load (docs/OTHER_APPS.md › Links to other apps).
     @ObservationIgnored var onApplicationLink: ((URL) -> Void)?
     /// The page's owner takes the addresses it returns `true` for instead of loading them, such as a sign-in's callback.
@@ -41,8 +41,13 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var extensionOrigin: URL?
     @ObservationIgnored private let extensionReturn = ExtensionReturnNavigation()
     var navigationRevision: Int { extensionReturn.revision }
-    @ObservationIgnored var onClose: (() -> Void)?
+    /// The page called `window.close()`.
+    @ObservationIgnored public var onClose: (() -> Void)?
     @ObservationIgnored var onPermission: ((SitePermission, SiteOrigin) -> SiteDecision?)?
+    /// Asks the person what a page's `alert`, `confirm` or `prompt` asks.
+    @ObservationIgnored public var onDialog: ((PageDialog) async -> PageDialogAnswer)?
+    @ObservationIgnored private var dialogsShown = 0
+    @ObservationIgnored private var dialogsSuppressed = false
     /// Reports of the page's sign-in and sign-up forms. See docs/PASSWORDS.md.
     @ObservationIgnored var onPasswordForm: ((PasswordFormEvent, PasswordFrame) -> Void)?
     /// The extensions' items for the context menu the page is opening.
@@ -70,12 +75,12 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     /// this is the private preference Safari sets. Without it, picture in picture is simply absent.
     private static let pictureInPictureSetter = NSSelectorFromString("_setAllowsPictureInPictureMediaPlayback:")
 
-    private static func isPageURL(_ url: URL) -> Bool { NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) }
+    private static func isPageURL(_ url: URL) -> Bool {
+        NavigationInput.isWebURL(url) || NavigationInput.isExtensionURL(url) || NavigationInput.isLocalFileURL(url)
+    }
 
-    /// `passkeys` carries passkey requests when the build is entitled to them; without it, pages are
-    /// told passkeys are unavailable. See docs/PASSWORDS.md › Passkeys. The profile's extensions are added by the
-    /// registry's `PageExtensions`.
-    static func configuration(store: WKWebsiteDataStore, passkeys: PasskeyCeremony?) -> WKWebViewConfiguration {
+    /// The profile's extensions are added by the registry's `PageExtensions`.
+    static func configuration(store: WKWebsiteDataStore) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = store
         configuration.applicationNameForUserAgent = BrowserIdentity.applicationNameForUserAgent
@@ -89,13 +94,6 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         configuration.userContentController.addUserScript(PageScripts.editedFieldTracker)
         configuration.userContentController.addUserScript(PasswordScripts.forms)
         configuration.userContentController.add(PasswordFormBridge(), contentWorld: PageScripts.world, name: PasswordScripts.handlerName)
-        if let passkeys {
-            configuration.userContentController.addUserScript(PasskeyScripts.page)
-            configuration.userContentController.addUserScript(PasskeyScripts.bridge)
-            configuration.userContentController.addScriptMessageHandler(PasskeyBridge(ceremony: passkeys), contentWorld: PageScripts.world, name: PasskeyBridge.name)
-        } else {
-            configuration.userContentController.addUserScript(PasskeyScripts.withoutPasskeys)
-        }
         return configuration
     }
 
@@ -105,9 +103,6 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        #if DEBUG
-        webView.isInspectable = true
-        #endif
         // WKWebView posts these on the main thread; applying them directly avoids a task per progress tick.
         let refresh: @Sendable (WKWebView, Any) -> Void = { [weak self] _, _ in MainActor.assumeIsolated { self?.refresh() } }
         observations = [
@@ -137,16 +132,20 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         requestedHistoryTransition = transition
         historyReferrer = referrer
         restoresHistory = false
-        webView.load(request)
+        // A file reads only its own folder, never the rest of this Mac.
+        if url.isFileURL { webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent()) }
+        else { webView.load(request) }
     }
 
     /// Returns to a hibernated page's history and scroll position without an extra network request.
-    func restore(_ interactionState: Any, url: URL) {
+    func restore(_ interactionState: Any, sessionStorage: Data?, url: URL) {
         failure = nil
         requestedURL = url
         visitedURL = url
         restoresHistory = true
-        webView.interactionState = interactionState
+        guard let sessionStorage else { webView.interactionState = interactionState; return }
+        // The document that loads back finds its storage.
+        webView.restoreData(sessionStorage) { [weak self] _ in self?.webView.interactionState = interactionState }
     }
 
     public func reload() {
@@ -214,11 +213,12 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onDownload = nil
         onIcons = nil
         onPopup = nil
+        onDialog = nil
+        onPermission = nil
         onApplicationLink = nil
         interceptsNavigation = nil
         onPageNavigation = nil
         onClose = nil
-        onPermission = nil
         onPasswordForm = nil
         onContextMenu = nil
         contentBlocker = nil
@@ -304,6 +304,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         awaitFirstFrame()
+        resetDialogs()
         if restoresHistory { restoresHistory = false; return }
         if let url = webView.url, NavigationInput.isWebURL(url) {
             recordVisit(url, transition: historyTransition, referrer: historyReferrer, newDocument: true)
@@ -362,6 +363,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         if navigationAction.targetFrame?.isMainFrame == true, onPageNavigation?(navigationAction.request, source) == true { return .cancel }
         if navigationAction.shouldPerformDownload { return .download }
         let isMainFrame = navigationAction.targetFrame?.isMainFrame != false
+        // A file loads only when the person opened it, and from a file to the files of the folder it may read.
+        if NavigationInput.isLocalFileURL(url), url == requestedURL || webView.url?.isFileURL == true { return .allow }
         switch NavigationInput.target(of: url) {
         case .page:
             if isMainFrame { updateContentBlocking(for: url) }
@@ -401,9 +404,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     /// Popups may start blank (`about:blank`, then written by script) or at a website, never at another scheme,
     /// so a website cannot open a browser page such as `aero://history`. One for another app asks for that app.
     public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        guard let url = navigationAction.request.url, !url.absoluteString.isEmpty else { return onPopup?(configuration, nil) }
+        guard let url = navigationAction.request.url, !url.absoluteString.isEmpty else { return onPopup?(configuration, nil, windowFeatures) }
         if interceptsNavigation?(url) == true { return nil }
-        if NavigationInput.isWebURL(url) || url.scheme?.lowercased() == "about" { return onPopup?(configuration, url) }
+        if NavigationInput.isWebURL(url) || url.scheme?.lowercased() == "about" { return onPopup?(configuration, url, windowFeatures) }
         if NavigationInput.target(of: url) == .application { onApplicationLink?(url) }
         return nil
     }
@@ -433,6 +436,54 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         return decisions.allSatisfy { $0 == .allow } ? .grant : .prompt
     }
 }
+
+// MARK: - Page dialogs and file choosers
+
+extension BrowserPage {
+    public func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo) async {
+        _ = await ask(.alert, message, from: frame)
+    }
+
+    public func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo) async -> Bool {
+        await ask(.confirm, message, from: frame).accepted
+    }
+
+    public func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
+                        initiatedByFrame frame: WKFrameInfo) async -> String? {
+        let answer = await ask(.prompt(defaultText: defaultText ?? ""), prompt, from: frame)
+        return answer.accepted ? answer.text ?? "" : nil
+    }
+
+    /// A file input opens the system's open panel as a sheet on the page's window.
+    public func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo) async -> [URL]? {
+        guard let window = webView.window else { return nil }
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = parameters.allowsDirectories
+        panel.allowsMultipleSelection = parameters.allowsMultipleSelection
+        return await withCheckedContinuation { continuation in
+            panel.beginSheetModal(for: window) { response in continuation.resume(returning: response == .OK ? panel.urls : nil) }
+        }
+    }
+
+    private func ask(_ kind: PageDialog.Kind, _ message: String, from frame: WKFrameInfo) async -> PageDialogAnswer {
+        guard !dialogsSuppressed, let onDialog else { return .dismissed }
+        dialogsShown += 1
+        let origin = frame.securityOrigin
+        let site = origin.host.isEmpty ? (webView.url?.absoluteString ?? "") : origin.host
+        let dialog = PageDialog(kind: kind, message: String(message.prefix(PageDialog.maximumLength)), site: site, offersSuppression: dialogsShown > 1)
+        let answer = await onDialog(dialog)
+        if answer.suppressesMore { dialogsSuppressed = true }
+        return answer
+    }
+
+    /// A new document starts over: its dialogs show again.
+    func resetDialogs() {
+        dialogsShown = 0
+        dialogsSuppressed = false
+    }
+}
+
 
 /// A page's view: WebKit's, with the extensions' items added to its context menu, after WebKit's own, as Safari shows
 /// them.

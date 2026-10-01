@@ -3,11 +3,11 @@ import BrowserCore
 import BrowserExtensions
 import Foundation
 import os
+import SwiftUI
 import WebKit
 
 /// Installing, loading and updating the profiles' extensions. See docs/EXTENSIONS.md.
 extension BrowserModel {
-    private static let updateInterval = Duration.seconds(24 * 60 * 60)
     static let extensionLogger = Logger(subsystem: Diagnostics.subsystem, category: Diagnostics.Category.extensions)
     static let reviewIconSize = CGSize(width: 64, height: 64)
 
@@ -18,9 +18,11 @@ extension BrowserModel {
     func startExtensions() {
         extensionsTask = Task { [weak self] in
             await self?.restoreExtensions()
-            while !Task.isCancelled {
+            await self?.updateExtensions()
+            guard let self else { return }
+            extensionUpdates = DailyActivity(identifier: "extension-updates") { [weak self] in
                 await self?.updateExtensions()
-                do { try await Task.sleep(for: Self.updateInterval) } catch { return }
+                return true
             }
         }
     }
@@ -107,6 +109,14 @@ extension BrowserModel {
         await commitExtension(record, id: record.id, inProfile: profileID)
     }
 
+    /// Asks first: the extension's files, settings and storage go with it.
+    func confirmRemoval(of record: InstalledExtension, inProfile profileID: UUID, inSettings: Bool) {
+        present(.confirmation(Confirmation(id: "removeExtension.\(record.id)", title: Text("Remove this extension and its data?"),
+                                           confirmTitle: "Remove extension", identifier: "extensions.confirmRemoval", inSettings: inSettings) { [weak self] in
+            await self?.removeExtension(record, inProfile: profileID)
+        }))
+    }
+
     func removeExtension(_ record: InstalledExtension, inProfile profileID: UUID) async {
         guard beginExtensionOperation(record.id, profileID: profileID, allowsRemovalRetry: true) else { return }
         defer { endExtensionOperation(record.id, profileID: profileID) }
@@ -138,7 +148,8 @@ extension BrowserModel {
         let autoFill = previous == nil && candidate.fillsWebsites ? PasswordAutoFillChoice(profileName: profileName, isOn: candidate.managesPasswords) : nil
         let accepted = await ask(previous == nil ? .installation : .update, name: webExtension.displayName ?? candidate.identifier,
                                  icon: webExtension.icon(for: Self.reviewIconSize), permissions: candidate.permissions, sites: candidate.sites,
-                                 unavailableFeatures: candidate.unavailableFeatures, passwordAutoFill: autoFill, inSettings: inSettings)
+                                 unavailableFeatures: candidate.unavailableFeatures, replacesNewTab: webExtension.hasOverrideNewTabPage,
+                                 passwordAutoFill: autoFill, inSettings: inSettings)
         guard accepted else { await discard(candidate, inProfile: profileID); return }
         var record = previous ?? InstalledExtension(id: candidate.identifier, version: "", source: source, grantedPermissions: [], grantedSites: [])
         record.source = source
@@ -230,12 +241,19 @@ extension BrowserModel {
     }
 
     func ask(_ kind: ExtensionRequest.Kind, name: String, icon: NSImage?, permissions: [String] = [], sites: [String] = [],
-                     unavailableFeatures: [ExtensionFeature] = [], passwordAutoFill: PasswordAutoFillChoice? = nil, inSettings: Bool = false) async -> Bool {
-        guard window.prompt == nil else { return false }
+                     unavailableFeatures: [ExtensionFeature] = [], replacesNewTab: Bool = false, passwordAutoFill: PasswordAutoFillChoice? = nil,
+                     inSettings: Bool = false) async -> Bool {
+        // One question at a time: a request waits for the prompt on screen to be answered.
+        while window.prompt != nil {
+            await withCheckedContinuation { continuation in
+                withObservationTracking { _ = window.prompt } onChange: { continuation.resume() }
+            }
+        }
         return await withCheckedContinuation { continuation in
             var answered = false
             let request = ExtensionRequest(kind: kind, name: name, icon: icon, permissions: permissions, sites: sites,
-                                           unavailableFeatures: unavailableFeatures, inSettings: inSettings, passwordAutoFill: passwordAutoFill) { [weak self] accepted in
+                                           unavailableFeatures: unavailableFeatures, replacesNewTab: replacesNewTab, inSettings: inSettings,
+                                           passwordAutoFill: passwordAutoFill) { [weak self] accepted in
                 guard !answered else { return }
                 answered = true
                 if case .extensionRequest = self?.window.prompt { self?.window.prompt = nil }

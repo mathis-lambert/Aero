@@ -3,8 +3,6 @@ import SwiftUI
 extension BrowserDesign {
     /// The centered column of editing pages: the space form, and profile and space details.
     static let formWidth: CGFloat = 440
-    /// The centered column of Settings lists.
-    static let listWidth: CGFloat = 560
     /// Identity tiles and the name field beside them.
     static let identityHeight: CGFloat = 40
 }

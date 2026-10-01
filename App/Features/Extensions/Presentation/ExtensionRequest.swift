@@ -21,6 +21,8 @@ struct ExtensionRequest {
     let sites: [String]
     /// What it declares that Aero cannot run, shown before it is added.
     let unavailableFeatures: [ExtensionFeature]
+    /// Accepting it lets its page replace the New Tab page, as WebKit asks the browser to confirm.
+    let replacesNewTab: Bool
     /// Asked from the Settings window, which then shows it.
     let inSettings: Bool
     /// Offered when the extension may fill the profile's passwords in place of Aero.
@@ -82,6 +84,9 @@ struct ExtensionRequestPrompt: View {
                 }
                 ForEach(ExtensionPermissionWarning.warnings(for: request.permissions), id: \.self) { warning in
                     Label(warning, systemImage: "checkmark.shield")
+                }
+                if request.replacesNewTab {
+                    Label("Replace the New Tab page", systemImage: "plus.square.on.square")
                 }
                 if removesData {
                     Text("Its data in this profile will be deleted.").foregroundStyle(.secondary)

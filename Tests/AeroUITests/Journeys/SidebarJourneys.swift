@@ -39,7 +39,6 @@ final class SidebarJourneys: E2ETestCase {
         // Pickup reveals the grid's target above the separator.
         let top = pinnedDropZone.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0)).withOffset(CGVector(dx: 0, dy: 12))
         tabRows["Solid fixture"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: Self.dragHold, thenDragTo: top, withVelocity: .default, thenHoldForDuration: Self.dropHold)
-        pause(0.5)
         XCTAssertTrue(poll { self.labels(of: "sidebar.tile") == ["Solid fixture"] }, "Grid: \(labels(of: "sidebar.tile"))")
         XCTAssertFalse(emptyGrid.exists)
         drag(tabRows["Keys fixture"], to: tiles["Solid fixture"], at: Self.leadingHalf)
@@ -221,7 +220,7 @@ final class SidebarJourneys: E2ETestCase {
         XCTAssertEqual(address.frame.minX - pinnedAddress.minX, 12, accuracy: 1, "It floats inset")
         XCTAssertEqual(address.frame.minY - pinnedAddress.minY, 12, accuracy: 1)
         lights[0].hover()
-        pause(0.5)
+        pause(0.5) // What must not happen: the sidebar closing under the pointer.
         XCTAssertTrue(toggle.exists, "Hovering the window controls keeps it open")
         attachScreenshot("floating sidebar", of: app)
         window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).hover()

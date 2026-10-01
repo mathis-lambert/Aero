@@ -3,7 +3,7 @@ import WebKit
 
 /// Something an extension may declare that neither WebKit nor Aero provides. The app names each for the person.
 public enum ExtensionFeature: String, CaseIterable, Sendable {
-    case sidePanel, accountSignIn, blockingRequests, developerTools, pageOverrides, bookmarks, tabGroups, proxy, speechEngine,
+    case sidePanel, accountSignIn, blockingRequests, pageOverrides, bookmarks, tabGroups, proxy, speechEngine,
          capture, debugger, siteSettings, browsingData, addressBarKeyword, pushMessaging
 }
 
@@ -57,6 +57,10 @@ enum ExtensionCapabilities {
         var features = Set<ExtensionFeature>()
         for (permission, feature) in permissionFeatures where permissions.contains(permission) { features.insert(feature) }
         for (key, feature) in keyFeatures where manifest[key] != nil { features.insert(feature) }
+        // The New Tab page is the one browser page an extension can replace in Aero.
+        if let overrides = manifest["chrome_url_overrides"] as? [String: Any], overrides.keys.contains(where: { $0 != "newtab" }) {
+            features.insert(.pageOverrides)
+        }
         return ExtensionFeature.allCases.filter(features.contains)
     }
 
@@ -69,7 +73,7 @@ enum ExtensionCapabilities {
     ]
 
     private static let keyFeatures: [String: ExtensionFeature] = [
-        "side_panel": .sidePanel, "devtools_page": .developerTools, "chrome_url_overrides": .pageOverrides, "omnibox": .addressBarKeyword,
+        "side_panel": .sidePanel, "omnibox": .addressBarKeyword,
         "tts_engine": .speechEngine, "oauth2": .accountSignIn
     ]
 

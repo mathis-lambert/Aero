@@ -1,19 +1,16 @@
 import Foundation
 
-/// Strong passwords for new accounts. See docs/PASSWORDS.md › Strong passwords.
+/// Strong passwords for new accounts, in the format of Safari's: three groups of six letters and digits joined by
+/// hyphens, 20 characters, with lowercase, uppercase and a digit. See docs/PASSWORDS.md › Strong passwords.
 public enum PasswordGenerator {
     /// Letters and digits that cannot be mistaken for one another when read aloud or copied by hand.
     private static let alphabet = Array("abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789")
     private static let groups = 3
     private static let groupLength = 6
 
-    /// Three groups of six, joined by hyphens, with lowercase, uppercase and a digit: 20 characters.
+    /// From the system's cryptographically secure generator.
     public static func strongPassword() -> String {
         var generator = SystemRandomNumberGenerator()
-        return strongPassword(using: &generator)
-    }
-
-    public static func strongPassword<Generator: RandomNumberGenerator>(using generator: inout Generator) -> String {
         while true {
             let characters = (0..<groups * groupLength).map { _ in alphabet[Int.random(in: alphabet.indices, using: &generator)] }
             guard characters.contains(where: \.isLowercase), characters.contains(where: \.isUppercase), characters.contains(where: \.isNumber) else { continue }

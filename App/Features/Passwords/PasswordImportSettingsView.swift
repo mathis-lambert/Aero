@@ -20,70 +20,51 @@ struct PasswordImportSettingsView: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        ScrollView {
+        Form {
             if let profile = browser.profiles.first(where: { $0.id == profileID }) {
-                VStack(alignment: .leading, spacing: 28) {
-                    HStack(spacing: 10) {
-                        ProfileMonogram(name: profile.name, size: BrowserDesign.identityHeight)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("Import into \(profile.name)").font(BrowserDesign.Typography.heading)
-                            Text("Existing passwords are kept when an import has a different password for the same account.")
-                                .font(BrowserDesign.Typography.caption)
-                                .foregroundStyle(palette.secondary)
-                        }
-                    }
-
-                    FormSection("From a browser") {
-                        if sources.isEmpty {
-                            Text("No Chrome, Arc, Dia, Brave, Edge or Vivaldi profile found")
-                                .font(BrowserDesign.Typography.chrome)
-                                .foregroundStyle(palette.secondary)
-                        } else {
-                            VStack(spacing: 6) {
-                                ForEach(sources) { source in
-                                    Button { run { await browser.importPasswords(from: source, into: $0) } } label: {
-                                        SettingsRow(title: source.browser.name) {
-                                            Image(systemName: "network")
-                                                .font(BrowserDesign.Typography.chrome)
-                                                .frame(width: BrowserDesign.identityHeight, height: BrowserDesign.identityHeight)
-                                                .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-                                        } subtitle: {
-                                            Text(verbatim: source.name)
-                                        } trailing: { EmptyView() }
-                                    }
-                                    .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
-                                    .disabled(importing)
-                                    .accessibilityIdentifier("passwords.importBrowser")
-                                }
-                            }
-                        }
-                    }
-
-                    FormSection("From a CSV file", footer: "Choose a passwords file exported from a browser or password manager.") {
-                        Button { importCSV() } label: { Label("Choose CSV file…", systemImage: "doc.text") }
-                            .buttonStyle(PanelButtonStyle())
-                            .disabled(importing)
-                            .accessibilityIdentifier("passwords.importCSV")
-                    }
-
-                    if importing { ProgressView("Importing…") }
-                    if let message {
-                        Text(message)
-                            .foregroundStyle(isError ? palette.miss : palette.secondary)
-                            .accessibilityIdentifier("passwords.message")
-                    }
-                    if message != nil {
-                        Button("Done") { navigate(.passwordProfile(profileID)) }
-                            .buttonStyle(PanelButtonStyle())
-                    }
-                    Text("Safari’s passwords are in the Passwords app and cannot be imported here.")
-                        .font(BrowserDesign.Typography.caption)
-                        .foregroundStyle(palette.secondary)
+                Section {
+                    Label { Text("Import into \(profile.name)") } icon: { ProfileMonogram(name: profile.name, size: BrowserDesign.identityHeight) }
+                } footer: {
+                    Text("Existing passwords are kept when an import has a different password for the same account.")
                 }
-                .frame(maxWidth: BrowserDesign.listWidth, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 24)
-                .frame(maxWidth: .infinity)
+                Section {
+                    if sources.isEmpty {
+                        Text("No Chrome, Arc, Dia, Brave, Edge or Vivaldi profile found").foregroundStyle(.secondary)
+                    }
+                    ForEach(sources) { source in
+                        SettingsRow(title: source.browser.name, open: { run { await browser.importPasswords(from: source, into: $0) } }) {
+                            Image(systemName: "network")
+                        } subtitle: {
+                            Text(verbatim: source.name)
+                        } trailing: { EmptyView() }
+                        .disabled(importing)
+                        .accessibilityIdentifier("passwords.importBrowser")
+                    }
+                } header: {
+                    Text("From a browser")
+                } footer: {
+                    Text("Safari’s passwords are in the Passwords app and cannot be imported here.")
+                }
+                Section {
+                    Button { importCSV() } label: { Label("Choose CSV file…", systemImage: "doc.text") }
+                        .disabled(importing)
+                        .accessibilityIdentifier("passwords.importCSV")
+                } header: {
+                    Text("From a CSV file")
+                } footer: {
+                    Text("Choose a passwords file exported from a browser or password manager.")
+                }
+                if importing || message != nil {
+                    Section {
+                        if importing { ProgressView("Importing…") }
+                        if let message {
+                            Text(message)
+                                .foregroundStyle(isError ? palette.miss : .secondary)
+                                .accessibilityIdentifier("passwords.message")
+                            Button("Done") { navigate(.passwordProfile(profileID)) }
+                        }
+                    }
+                }
             }
         }
         .task {

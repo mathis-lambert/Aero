@@ -19,6 +19,9 @@ extension ProfileExtensions {
             host?.removeNotification(identifier, of: extensionID, inProfile: profileID)
             return true
         case "all":
+            // What macOS still shows: the person or the system may have removed one without a dismissal.
+            let shown = await host?.shownNotifications(of: extensionID, inProfile: profileID) ?? []
+            notifications[extensionID] = notifications[extensionID]?.filter { shown.contains($0.key) }
             return (notifications[extensionID] ?? [:]).mapValues { _ in true }
         case "permissionLevel":
             return await host?.notificationsAllowed() == false ? "denied" : "granted"

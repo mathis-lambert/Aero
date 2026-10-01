@@ -16,11 +16,11 @@ extension ProfileExtensions {
         }
         switch action {
         case "download": return try await startDownload(body, for: extensionID)
-        case "search": return downloadItems(of: extensionID, matching: body)
+        case "search": return try downloadItems(of: extensionID, matching: body)
         case "cancel": try tracked().download.cancel()
         case "show": host?.revealDownloads(try tracked().download.destination)
         case "showFolder": host?.revealDownloads(nil)
-        case "erase": return eraseDownloads(of: extensionID, matching: body)
+        case "erase": return try eraseDownloads(of: extensionID, matching: body)
         default: throw ExtensionBridge.Failure.unknownRequest
         }
         return nil
@@ -73,16 +73,29 @@ extension ProfileExtensions {
         if tracked.download.state == .inProgress { watch(tracked) }
     }
 
-    func downloadItems(of extensionID: String, matching query: [String: Any]) -> [[String: Any]] {
-        (downloads[extensionID] ?? [:]).values.sorted { $0.id < $1.id }.map(\.item).filter { item in
-            ["id", "state", "url", "filename"].allSatisfy { key in
-                query[key].map { "\($0)" == "\(item[key] ?? NSNull())" } ?? true
-            }
+    /// Chrome's `DownloadQuery`: exact fields, ranges, regular expressions, search terms, order and limit.
+    func downloadItems(of extensionID: String, matching query: [String: Any]) throws -> [[String: Any]] {
+        let tracked = (downloads[extensionID] ?? [:]).values.sorted { $0.id < $1.id }
+        var matches: [(TrackedDownload, [String: Any])] = []
+        for download in tracked {
+            let item = download.item
+            if try DownloadQuery.matches(item, download: download, query: query) { matches.append((download, item)) }
         }
+        for key in ((query["orderBy"] as? [String]) ?? ["-startTime"]).reversed() {
+            let descending = key.hasPrefix("-"), field = descending ? String(key.dropFirst()) : key
+            guard TrackedDownload.fields.contains(field) else { throw DownloadQuery.Failure.unsupported("orderBy \(field)") }
+            matches = matches.enumerated().sorted { lhs, rhs in
+                let order = DownloadQuery.compare(lhs.element.1[field], rhs.element.1[field])
+                if order == .orderedSame { return lhs.offset < rhs.offset }
+                return descending ? order == .orderedDescending : order == .orderedAscending
+            }.map(\.element)
+        }
+        let limit = (query["limit"] as? Int).flatMap { $0 > 0 ? $0 : nil } ?? matches.count
+        return matches.prefix(limit).map(\.1)
     }
 
-    func eraseDownloads(of extensionID: String, matching query: [String: Any]) -> [Int] {
-        let erased = downloadItems(of: extensionID, matching: query).compactMap { $0["id"] as? Int }
+    func eraseDownloads(of extensionID: String, matching query: [String: Any]) throws -> [Int] {
+        let erased = try downloadItems(of: extensionID, matching: query).compactMap { $0["id"] as? Int }
         for id in erased {
             downloads[extensionID]?[id] = nil
             deliver("downloads.onErased", [id], to: extensionID)
@@ -116,14 +129,88 @@ final class TrackedDownload {
          "exists": download.destination.map { FileManager.default.fileExists(atPath: $0.path) } ?? false]
     }
 
+    /// The fields of Chrome's `DownloadItem` Aero reports. Aero has no pause and no danger check beyond Gatekeeper's
+    /// quarantine, so a download is never paused and has no known danger.
+    static let fields: Set = ["id", "url", "finalUrl", "filename", "state", "paused", "canResume", "danger", "mime", "incognito",
+                              "startTime", "endTime", "bytesReceived", "totalBytes", "fileSize", "exists", "byExtensionId", "error"]
+
     /// Chrome's `DownloadItem`.
     var item: [String: Any] {
-        [
-            "id": id, "url": download.sourceURL?.absoluteString ?? "", "finalUrl": download.sourceURL?.absoluteString ?? "",
-            "filename": download.destination?.path ?? "", "state": download.state.rawValue, "paused": false, "canResume": false,
-            "danger": "safe", "mime": "", "incognito": false, "startTime": startTime.ISO8601Format(), "bytesReceived": download.receivedBytes,
-            "totalBytes": download.totalBytes ?? -1, "fileSize": download.totalBytes ?? -1,
+        var item: [String: Any] = [
+            "id": id, "url": download.sourceURL?.absoluteString ?? "", "finalUrl": (download.finalURL ?? download.sourceURL)?.absoluteString ?? "",
+            "filename": download.destination?.path ?? "", "state": download.state.rawValue, "paused": false, "canResume": download.canResume,
+            "danger": "safe", "mime": download.mimeType ?? "", "incognito": false, "startTime": startTime.ISO8601Format(),
+            "bytesReceived": download.receivedBytes, "totalBytes": download.totalBytes ?? -1, "fileSize": download.totalBytes ?? -1,
             "exists": download.destination.map { FileManager.default.fileExists(atPath: $0.path) } ?? false, "byExtensionId": extensionID
         ]
+        if let end = download.endTime { item["endTime"] = end.ISO8601Format() }
+        if download.state == .interrupted { item["error"] = "NETWORK_FAILED" }
+        return item
+    }
+}
+
+/// Matching for `downloads.search` and `downloads.erase`.
+@MainActor
+enum DownloadQuery {
+    enum Failure: LocalizedError {
+        case unsupported(String)
+        var errorDescription: String? {
+            switch self { case .unsupported(let what): "\(what) is not supported in Aero's downloads.search." }
+        }
+    }
+
+    private static let controls: Set = ["limit", "orderBy"]
+
+    static func matches(_ item: [String: Any], download: TrackedDownload, query: [String: Any]) throws -> Bool {
+        for (key, value) in query where !(value is NSNull) && !controls.contains(key) {
+            switch key {
+            case "query":
+                let haystack = "\(item["url"] ?? "") \(item["finalUrl"] ?? "") \(item["filename"] ?? "")".lowercased()
+                for term in (value as? [String]) ?? [] where !term.isEmpty {
+                    let excluded = term.hasPrefix("-"), word = (excluded ? String(term.dropFirst()) : term).lowercased()
+                    if haystack.contains(word) == excluded { return false }
+                }
+            case "startedBefore", "startedAfter", "endedBefore", "endedAfter":
+                guard let bound = date(value) else { return false }
+                let field = key.hasPrefix("started") ? download.startTime : download.download.endTime
+                guard let field else { return false }
+                if key.hasSuffix("Before") ? field >= bound : field <= bound { return false }
+            case "totalBytesGreater", "totalBytesLess":
+                guard let bound = value as? Int64 ?? (value as? Int).map(Int64.init), let total = download.download.totalBytes else { return false }
+                if key.hasSuffix("Greater") ? total <= bound : total >= bound { return false }
+            case "filenameRegex", "urlRegex", "finalUrlRegex":
+                guard let pattern = value as? String else { return false }
+                let field = key == "filenameRegex" ? "filename" : key == "urlRegex" ? "url" : "finalUrl"
+                let regex = try NSRegularExpression(pattern: pattern)
+                let text = item[field] as? String ?? ""
+                if regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) == nil { return false }
+            case let field where TrackedDownload.fields.contains(field):
+                if field.hasSuffix("Time") {
+                    guard let wanted = date(value), let actual = (item[field] as? String).flatMap(date), wanted == actual else { return false }
+                } else if "\(value)" != "\(item[field] ?? NSNull())" {
+                    return false
+                }
+            default:
+                throw Failure.unsupported(key)
+            }
+        }
+        return true
+    }
+
+    /// Chrome takes ISO 8601 strings or milliseconds since 1970.
+    static func date(_ value: Any) -> Date? {
+        if let text = value as? String { return try? Date(text, strategy: .iso8601) }
+        if let milliseconds = value as? Double { return Date(timeIntervalSince1970: milliseconds / 1000) }
+        if let milliseconds = value as? Int { return Date(timeIntervalSince1970: Double(milliseconds) / 1000) }
+        return nil
+    }
+
+    static func compare(_ lhs: Any?, _ rhs: Any?) -> ComparisonResult {
+        switch (lhs, rhs) {
+        case let (l as Int, r as Int): l < r ? .orderedAscending : l > r ? .orderedDescending : .orderedSame
+        case let (l as Int64, r as Int64): l < r ? .orderedAscending : l > r ? .orderedDescending : .orderedSame
+        case let (l as Bool, r as Bool): l == r ? .orderedSame : l ? .orderedDescending : .orderedAscending
+        default: "\(lhs ?? "")".compare("\(rhs ?? "")")
+        }
     }
 }

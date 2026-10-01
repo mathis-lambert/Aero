@@ -30,7 +30,7 @@ extension ProfileExtensions {
         case "privacy": return try privacyRequest(action, body, context: context)
         case "offscreen": return try offscreenRequest(action, body, context: context)
         case "idle": return try idleRequest(action, body, of: extensionID)
-        case "clipboard": return try clipboardRequest(action, body, context: context)
+        case "clipboard": return try clipboardRequest(action, context: context)
         case "search" where action == "url":
             try require("search", of: extensionID)
             guard let text = body["text"] as? String, let url = host?.searchURL(for: text, inProfile: profileID) else { throw ExtensionBridge.Failure.invalidRequest }

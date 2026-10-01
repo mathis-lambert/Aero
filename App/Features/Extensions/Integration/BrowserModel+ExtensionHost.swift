@@ -45,6 +45,17 @@ extension BrowserModel: ExtensionHost {
         return tab.id
     }
 
+    /// The page an extension of the profile shows in place of Aero's New Tab page, if one does.
+    func extensionNewTabPage(inProfile profileID: UUID) -> URL? {
+        extensions.extensionsIfMade(for: profileID)?.newTabPageURL(order: installedExtensions(inProfile: profileID).filter(\.isEnabled).map(\.id))
+    }
+
+    func showNewTab(inProfile profileID: UUID) {
+        guard !isChangingStructure, let space = destinationSpace(for: profileID) else { return }
+        switchSpace(space.id)
+        perform(.newTab)
+    }
+
     func activateTab(_ tabID: UUID) {
         guard let tab = tab(tabID), !isChangingStructure else { return }
         showTab(tab)
@@ -166,6 +177,10 @@ extension BrowserModel: ExtensionHost {
 
     func notificationsAllowed() async -> Bool { await extensionNotifications.isAllowed() }
 
+    func shownNotifications(of extensionID: String, inProfile profileID: UUID) async -> Set<String> {
+        await extensionNotifications.shown(of: extensionID, inProfile: profileID)
+    }
+
     func download(_ request: URLRequest, filename: String?, inProfile profileID: UUID) async -> ExtensionDownload? {
         let download = await downloads.start(request, in: pages.dataStore(for: profileID), filename: filename)
         return DownloadForExtension(download) { [weak self] in self?.downloads.cancel(download) }
@@ -194,7 +209,11 @@ private final class DownloadForExtension: ExtensionDownload {
     }
 
     var sourceURL: URL? { download.sourceURL }
+    var finalURL: URL? { download.finalURL }
+    var mimeType: String? { download.mimeType }
     var destination: URL? { download.destination }
+    var endTime: Date? { download.endTime }
+    var canResume: Bool { download.state == .failed && download.canResume }
     var receivedBytes: Int64 { download.completedBytes }
     var totalBytes: Int64? { download.totalBytes }
     var state: ExtensionDownloadState {

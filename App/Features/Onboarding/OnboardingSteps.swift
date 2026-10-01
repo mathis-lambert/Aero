@@ -70,7 +70,7 @@ struct OnboardingStepView: View {
                         }
                         .onboardingFrame("source.\(source.id)", in: onboarding)
                     }
-                    SourceRow(source: nil, detail: Text("You can import later from the Profiles menu."), selected: onboarding.selectedSourceID == nil) {
+                    SourceRow(source: nil, detail: Text("You can import later from the File menu."), selected: onboarding.selectedSourceID == nil) {
                         choose(nil)
                     }
                     .onboardingFrame("source.fresh", in: onboarding)
@@ -110,7 +110,7 @@ struct OnboardingStepView: View {
         return VStack(alignment: .leading, spacing: 0) {
             Eyebrow("What comes along")
             Headline("Choose what to bring.")
-            FormSection("From \(onboarding.source.map(OnboardingView.shortName) ?? "")", footer: "Open tabs stay behind, and sites will ask you to sign in again.") {
+            FormSection("From \(onboarding.source?.shortName ?? "")", footer: "Open tabs stay behind, and sites will ask you to sign in again.") {
                 VStack(spacing: 2) {
                     switch source?.favorites {
                     case .spaces:
@@ -118,7 +118,7 @@ struct OnboardingStepView: View {
                     case .bookmarks, nil:
                         ChoiceRow(symbol: "star", title: "Favorites", detail: "Bookmarks become favorites; each folder becomes a group.", isOn: binding(\.favorites))
                     case .unreadable:
-                        EncryptedRow(browser: source.map(OnboardingView.shortName) ?? "")
+                        EncryptedRow(browser: source?.shortName ?? "")
                     }
                     ChoiceRow(symbol: "clock", title: "History", detail: "The control bar knows where you go.", isOn: binding(\.history))
                     if source?.importsPasswords == true {
@@ -182,17 +182,17 @@ struct OnboardingStepView: View {
             Headline("Within reach.")
             BodyText("Try them now.")
             VStack(spacing: 2) {
-                ShortcutRow(shortcut: KeyboardShortcut(.rightArrow, modifiers: [.control, .command]), label: "Switch spaces", alternative: "Or swipe with two fingers",
+                ShortcutRow(shortcut: browser.shortcuts.shortcut(for: .nextSpace), label: "Switch spaces", alternative: "Or swipe with two fingers",
                             done: onboarding.triedShortcuts.contains(.nextSpace) || onboarding.triedShortcuts.contains(.previousSpace)) {
                     browser.perform(.nextSpace)
                 }
-                ShortcutRow(shortcut: KeyboardShortcut("k", modifiers: .command), label: "Open the control bar", done: onboarding.triedShortcuts.contains(.commandPalette)) {
+                ShortcutRow(shortcut: browser.shortcuts.shortcut(for: .commandPalette), label: "Open the control bar", done: onboarding.triedShortcuts.contains(.commandPalette)) {
                     browser.perform(.commandPalette)
                 }
-                ShortcutRow(shortcut: KeyboardShortcut("s", modifiers: .command), label: "Show or hide the sidebar", done: onboarding.triedShortcuts.contains(.toggleSidebar)) {
+                ShortcutRow(shortcut: browser.shortcuts.shortcut(for: .toggleSidebar), label: "Show or hide the sidebar", done: onboarding.triedShortcuts.contains(.toggleSidebar)) {
                     browser.perform(.toggleSidebar)
                 }
-                ShortcutRow(shortcut: KeyboardShortcut(.tab, modifiers: .control), label: "Go back to your last tab", done: onboarding.triedShortcuts.contains(.recentTab)) {
+                ShortcutRow(shortcut: browser.shortcuts.shortcut(for: .recentTab), label: "Go back to your last tab", done: onboarding.triedShortcuts.contains(.recentTab)) {
                     browser.perform(.recentTab)
                 }
             }
@@ -221,7 +221,9 @@ struct OnboardingStepView: View {
         return VStack(alignment: .leading, spacing: 0) {
             Eyebrow("Ready")
             Headline("Fair winds.", large: true)
-            BodyText(favorites > 0 ? "Your favorites are in the sidebar. Press ⌘T to open a new tab." : "Press ⌘T to open your first tab.")
+            // The person's own shortcut, which they may have changed.
+            let newTab = browser.shortcuts.shortcut(for: .newTab)?.keys.joined() ?? BrowserCommand.newTab.title
+            BodyText(favorites > 0 ? "Your favorites are in the sidebar. Press \(newTab) to open a new tab." : "Press \(newTab) to open your first tab.")
         }
     }
 }
@@ -428,8 +430,9 @@ private struct ResultRow: View {
     }
 }
 
+/// A command and the shortcut it has now, which the person may have changed or turned off.
 private struct ShortcutRow: View {
-    let shortcut: KeyboardShortcut
+    let shortcut: KeyboardShortcut?
     let label: LocalizedStringKey
     var alternative: LocalizedStringKey?
     let done: Bool
@@ -439,7 +442,7 @@ private struct ShortcutRow: View {
         Button(action: action) {
             OnboardingRow(icon: AnyView(Image(systemName: "checkmark").font(.system(size: 12, weight: .semibold)).foregroundStyle(.tint).opacity(done ? 1 : 0)),
                           title: Text(label), detail: alternative.map { Text($0) }) {
-                Keycaps(shortcut)
+                if let shortcut { Keycaps(shortcut) }
             }
             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
         }

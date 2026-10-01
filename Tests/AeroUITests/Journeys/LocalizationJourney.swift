@@ -56,7 +56,7 @@ final class LocalizationJourney: E2ETestCase {
         XCTAssertTrue(app.buttons["passwords.importCSV"].waitForExistence(timeout: Self.renderTimeout))
         attachScreenshot("password import", of: app)
         selectSettingsSection("Shortcuts")
-        replaceText(of: app.textFields["shortcuts.search"], with: "zoom")
+        replaceText(of: app.searchFields.firstMatch, with: "zoom")
         XCTAssertTrue(element("shortcuts.command.zoomIn").exists && element("shortcuts.command.resetZoom").exists, "Commands are found by their French titles")
         attachScreenshot("shortcuts", of: app)
         element("shortcuts.settings").click()

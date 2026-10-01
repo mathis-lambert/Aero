@@ -7,7 +7,6 @@ import SwiftUI
 /// picture, its security, and its data. See docs/SITE_CONTROLS.md › Control center.
 struct ControlCenterView: View {
     private static let tileHeight: CGFloat = 44
-    private static let switchIconSize: CGFloat = 30
 
     let browser: BrowserModel
     let site: BrowserModel.CurrentSite
@@ -56,28 +55,9 @@ struct ControlCenterView: View {
     }
 
     private func siteSwitch(_ permission: SitePermission, title: LocalizedStringKey, identifier: String) -> some View {
-        let isOn = browser.isOn(permission, at: site)
-        return Button { browser.toggle(permission, at: site) } label: {
-            HStack(spacing: 10) {
-                Image(systemName: permission.symbol)
-                    .font(BrowserDesign.Typography.label)
-                    .foregroundStyle(isOn ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
-                    .frame(width: Self.switchIconSize, height: Self.switchIconSize)
-                    .background(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(palette.fill), in: Circle())
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title).lineLimit(1)
-                    Text(isOn ? "On" : "Off").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(4)
-            .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-        }
-        .buttonStyle(QuietButtonStyle())
-        .browserAnimation(value: isOn)
-        .accessibilityLabel(Text(title))
-        .accessibilityValue(Text(isOn ? "On" : "Off"))
-        .accessibilityIdentifier(identifier)
+        Toggle(title, isOn: Binding(get: { browser.isOn(permission, at: site) }, set: { _ in browser.toggle(permission, at: site) }))
+            .toggleStyle(ControlCenterToggleStyle(symbol: permission.symbol))
+            .accessibilityIdentifier(identifier)
     }
 
     /// A secure page opens its certificate; a page that is not has none worth showing.
@@ -127,5 +107,34 @@ struct ControlCenterView: View {
         guard let trust = browser.currentPage?.serverTrust, let window = WindowConfiguration.mainWindow else { return }
         browser.window.controlCenterPresented = false
         SFCertificatePanel.shared().beginSheet(for: window, modalDelegate: nil, didEnd: nil, contextInfo: nil, trust: trust, showGroup: true)
+    }
+}
+
+/// A switch of the control center, drawn like the system's: a round symbol filled while on.
+private struct ControlCenterToggleStyle: ToggleStyle {
+    private static let iconSize: CGFloat = 30
+    let symbol: String
+    @Environment(\.palette) private var palette
+
+    func makeBody(configuration: Configuration) -> some View {
+        Button { configuration.isOn.toggle() } label: {
+            HStack(spacing: 10) {
+                Image(systemName: symbol)
+                    .font(BrowserDesign.Typography.label)
+                    .foregroundStyle(configuration.isOn ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
+                    .frame(width: Self.iconSize, height: Self.iconSize)
+                    .background(configuration.isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(palette.fill), in: Circle())
+                VStack(alignment: .leading, spacing: 1) {
+                    configuration.label.lineLimit(1)
+                    Text(configuration.isOn ? "On" : "Off").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(4)
+            .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+        }
+        .buttonStyle(QuietButtonStyle())
+        .browserAnimation(value: configuration.isOn)
     }
 }

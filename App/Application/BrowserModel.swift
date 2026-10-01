@@ -34,6 +34,10 @@ final class BrowserModel {
     let suggestionFetcher = SuggestionFetcher()
     private let filterLists: FilterListUpdater?
     @ObservationIgnored var extensionsTask: Task<Void, Never>?
+    @ObservationIgnored var extensionUpdates: DailyActivity?
+    /// Websites' popup windows, which end with their profile.
+    @ObservationIgnored var popupWindows: [PopupWindow] = []
+    @ObservationIgnored private var dockBadge: DockBadge?
     var currentPage: BrowserPage?
     /// The first launch's onboarding while it shows (docs/ONBOARDING.md).
     private(set) var onboarding: OnboardingModel?
@@ -127,6 +131,8 @@ final class BrowserModel {
         resetFailed = resetting && !erased
         pages.delegate = self
         pages.extensions = self
+        applyDeveloperMode()
+        dockBadge = DockBadge(downloads: pages.downloads)
         extensions.host = self
         history.onVisited = { [weak self] profileID, entry in self?.extensions.extensionsIfMade(for: profileID)?.historyDidVisit(entry) }
         history.onRemoved = { [weak self] profileID, urls, all in self?.extensions.extensionsIfMade(for: profileID)?.historyDidRemove(urls, all: all) }
@@ -186,11 +192,7 @@ final class BrowserModel {
         signIns.beginPending()
         appIcon.apply(preferences.appIcon)
         filterLists?.start()
-        Task {
-            await passwords.start()
-            // Passkeys decide which relying parties a page may name with the same list.
-            pages.passkeys?.suffixes = passwords.suffixes
-        }
+        Task { await passwords.start() }
         startExtensions()
     }
 
@@ -313,6 +315,8 @@ final class BrowserModel {
     }
 
     func selectTab(_ id: UUID?, recordRecent: Bool = true) {
+        // A page's dialog belongs to its tab: leaving the tab dismisses it.
+        if case .pageDialog(let request) = window.prompt, request.tabID != id { dismissPrompt() }
         guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = profile?.id else {
             passwords.closePicker()
             window.find.dismiss()
@@ -408,6 +412,7 @@ final class BrowserModel {
         guard let tab = session.tabs.first(where: { $0.id == id }) else { return }
         let wasSelected = window.selectedTabID == id
         let next = wasSelected ? tabShown(afterRemoving: tab) : nil
+        if case .pageDialog(let request) = window.prompt, request.tabID == id { dismissPrompt() }
         pages.close(tabID: id)
         passwords.forget(tabID: id)
         openedFavorites.remove(id)
@@ -556,19 +561,37 @@ final class BrowserModel {
         if decision(for: .ads, at: site.origin, profileID: site.profileID) != blocked { currentPage?.reload() }
     }
 
-    /// One prompt at a time: a new one replaces what is shown, refusing a pending extension request.
+    /// One prompt at a time: a new one answers the pending request before replacing it.
     func present(_ prompt: WindowPrompt) {
         if isChangingStructure {
             guard case .error = prompt else { return }
         }
-        dismissPrompt()
+        cancelCurrentPrompt()
         window.prompt = prompt
     }
 
+    /// Cancelling answers what the prompt asked: an extension request is refused, a confirmation cancelled.
     func dismissPrompt() {
         guard !isChangingStructure else { return }
-        if case .extensionRequest(let request) = window.prompt { answer(request, accepted: false) }
+        cancelCurrentPrompt()
+    }
+
+    private func cancelCurrentPrompt() {
+        let prompt = window.prompt
         window.prompt = nil
+        switch prompt {
+        case .extensionRequest(let request): answer(request, accepted: false)
+        case .confirmation(let confirmation): confirmation.cancel?()
+        case .pageDialog(let request): request.answer(.dismissed)
+        default: break
+        }
+    }
+
+    /// Confirms what the prompt on screen asks, once.
+    func confirm(_ confirmation: Confirmation) {
+        guard case .confirmation(let shown) = window.prompt, shown.id == confirmation.id else { return }
+        window.prompt = nil
+        Task { await confirmation.confirm() }
     }
 
     @discardableResult

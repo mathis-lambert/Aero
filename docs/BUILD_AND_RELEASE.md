@@ -74,6 +74,21 @@ Accepted tags:
 
 No leading zeroes in numeric versions. Every published tag must point to a commit reachable from main. Beta and stable tags are annotated, and their message is the release notes, in Markdown: the GitHub release and the signed appcast both use it, so the update prompt shows exactly what was reviewed. Create them with `git tag -a vX.Y.Z --cleanup=verbatim -F notes.md <commit>`. Publication fails for a lightweight tag or an empty message. Nightly notes are generated from the changes since the previous release. Increment the marketing version through review before the next product version. Beta identifiers belong to the tag and release name, not to Apple's numeric marketing version field.
 
+### From pull request to release notes
+
+Include the version bump and final user-facing notes (for example, `docs/releases/v0.2.0.md`) in the pull request so both are reviewed together. The PR description can summarize them, but publication does not read the PR description. After the PR is merged and the resulting main commit and nightly have been checked, create the annotated tag from the reviewed notes file. The tag message is the published source of truth.
+
+Write the notes in English, following the `v0.1.1` tag message: open with one sentence starting `Aero X.Y.Z` that says what the release changes for people using it. Follow with `##` headings for the main user-facing topics and short `-` bullets in complete sentences. Describe visible behavior and fixes, and state a relevant limitation when a feature remains incomplete. Keep implementation details, test results and commit lists in the PR instead. Do not add a Markdown title: the GitHub Release already has one, and the same text appears in Aero's update prompt.
+
+From the clean checkout of the chosen main commit, whose `MARKETING_VERSION` matches the tag, create and push the tag. For example, for a stable v0.2.0 release:
+
+```sh
+git tag -a v0.2.0 --cleanup=verbatim -F docs/releases/v0.2.0.md HEAD
+git push origin refs/tags/v0.2.0
+```
+
+The tag push starts `distribution.yml`. It reads the tag message, signs and notarizes the artifacts, then publishes the same notes in the GitHub Release and signed Sparkle appcast. Use the corresponding `vX.Y.Z-beta.N` tag for beta. Keep a published tag immutable; a correction to a published release needs a new version.
+
 ## Official packaging
 
 ```sh

@@ -48,7 +48,7 @@ Each profile has its own persistent controller and extension storage, sharing it
 
 Install and update requests retain their requesting profile, including while a folder picker is open. Preparing a candidate never replaces the active package. Refusing an update leaves the active version unchanged across relaunch.
 
-The review lists requested sites, permissions affecting user data or system access, and unsupported features. Approval grants WebKit permissions and those Aero provides (`clipboardRead`, `downloads`, `history`, `identity`, `identity.email`, `idle`, `management`, `notifications`, `offscreen`, `power`, `privacy`, `search`, `topSites`, `tts`). Optional permissions require a later prompt; `permissions.remove` updates saved grants. Store updates are checked daily and held for review if they request more access.
+The review lists requested sites, permissions affecting user data or system access, and unsupported features. Approval grants WebKit permissions and those Aero provides (`clipboardRead`, `downloads`, `history`, `identity`, `identity.email`, `idle`, `management`, `notifications`, `offscreen`, `power`, `privacy`, `search`, `topSites`, `tts`). Optional permissions require a later prompt; `permissions.remove` updates saved grants. Store updates are checked at launch, then once a day as macOS schedules background maintenance, and held for review if they request more access.
 
 ## The browser's part
 
@@ -57,6 +57,8 @@ The review lists requested sites, permissions affecting user data or system acce
 - **Actions.** Buttons and badges appear in the control center, with pinned buttons in the address bar. A click runs the action through WebKit, which runs the extension's handler or loads its popup page, sizes it to the page within Chrome's 800 × 600 points, and asks Aero to present WebKit's own popover, anchored to the button. Aero adds no sizing of its own: the page sets its size. Clicking the button again closes it, which lets WebKit unload the page, so `action.setPopup` takes effect on the next popup. Extension menu items precede Aero's on action buttons and follow WebKit's in page context menus.
 - **Shortcuts.** Commands, including `_execute_action`, run after Aero's reserved shortcuts and before the page. Aero and system bindings remain reserved. Settings can override, disable or restore extension shortcuts; overrides live in Aero's shortcut preferences and are removed with the extension.
 - **Options.** Options pages open in tabs.
+- **New Tab page.** An enabled extension declaring `chrome_url_overrides.newtab` replaces Aero's New Tab page with WebKit's `overrideNewTabPageURL`, the most recently added one when several do; its review says so. `tabs.create` without an address opens it too.
+- **Developer tools.** In developer mode (docs/BROWSING.md › Developer mode), backgrounds and extension pages are inspectable and `devtools_page` panels join Web Inspector.
 
 ## What Aero adds
 
@@ -65,8 +67,8 @@ The review lists requested sites, permissions affecting user data or system acce
 | API | What Aero does |
 | --- | --- |
 | `offscreen` | One hidden page per extension, in its context, with extension messaging; `reasons` and `justification` are validated |
-| `runtime.getContexts` | The background, offscreen document, open popup, and the extension's pages in tabs and windows, with WebKit's tab and window identifiers. The background is listed whenever the extension has one: WebKit starts it on demand and does not report when it stops. `documentIds` matches nothing |
-| `idle` | Locked while the screen is locked, idle after the interval without input (at least 15 seconds), with `onStateChanged` |
+| `runtime.getContexts` | The background, offscreen document, open popup, and the extension's pages in tabs and windows, with WebKit's tab and window identifiers. The background is listed whenever the extension has one: WebKit starts it on demand and does not report when it stops. A `documentIds` filter is refused: document identifiers are WebKit's own |
+| `idle` | Locked while the screen is locked, from the lock that follows the start of watching (macOS reports locking as it happens and has no public query of the current state), idle after the interval without input (at least 15 seconds), with `onStateChanged` |
 | `notifications` | macOS notifications with the extension's name, image and up to two buttons; updates merge their options. `getPermissionLevel` and `onPermissionLevelChanged` follow Aero's notification setting in System Settings, checked when Aero becomes active |
 | `downloads` | Web, data and blob downloads using profile data; `search`, `cancel`, `show`, `showDefaultFolder`, `erase` and events. Only the downloads the extension started in this session are known |
 | `management` | `getSelf` and confirmed `uninstallSelf`; with `management`, the profile's other extensions (`getAll`, `get`), confirmed `setEnabled` and `uninstall`, and their install, uninstall, enable and disable events |
@@ -77,9 +79,9 @@ The review lists requested sites, permissions affecting user data or system acce
 | `power` | System and display keep-awake assertions and user activity, released with the extension |
 | `tts` | `AVSpeechSynthesizer`: voices, rate, pitch, volume, language, SSML, queueing and events |
 | `webNavigation.onHistoryStateUpdated`, `onReferenceFragmentUpdated`, `onCreatedNavigationTarget` | Main-frame changes of address within a document, and pages a tab opens, as Aero observes them, with URL filters |
-| Clipboard | Fallback access with `clipboardWrite` or `clipboardRead` when an extension page cannot use the clipboard directly |
-| `requestIdleCallback` | In extension pages and content scripts, which WebKit leaves without it |
-| `tabs.getCurrent` | Nothing in an action popup, as in Chrome; WebKit would return the tab the popup belongs to |
+| `clipboardRead` | Extension pages granted it read what another app copied at once; WebKit alone waits for the person to confirm a paste. Writing and copying are WebKit's own |
+| `requestIdleCallback` | In extension pages and content scripts, which WebKit leaves without it (`NativeBaselineTests`) |
+| `tabs.getCurrent` | Nothing in an action popup, as in Chrome; WebKit returns the tab the popup belongs to (`NativeBaselineTests`) |
 | `privacy.services` | `passwordSavingEnabled`: turning it off gives the profile's passwords to the extension, turning it on or clearing it gives them back to Aero, with `onChange`. `autofillAddressEnabled` and `autofillCreditCardEnabled` are off and not controllable: Aero fills no addresses or cards |
 | `storage.managed` | An empty store: no policy manages Aero |
 
@@ -113,7 +115,7 @@ Start with a controlled Chrome-format fixture that demonstrates a browser API co
 - For a WebKit behavior every context needs, change `WebKitRuntime.js`.
 - Test the contract with an example extension under `Tests/BrowserExtensionsTests/Fixtures`, or the JavaScriptCore harness when native WebKit is unnecessary. Include teardown and refusal cases where applicable.
 
-Native desktop applications can impose their own browser authorization. Settings provides instructions and connection status for known integrations; successful native messaging does not bypass an application's signature or allowlist checks.
+Native desktop applications can impose their own browser authorization. Settings shows the connection status of any extension that tried to reach an app; successful native messaging does not bypass an application's signature or allowlist checks.
 
 ## Password managers
 
@@ -125,7 +127,7 @@ Settings lists the profile's extensions with an enable switch and a menu for pin
 
 ## Limits
 
-- WebKit's engine lacks, and Aero does not provide: the side panel, signing in with a browser account (`oauth2`, `getAuthToken`), changing requests as pages make them (`webRequestBlocking`; `declarativeNetRequest` works), developer tools panels, replacing the New Tab page, bookmarks and the reading list, tab groups and sessions, proxy settings, providing voices (`ttsEngine`), capturing tabs, pages or the screen, debugging, privacy settings other than `privacy.services`, site and font settings, clearing browsing data, address bar keywords and push messages. Extensions declaring them run without those parts, and the installation prompt and Settings name them.
+- WebKit's engine lacks, and Aero does not provide: the side panel, signing in with a browser account (`oauth2`, `getAuthToken`), changing requests as pages make them (`webRequestBlocking`; `declarativeNetRequest` works), replacing the History or Bookmarks page, bookmarks and the reading list, tab groups and sessions, proxy settings, providing voices (`ttsEngine`), capturing tabs, pages or the screen, debugging, privacy settings other than `privacy.services`, site and font settings, clearing browsing data, address bar keywords and push messages. Extensions declaring them run without those parts, and the installation prompt and Settings name them.
 - A worker's own pages are not listed by `clients.matchAll()`.
 - Muting tabs and reader mode are not reported to extensions.
 - The `webNavigation` events Aero adds cover main frames only.
@@ -146,17 +148,19 @@ Settings lists the profile's extensions with an enable switch and a menu for pin
 
 | Tests | Covers |
 | --- | --- |
+| `NativeBaselineTests` | WebKit alone, without the layer: both globals replaced cut a context's listeners off, `runtime` additions are dropped by garbage collection, no idle callbacks, `tabs.getCurrent` returns a tab in the popup, `<all_urls>` reaches other extensions; and what WebKit already does: `_execute_action` presents the popup, unfocused pages write and copy to the clipboard |
 | `CompatibilityLayerTests` | JavaScriptCore: missing APIs, globals assigned, redefined or later hidden, retained additions, bridge calls, callbacks, refusals, combined permission requests, context and navigation tab identifiers, URL filters, idle callbacks and layer refresh |
 | `ExtensionPackageTests` | CRX3 verification and package preparation |
 | `ExtensionEventsTests` | Delivery, background wake-up, queue bounds, unloading and cancellation |
 | `ExtensionCompatibilityTests`, `IdleSchedulingTests` | Unsupported declarations and idle scheduling |
 | `NativeMessagingTests` | Framing, host lookup and app identification |
 | `ExtensionRuntimeTests` | Real WebKit worker and offscreen page: globals replaced and redefined, idle callbacks, retained additions, the `management` inventory, idle, one prompt for Aero's and WebKit's permissions with `onAdded`, undeclared and removed permissions, notification permission level, offscreen messaging, contexts and refusals |
+| `ExtensionWindowTests` | `windows.create` sizes and requests, the New Tab page an extension replaces, developer mode |
 | `ExtensionPopupTests` | Controlled example: WebKit's popover sized to its page within Chrome's bounds, worker messages, native `action.setPopup`, a tab opened from the popup and teardown |
 | `ExtensionFormFillTests` | Controlled password manager example on a sign-in form: isolated content script with idle callbacks, an exposed page framed over the field, a script added to the page, all reaching the worker |
 | `ExtensionRemovalTests` | Persistent storage removal before and after unloading, retries and clean reinstallation |
 | `ProfileBridgeTests`, `ExtensionSiteAccessTests`, `ExtensionResourcesTests` | Same-ID extensions in two profiles, website grants that never reach other extensions, exposed resources |
-| `ExtensionAuthenticationTests`, `SearchCompatibilityTests`, `ExtensionSystemServicesTests` | Web authorization redirects, cancellation, silent mode and opener; search provider; keep-awake and speech |
+| `ExtensionAuthenticationTests`, `SearchCompatibilityTests`, `ExtensionSystemServicesTests` | Web authorization redirects, cancellation, silent mode and opener; search provider; keep-awake, speech and `clipboardRead` |
 | `ExtensionHistoryTests`, `HistoryNavigationTests` | History ranges, profile isolation and baseline upgrade; native navigation type and referrer |
 | `SiteJourneys.testAnExtensionRunsInItsProfileOnly` | Review, settings, content scripts, actions, popup, worker, connection tab and extension return, native host, profile isolation, rejected update and removal across relaunches |
 

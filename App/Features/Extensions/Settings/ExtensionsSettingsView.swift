@@ -10,57 +10,38 @@ struct ExtensionsSettingsView: View {
     let browser: BrowserModel
     let navigate: (SettingsRoute) -> Void
     @State private var storeLink = ""
-    @State private var removal: (record: InstalledExtension, profileID: UUID)?
     @Environment(\.palette) private var palette
 
     var body: some View {
-        ScrollView {
+        Form {
             if let profile = browser.profile {
                 let installed = browser.session.profiles.first { $0.id == profile.id }?.extensions ?? []
-                VStack(alignment: .leading, spacing: 16) {
-                    SettingsListIntro(text: "Extensions in the \(profile.name) profile.") {
-                        Button { openWebStore() } label: { Label("Chrome Web Store", systemImage: "arrow.up.forward.app") }
-                            .accessibilityIdentifier("extensions.webStore")
+                Section {
+                    if installed.isEmpty {
+                        Text("No extensions in this profile yet.")
+                            .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("extensions.empty")
                     }
+                    ForEach(installed) { record in row(record, profileID: profile.id) }
+                } footer: {
+                    Text("Extensions in the \(profile.name) profile.")
+                }
+                Section {
                     HStack(spacing: 8) {
                         TextField("Chrome Web Store link or extension ID", text: $storeLink)
-                            .textFieldStyle(.roundedBorder)
+                            .labelsHidden()
                             .onSubmit { installStoreLink(inProfile: profile.id) }
                             .accessibilityIdentifier("extensions.storeLink")
                         Button("Add") { installStoreLink(inProfile: profile.id) }
-                            .buttonStyle(PanelButtonStyle(prominent: true))
                             .disabled(WebStore.extensionID(in: storeLink) == nil || !browser.extensionsReady)
                             .accessibilityIdentifier("extensions.addFromStore")
                     }
-                    if installed.isEmpty {
-                        Text("No extensions in this profile yet.")
-                            .font(BrowserDesign.Typography.chrome)
-                            .foregroundStyle(palette.secondary)
-                            .accessibilityIdentifier("extensions.empty")
-                    }
-                    VStack(spacing: 6) {
-                        ForEach(installed) { record in row(record, profileID: profile.id) }
-                    }
-                    HStack {
-                        Spacer()
-                        Button("Add from folder…", action: chooseFolder)
-                            .buttonStyle(PanelButtonStyle())
-                            .disabled(!browser.extensionsReady)
-                            .help("Load an unpacked extension")
-                            .accessibilityIdentifier("extensions.addFromFolder")
-                    }
-                }
-                .frame(maxWidth: BrowserDesign.listWidth)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 24)
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .confirmationDialog("Remove this extension and its data?", isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } })) {
-            if let removal {
-                Button("Remove extension", role: .destructive) {
-                    Task { await browser.removeExtension(removal.record, inProfile: removal.profileID) }
-                    self.removal = nil
+                    Button { openWebStore() } label: { Label("Chrome Web Store", systemImage: "arrow.up.forward.app") }
+                        .accessibilityIdentifier("extensions.webStore")
+                    Button("Add from folder…", action: chooseFolder)
+                        .disabled(!browser.extensionsReady)
+                        .tooltip(Text("Load an unpacked extension"))
+                        .accessibilityIdentifier("extensions.addFromFolder")
                 }
             }
         }
@@ -70,8 +51,7 @@ struct ExtensionsSettingsView: View {
         let context = browser.extensions.extensionsIfMade(for: profileID)?.contexts[record.id]
         let summary = browser.extensionSummary(record, inProfile: profileID)
         return HStack(spacing: 8) {
-            Button { navigate(.extension(profileID: profileID, extensionID: record.id)) } label: {
-                SettingsRow(title: context?.webExtension.displayName ?? record.id) {
+            SettingsRow(title: context?.webExtension.displayName ?? record.id, open: { navigate(.extension(profileID: profileID, extensionID: record.id)) }) {
                     ExtensionIcon(image: context?.webExtension.icon(for: CGSize(width: Self.iconSize, height: Self.iconSize)), size: Self.iconSize)
                 } subtitle: {
                     HStack(spacing: 4) {
@@ -81,8 +61,6 @@ struct ExtensionsSettingsView: View {
                         Text(verbatim: summary.text)
                     }
                 } trailing: { EmptyView() }
-            }
-            .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
             .accessibilityIdentifier("extensions.list.details")
             Toggle("Enabled", isOn: Binding(get: { record.isEnabled && !record.isRemoving },
                                                set: { enabled in Task { await browser.setEnabled(enabled, record, inProfile: profileID) } }))
@@ -106,12 +84,11 @@ struct ExtensionsSettingsView: View {
                 }
                 Button("Extension Settings…", systemImage: "gearshape") { navigate(.extension(profileID: profileID, extensionID: record.id)) }
                 Divider()
-                Button("Remove extension…", systemImage: "trash", role: .destructive) { removal = (record, profileID) }
+                Button("Remove extension…", systemImage: "trash", role: .destructive) { browser.confirmRemoval(of: record, inProfile: profileID, inSettings: true) }
             } label: { Image(systemName: "ellipsis.circle") }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("Extension Settings…")
             .accessibilityIdentifier("extensions.list.actions")
-            .padding(.trailing, 12)
         }
         .disabled(browser.extensionOperationInProgress(record.id, profileID: profileID) || !browser.extensionsReady)
         .accessibilityElement(children: .contain)
@@ -162,9 +139,6 @@ extension BrowserModel {
                 : ExtensionSummary(text: String(localized: "Starting…"), needsAttention: false)
         }
         if case .failed = status.state { return ExtensionSummary(text: String(localized: "Could not start"), needsAttention: true) }
-        if let app = KnownExtensions.desktopApp(of: record.id), let link = owner?.desktopApps[record.id], !link.isConnected {
-            return ExtensionSummary(text: String(localized: "Not connected to \(app.name)"), needsAttention: true)
-        }
         if !status.unavailableFeatures.isEmpty {
             return ExtensionSummary(text: String(localized: "On · Limited features"), needsAttention: false)
         }

@@ -22,10 +22,11 @@ extension ProfileExtensions {
             return (providedGrants[extensionID] ?? []).sorted()
         case "request":
             return try await request(permissions: strings(body["permissions"]), origins: strings(body["origins"]), for: context)
+        case "removable":
+            _ = try removable(body, of: context)
+            return true
         case "remove":
-            let removed = Set(try strings(body["permissions"]))
-            guard removed.isSubset(of: ExtensionCapabilities.providedPermissions) else { throw ExtensionBridge.Failure.invalidRequest }
-            guard removed.isDisjoint(with: ExtensionCapabilities.requiredProvidedPermissions(of: context.webExtension)) else { throw PermissionFailure.required }
+            let removed = try removable(body, of: context)
             let granted = removed.intersection(providedGrants[extensionID] ?? [])
             guard !granted.isEmpty else { return true }
             revoke(granted, of: extensionID)
@@ -35,6 +36,13 @@ extension ProfileExtensions {
         default:
             throw ExtensionBridge.Failure.unknownRequest
         }
+    }
+
+    private func removable(_ body: [String: Any], of context: WKWebExtensionContext) throws -> Set<String> {
+        let removed = Set(try strings(body["permissions"]))
+        guard removed.isSubset(of: ExtensionCapabilities.providedPermissions) else { throw ExtensionBridge.Failure.invalidRequest }
+        guard removed.isDisjoint(with: ExtensionCapabilities.requiredProvidedPermissions(of: context.webExtension)) else { throw PermissionFailure.required }
+        return removed
     }
 
     private func strings(_ value: Any?) throws -> [String] {
@@ -71,7 +79,6 @@ extension ProfileExtensions {
         guard granted, contexts[extensionID] === context else { return false }
         for permission in missingNative { context.setPermissionStatus(.grantedExplicitly, for: permission) }
         for pattern in missingPatterns { context.setPermissionStatus(.grantedExplicitly, for: pattern) }
-        if !missingPatterns.isEmpty { restrictAfterGrant(context) }
         if !missingProvided.isEmpty {
             providedGrants[extensionID, default: []].formUnion(missingProvided)
             deliver("permissions.onAdded", [["permissions": missingProvided.sorted(), "origins": [String]()]], to: extensionID)

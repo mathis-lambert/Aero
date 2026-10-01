@@ -38,6 +38,8 @@ for (const target of namespaces) {
     replace("remove", method(async (query) => {
         const { ours, theirs, hasTheirs, unsupported } = split(query);
         if (unsupported) return false;
+        // A required permission of Aero's refuses the whole removal before WebKit gives anything up.
+        if (ours.length > 0) await call("permissions/removable", { permissions: ours });
         if (hasTheirs && !await native.remove(theirs)) return false;
         return ours.length === 0 || await call("permissions/remove", { permissions: ours });
     }));

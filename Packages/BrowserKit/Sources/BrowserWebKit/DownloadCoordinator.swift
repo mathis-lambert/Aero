@@ -71,6 +71,7 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
         let view = WKWebView(frame: .zero, configuration: configuration)
         record.resumingView = view
         record.state = .downloading
+        record.endTime = nil
         record.fractionCompleted = 0
         record.completedBytes = 0
         record.totalBytes = nil
@@ -110,6 +111,8 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
     }
 
     private func finish(_ record: BrowserDownload) {
+        record.endTime = .now
+        record.download?.progress.unpublish()
         record.progressObservation = nil
         record.download = nil
         record.resumingView = nil
@@ -145,8 +148,15 @@ public final class DownloadCoordinator: NSObject, WKDownloadDelegate {
                 || downloads.contains { $0 !== record && $0.state == .downloading && $0.destination == url }
         }
         let destination = directory.appendingPathComponent(name, isDirectory: false)
+        record.finalURL = response.url
+        record.mimeType = response.mimeType
         record.filename = name
         record.destination = destination
+        // Finder and the Dock show the transfer on the file, as for Safari's downloads.
+        download.progress.kind = .file
+        download.progress.fileOperationKind = .downloading
+        download.progress.fileURL = destination
+        download.progress.publish()
         return destination
     }
 

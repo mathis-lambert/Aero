@@ -37,6 +37,13 @@ public struct ImportSource: Identifiable, Hashable, Sendable {
         }
     }
 
+    public var shortName: String {
+        switch kind {
+        case .chromium(let browser): browser.shortName
+        case .safari: "Safari"
+        }
+    }
+
     public var bundleIdentifier: String {
         switch kind {
         case .chromium(let browser): browser.bundleIdentifier

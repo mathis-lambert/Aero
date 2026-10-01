@@ -101,6 +101,22 @@
         }
       }
     },
+    "%@ says" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ says"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ indique"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "shouldTranslate" : false
     },
@@ -168,6 +184,12 @@
         "en" : {
           "variations" : {
             "plural" : {
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "No cookies"
+                }
+              },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
@@ -186,6 +208,12 @@
         "fr" : {
           "variations" : {
             "plural" : {
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aucun cookie"
+                }
+              },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
@@ -599,22 +627,6 @@
         }
       }
     },
-    "Add profile" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add profile"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter un profil"
-          }
-        }
-      }
-    },
     "Add the current tab to favorites or return it to open tabs." : {
       "localizations" : {
         "en" : {
@@ -960,6 +972,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un autre processus Aero utilise ces données. Quittez-le, puis réessayez."
+          }
+        }
+      }
+    },
+    "Answer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Answer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réponse"
           }
         }
       }
@@ -1530,22 +1558,6 @@
         }
       }
     },
-    "Choose a profile name between 1 and %lld characters." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a profile name between 1 and %lld characters."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choisissez un nom de profil de 1 à %lld caractères."
-          }
-        }
-      }
-    },
     "Choose existing profile" : {
       "localizations" : {
         "en" : {
@@ -1700,22 +1712,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Effacer l’historique…"
-          }
-        }
-      }
-    },
-    "Clear search" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear search"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Effacer la recherche"
           }
         }
       }
@@ -2558,18 +2554,18 @@
         }
       }
     },
-    "Developer tools panels" : {
+    "Developer mode" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Developer tools panels"
+            "value" : "Developer mode"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Panneaux des outils de développement"
+            "value" : "Mode développeur"
           }
         }
       }
@@ -2586,6 +2582,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Désactiver le raccourci"
+          }
+        }
+      }
+    },
+    "Don’t allow more dialogs from this page" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don’t allow more dialogs from this page"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne plus autoriser de dialogues sur cette page"
           }
         }
       }
@@ -2618,6 +2630,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Téléchargements"
+          }
+        }
+      }
+    },
+    "Export as PDF…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export as PDF…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter au format PDF…"
           }
         }
       }
@@ -2702,34 +2730,18 @@
         }
       }
     },
-    "In 1Password, open Settings › Browser › Add Browser and choose Aero." : {
+    "Inspect Element opens Web Inspector on pages and extensions, with the extensions’ developer tools panels." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In 1Password, open Settings › Browser › Add Browser and choose Aero."
+            "value" : "Inspect Element opens Web Inspector on pages and extensions, with the extensions’ developer tools panels."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dans 1Password, ouvrez Réglages › Navigateur › Ajouter un navigateur et choisissez Aero."
-          }
-        }
-      }
-    },
-    "In Bitwarden, enable Settings › Allow browser integration. Touch ID requires the Mac App Store version." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In Bitwarden, enable Settings › Allow browser integration. Touch ID requires the Mac App Store version."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dans Bitwarden, activez Réglages › Autoriser l’intégration au navigateur. Touch ID nécessite la version du Mac App Store."
+            "value" : "Inspecter l’élément ouvre l’Inspecteur web sur les pages et les extensions, avec les panneaux de développement des extensions."
           }
         }
       }
@@ -2894,38 +2906,6 @@
         }
       }
     },
-    "Not connected to %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not connected to %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non connectée à %@"
-          }
-        }
-      }
-    },
-    "Not connected to %@ yet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not connected to %@ yet"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas encore connecté à %@"
-          }
-        }
-      }
-    },
     "On · Limited features" : {
       "localizations" : {
         "en" : {
@@ -2958,6 +2938,22 @@
         }
       }
     },
+    "Open a web page, image or PDF from this Mac in a new tab." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open a web page, image or PDF from this Mac in a new tab."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir une page web, une image ou un PDF de ce Mac dans un nouvel onglet."
+          }
+        }
+      }
+    },
     "Open extension options" : {
       "localizations" : {
         "en" : {
@@ -2970,6 +2966,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir les options de l’extension"
+          }
+        }
+      }
+    },
+    "Open File…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open File…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir un fichier…"
           }
         }
       }
@@ -3002,6 +3014,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Options"
+          }
+        }
+      }
+    },
+    "Press %@ to open your first tab." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press %@ to open your first tab."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez sur %@ pour ouvrir votre premier onglet."
           }
         }
       }
@@ -3182,6 +3210,22 @@
         }
       }
     },
+    "Remove Extension…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Extension…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer l’extension…"
+          }
+        }
+      }
+    },
     "Remove this extension and its data?" : {
       "localizations" : {
         "en" : {
@@ -3198,18 +3242,34 @@
         }
       }
     },
-    "Replacing the New Tab page" : {
+    "Replace the New Tab page" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Replacing the New Tab page"
+            "value" : "Replace the New Tab page"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remplacement de la page Nouvel onglet"
+            "value" : "Remplacer la page Nouvel onglet"
+          }
+        }
+      }
+    },
+    "Replacing the History or Bookmarks page" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replacing the History or Bookmarks page"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacement de la page Historique ou Signets"
           }
         }
       }
@@ -3262,6 +3322,54 @@
         }
       }
     },
+    "Save As…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save As…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer sous…"
+          }
+        }
+      }
+    },
+    "Save the page as a web archive, with its images and styles." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the page as a web archive, with its images and styles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer la page en archive web, avec ses images et ses styles."
+          }
+        }
+      }
+    },
+    "Save the whole page as a PDF document." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the whole page as a PDF document."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer toute la page en document PDF."
+          }
+        }
+      }
+    },
     "Show Downloads" : {
       "localizations" : {
         "fr" : {
@@ -3294,22 +3402,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chaque profil garde ses propres cookies, connexions, historique, autorisations de sites et extensions."
-          }
-        }
-      }
-    },
-    "Edit…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier…"
           }
         }
       }
@@ -3362,22 +3454,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activée"
-          }
-        }
-      }
-    },
-    "English" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "English"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "English"
           }
         }
       }
@@ -3688,22 +3764,6 @@
         }
       }
     },
-    "Français" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Français"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Français"
-          }
-        }
-      }
-    },
     "Free memory by unloading tabs you have not used for a while. They reload where you left off." : {
       "localizations" : {
         "en" : {
@@ -4010,22 +4070,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Icône"
-          }
-        }
-      }
-    },
-    "Import and export" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import and export"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import et export"
           }
         }
       }
@@ -4674,22 +4718,6 @@
         }
       }
     },
-    "Navigate" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigate"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigation"
-          }
-        }
-      }
-    },
     "Navigation" : {
       "localizations" : {
         "en" : {
@@ -4776,22 +4804,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nouveau groupe avec l’onglet"
-          }
-        }
-      }
-    },
-    "New group with tab" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New group with tab"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nouveau groupe avec cet onglet"
           }
         }
       }
@@ -4996,22 +5008,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun profil Chrome, Arc, Dia, Brave, Edge ou Vivaldi trouvé"
-          }
-        }
-      }
-    },
-    "No cookies" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No cookies"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucun cookie"
           }
         }
       }
@@ -5638,22 +5634,6 @@
         }
       }
     },
-    "Passkeys" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Passkeys"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clés d’identification"
-          }
-        }
-      }
-    },
     "Password" : {
       "localizations" : {
         "en" : {
@@ -5836,16 +5816,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appuyez sur le raccourci"
-          }
-        }
-      }
-    },
-    "Press ⌘T to open your first tab." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appuyez sur ⌘T pour ouvrir votre premier onglet."
           }
         }
       }
@@ -8223,6 +8193,22 @@
         }
       }
     },
+    "The page could not be saved. Try again, or choose another folder." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The page could not be saved. Try again, or choose another folder."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La page n’a pas pu être enregistrée. Réessayez ou choisissez un autre dossier."
+          }
+        }
+      }
+    },
     "This CSV file is too large to import (16 MB maximum)." : {
       "localizations" : {
         "en" : {
@@ -9057,28 +9043,18 @@
         }
       }
     },
-    "Yesterday" : {
+    "You can import later from the File menu." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yesterday"
+            "value" : "You can import later from the File menu."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hier"
-          }
-        }
-      }
-    },
-    "You can import later from the Profiles menu." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pourrez importer plus tard depuis le menu Profils."
+            "value" : "Vous pourrez importer plus tard depuis le menu Fichier."
           }
         }
       }
@@ -9093,12 +9069,18 @@
         }
       }
     },
-    "Your favorites are in the sidebar. Press ⌘T to open a new tab." : {
+    "Your favorites are in the sidebar. Press %@ to open a new tab." : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your favorites are in the sidebar. Press %@ to open a new tab."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vos favoris sont dans la barre latérale. Appuyez sur ⌘T pour ouvrir un onglet."
+            "value" : "Vos favoris sont dans la barre latérale. Appuyez sur %@ pour ouvrir un onglet."
           }
         }
       }
@@ -9151,22 +9133,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "exporter vos mots de passe"
-          }
-        }
-      }
-    },
-    "iCloud Passwords requires Apple to approve Aero." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud Passwords requires Apple to approve Aero."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mots de passe iCloud nécessite l’approbation d’Aero par Apple."
           }
         }
       }
@@ -9301,22 +9267,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "Account" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Account"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compte"
           }
         }
       }
@@ -9525,54 +9475,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les mots de passe de Safari sont dans l’app Mots de passe et ne peuvent pas être importés ici."
-          }
-        }
-      }
-    },
-    "Saving" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saving"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enregistrement"
-          }
-        }
-      }
-    },
-    "Sites can use passkeys from iCloud Keychain, a password app, a nearby phone or a security key." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sites can use passkeys from iCloud Keychain, a password app, a nearby phone or a security key."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les sites peuvent utiliser des clés d’accès du trousseau iCloud, d’une app de mots de passe, d’un téléphone à proximité ou d’une clé de sécurité."
-          }
-        }
-      }
-    },
-    "This build is not signed to use passkeys. Sites offer passwords instead." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This build is not signed to use passkeys. Sites offer passwords instead."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette version n’est pas signée pour utiliser les clés d’accès. Les sites proposent plutôt des mots de passe."
           }
         }
       }
@@ -9847,16 +9749,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gérer les extensions…"
-          }
-        }
-      }
-    },
-    "Remove Extension" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer l’extension"
           }
         }
       }

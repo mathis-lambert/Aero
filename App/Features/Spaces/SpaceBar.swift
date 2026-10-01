@@ -9,25 +9,17 @@ struct SpaceBar: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        GeometryReader { geometry in
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal) {
-                    HStack(spacing: 2) {
-                        ForEach(browser.session.spaces) { space in
-                            icon(space, selected: space.id == browser.window.selectedSpaceID)
-                                .id(space.id)
-                        }
-                    }
-                    .frame(minWidth: geometry.size.width)
-                }
-                .scrollIndicators(.hidden)
-                .onChange(of: browser.window.selectedSpaceID, initial: true) { _, id in
-                    let count = browser.session.spaces.count
-                    let contentWidth = CGFloat(count) * Self.iconSize + CGFloat(max(0, count - 1)) * 2
-                    if contentWidth > geometry.size.width, let id { proxy.scrollTo(id, anchor: .center) }
-                }
+        // Centered while they fit; past that, the selected space scrolls into the middle.
+        ScrollView(.horizontal) {
+            HStack(spacing: 2) {
+                ForEach(browser.session.spaces) { space in icon(space, selected: space.id == browser.window.selectedSpaceID) }
             }
+            .scrollTargetLayout()
         }
+        .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.basedOnSize)
+        .defaultScrollAnchor(.center, for: .alignment)
+        .scrollPosition(id: Binding(get: { browser.window.selectedSpaceID }, set: { _ in }), anchor: .center)
         .frame(height: Self.iconSize)
     }
 

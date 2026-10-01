@@ -113,9 +113,10 @@
         waiting = true;
         queueMicrotask(async () => {
             while (listenedEvents().length > 0) {
-                let events = [];
+                let events;
+                // Aero refuses a wait only for good, such as for a context it unloads: waiting stops.
                 try { events = await call("events/next", { events: listenedEvents() }); }
-                catch { await new Promise((resolve) => setTimeout(resolve, 5000)); }
+                catch (error) { console.error(error); break; }
                 for (const { name, arguments: received } of events) {
                     const event = listeners.get(name);
                     if (!event) continue;

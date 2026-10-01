@@ -1,6 +1,7 @@
 import BrowserCore
 import BrowserExtensions
 import Foundation
+import WebKit
 
 extension ExtensionFeature {
     var title: String {
@@ -8,8 +9,7 @@ extension ExtensionFeature {
         case .sidePanel: String(localized: "Side panel")
         case .accountSignIn: String(localized: "Signing in with a browser account")
         case .blockingRequests: String(localized: "Blocking web requests")
-        case .developerTools: String(localized: "Developer tools panels")
-        case .pageOverrides: String(localized: "Replacing the New Tab page")
+        case .pageOverrides: String(localized: "Replacing the History or Bookmarks page")
         case .bookmarks: String(localized: "Bookmarks and reading list")
         case .tabGroups: String(localized: "Tab groups and recently closed tabs")
         case .proxy: String(localized: "Proxy settings")
@@ -52,26 +52,10 @@ enum ExtensionPermissionWarning {
 
 /// Shared wording for the installation review and granted site access.
 enum ExtensionSiteWarning {
-    private static let everySite: Set = ["<all_urls>", "*://*/*", "http://*/*", "https://*/*"]
-
-    static func warning(for sites: [String]) -> String {
+    @MainActor static func warning(for sites: [String]) -> String {
         if sites.isEmpty { return String(localized: "No website, unless you click its button") }
-        if sites.contains(where: everySite.contains) { return String(localized: "Read and change your data on every website") }
+        if sites.contains(where: { (try? WKWebExtension.MatchPattern(string: $0))?.matchesAllHosts == true }) { return String(localized: "Read and change your data on every website") }
         return String(localized: "Read and change your data on \(sites.formatted(.list(type: .and)))")
-    }
-}
-
-enum KnownExtensions {
-    static func desktopApp(of extensionID: String) -> (name: String, connection: String)? {
-        switch extensionID {
-        case "aeblfdkhhhdcdjpifhhbdiojplfjncoa":
-            ("1Password", String(localized: "In 1Password, open Settings › Browser › Add Browser and choose Aero."))
-        case "nngceckbapebfimnlniiiahkandclblb":
-            ("Bitwarden", String(localized: "In Bitwarden, enable Settings › Allow browser integration. Touch ID requires the Mac App Store version."))
-        case "pejdijmoenmkgeppbflobdenhhabjlaj":
-            (String(localized: "Passwords"), String(localized: "iCloud Passwords requires Apple to approve Aero."))
-        default: nil
-        }
     }
 }
 

@@ -24,3 +24,17 @@ import WebKit
     #expect(!ExtensionSiteAccess.permits(try WKWebExtension.MatchPattern(string: "chrome-extension://*/*")))
     #expect(!ExtensionSiteAccess.permits(try WKWebExtension.MatchPattern(string: "webkit-extension://*/*")))
 }
+
+// Failure mode: granting `<all_urls>` later, as a permission prompt does, exposes another extension's pages. WebKit
+// keeps the explicit denial over a later grant, so nothing re-applies it.
+@MainActor
+@Test func aLaterWebsiteGrantKeepsOtherExtensionsDenied() async throws {
+    let loaded = try await LoadedExtension(manifest: #"{"manifest_version":3,"name":"Later grant example","version":"1","optional_host_permissions":["<all_urls>"]}"#)
+    defer { loaded.close() }
+    let context = try #require(loaded.owner.contexts[loaded.record.id])
+    let other = try #require(URL(string: "chrome-extension://bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/private.html"))
+    #expect(!context.hasAccess(to: other))
+    context.setPermissionStatus(.grantedExplicitly, for: try WKWebExtension.MatchPattern(string: "<all_urls>"))
+    #expect(context.hasAccess(to: try #require(URL(string: "https://example.test/"))))
+    #expect(!context.hasAccess(to: other))
+}

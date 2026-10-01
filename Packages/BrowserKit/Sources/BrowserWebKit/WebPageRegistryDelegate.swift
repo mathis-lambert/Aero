@@ -18,6 +18,9 @@ public protocol WebPageRegistryDelegate: AnyObject {
     func page(_ openerTabID: UUID, requestsPopupTabFor url: URL?) -> BrowserTab?
     /// The page, or a link followed in one of its frames, asks to open `url` in another app; nothing was opened.
     func page(_ tabID: UUID, requestsApplicationFor url: URL)
+    /// The page opened a popup window for `page`, of the content size it asked for (0 where it gave none). Returns
+    /// whether it is shown; the owner then handles the page's dialogs and closing.
+    func page(_ openerTabID: UUID, opensWindowWith page: BrowserPage, contentSize: CGSize) -> Bool
     /// The popup's page is live; the tab may now be selected.
     func pageDidOpenPopup(_ tabID: UUID, from openerTabID: UUID)
     /// A popup called `window.close()`; its opener may be selected again.
@@ -25,6 +28,8 @@ public protocol WebPageRegistryDelegate: AnyObject {
     /// The tab's profile's answer, with the browser-wide setting in place of a missing one, or `nil`
     /// for a device WebKit should ask for.
     func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision?
+    /// The page's `alert`, `confirm` or `prompt`; the page waits for the answer.
+    func page(_ tabID: UUID, presents dialog: PageDialog) async -> PageDialogAnswer
     /// A sign-in or sign-up form of the page, or of one of its frames, reported focus or a submission.
     func page(_ tabID: UUID, passwordForm event: PasswordFormEvent, in frame: PasswordFrame)
 }

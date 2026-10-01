@@ -31,9 +31,13 @@ public enum NavigationInput {
         ["chrome-extension", "webkit-extension"].contains(url.scheme?.lowercased() ?? "") && !(url.host ?? "").isEmpty
     }
 
-    /// Addresses a tab may hold: websites, extensions' pages and the browser's internal pages.
+    /// A file of this Mac, which only the person opens in a tab (File › Open File…, or another app's request); a
+    /// website never navigates to one.
+    public static func isLocalFileURL(_ url: URL) -> Bool { url.isFileURL && !url.path.isEmpty }
+
+    /// Addresses a tab may hold: websites, extensions' pages, files of this Mac and the browser's internal pages.
     public static func isTabURL(_ url: URL) -> Bool {
-        isWebURL(url) || isExtensionURL(url) || InternalPage(url: url) != nil
+        isWebURL(url) || isExtensionURL(url) || isLocalFileURL(url) || InternalPage(url: url) != nil
     }
 
     /// Text naming an address rather than words to search: a scheme, a dot or localhost. The
@@ -45,13 +49,13 @@ public enum NavigationInput {
     }
 
     /// The address `text` names, or `nil` when it should be searched instead, including text naming
-    /// something a tab cannot open, such as `javascript:` or `file:`.
+    /// something a tab cannot open, such as `javascript:`, or a file, which opens only from File › Open File….
     public static func address(from text: String) -> URL? {
         let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty, !value.contains(where: \.isWhitespace) else { return nil }
         let lowered = value.lowercased()
         if value.contains("://") || lowered.hasPrefix("javascript:") || lowered.hasPrefix("data:") {
-            return URL(string: value).flatMap { isTabURL($0) ? $0 : nil }
+            return URL(string: value).flatMap { isTabURL($0) && !$0.isFileURL ? $0 : nil }
         }
         let isLocal = lowered == "localhost" || ["localhost:", "localhost/", "127.0.0.1", "[::1]"].contains { lowered.hasPrefix($0) }
         guard isLocal || value.contains(".") else { return nil }

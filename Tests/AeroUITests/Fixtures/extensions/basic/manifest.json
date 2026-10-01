@@ -9,5 +9,5 @@
     "content_scripts": [{ "matches": ["http://localhost/*"], "js": ["content.js"] }],
     "host_permissions": ["http://localhost/*"],
     "web_accessible_resources": [{"resources": ["return.html", "return.js"], "matches": ["http://localhost/*"]}],
-    "permissions": ["webNavigation", "nativeMessaging"]
+    "permissions": ["webNavigation", "nativeMessaging", "contextMenus"]
 }

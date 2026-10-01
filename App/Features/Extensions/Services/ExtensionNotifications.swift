@@ -2,7 +2,8 @@ import BrowserExtensions
 import Foundation
 import UserNotifications
 
-/// Routes macOS notification responses to their extension. Test runs skip delivery and authorization.
+/// Routes macOS notification responses to their extension. Test runs never touch the person's notification settings:
+/// for them notifications are turned off, as the person could have chosen.
 @MainActor
 final class ExtensionNotifications: NSObject, UNUserNotificationCenterDelegate {
     enum Failure: LocalizedError {
@@ -25,7 +26,7 @@ final class ExtensionNotifications: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func show(_ notification: ExtensionNotification) async throws {
-        guard !isTestRun else { return }
+        guard !isTestRun else { throw Failure.notAllowed }
         let center = UNUserNotificationCenter.current()
         guard try await center.requestAuthorization(options: [.alert, .sound]) else { throw Failure.notAllowed }
         let content = UNMutableNotificationContent()
@@ -43,7 +44,7 @@ final class ExtensionNotifications: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func isAllowed() async -> Bool {
-        guard !isTestRun else { return true }
+        guard !isTestRun else { return false }
         return await UNUserNotificationCenter.current().notificationSettings().authorizationStatus != .denied
     }
 
@@ -52,6 +53,16 @@ final class ExtensionNotifications: NSObject, UNUserNotificationCenterDelegate {
         let request = Self.requestIdentifier(identifier, extensionID, profileID)
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [request])
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request])
+    }
+
+    func shown(of extensionID: String, inProfile profileID: UUID) async -> Set<String> {
+        guard !isTestRun else { return [] }
+        let delivered = await UNUserNotificationCenter.current().deliveredNotifications()
+        return Set(delivered.compactMap { notification in
+            let info = notification.request.content.userInfo
+            guard info[Self.extensionKey] as? String == extensionID, info[Self.profileKey] as? String == profileID.uuidString else { return nil }
+            return info[Self.identifierKey] as? String
+        })
     }
 
     private static func requestIdentifier(_ identifier: String, _ extensionID: String, _ profileID: UUID) -> String {

@@ -20,7 +20,7 @@ final class SiteJourneys: E2ETestCase {
         let security = element("controlCenter.security")
         XCTAssertTrue(security.waitForExistence(timeout: Self.renderTimeout))
         XCTAssertEqual(security.label, "Not secure", "A plain HTTP page is not secure")
-        XCTAssertTrue(app.buttons["controlCenter.share"].exists && app.buttons["controlCenter.ads"].exists)
+        XCTAssertTrue(app.buttons["controlCenter.share"].exists && element("controlCenter.ads").exists)
         attachScreenshot("control center")
         app.menuButtons["controlCenter.more"].click()
         XCTAssertTrue(app.menuItems["Clear Cache"].exists && app.menuItems["Clear Cookies"].exists)
@@ -70,9 +70,9 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(page("Banner hidden").exists, "Element hiding applies")
         XCTAssertFalse(server.requests(for: "filters.txt").isEmpty, "The list came from the fixture server, never the internet")
         app.buttons["address.controlCenter"].click()
-        let ads = app.buttons["controlCenter.ads"]
+        let ads = element("controlCenter.ads")
         XCTAssertTrue(ads.waitForExistence(timeout: Self.renderTimeout))
-        XCTAssertEqual(ads.value as? String, "On")
+        XCTAssertTrue(isOn(ads), "A site's switch is a native toggle, on")
         ads.click()
         XCTAssertTrue(page("Tracker loaded").waitForExistence(timeout: Self.pageTimeout), "Allowing the site reloads it unblocked")
         XCTAssertTrue(page("Banner shown").exists)
@@ -87,13 +87,13 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(page("Modes inline picture-in-picture inline").waitForExistence(timeout: Self.pageTimeout),
                       "The video went to picture in picture and came back with its tab")
         app.buttons["address.controlCenter"].click()
-        let pictureInPicture = app.buttons["controlCenter.pictureInPicture"]
+        let pictureInPicture = element("controlCenter.pictureInPicture")
         XCTAssertTrue(pictureInPicture.waitForExistence(timeout: Self.renderTimeout))
         pictureInPicture.click()
-        XCTAssertTrue(poll { pictureInPicture.value as? String == "Off" })
+        XCTAssertTrue(poll { !self.isOn(pictureInPicture) })
         app.typeKey(.escape, modifierFlags: [])
         app.typeKey("t", modifierFlags: .command)
-        pause(2)
+        pause(2) // As long as picture in picture takes to start, which must not happen here.
         app.typeKey("2", modifierFlags: .command)
         pause(1)
         XCTAssertTrue(page("Modes inline picture-in-picture inline").exists, "A site turned off stays inline")
@@ -129,7 +129,7 @@ final class SiteJourneys: E2ETestCase {
             (self.app.staticTexts["extensions.desktopApp"].value as? String ?? self.app.staticTexts["extensions.desktopApp"].label).hasPrefix("Connected")
         }, "It says the extension reached the app behind its native host")
         attachScreenshot("extension detail")
-        pin.click()
+        reveal(pin).click()
         app.buttons["settings.back"].click()
         chooseFolder("update")
         XCTAssertTrue(app.buttons["extensionRequest.cancel"].waitForExistence(timeout: Self.pageTimeout), "An update asks again")
@@ -143,7 +143,7 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(button.waitForExistence(timeout: Self.renderTimeout), "A pinned extension shows by the address")
         XCTAssertTrue(poll(timeout: Self.pageTimeout) { button.value as? String == "ok" }, "Its worker ran past the API WebKit lacks, and its native host answered")
         button.rightClick()
-        for item in ["Unpin Extension", "Manage Extensions…", "Remove Extension"] {
+        for item in ["Fixture action item", "Unpin Extension", "Manage Extensions…", "Remove Extension…"] {
             XCTAssertTrue(app.windows.menuItems[item].exists, "Its context menu shows \(item)")
         }
         app.typeKey(.escape, modifierFlags: [])
@@ -192,7 +192,7 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(listActions.isHittable && enabled.isHittable, "List actions fit expanded French in RTL")
         attachScreenshot("extensions expanded French RTL", of: app)
         details.click()
-        XCTAssertTrue(pin.waitForExistence(timeout: Self.renderTimeout) && pin.isHittable, "The pin control fits expanded French in RTL")
+        XCTAssertTrue(pin.waitForExistence(timeout: Self.renderTimeout) && reveal(pin).isHittable, "The pin control fits expanded French in RTL")
         let remove = app.buttons["extensions.remove"]
         reveal(remove)
         XCTAssertTrue(remove.isHittable, "The removal action remains reachable with expanded French in RTL")
@@ -203,7 +203,7 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(listActions.waitForExistence(timeout: Self.renderTimeout))
         listActions.click()
         app.menuItems["Remove extension…"].click()
-        app.sheets.buttons["Remove extension"].click()
+        app.buttons["extensions.confirmRemoval"].click()
         XCTAssertTrue(app.staticTexts["extensions.empty"].waitForExistence(timeout: Self.pageTimeout))
         closeSettings()
         quitAndRelaunch()

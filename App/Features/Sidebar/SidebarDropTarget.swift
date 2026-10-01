@@ -3,7 +3,8 @@ import BrowserCore
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// SwiftUI owns pickup and cancellation; AppKit handles the moving preview and synchronous drop.
+/// SwiftUI owns pickup and cancellation; AppKit handles the moving preview and synchronous drop. SwiftUI's own
+/// `dropDestination` never commits a tab dropped in the sidebar, as `SidebarJourneys` shows, so the drop is AppKit's.
 struct SidebarDropTarget: NSViewRepresentable {
     let browser: BrowserModel
     let space: BrowserSpace

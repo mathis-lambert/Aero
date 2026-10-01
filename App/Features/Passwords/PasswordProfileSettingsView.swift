@@ -22,90 +22,75 @@ struct PasswordProfileSettingsView: View {
     }
 
     var body: some View {
-        ScrollView {
+        Form {
             if let profile = browser.profiles.first(where: { $0.id == profileID }) {
-                VStack(alignment: .leading, spacing: 28) {
-                    HStack(spacing: 10) {
-                        ProfileMonogram(name: profile.name, size: BrowserDesign.identityHeight)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(verbatim: profile.name).font(BrowserDesign.Typography.heading)
-                            Text("\(logins.count) saved passwords")
-                                .font(BrowserDesign.Typography.caption)
-                                .foregroundStyle(palette.secondary)
+                Section {
+                    LabeledContent {
+                        Text("\(logins.count) saved passwords")
+                    } label: {
+                        Label {
+                            Text(verbatim: profile.name)
+                        } icon: {
+                            ProfileMonogram(name: profile.name, size: BrowserDesign.identityHeight)
                         }
                     }
-
-                    FormSection("AutoFill", footer: "An extension chosen here fills and saves this profile’s passwords on websites, and Aero stops offering its own. The passwords saved in Aero stay here.") {
-                        Picker("Fill passwords with", selection: Binding(
-                            get: { browser.passwordExtension(inProfile: profileID) },
-                            set: { browser.setPasswordExtension($0, inProfile: profileID) })) {
-                            Text("Aero").tag(String?.none)
-                            ForEach(browser.passwordExtensionCandidates(inProfile: profileID), id: \.id) { candidate in
-                                Text(verbatim: candidate.name).tag(Optional(candidate.id))
-                            }
-                        }
-                        .accessibilityIdentifier("passwords.autofill")
-                    }
-
-                    FormSection("Saved passwords") {
-                        TextField("Search passwords", text: $query)
-                            .textFieldStyle(.roundedBorder)
-                            .accessibilityIdentifier("passwords.search")
-                        if !loaded {
-                            ProgressView()
-                        } else if shown.isEmpty && !loadFailed {
-                            Text(logins.isEmpty ? "No saved passwords in this profile." : "No passwords match.")
-                                .font(BrowserDesign.Typography.chrome)
-                                .foregroundStyle(palette.secondary)
-                                .accessibilityIdentifier("passwords.empty")
-                        } else {
-                            LazyVStack(spacing: 6) {
-                                ForEach(shown) { login in
-                                    Button { navigate(.passwordLogin(login)) } label: {
-                                        SettingsRow(title: login.origin.host) {
-                                            let site = URL(string: login.origin.rawValue)
-                                            FaviconView(cache: browser.favicons, key: site.flatMap { FaviconKey(profileID: profileID, url: $0) },
-                                                        size: BrowserDesign.tabIconSize, fetchingMissing: site) {
-                                                Image(systemName: "globe").font(BrowserDesign.Typography.chrome)
-                                            }
-                                            .frame(width: BrowserDesign.identityHeight, height: BrowserDesign.identityHeight)
-                                            .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-                                        } subtitle: {
-                                            Text(verbatim: login.username.isEmpty ? String(localized: "No username") : login.username)
-                                        } trailing: { EmptyView() }
-                                    }
-                                    .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
-                                    .accessibilityIdentifier("passwords.row")
-                                    .accessibilityLabel(Text(verbatim: "\(login.origin.host), \(login.username)"))
-                                }
-                            }
-                        }
-                    } accessory: {
-                        SectionActionButton("Import passwords…", symbol: "square.and.arrow.down") {
-                            navigate(.passwordImport(profileID))
-                        }
-                        .accessibilityIdentifier("passwords.import")
-                    }
-
-                    Hairline()
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button { Task { await export() } } label: { Label("Export passwords…", systemImage: "square.and.arrow.up") }
-                            .buttonStyle(PanelButtonStyle())
-                            .disabled(logins.isEmpty)
-                            .accessibilityIdentifier("passwords.export")
-                        Text("Export creates an unencrypted CSV file. Anyone who can open it can read the passwords.")
-                            .font(BrowserDesign.Typography.caption)
-                            .foregroundStyle(palette.secondary)
-                    }
-
-                    if let message { Text(message).foregroundStyle(palette.miss).accessibilityIdentifier("passwords.message") }
                 }
-                .frame(maxWidth: BrowserDesign.listWidth, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 24)
-                .frame(maxWidth: .infinity)
+                Section {
+                    Picker("Fill passwords with", selection: Binding(
+                        get: { browser.passwordExtension(inProfile: profileID) },
+                        set: { browser.setPasswordExtension($0, inProfile: profileID) })) {
+                        Text("Aero").tag(String?.none)
+                        ForEach(browser.passwordExtensionCandidates(inProfile: profileID), id: \.id) { candidate in
+                            Text(verbatim: candidate.name).tag(Optional(candidate.id))
+                        }
+                    }
+                    .accessibilityIdentifier("passwords.autofill")
+                } header: {
+                    Text("AutoFill")
+                } footer: {
+                    Text("An extension chosen here fills and saves this profile’s passwords on websites, and Aero stops offering its own. The passwords saved in Aero stay here.")
+                }
+                Section {
+                    if !loaded {
+                        ProgressView()
+                    } else if shown.isEmpty && !loadFailed {
+                        Text(logins.isEmpty ? "No saved passwords in this profile." : "No passwords match.")
+                            .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("passwords.empty")
+                    }
+                    ForEach(shown) { login in
+                        SettingsRow(title: login.origin.host, open: { navigate(.passwordLogin(login)) }) {
+                            let site = URL(string: login.origin.rawValue)
+                            FaviconView(cache: browser.favicons, key: site.flatMap { FaviconKey(profileID: profileID, url: $0) },
+                                        size: BrowserDesign.tabIconSize, fetchingMissing: site) {
+                                Image(systemName: "globe")
+                            }
+                            .frame(width: BrowserDesign.identityHeight, height: BrowserDesign.identityHeight)
+                            .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                        } subtitle: {
+                            Text(verbatim: login.username.isEmpty ? String(localized: "No username") : login.username)
+                        } trailing: { EmptyView() }
+                        .accessibilityIdentifier("passwords.row")
+                        .accessibilityLabel(Text(verbatim: "\(login.origin.host), \(login.username)"))
+                    }
+                } header: {
+                    Text("Saved passwords")
+                }
+                Section {
+                    Button { navigate(.passwordImport(profileID)) } label: { Label("Import passwords…", systemImage: "square.and.arrow.down") }
+                        .accessibilityIdentifier("passwords.import")
+                    Button { Task { await export() } } label: { Label("Export passwords…", systemImage: "square.and.arrow.up") }
+                        .disabled(logins.isEmpty)
+                        .accessibilityIdentifier("passwords.export")
+                } footer: {
+                    Text("Export creates an unencrypted CSV file. Anyone who can open it can read the passwords.")
+                }
+                if let message {
+                    Section { Text(message).foregroundStyle(palette.miss).accessibilityIdentifier("passwords.message") }
+                }
             }
         }
+        .searchable(text: $query, placement: .toolbar, prompt: Text("Search passwords"))
         .task { await reload() }
     }
 

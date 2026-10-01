@@ -4,7 +4,6 @@ import SwiftUI
 struct StorageRecoveryView: View {
     let browser: BrowserModel
     let failure: StorageFailure
-    @State private var confirmsRecovery = false
 
     var body: some View {
         ContentUnavailableView {
@@ -22,17 +21,19 @@ struct StorageRecoveryView: View {
                         .accessibilityIdentifier("storage.showFiles")
                 }
                 if failure.canRestore {
-                    Button("Restore previous state…") { confirmsRecovery = true }
+                    Button("Restore previous state…") {
+                        browser.present(.confirmation(Confirmation(
+                            id: "restoreStorage", title: Text("Restore the previous browser state?"),
+                            message: Text("Changes since that snapshot will be replaced, including tabs, permissions and extension settings. Current files will be preserved separately. Browsing history is not restored."),
+                            confirmTitle: "Restore previous state", identifier: "storage.confirmRestore", inSettings: false) { [browser] in
+                            await browser.restoreStorage()
+                        }))
+                    }
                         .fixedSize()
                         .accessibilityIdentifier("storage.restore")
                 }
             }
             .disabled(browser.isOpeningStorage)
-        }
-        .confirmationDialog("Restore the previous browser state?", isPresented: $confirmsRecovery) {
-            Button("Restore previous state", role: .destructive) { Task { await browser.restoreStorage() } }
-        } message: {
-            Text("Changes since that snapshot will be replaced, including tabs, permissions and extension settings. Current files will be preserved separately. Browsing history is not restored.")
         }
     }
 }

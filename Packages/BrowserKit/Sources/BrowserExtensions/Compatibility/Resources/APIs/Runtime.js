@@ -6,13 +6,14 @@ define("runtime", {
     getContexts: () => method(async (filter = {}) => {
         if (typeof filter !== "object" || filter === null || Array.isArray(filter)) throw new Error("Invalid context filter.");
         const found = await call("runtime/contexts", filter);
-        const tabIds = filterOn(filter, "tabIds"), windowIds = filterOn(filter, "windowIds"), documentIds = filterOn(filter, "documentIds");
+        // A context's document identifier is WebKit's own and never reaches Aero.
+        if (filterOn(filter, "documentIds")) throw new Error("Filtering contexts by documentIds is not supported in Aero.");
+        const tabIds = filterOn(filter, "tabIds"), windowIds = filterOn(filter, "windowIds");
         const contexts = [];
         for (const { tab, ...context } of found) {
             if (tab) Object.assign(context, await nativeTab(tab));
             if (tabIds && !tabIds.has(String(context.tabId))) continue;
             if (windowIds && !windowIds.has(String(context.windowId))) continue;
-            if (documentIds) continue;
             contexts.push(context);
         }
         return contexts;

@@ -65,7 +65,7 @@ Settings › Storage shows what Aero keeps on this Mac and lets the person clean
 
 | Item | Measured from | Action |
 | --- | --- | --- |
-| Website cache | Each profile's WebKit network, fetch and media caches, and Aero's own URL cache | Clear cache: WebKit's cache data types in every profile, and `URLCache.shared`. Sign-ins stay. |
+| Website cache | Each profile's WebKit network, fetch and media caches | Clear cache: WebKit's cache data types in every profile. Sign-ins stay. |
 | Cookies and site data | Each profile's WebKit store minus its caches | Clear, per profile, after confirmation: every WebKit data type of that profile. Sites sign out. |
 | Data of deleted profiles | WebKit stores whose identifier is no longer a profile | Remove through `WKWebsiteDataStore.remove(forIdentifier:)`. |
 | History | `History.sqlite` and its WAL | Clear history, after confirmation: every profile's history, then the database is checkpointed and vacuumed so the space is returned. |

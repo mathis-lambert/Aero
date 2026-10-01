@@ -4,7 +4,8 @@ import SwiftUI
 
 /// The spaces' pages side by side. A horizontal two-finger swipe drags them and, released past
 /// `threshold`, moves to the neighbouring space; a click in the footer slides there. Only the
-/// selected page and its neighbours exist, so other spaces cost nothing.
+/// selected page and its neighbours exist, so other spaces cost nothing. A paging `ScrollView` would page natively,
+/// but its pages' rows then cannot be reached by clicks (`SidebarJourneys`), so the pager follows the gesture itself.
 struct SpacePager: View {
     /// How far a swipe must go, as a share of the page width, to change space.
     private static let threshold: CGFloat = 0.25

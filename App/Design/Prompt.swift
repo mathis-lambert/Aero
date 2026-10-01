@@ -11,22 +11,16 @@ struct Prompt<Content: View, Actions: View>: View {
     let title: Text
     var message: Text?
     var icon: Image?
-    var usesSheetBackground = false
     @ViewBuilder var content: Content
     @ViewBuilder var actions: Actions
     @Environment(\.palette) private var palette
     @Environment(\.promptCancel) private var cancel
 
     var body: some View {
-        Group {
-            if usesSheetBackground { layout }
-            else {
-                layout
-                    .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.window)
-                    .panelShadow()
-            }
-        }
-        .accessibilityElement(children: .contain)
+        layout
+            .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.window)
+            .panelShadow()
+            .accessibilityElement(children: .contain)
     }
 
     private var layout: some View {

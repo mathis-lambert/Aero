@@ -26,16 +26,16 @@ See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, c
 - Favorites that stay when closed, as tiles or in groups; tabs dragged anywhere in the sidebar, a full tab context menu, reopen closed tabs, recent-tab switching (⌃Tab).
 - Transactional SQLite state, versioned schema migrations and explicit recovery ([Storage](docs/STORAGE.md)), session restoration without loading pages, and tab hibernation ([Performance](docs/PERFORMANCE.md)).
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search.
-- Find in page, downloads, popups, favicons ([Browsing](docs/BROWSING.md)).
+- Find in page, downloads with progress in the Finder, popups in tabs or in windows of their own, page dialogs, file inputs, opening files of the Mac, saving pages as web archives or PDF, favicons, and a developer mode with Web Inspector ([Browsing](docs/BROWSING.md)).
 - A default browser for the Mac: links from other apps open in a tab, pages ask before handing a link to another app, and apps sign in through Aero with `ASWebAuthenticationSession` ([Other apps](docs/OTHER_APPS.md)).
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture ([Site Controls](docs/SITE_CONTROLS.md)).
 - A first-launch onboarding that imports spaces, favorites, history and passwords from Arc, Chrome, Dia, Brave, Edge, Vivaldi or Safari; open tabs are never imported ([Onboarding](docs/ONBOARDING.md)).
-- Passwords per profile in the macOS keychain: saved after sign-in, filled on request, strong passwords for new accounts, import from Chrome, Arc, Dia, Brave, Edge, Vivaldi or CSV, and CSV export; passkeys through macOS in builds signed with Apple's browser entitlement ([Passwords](docs/PASSWORDS.md)).
-- Chrome extensions per profile, from the Chrome Web Store or a folder: shortcuts, menus, popup windows, native messaging and selected APIs WebKit lacks ([Extensions](docs/EXTENSIONS.md)).
+- Passwords per profile in the macOS keychain: saved after sign-in, filled on request, strong passwords for new accounts, import from Chrome, Arc, Dia, Brave, Edge, Vivaldi or CSV, and CSV export; passkeys through WebKit and macOS in builds signed with Apple's browser entitlement ([Passwords](docs/PASSWORDS.md)).
+- Chrome extensions per profile, from the Chrome Web Store or a folder: shortcuts, menus, popup windows, a replaced New Tab page, developer tools panels, native messaging and selected APIs WebKit lacks ([Extensions](docs/EXTENSIONS.md)).
 - Settings › Storage: what Aero keeps on this Mac, item by item, with cleaning for caches, site data and history, and a full reset ([Storage](docs/STORAGE.md)).
 - Light, dark and system appearance, alternate app icons, English and French.
 
-Not implemented yet: separate windows for website popups, opening local HTML files.
+Not implemented yet: Aero's password filling in website popup windows.
 
 ## Documentation
 

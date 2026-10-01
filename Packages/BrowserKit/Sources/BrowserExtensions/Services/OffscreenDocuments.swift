@@ -17,6 +17,9 @@ final class OffscreenDocuments {
     }
 
     private var documents: [String: WKWebView] = [:]
+    var isInspectable = false {
+        didSet { for view in documents.values { view.isInspectable = isInspectable } }
+    }
 
     func create(_ url: URL, for context: WKWebExtensionContext) throws {
         let extensionID = context.uniqueIdentifier
@@ -25,9 +28,7 @@ final class OffscreenDocuments {
             throw Failure.notExtensionPage
         }
         let view = WKWebView(frame: .zero, configuration: configuration)
-        #if DEBUG
-        view.isInspectable = true
-        #endif
+        view.isInspectable = isInspectable
         view.load(URLRequest(url: url))
         documents[extensionID] = view
     }
@@ -58,6 +59,7 @@ extension ProfileExtensions {
         case "create":
             guard let url = (body["url"] as? String).flatMap(URL.init(string:)), let reasons = body["reasons"] as? [String], !reasons.isEmpty,
                   Set(reasons).isSubset(of: Self.offscreenReasons), body["justification"] is String else { throw ExtensionBridge.Failure.invalidRequest }
+            offscreen.isInspectable = isInspectable
             try offscreen.create(url, for: context)
             return nil
         case "close":

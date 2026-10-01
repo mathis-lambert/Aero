@@ -53,7 +53,7 @@ final class SignInSessions: NSObject {
 
     private func remove(_ id: UUID) {
         guard let session = sessions.removeValue(forKey: id) else { return }
-        browser?.pages.discardSignInPage(session.page)
+        browser?.pages.discardDetachedPage(session.page)
     }
 }
 
@@ -140,35 +140,18 @@ private struct SignInView: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Image(systemName: page.isSecure ? "lock.fill" : "globe")
+        SiteWindowContent(page: page) {
+            if isPrivate {
+                Text("Private sign-in")
+                    .font(.caption)
                     .foregroundStyle(palette.secondary)
-                    .accessibilityLabel(page.isSecure ? Text("Secure connection") : Text("Website"))
-                Text(verbatim: page.webView.url?.host() ?? "")
-                    .font(.headline)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                if isPrivate {
-                    Text("Private sign-in")
-                        .font(.caption)
-                        .foregroundStyle(palette.secondary)
-                        .help("This sign-in uses no saved website data and keeps none.")
-                }
-                Spacer(minLength: 8)
-                Button("Cancel", action: cancel)
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("signIn.cancel")
+                    .tooltip(Text("This sign-in uses no saved website data and keeps none."))
             }
-            .padding(.leading, 80)
-            .padding(.trailing, 12)
-            .frame(height: 40)
-            Divider()
-            BrowserContentView(page: page)
+            Spacer(minLength: 8)
+            Button("Cancel", action: cancel)
+                .keyboardShortcut(.cancelAction)
+                .accessibilityIdentifier("signIn.cancel")
         }
-        .ignoresSafeArea(.container, edges: .top)
-        .background(palette.canvas)
-        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("signIn")
     }
 }

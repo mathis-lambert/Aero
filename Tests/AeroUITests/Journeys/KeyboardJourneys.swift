@@ -98,7 +98,7 @@ final class KeyboardJourneys: E2ETestCase {
         try launch()
         open("shortcuts.html", expecting: "Shortcuts fixture")
         openSettings("Shortcuts")
-        let settings = app.windows.containing(.textField, identifier: "shortcuts.search").firstMatch
+        let settings = app.windows.containing(.button, identifier: "shortcuts.restoreAll").firstMatch
         XCTAssertTrue(settings.waitForExistence(timeout: Self.renderTimeout))
         XCTAssertEqual(settings.frame.width, 960, accuracy: 2)
         for identifier in [XCUIIdentifierMinimizeWindow, XCUIIdentifierZoomWindow, XCUIIdentifierFullScreenWindow] {
@@ -106,7 +106,7 @@ final class KeyboardJourneys: E2ETestCase {
         }
         selectSettingsSection("Tabs")
         app.buttons["settings.back"].click()
-        XCTAssertTrue(app.textFields["shortcuts.search"].waitForExistence(timeout: Self.renderTimeout), "Back returns to Shortcuts")
+        XCTAssertTrue(app.buttons["shortcuts.restoreAll"].waitForExistence(timeout: Self.renderTimeout), "Back returns to Shortcuts")
         XCTAssertTrue(app.buttons["settings.forward"].isEnabled)
         selectSettingsSection("Profiles")
         XCTAssertFalse(app.buttons["settings.forward"].isEnabled, "New navigation discards forward history")
@@ -151,7 +151,7 @@ final class KeyboardJourneys: E2ETestCase {
         XCTAssertTrue(poll { !self.app.buttons["sidebar.toggle"].exists }, "Aero gets it first again")
     }
 
-    private func search(_ text: String) { replaceText(of: app.textFields["shortcuts.search"], with: text) }
+    private func search(_ text: String) { replaceText(of: app.searchFields.firstMatch, with: text) }
 
     private func shortcutOptions(_ item: String) {
         element("shortcuts.settings").click()

@@ -1,6 +1,9 @@
+import AppKit
+import BrowserCore
 import Foundation
 import IOKit.pwr_mgt
 import Testing
+import WebKit
 @testable import BrowserExtensions
 
 // Failure modes: replacing a power request leaves both assertions active; invalid input
@@ -78,4 +81,20 @@ import Testing
     while !harness.bool("globalThis.spokenCallback && globalThis.spokenEvent"), ContinuousClock.now < deadline { await Task.yield() }
     #expect(harness.string("JSON.stringify(spokenEvent)") == #"{"type":"end","charIndex":7}"#)
     #expect(harness.bool("requests.some(request=>request.route==='tts/speak' && request.body.text==='Example' && !('onEvent' in request.body.options))"))
+}
+
+// Chrome's `clipboardRead` in an extension page loaded as Aero loads it: what another app copied is read at once,
+// where WebKit alone blocks the page on its paste confirmation.
+@MainActor
+@Test func clipboardReadReadsWhatAnotherAppCopied() async throws {
+    let loaded = try await LoadedExtension(manifest: #"{"manifest_version":3,"name":"Clipboard example","version":"1","permissions":["clipboardRead"]}"#,
+                                           files: ["page.html": "<html><body>Clipboard</body></html>"], granted: ["clipboardRead"])
+    defer { loaded.close() }
+    let page = try await loaded.page("page.html")
+    try await SharedPasteboard.use { pasteboard in
+        pasteboard.clearContents()
+        pasteboard.setString("from another app", forType: .string)
+        let read = try await page.callAsyncJavaScript("return await navigator.clipboard.readText();", contentWorld: .page) as? String
+        #expect(read == "from another app")
+    }
 }

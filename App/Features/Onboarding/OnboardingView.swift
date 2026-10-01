@@ -162,7 +162,7 @@ struct OnboardingView: View {
                 }
                 .buttonStyle(PanelButtonStyle())
                 .disabled(onboarding.isImporting)
-                .tooltip(Text("Back"), shortcut: KeyboardShortcut("[", modifiers: .command))
+                .tooltip(Text("Back"), shortcut: browser.shortcuts.shortcut(for: .back))
                 .accessibilityLabel(Text("Back"))
                 .accessibilityIdentifier("onboarding.back")
             }
@@ -207,7 +207,7 @@ struct OnboardingView: View {
         func word(_ text: String, y: CGFloat, size: CGFloat, system: Bool = false) -> WindShape.Word {
             WindShape.Word(text: text, center: CGPoint(x: layout.stageCenterX, y: y), size: size, maxWidth: width, system: system)
         }
-        let sourceName = onboarding.source.map(Self.shortName) ?? "Aero"
+        let sourceName = onboarding.source?.shortName ?? "Aero"
         switch onboarding.step {
         case .welcome:
             let side = min(layout.stageWidth - 40, layout.height * 0.9)
@@ -223,10 +223,6 @@ struct OnboardingView: View {
         case .defaultBrowser: return WindShape(ringsAround: CGPoint(x: layout.stageCenterX, y: layout.height * 0.465))
         case .ready: return WindShape(crescent: true)
         }
-    }
-
-    static func shortName(_ source: ImportSource) -> String {
-        source.name == "Google Chrome" ? "Chrome" : source.name == "Microsoft Edge" ? "Edge" : source.name
     }
 }
 
@@ -283,11 +279,11 @@ struct ReturnCap: View {
 enum OnboardingWindow {
     static let size = CGSize(width: 1040, height: 660)
 
-    @MainActor static func resize(_ window: NSWindow, forOnboarding onboarding: Bool) {
+    @MainActor static func resize(_ window: NSWindow, forOnboarding onboarding: Bool, animated: Bool) {
         guard let screen = (window.screen ?? NSScreen.main)?.visibleFrame else { return }
         let size = onboarding ? window.frame.size : window.frameRect(forContentRect: NSRect(origin: .zero, size: BrowserWindowView.preferredSize(on: screen.size))).size
         let target = NSRect(x: screen.midX - size.width / 2, y: screen.midY - size.height / 2, width: size.width, height: size.height)
-        guard !onboarding, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { window.setFrame(target, display: true); return }
+        guard !onboarding, animated else { window.setFrame(target, display: true); return }
         // Grown from the onboarding's center, through the animator: `setFrame(_:display:animate:)` spins the run loop.
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.35

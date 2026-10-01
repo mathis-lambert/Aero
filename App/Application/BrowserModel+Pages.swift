@@ -42,6 +42,15 @@ extension BrowserModel: WebPageRegistryDelegate {
         return addTab(address, in: opener.spaceID)
     }
 
+    func page(_ openerTabID: UUID, opensWindowWith page: BrowserPage, contentSize: CGSize) -> Bool {
+        guard !isChangingStructure, let opener = session.tabs.first(where: { $0.id == openerTabID }), let profileID = profileID(of: opener) else { return false }
+        popupWindows.append(PopupWindow(page: page, profileID: profileID, contentSize: contentSize, over: WindowConfiguration.mainWindow,
+                                        discard: { [weak self] in self?.pages.discardDetachedPage($0) }) { [weak self] ended in
+            self?.popupWindows.removeAll { $0 === ended }
+        })
+        return true
+    }
+
     func pageDidOpenPopup(_ tabID: UUID, from openerTabID: UUID) {
         activateTab(tabID)
         extensionsDidOpenNavigationTarget(tabID, from: openerTabID)

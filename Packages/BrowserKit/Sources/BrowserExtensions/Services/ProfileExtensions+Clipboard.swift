@@ -3,20 +3,11 @@ import Foundation
 import WebKit
 
 extension ProfileExtensions {
-    /// For a page that cannot reach the clipboard itself, such as an offscreen document without focus.
-    func clipboardRequest(_ action: String, _ body: [String: Any], context: WKWebExtensionContext) throws -> Any? {
-        switch action {
-        case "write":
-            guard context.hasPermission(.clipboardWrite) else { throw ExtensionBridge.Failure.notAllowed("clipboardWrite") }
-            guard let text = body["text"] as? String else { throw ExtensionBridge.Failure.invalidRequest }
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(text, forType: .string)
-            return nil
-        case "read":
-            try require("clipboardRead", of: context.uniqueIdentifier)
-            return NSPasteboard.general.string(forType: .string) ?? ""
-        default:
-            throw ExtensionBridge.Failure.unknownRequest
-        }
+    /// Chrome's `clipboardRead`, which WebKit lacks: with it, a page reads what another app copied without waiting for
+    /// the person to confirm a paste. Without it, the page is left to WebKit's own confirmation (`nil`).
+    func clipboardRequest(_ action: String, context: WKWebExtensionContext) throws -> Any? {
+        guard action == "read" else { throw ExtensionBridge.Failure.unknownRequest }
+        guard providedGrants[context.uniqueIdentifier]?.contains("clipboardRead") == true else { return nil }
+        return NSPasteboard.general.string(forType: .string) ?? ""
     }
 }

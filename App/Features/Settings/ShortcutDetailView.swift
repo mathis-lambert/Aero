@@ -63,7 +63,7 @@ struct ShortcutDetailView: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("Shortcut settings")
+        .tooltip(Text("Shortcut settings"))
         .accessibilityIdentifier("shortcuts.settings")
         .disabled(shortcuts.error != nil || recording)
     }
@@ -72,12 +72,11 @@ struct ShortcutDetailView: View {
         if recording {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Press a shortcut with Command or Control. Escape cancels.").foregroundStyle(.secondary)
-                ShortcutRecorder { event in
-                    if event.keyCode == 53 { finishRecording(); return }
+                ShortcutRecorder(record: { event in
                     guard let binding = ShortcutBinding(event: event), binding.isValid else { invalid = true; return }
                     candidate = binding
                     invalid = false
-                }
+                }, cancel: finishRecording)
                 .frame(height: 56)
                 .overlay {
                     Group {
@@ -119,7 +118,7 @@ struct ShortcutDetailView: View {
                 .padding(.horizontal, 16)
                 .frame(minWidth: 100, minHeight: 44)
             }
-            .help("Record shortcut")
+            .tooltip(Text("Record shortcut"))
             .focused($recordButtonFocused)
             .accessibilityLabel(Text(command.title))
             .accessibilityValue(Text(verbatim: shortcuts.shortcut(for: command)?.keys.joined() ?? String(localized: "None")))

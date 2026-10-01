@@ -53,7 +53,7 @@ struct StorageUsage: Equatable {
             switch file.lastPathComponent {
             case iconsFolder: usage.icons += size
             case let name where blockingFolders.contains(name): usage.blockingLists += size
-            // Aero's own URL cache and what WebKit keeps beside it.
+            // What WebKit keeps in the app's caches folder.
             default: usage.websiteCache += size
             }
         }
@@ -84,8 +84,6 @@ extension BrowserModel {
     /// Caches only; sign-ins stay.
     func clearWebsiteCache() async {
         await pages.removeWebsiteCache(profileIDs: profiles.map(\.id))
-        // Test runs share the app's URL cache with the person's own Aero.
-        if !isTestRun { URLCache.shared.removeAllCachedResponses() }
     }
 
     func clearSiteData(profileID: UUID) async {

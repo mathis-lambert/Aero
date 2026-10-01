@@ -135,7 +135,7 @@ final class SpacesJourneys: E2ETestCase {
         let profile = app.popUpButtons["spaces.profile"]
         profile.click()
         profile.menuItems["Separate"].click()
-        app.sheets.buttons["Reload pages"].click()
+        app.buttons["spaces.confirmProfile"].click()
         selectSettingsSection("profiles")
         app.buttons["profiles.row.Separate"].click()
         XCTAssertFalse(app.buttons["profiles.delete"].isEnabled, "A profile in use cannot be deleted")
@@ -156,11 +156,11 @@ final class SpacesJourneys: E2ETestCase {
         let owner = app.popUpButtons["spaces.profile"]
         owner.click()
         owner.menuItems["Personal identity"].click()
-        app.sheets.buttons["Reload pages"].click()
+        app.buttons["spaces.confirmProfile"].click()
         selectSettingsSection("profiles")
         app.buttons["profiles.row.Separate"].click()
         app.buttons["profiles.delete"].click()
-        app.sheets.buttons["Delete profile"].click()
+        app.buttons["profiles.confirmDelete"].click()
         XCTAssertTrue(app.buttons["profiles.row.Personal identity"].waitForExistence(timeout: Self.renderTimeout))
         XCTAssertFalse(app.buttons["profiles.row.Separate"].exists)
         if app.buttons["settings.back"].isEnabled {

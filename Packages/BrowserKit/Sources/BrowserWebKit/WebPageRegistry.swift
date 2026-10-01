@@ -26,8 +26,10 @@ public final class WebPageRegistry {
     /// Set before the first page is created.
     public weak var extensions: PageExtensions?
     public let downloads: DownloadCoordinator
-    /// Present only in builds entitled to passkeys.
-    public let passkeys: PasskeyCeremony? = PasskeyCeremony.isAvailable ? PasskeyCeremony() : nil
+    /// Developer mode: Web Inspector opens from every page's context menu (docs/BROWSING.md › Developer mode).
+    public var pagesAreInspectable = false {
+        didSet { for live in livePages.values { live.page.webView.isInspectable = pagesAreInspectable } }
+    }
     private let contentBlocker: ContentBlocker?
 
     var livePages: [UUID: LivePage] = [:]
@@ -36,7 +38,13 @@ public final class WebPageRegistry {
     var evaluation: Task<Void, Never>?
     private static let maximumStateBytes = 16 * 1024 * 1024
     private static let maximumStates = 32
-    private var hibernatedStates: [UUID: Data] = [:]
+    /// A hibernated page's history and scroll position, and its `sessionStorage`, which a tab keeps while it lives.
+    private struct HibernatedState {
+        let interaction: Data
+        let sessionStorage: Data?
+        var bytes: Int { interaction.count + (sessionStorage?.count ?? 0) }
+    }
+    private var hibernatedStates: [UUID: HibernatedState] = [:]
     private var stateOrder: [UUID] = []
     private(set) var stores: [UUID: WKWebsiteDataStore] = [:]
     private var pressureMonitor: MemoryPressureMonitor?
@@ -104,16 +112,19 @@ public final class WebPageRegistry {
         livePages.removeValue(forKey: tabID)?.page.dispose()
     }
 
-    func hibernate(_ tabID: UUID) {
+    func hibernate(_ tabID: UUID, sessionStorage: Data? = nil) {
         guard tabID != activeTabID, let live = livePages.removeValue(forKey: tabID) else { return }
         discardState(tabID)
-        if let state = live.page.webView.interactionState as? Data, state.count <= Self.maximumStateBytes {
-            hibernatedStates[tabID] = state
-            stateOrder.append(tabID)
-            var bytes = hibernatedStates.values.reduce(0) { $0 + $1.count }
-            while stateOrder.count > Self.maximumStates || bytes > Self.maximumStateBytes {
-                let oldest = stateOrder.removeFirst()
-                bytes -= hibernatedStates.removeValue(forKey: oldest)?.count ?? 0
+        if let interaction = live.page.webView.interactionState as? Data {
+            let state = HibernatedState(interaction: interaction, sessionStorage: sessionStorage)
+            if state.bytes <= Self.maximumStateBytes {
+                hibernatedStates[tabID] = state
+                stateOrder.append(tabID)
+                var bytes = hibernatedStates.values.reduce(0) { $0 + $1.bytes }
+                while stateOrder.count > Self.maximumStates || bytes > Self.maximumStateBytes {
+                    let oldest = stateOrder.removeFirst()
+                    bytes -= hibernatedStates.removeValue(forKey: oldest)?.bytes ?? 0
+                }
             }
         }
         live.page.dispose()
@@ -148,11 +159,13 @@ public final class WebPageRegistry {
         let page = BrowserPage(configuration: extensionPage ?? websiteConfiguration(forProfile: profileID))
         page.extensionOrigin = extensionPage == nil ? nil : tab.url
         connect(page, to: tab.id, profileID: profileID)
-        if let state = hibernatedStates[tab.id] {
+        // A file's read access is granted only by loading it again.
+        if let state = hibernatedStates[tab.id], !tab.url.isFileURL {
             discardState(tab.id)
-            page.restore(state, url: tab.url)
+            page.restore(state.interaction, sessionStorage: state.sessionStorage, url: tab.url)
             Self.signposter.emitEvent(Diagnostics.Signpost.pageRestored)
         } else {
+            discardState(tab.id)
             page.load(tab.url, transition: .autoTopLevel)
             Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
         }
@@ -161,20 +174,22 @@ public final class WebPageRegistry {
 
     /// A website page's configuration: the profile's data store, Aero's page scripts and the profile's extensions.
     public func websiteConfiguration(forProfile profileID: UUID) -> WKWebViewConfiguration {
-        let configuration = BrowserPage.configuration(store: dataStore(for: profileID), passkeys: passkeys)
+        let configuration = BrowserPage.configuration(store: dataStore(for: profileID))
         extensions?.configure(configuration, forProfile: profileID)
         return configuration
     }
 
     private func connect(_ page: BrowserPage, to tabID: UUID, profileID: UUID) {
+        page.webView.isInspectable = pagesAreInspectable
         page.onMetadata = { [weak self] url, title in self?.delegate?.page(tabID, didUpdateURL: url, title: title) }
         page.onLoadingChange = { [weak self] in self?.delegate?.pageDidChangeLoading(tabID) }
         page.onVisit = { [weak self] visit in self?.delegate?.page(tabID, didVisit: visit) }
         page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
-        page.onPopup = { [weak self] configuration, url in self?.openPopup(from: tabID, configuration: configuration, url: url) }
+        page.onPopup = { [weak self] configuration, url, features in self?.openPopup(from: tabID, configuration: configuration, url: url, features: features) }
         page.onApplicationLink = { [weak self] url in self?.delegate?.page(tabID, requestsApplicationFor: url) }
         page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
+        page.onDialog = { [weak self] dialog in await self?.delegate?.page(tabID, presents: dialog) ?? .dismissed }
         page.onContextMenu = { [weak self] in self?.extensions?.menuItems(forTab: tabID, inProfile: profileID) ?? [] }
         page.onPageNavigation = { [weak self, weak page] target, origin in
             guard let self, let page else { return false }
@@ -191,7 +206,8 @@ public final class WebPageRegistry {
     /// The popup must use WebKit's configuration unchanged: it carries the opener's data store,
     /// process and user scripts, and keeps `window.opener` connected. WebKit then loads the
     /// popup's request into the returned view itself.
-    private func openPopup(from openerTabID: UUID, configuration: WKWebViewConfiguration, url: URL?) -> WKWebView? {
+    private func openPopup(from openerTabID: UUID, configuration: WKWebViewConfiguration, url: URL?, features: WKWindowFeatures) -> WKWebView? {
+        if Self.opensWindow(features) { return openPopupWindow(from: openerTabID, configuration: configuration, features: features) }
         guard let opener = livePages[openerTabID], let tab = delegate?.page(openerTabID, requestsPopupTabFor: url) else { return nil }
         let popup = BrowserPage(configuration: configuration)
         popup.extensionOrigin = opener.page.extensionOrigin
@@ -260,19 +276,42 @@ public final class WebPageRegistry {
         replacement.load(request, transition: transition, referrer: referrer)
     }
 
+    /// `window.open` with a size asks for a window of its own, as Safari opens one; without, the page opens in a tab.
+    static func opensWindow(_ features: WKWindowFeatures) -> Bool { features.width != nil || features.height != nil }
+
+    /// A popup window: a page outside any tab, with the opener's data and `window.opener`, recording no history.
+    /// Its downloads, links for other apps, site permissions and further popups belong to its opener's tab.
+    private func openPopupWindow(from openerTabID: UUID, configuration: WKWebViewConfiguration, features: WKWindowFeatures) -> WKWebView? {
+        guard let opener = livePages[openerTabID] else { return nil }
+        let popup = BrowserPage(configuration: configuration)
+        popup.webView.isInspectable = pagesAreInspectable
+        popup.extensionOrigin = opener.page.extensionOrigin
+        popup.contentBlocker = contentBlocker
+        popup.onDownload = { [weak self] download in self?.downloads.track(download, from: nil) }
+        popup.onApplicationLink = { [weak self] url in self?.delegate?.page(openerTabID, requestsApplicationFor: url) }
+        popup.onPermission = { [weak self] permission, origin in self?.delegate?.page(openerTabID, decisionFor: permission, at: origin) }
+        popup.onPopup = { [weak self] configuration, url, features in self?.openPopup(from: openerTabID, configuration: configuration, url: url, features: features) }
+        let size = CGSize(width: features.width?.doubleValue ?? 0, height: features.height?.doubleValue ?? 0)
+        guard delegate?.page(openerTabID, opensWindowWith: popup, contentSize: size) == true else { return nil }
+        Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
+        return popup.webView
+    }
+
     /// A page outside any tab, for another app's sign-in (docs/OTHER_APPS.md › Sign-in for other apps). It uses the
     /// profile's website data and extensions, or, for a private sign-in, a store of its own that ends with the page.
     /// It records no history and opens no popups.
     public func makeSignInPage(profileID: UUID, isPrivate: Bool) -> BrowserPage {
-        let configuration = isPrivate ? BrowserPage.configuration(store: .nonPersistent(), passkeys: passkeys) : websiteConfiguration(forProfile: profileID)
+        let configuration = isPrivate ? BrowserPage.configuration(store: .nonPersistent()) : websiteConfiguration(forProfile: profileID)
         let page = BrowserPage(configuration: configuration)
+        page.webView.isInspectable = pagesAreInspectable
         page.contentBlocker = contentBlocker
         Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
         return page
     }
 
-    /// Ends a sign-in page: its web content process and, for a private sign-in, its website data go with it.
-    public func discardSignInPage(_ page: BrowserPage) { page.dispose() }
+    /// Ends a page outside any tab, a sign-in's or a popup window's: its web content process and, for a private
+    /// sign-in, its website data go with it.
+    public func discardDetachedPage(_ page: BrowserPage) { page.dispose() }
 
     /// Unloading either side of a popup relationship would break `window.opener`.
     func hasPopupRelationship(_ tabID: UUID) -> Bool {

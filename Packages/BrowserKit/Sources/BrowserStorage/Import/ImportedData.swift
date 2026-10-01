@@ -28,7 +28,7 @@ public struct ImportLimits: Sendable {
 
     /// docs/ONBOARDING.md › Mapping.
     public static func standard(now: Date = .now) -> ImportLimits {
-        ImportLimits(since: now.addingTimeInterval(-365 * 24 * 60 * 60), links: 10_000, pages: 100_000, visitsPerPage: 20)
+        ImportLimits(since: HistoryStore.retentionStart(now), links: 10_000, pages: 100_000, visitsPerPage: 20)
     }
 }
 
