@@ -96,6 +96,11 @@ final class BrowserHistory {
         return try await store.mostVisited(profileID: profileID, limit: limit)
     }
 
+    func recentVisits(profileID: UUID, since start: Date, limit: Int) async throws -> [SiteVisit] {
+        try await flush()
+        return try await store.recentVisits(profileID: profileID, since: start, limit: limit)
+    }
+
     func deleteVisits(profileID: UUID, from start: Date, through end: Date) async throws {
         try await enqueue { [weak self] store in
             let urls = try await store.deleteVisits(profileID: profileID, from: start, through: end)

@@ -1,14 +1,17 @@
+import AppKit
 import BrowserCore
 import SwiftUI
 
-/// The browser's only address, search and command field, on the New Tab page (`presentation`
-/// is `nil`) and over the selected tab. See docs/BROWSING.md.
+/// The browser's only address, search and command field, on the New Tab page, which keeps its model
+/// and shelf, and over the selected tab. See docs/BROWSING.md.
 struct ControlBarView: View {
     static let fieldHeight: CGFloat = 44
-    private static let width: CGFloat = 600
+    static let width: CGFloat = 600
     /// The smallest space kept on each side in narrow windows.
-    private static let margin: CGFloat = 48
+    static let margin: CGFloat = 48
     private static let fieldInset: CGFloat = 16
+    /// Where the field's text starts, from the bar's leading edge.
+    static let textLeading = fieldInset + BrowserDesign.rowIconWidth + BrowserDesign.rowInset
     private static let rowHeight = BrowserDesign.tabRowHeight
     private static let rowSpacing: CGFloat = 2
     private static let listPadding: CGFloat = 8
@@ -16,9 +19,11 @@ struct ControlBarView: View {
     private static let visibleRows = 8
 
     let browser: BrowserModel
-    /// When the bar's light crosses it after it appears: on the New Tab page, as the wave reaches it.
+    /// When the bar's light crosses it after it appears: on the New Tab page, as the gust reaches it.
     let lightDelay: TimeInterval
     @State private var model: ControlBarModel
+    /// On the New Tab page: what the arrow keys reach while the field is empty.
+    private let shelf: NewTabShelf?
     @FocusState private var focused: Bool
     @State private var textSelection: TextSelection?
     /// The pointer only selects rows once it moves, so a bar opening under a still pointer keeps
@@ -26,11 +31,18 @@ struct ControlBarView: View {
     @State private var pointer: CGPoint?
     @State private var pointerMoved = false
     @Environment(\.palette) private var palette
+    @Environment(\.layoutDirection) private var layoutDirection
 
-    init(browser: BrowserModel, presentation: ControlBarPresentation?, lightDelay: TimeInterval = 0) {
+    init(browser: BrowserModel, presentation: ControlBarPresentation, lightDelay: TimeInterval = 0) {
+        self.init(browser: browser, model: ControlBarModel(browser: browser, presentation: presentation), shelf: nil, lightDelay: lightDelay)
+    }
+
+    /// The New Tab page keeps `model`, whose text decides whether its shelf shows.
+    init(browser: BrowserModel, model: ControlBarModel, shelf: NewTabShelf?, lightDelay: TimeInterval = 0) {
         self.browser = browser
         self.lightDelay = lightDelay
-        _model = State(initialValue: ControlBarModel(browser: browser, presentation: presentation))
+        self.shelf = shelf
+        _model = State(initialValue: model)
     }
 
     var body: some View {
@@ -65,22 +77,47 @@ struct ControlBarView: View {
             Image(systemName: "magnifyingglass")
                 .font(BrowserDesign.Typography.field)
                 .foregroundStyle(.secondary)
+                .frame(width: BrowserDesign.rowIconWidth)
                 .accessibilityHidden(true)
             TextField(model.isOverlay ? "Search, enter an address, or find a command" : "Search or enter an address", text: $model.text, selection: $textSelection)
                 .textFieldStyle(.plain)
                 .font(BrowserDesign.Typography.field)
                 .focused($focused)
-                .onSubmit { model.activateSelection() }
-                .onKeyPress(.downArrow) { model.moveSelection(by: 1); return .handled }
-                .onKeyPress(.upArrow) { model.moveSelection(by: -1); return .handled }
+                .onSubmit {
+                    if model.text.isEmpty, let shelf, shelf.activateFocus() { return }
+                    model.activateSelection()
+                }
+                .onKeyPress(.downArrow) { shelfKey(.down) ?? moveSelection(by: 1) }
+                .onKeyPress(.upArrow) { shelfKey(.up) ?? moveSelection(by: -1) }
+                .onKeyPress(.leftArrow) { shelfKey(layoutDirection == .rightToLeft ? .next : .previous, onlyInside: true) ?? .ignored }
+                .onKeyPress(.rightArrow) { shelfKey(layoutDirection == .rightToLeft ? .previous : .next, onlyInside: true) ?? .ignored }
                 .onExitCommand {
-                    if model.isOverlay { browser.window.controlBar = nil } else { model.text = "" }
+                    if let shelf, shelf.focus != nil { shelf.clearFocus() }
+                    else if model.isOverlay { browser.window.controlBar = nil } else { model.text = "" }
                 }
                 .accessibilityIdentifier("controlBar.input")
             if model.isOverlay { Keycaps(.cancelAction) }
         }
         .padding(.horizontal, Self.fieldInset)
         .frame(height: Self.fieldHeight)
+    }
+
+    private func moveSelection(by offset: Int) -> KeyPress.Result {
+        model.moveSelection(by: offset)
+        return .handled
+    }
+
+    /// Moves on the shelf while the field is empty; `nil` leaves the key to the field. Left and right
+    /// keep moving the insertion point until the arrows are on the shelf, and composition keeps every key.
+    private func shelfKey(_ move: ShelfMove, onlyInside: Bool = false) -> KeyPress.Result? {
+        guard let shelf, model.text.isEmpty, !onlyInside || shelf.focus != nil, !isComposing else { return nil }
+        shelf.move(move)
+        return .handled
+    }
+
+    /// An input method's unconfirmed text, which the field's text does not include yet.
+    private var isComposing: Bool {
+        (NSApp.keyWindow?.firstResponder as? NSTextView)?.hasMarkedText() ?? false
     }
 
     private func results(_ items: [ControlBarItem], selected: Int?) -> some View {

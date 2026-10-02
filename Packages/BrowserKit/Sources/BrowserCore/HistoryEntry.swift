@@ -60,3 +60,18 @@ public struct HistoryNavigation: Sendable {
         self.isWithinDocument = isWithinDocument
     }
 }
+
+/// One visit with its page, as the New Tab page ranks them.
+public struct SiteVisit: Equatable, Sendable {
+    public let url: URL
+    public let title: String
+    public let date: Date
+    public let transition: HistoryTransition
+
+    public init(url: URL, title: String, date: Date, transition: HistoryTransition) {
+        self.url = url
+        self.title = title
+        self.date = date
+        self.transition = transition
+    }
+}

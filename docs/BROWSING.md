@@ -8,6 +8,14 @@ Results are ordered: address/search, engine suggestions, current-space tabs, pro
 
 Suggestions use an ephemeral session without profile cookies or credentials. Address-like input is never sent. Requests are delayed until typing pauses and canceled when the query changes. Local history publishes independently of network responses.
 
+## New Tab
+
+While its field is empty, New Tab shows up to six frequent sites and the last three tabs closed in its space, under the bar. The page opens with a gust rising from below its center, quick at first then slowing: the dots of the crescent pop in and are lit for a moment as its ragged front reaches them, and the bar lights up as it arrives. The shelf rises in at that moment and steps aside as soon as you type; each keystroke sends a ring from the caret that pushes the dots aside and swells them as it passes. The page reads them once as it appears; nothing polls while it stays open.
+
+- Sites come from the profile's last 28 days of history, grouped by host without `www.`. A visit weighs less with age (a week's half-life), more when the address was typed, more near this time of day and on the same kind of day, weekday or weekend. Reloads and one-off visits do not count; the space's favorites are left out, being in the sidebar already. A site opens its dominant page, or its home page when no page dominates; one already open in the space is switched to. The rules are `FrequentSites` in BrowserCore.
+- Hide from New Tab, in a site's context menu, is kept per profile in the preferences and forgotten with the profile.
+- Down moves from the field to the sites, then to the closed tabs; Left and Right move within a row in the reading direction, Up goes back, Return opens and Escape returns to the field. The field keeps the keyboard focus throughout, so typing simply starts a search; keys during input-method composition stay with the field.
+
 ## Favorites and open tabs
 
 Each space has a favorites grid, pinned favorites with optional groups, and ordinary tabs. New Tab is a permanent selectable row.

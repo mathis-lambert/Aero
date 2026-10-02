@@ -3,9 +3,10 @@
 ## Display cadence and responsiveness
 
 SwiftUI/AppKit schedule the shell's native springs and scrolling against the display. Aero adds no
-timer or display link to force continuous redraws. The New Tab entrance uses SwiftUI's display-paced
-timeline; the slow decorative drift is limited to 30 FPS and rests after 20 seconds without activity.
-Both stop with Reduce Motion, an inactive window or Low Power Mode, including a power-mode change
+timer or display link to force continuous redraws. The New Tab entrance, and the 1.2 seconds a typed
+key's ring lasts, use SwiftUI's display-paced timeline; the slow decorative drift is limited to 30 FPS
+and rests after 20 seconds without activity. Rings are throttled to eight at once, and the wind's shader
+leaves before any noise wherever the crescent cannot show. All of them stop with Reduce Motion, an inactive window or Low Power Mode, including a power-mode change
 while the page is visible.
 
 Each window supplies `browserReduceMotion` from the native Reduce Motion setting and Low Power

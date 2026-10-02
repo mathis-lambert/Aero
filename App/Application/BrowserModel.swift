@@ -458,9 +458,10 @@ final class BrowserModel {
         return index > 0 ? open[index - 1].id : nil
     }
 
-    func reopenTab() {
+    /// The tab closed last in this space, or the closed tab `id`.
+    func reopenTab(_ id: UUID? = nil) {
         guard !isChangingStructure else { return }
-        guard let index = closedTabs.lastIndex(where: { $0.spaceID == space?.id }) else { return }
+        guard let index = closedTabs.lastIndex(where: { $0.spaceID == space?.id && (id == nil || $0.id == id) }) else { return }
         let tab = closedTabs.remove(at: index)
         session.restore(tab)
         extensionsDidOpen(tab)

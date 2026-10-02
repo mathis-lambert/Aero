@@ -148,6 +148,20 @@ public actor HistoryStore {
             """, values, row: Self.countedEntry)
     }
 
+    /// The profile's visits since `start`, newest first, reloads left out.
+    public func recentVisits(profileID: UUID, since start: Date, limit: Int) throws -> [SiteVisit] {
+        try open().query("""
+            SELECT pages.url, pages.title, visits.visited_at, visits.transition
+            FROM visits JOIN pages ON pages.id = visits.page_id
+            WHERE pages.profile_id = ? AND visits.visited_at >= ? AND visits.transition != 'reload'
+            ORDER BY visits.visited_at DESC, visits.id DESC LIMIT ?
+            """, [.text(profileID.uuidString), .real(start.timeIntervalSinceReferenceDate), .integer(Int64(max(0, limit)))]) { row in
+                guard let url = URL(string: row.text(0)) else { return nil }
+                return SiteVisit(url: url, title: row.text(1), date: Date(timeIntervalSinceReferenceDate: row.real(2)),
+                                 transition: HistoryTransition(rawValue: row.text(3)) ?? .autoTopLevel)
+            }
+    }
+
     public func visits(to url: URL, profileID: UUID) throws -> [HistoryVisit] {
         try open().query("""
             SELECT visits.id, visits.page_id, visits.visited_at, visits.transition, visits.referring_visit_id
