@@ -32,13 +32,17 @@ extension BrowserModel {
         }
     }
 
+    /// A title may hold characters a file name cannot.
+    static func fileName(from title: String) -> String {
+        title.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
+    }
+
     func savePage(_ page: BrowserPage, as format: PageFileFormat) {
         guard let window = WindowConfiguration.mainWindow else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [format.contentType]
         let title = page.webView.title.flatMap { $0.isEmpty ? nil : $0 } ?? page.webView.url?.siteName ?? String(localized: "Page")
-        // A title may hold characters a file name cannot.
-        panel.nameFieldStringValue = title.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
+        panel.nameFieldStringValue = Self.fileName(from: title)
         panel.beginSheetModal(for: window) { [weak self, weak page] response in
             guard response == .OK, let file = panel.url, let page else { return }
             Task { @MainActor in

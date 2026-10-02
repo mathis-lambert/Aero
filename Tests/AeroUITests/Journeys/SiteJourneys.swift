@@ -20,13 +20,14 @@ final class SiteJourneys: E2ETestCase {
         let security = element("controlCenter.security")
         XCTAssertTrue(security.waitForExistence(timeout: Self.renderTimeout))
         XCTAssertEqual(security.label, "Not secure", "A plain HTTP page is not secure")
-        XCTAssertTrue(app.buttons["controlCenter.share"].exists && element("controlCenter.ads").exists)
+        XCTAssertTrue(app.buttons["controlCenter.share"].exists && app.buttons["controlCenter.portrait"].exists && element("controlCenter.ads").exists)
         attachScreenshot("control center")
         app.menuButtons["controlCenter.more"].click()
         XCTAssertTrue(app.menuItems["Clear Cache"].exists && app.menuItems["Clear Cookies"].exists)
         app.windows.menuItems["Site Settings…"].click()
         XCTAssertTrue(app.popUpButtons["siteSettings.camera"].waitForExistence(timeout: Self.renderTimeout), "Site settings open inside the control center")
         app.typeKey(.escape, modifierFlags: [])
+        capturePortrait()
 
         reloadButtonMenu("Clear Cookies")
         XCTAssertTrue(page("No cookie").waitForExistence(timeout: Self.pageTimeout), "Clearing cookies reloads the page without them")
@@ -53,6 +54,38 @@ final class SiteJourneys: E2ETestCase {
         XCTAssertTrue(app.popUpButtons["siteSettings.camera"].waitForExistence(timeout: Self.renderTimeout))
         XCTAssertEqual(app.popUpButtons["siteSettings.camera"].value as? String, "Block", "Decisions survive a relaunch")
         XCTAssertEqual(app.popUpButtons["siteSettings.microphone"].value as? String, "Ask")
+    }
+
+    /// The command drops the quick capture from the address (the control center's button runs the same); Customize… opens the studio on the
+    /// same snapshot; the full page is drawn from WebKit's PDF; Return copies a light JPEG, with a PNG for other apps, and closes the studio.
+    /// See docs/PORTRAIT.md.
+    private func capturePortrait() {
+        runCommand("Capture in Portrait Mode")
+        let quick = element("portrait.quick")
+        XCTAssertTrue(quick.waitForExistence(timeout: Self.pageTimeout), "The command drops the quick capture")
+        attachScreenshot("quick portrait")
+        app.buttons["portrait.customize"].click()
+        let studio = element("portrait")
+        XCTAssertTrue(studio.waitForExistence(timeout: Self.renderTimeout), "Customize… opens the studio")
+        XCTAssertFalse(quick.exists)
+        attachScreenshot("portrait")
+        app.buttons["portrait.backdrop.aurora"].click()
+        element("portrait.address").click()
+        app.radioButtons["Full page"].click()
+        let copy = app.buttons["portrait.copy"]
+        XCTAssertTrue(poll(timeout: Self.pageTimeout) { copy.isEnabled }, "The full page is drawn")
+        XCTAssertFalse(element("portrait.failure").exists, "WebKit's PDF of the page rasterizes")
+        attachScreenshot("portrait full page")
+        NSPasteboard.general.clearContents()
+        app.typeKey(.return, modifierFlags: [])
+        let jpeg = NSPasteboard.PasteboardType("public.jpeg")
+        XCTAssertTrue(poll { NSPasteboard.general.data(forType: jpeg) != nil }, "Return copies the portrait")
+        let copied = NSPasteboard.general.data(forType: jpeg) ?? Data()
+        XCTAssertLessThan(copied.count, 1_500_000, "The copy is a light JPEG")
+        let size = NSBitmapImageRep(data: copied).map { max($0.pixelsWide, $0.pixelsHigh) } ?? 0
+        XCTAssertTrue(size > 0 && size <= 2560, "The copy is at most 2,560 pixels long")
+        XCTAssertNotNil(NSPasteboard.general.data(forType: .png), "Apps that take no JPEG get a PNG")
+        XCTAssertTrue(poll { !studio.exists }, "Copying closes the studio")
     }
 
     /// The fixture list blocks third-party trackers and hides banners until the site is allowed; a playing video

@@ -10,7 +10,7 @@ On a website, the sidebar's address shows two buttons: Copy link and the control
 
 A popover on the address's control center button:
 
-- **Share**, through the system share menu.
+- **Share**, through the system share menu, and beside it **Capture in Portrait Mode** ([Portrait mode](PORTRAIT.md)).
 - **Extensions**: the profile's extensions, each running its action or opening its popup, then a way to the Chrome Web Store ([Extensions](EXTENSIONS.md)).
 - **Block ads & trackers** and **Automatic picture in picture** for this site, each showing its current state; clicking switches it for the site.
 - **Secure** or **Not secure**: secure when the page and everything it loaded came over HTTPS with a trusted certificate. Clicking opens the system certificate panel for the page's server.

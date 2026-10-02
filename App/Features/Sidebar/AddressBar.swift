@@ -3,7 +3,7 @@ import BrowserExtensions
 import SwiftUI
 
 /// The selected tab's address, which opens the control bar, and on a website its Copy link and
-/// control center buttons. See docs/SITE_CONTROLS.md › Address actions.
+/// control center buttons; the quick portrait hangs from it. See docs/SITE_CONTROLS.md › Address actions.
 struct AddressBar: View {
     private static let height: CGFloat = 36
     private static let buttonSize: CGFloat = 28
@@ -71,6 +71,11 @@ struct AddressBar: View {
         .font(BrowserDesign.Typography.chrome)
         .frame(height: Self.height)
         .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+        // From the bar's trailing end, under the site controls: centered, it would reach past the window's leading edge.
+        .popover(isPresented: Binding(get: { browser.window.portrait != nil }, set: { if !$0 { browser.window.portrait = nil } }),
+                 attachmentAnchor: .point(UnitPoint(x: 0.88, y: 1)), arrowEdge: .bottom) {
+            if let studio = browser.window.portrait { PortraitQuickView(browser: browser, studio: studio) }
+        }
         .task(id: browser.window.linkCopies) {
             guard browser.window.linkCopies > 0 else { return }
             showsCopied = true
