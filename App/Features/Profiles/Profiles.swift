@@ -36,6 +36,7 @@ extension BrowserModel {
         for profile in session.profiles where profile.isRemoving {
             recoveryPackages = try await store.createRecoverySnapshot()
             try await history.clear(profileID: profile.id, since: nil)
+            preferences.forgetNewTabSites(of: profile.id)
             try await favicons.removeProfile(profile.id)
             try await passwords.store.removeAll(profileID: profile.id)
             try await extensions.removeProfile(profile.id, extensions: profile.extensions)

@@ -2730,6 +2730,26 @@
         }
       }
     },
+    "Frequent sites" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sites fréquents"
+          }
+        }
+      }
+    },
+    "Hide from New Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer du Nouvel onglet"
+          }
+        }
+      }
+    },
     "Inspect Element opens Web Inspector on pages and extensions, with the extensions’ developer tools panels." : {
       "localizations" : {
         "en" : {
@@ -3146,6 +3166,16 @@
         }
       }
     },
+    "Recently closed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermés récemment"
+          }
+        }
+      }
+    },
     "Reload from folder" : {
       "localizations" : {
         "en" : {
@@ -3238,6 +3268,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer cette extension et ses données ?"
+          }
+        }
+      }
+    },
+    "Reopen %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rouvrir %@"
           }
         }
       }

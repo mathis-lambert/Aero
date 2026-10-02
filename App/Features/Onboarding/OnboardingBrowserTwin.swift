@@ -215,7 +215,7 @@ struct OnboardingBrowserTwin: View {
             ZStack(alignment: .top) {
                 palette.canvas
                 // Rises again in each space, in its color.
-                WindArc(ink: colors.ink, core: colors.core, light: colors.light, size: size, target: barCenter, activity: 0)
+                WindArc(ink: colors.ink, core: colors.core, light: colors.light, size: size, activity: 0)
                     .id(space?.id)
                     .transition(.opacity)
                 controlBar(accent: accent, delay: WindArc.arrival(at: barCenter, in: size))

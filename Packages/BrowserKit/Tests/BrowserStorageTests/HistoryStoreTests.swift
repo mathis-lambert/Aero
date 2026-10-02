@@ -186,3 +186,22 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     let visits = try SQLiteDatabase(file: fixture.file, readOnly: true).query("SELECT count(*) FROM visits") { $0.integer(0) }
     #expect(visits == [3])
 }
+
+/// The New Tab page's visits: only the profile's, only since the start, newest first, without reloads.
+@Test func recentVisitsStayInTheirProfileAndPeriod() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let store = fixture.store()
+    let profile = UUID()
+    let now = Date.now
+    let page = try url("https://example.com/news")
+    try await store.recordVisit(to: page, title: "News", profileID: profile, at: now - 10 * day)
+    try await store.recordVisit(to: page, title: "News", profileID: profile, at: now - 2 * day, transition: .typed)
+    try await store.recordVisit(to: page, title: "News", profileID: profile, at: now - day, transition: .reload)
+    try await store.recordVisit(to: url("https://example.com/mail"), title: "Mail", profileID: profile, at: now)
+    try await store.recordVisit(to: url("https://other.example/"), title: "Other", profileID: UUID(), at: now)
+    let visits = try await store.recentVisits(profileID: profile, since: now - 5 * day, limit: 10)
+    #expect(visits.map(\.title) == ["Mail", "News"])
+    #expect(visits.map(\.transition) == [.autoTopLevel, .typed])
+    #expect(try await store.recentVisits(profileID: profile, since: now - 5 * day, limit: 1).map(\.title) == ["Mail"])
+}

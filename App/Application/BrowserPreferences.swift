@@ -64,6 +64,7 @@ final class BrowserPreferences {
         static let filterListsCheckedAt = "browser.filterLists.checkedAt"
         static let onboarding = "browser.onboarding"
         static let resetPending = "browser.resetPending"
+        static let hiddenNewTabSites = "browser.newTab.hiddenSites"
     }
 
     let shortcuts: ShortcutPreferences
@@ -112,6 +113,13 @@ final class BrowserPreferences {
     var filterListsCheckedAt: Date? {
         didSet { defaults.set(filterListsCheckedAt, forKey: Key.filterListsCheckedAt) }
     }
+    /// Sites the New Tab page no longer offers, by profile (`FrequentSites.Site.key`).
+    private(set) var hiddenNewTabSites: [UUID: Set<String>] {
+        didSet {
+            defaults.set(Dictionary(uniqueKeysWithValues: hiddenNewTabSites.map { ($0.key.uuidString, $0.value.sorted()) }),
+                         forKey: Key.hiddenNewTabSites)
+        }
+    }
     var needsLanguageRestart: Bool { language != launchLanguage }
     /// The first launch's progress (docs/ONBOARDING.md › When it appears). `nil` when absent or unreadable:
     /// an unreadable value never brings the onboarding back.
@@ -155,7 +163,14 @@ final class BrowserPreferences {
         developerMode = defaults.object(forKey: Key.developerMode) as? Bool ?? false
         #endif
         filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
+        let hidden = defaults.dictionary(forKey: Key.hiddenNewTabSites) as? [String: [String]] ?? [:]
+        hiddenNewTabSites = Dictionary(uniqueKeysWithValues: hidden.compactMap { id, sites in UUID(uuidString: id).map { ($0, Set(sites)) } })
     }
+
+    func hideNewTabSite(_ key: String, in profileID: UUID) { hiddenNewTabSites[profileID, default: []].insert(key) }
+
+    /// With the profile's history, which is what brought its sites.
+    func forgetNewTabSites(of profileID: UUID) { hiddenNewTabSites[profileID] = nil }
 
     private static func defaults(testNamespace: String?) -> UserDefaults {
         guard let testNamespace else { return .standard }

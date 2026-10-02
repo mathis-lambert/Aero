@@ -26,7 +26,8 @@ enum BrowserDesign {
         /// A prompt's question.
         static let heading = Font.system(size: 15, weight: .semibold)
         /// The control bar's field and its icon.
-        static let field = Font.system(size: 15)
+        static let fieldSize: CGFloat = 15
+        static let field = Font.system(size: fieldSize)
     }
 
     static let sidebarWidth: CGFloat = 212

@@ -70,6 +70,14 @@ final class BrowsingJourneys: E2ETestCase {
         XCTAssertTrue(poll { newTab.isSelected })
         XCTAssertEqual(app.buttons.matching(identifier: "sidebar.newTab").count, 1, "New Tab stays one row")
         XCTAssertEqual(tabRows.count, 3, "⌘T adds no row")
+
+        // The fixtures' host was visited again and again: New Tab offers it, and the arrows reach it from the field.
+        XCTAssertTrue(app.buttons.matching(identifier: "newTab.site").firstMatch.waitForExistence(timeout: Self.renderTimeout),
+                      "New Tab offers the frequent site")
+        attachScreenshot("new tab sites")
+        app.typeKey(.downArrow, modifierFlags: [])
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(poll { !newTab.isSelected }, "Down then Return opens the site from the field")
     }
 
     /// The suggestions come from the chosen engine and never see an address or anything while turned off; local
