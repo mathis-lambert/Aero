@@ -65,6 +65,7 @@ final class BrowserPreferences {
         static let onboarding = "browser.onboarding"
         static let resetPending = "browser.resetPending"
         static let hiddenNewTabSites = "browser.newTab.hiddenSites"
+        static let portraitStyle = "browser.portrait.style"
     }
 
     let shortcuts: ShortcutPreferences
@@ -120,6 +121,10 @@ final class BrowserPreferences {
                          forKey: Key.hiddenNewTabSites)
         }
     }
+    /// The last portrait's style (docs/PORTRAIT.md); an unreadable one is the default, since it only saves a few choices.
+    var portraitStyle: PortraitStyle {
+        didSet { defaults.set(try? JSONEncoder().encode(portraitStyle), forKey: Key.portraitStyle) }
+    }
     var needsLanguageRestart: Bool { language != launchLanguage }
     /// The first launch's progress (docs/ONBOARDING.md › When it appears). `nil` when absent or unreadable:
     /// an unreadable value never brings the onboarding back.
@@ -165,6 +170,7 @@ final class BrowserPreferences {
         filterListsCheckedAt = defaults.object(forKey: Key.filterListsCheckedAt) as? Date
         let hidden = defaults.dictionary(forKey: Key.hiddenNewTabSites) as? [String: [String]] ?? [:]
         hiddenNewTabSites = Dictionary(uniqueKeysWithValues: hidden.compactMap { id, sites in UUID(uuidString: id).map { ($0, Set(sites)) } })
+        portraitStyle = defaults.data(forKey: Key.portraitStyle).flatMap { try? JSONDecoder().decode(PortraitStyle.self, from: $0) } ?? PortraitStyle()
     }
 
     func hideNewTabSite(_ key: String, in profileID: UUID) { hiddenNewTabSites[profileID, default: []].insert(key) }

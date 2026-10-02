@@ -310,6 +310,7 @@ final class BrowserModel {
         window.controlBar = nil
         window.siteSettingsPresented = false
         window.controlCenterPresented = false
+        window.portrait = nil
         window.renaming = nil
         selectTab(lastSelection[id])
     }

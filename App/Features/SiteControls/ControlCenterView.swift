@@ -18,15 +18,28 @@ struct ControlCenterView: View {
             SiteSettingsView(browser: browser, site: site) { showsSiteSettings = false }
         } else {
             VStack(alignment: .leading, spacing: 16) {
-                if let url = browser.currentAddress {
-                    ShareLink(item: url) {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                            .frame(maxWidth: .infinity, minHeight: Self.tileHeight)
+                HStack(spacing: 8) {
+                    if let url = browser.currentAddress {
+                        ShareLink(item: url) {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                                .frame(maxWidth: .infinity, minHeight: Self.tileHeight)
+                                .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                                .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                        }
+                        .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
+                        .accessibilityIdentifier("controlCenter.share")
+                    }
+                    Button { browser.perform(.capturePortrait) } label: {
+                        Image(systemName: BrowserCommand.capturePortrait.symbol)
+                            .frame(width: Self.tileHeight, height: Self.tileHeight)
                             .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
                             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
                     }
                     .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
-                    .accessibilityIdentifier("controlCenter.share")
+                    .disabled(!browser.isEnabled(.capturePortrait))
+                    .tooltip(BrowserCommand.capturePortrait.title)
+                    .accessibilityLabel(BrowserCommand.capturePortrait.title)
+                    .accessibilityIdentifier("controlCenter.portrait")
                 }
                 section("Extensions") { ExtensionsGrid(browser: browser) }
                 section("Settings") {

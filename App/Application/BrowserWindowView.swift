@@ -214,6 +214,7 @@ struct BrowserWindowView: View {
             browser.window.zoomFeedback = nil
             browser.window.siteSettingsPresented = false
             browser.window.controlCenterPresented = false
+            browser.window.portrait = nil
         }
         .onExitCommand {
             // Escape reaches here only after focused controls have had their dismissal opportunity.
@@ -258,6 +259,7 @@ struct WindowPromptView: View {
         case .applicationLink(let link): ApplicationLinkPrompt(browser: browser, link: link)
         case .confirmation(let confirmation): ConfirmationPrompt(browser: browser, confirmation: confirmation)
         case .pageDialog(let request): PageDialogCard(dialog: request.dialog) { browser.answer(request, $0) }
+        case .portrait(let studio): PortraitStudioView(browser: browser, studio: studio)
         case .error(let message):
             Prompt(title: Text("Something needs your attention"), message: Text(verbatim: message)) {
                 PromptConfirmButton(title: "OK") { browser.dismissPrompt() }

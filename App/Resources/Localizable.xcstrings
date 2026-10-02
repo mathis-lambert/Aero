@@ -527,6 +527,16 @@
         }
       }
     },
+    "%lld × %lld pixels" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld pixels"
+          }
+        }
+      }
+    },
     "A playing video moves to a floating window when you switch tabs, and comes back with its tab." : {
       "localizations" : {
         "en" : {
@@ -719,6 +729,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajoutés : %1$lld · Déjà enregistrés : %2$lld · Ignorés : %3$lld"
+          }
+        }
+      }
+    },
+    "Address bar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barre d’adresse"
           }
         }
       }
@@ -1136,6 +1156,26 @@
         }
       }
     },
+    "Background" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fond"
+          }
+        }
+      }
+    },
+    "Black" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noir"
+          }
+        }
+      }
+    },
     "Black on white" : {
       "localizations" : {
         "en" : {
@@ -1244,6 +1284,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "Blur" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flou"
           }
         }
       }
@@ -1410,6 +1460,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annulé"
+          }
+        }
+      }
+    },
+    "Capture" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture"
+          }
+        }
+      }
+    },
+    "Capture in Portrait Mode" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturer en mode Portrait"
+          }
+        }
+      }
+    },
+    "Captured with Aero" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturé avec Aero"
           }
         }
       }
@@ -2044,6 +2124,16 @@
         }
       }
     },
+    "Copied" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copié"
+          }
+        }
+      }
+    },
     "Copy" : {
       "localizations" : {
         "en" : {
@@ -2114,6 +2204,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier l’adresse de la page actuelle dans le presse-papiers."
+          }
+        }
+      }
+    },
+    "Corners" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coins"
           }
         }
       }
@@ -2274,6 +2374,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couleur personnalisée…"
+          }
+        }
+      }
+    },
+    "Customize…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnaliser…"
           }
         }
       }
@@ -2538,6 +2648,16 @@
         }
       }
     },
+    "Desktop" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bureau"
+          }
+        }
+      }
+    },
     "Desktop app" : {
       "localizations" : {
         "en" : {
@@ -2730,12 +2850,62 @@
         }
       }
     },
+    "Fit the page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajusté à la page"
+          }
+        }
+      }
+    },
+    "Frame" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cadre"
+          }
+        }
+      }
+    },
+    "Frame the page on a backdrop, then copy, save or share the picture." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cadrer la page sur un fond, puis copier, enregistrer ou partager l’image."
+          }
+        }
+      }
+    },
     "Frequent sites" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sites fréquents"
+          }
+        }
+      }
+    },
+    "Full page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page entière"
+          }
+        }
+      }
+    },
+    "Gradient" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dégradé"
           }
         }
       }
@@ -3038,6 +3208,26 @@
         }
       }
     },
+    "Padding" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marge"
+          }
+        }
+      }
+    },
+    "Portrait (4:5)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portrait (4:5)"
+          }
+        }
+      }
+    },
     "Press %@ to open your first tab." : {
       "localizations" : {
         "en" : {
@@ -3050,6 +3240,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appuyez sur %@ pour ouvrir votre premier onglet."
+          }
+        }
+      }
+    },
+    "Preview" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aperçu"
           }
         }
       }
@@ -3406,6 +3606,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enregistrer toute la page en document PDF."
+          }
+        }
+      }
+    },
+    "Save…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer…"
+          }
+        }
+      }
+    },
+    "screenshot picture image" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "capture d’écran photo image"
+          }
+        }
+      }
+    },
+    "Shadow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ombre"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher"
           }
         }
       }
@@ -7587,6 +7827,16 @@
         }
       }
     },
+    "Site" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site"
+          }
+        }
+      }
+    },
     "Site controls" : {
       "localizations" : {
         "en" : {
@@ -7633,6 +7883,16 @@
         }
       }
     },
+    "Size" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
+          }
+        }
+      }
+    },
     "Skip setup" : {
       "localizations" : {
         "fr" : {
@@ -7671,6 +7931,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettre en veille les onglets inactifs"
+          }
+        }
+      }
+    },
+    "Solid" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uni"
           }
         }
       }
@@ -7791,6 +8061,26 @@
         }
       }
     },
+    "Square" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carré"
+          }
+        }
+      }
+    },
+    "Standard (4:3)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard (4:3)"
+          }
+        }
+      }
+    },
     "Start browsing" : {
       "localizations" : {
         "fr" : {
@@ -7901,6 +8191,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stockage"
+          }
+        }
+      }
+    },
+    "Story (9:16)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Story (9:16)"
           }
         }
       }
@@ -8159,6 +8459,16 @@
         }
       }
     },
+    "The desktop picture could not be read." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le fond d’écran n’a pas pu être lu."
+          }
+        }
+      }
+    },
     "The extension may not talk to apps on this Mac" : {
       "localizations" : {
         "en" : {
@@ -8233,6 +8543,26 @@
         }
       }
     },
+    "The full page could not be captured." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La page entière n’a pas pu être capturée."
+          }
+        }
+      }
+    },
+    "The page could not be captured. Try again once it has loaded." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La page n’a pas pu être capturée. Réessayez une fois qu’elle est chargée."
+          }
+        }
+      }
+    },
     "The page could not be saved. Try again, or choose another folder." : {
       "localizations" : {
         "en" : {
@@ -8245,6 +8575,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La page n’a pas pu être enregistrée. Réessayez ou choisissez un autre dossier."
+          }
+        }
+      }
+    },
+    "The picture could not be made." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’image n’a pas pu être créée."
+          }
+        }
+      }
+    },
+    "The picture could not be saved. Try again, or choose another folder." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’image n’a pas pu être enregistrée. Réessayez ou choisissez un autre dossier."
           }
         }
       }
@@ -8933,6 +9283,16 @@
         }
       }
     },
+    "Visible area" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zone visible"
+          }
+        }
+      }
+    },
     "Visited pages are removed from every profile. Tabs and favorites stay." : {
       "localizations" : {
         "fr" : {
@@ -9057,6 +9417,16 @@
         }
       }
     },
+    "White" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blanc"
+          }
+        }
+      }
+    },
     "White on black" : {
       "localizations" : {
         "en" : {
@@ -9069,6 +9439,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Blanc sur noir"
+          }
+        }
+      }
+    },
+    "Widescreen (16:9)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panoramique (16:9)"
           }
         }
       }

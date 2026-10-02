@@ -4,7 +4,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
     case showHistory, findInPage, findNext, findPrevious, copyLink, controlCenter, clearCookies, clearCache, siteSettings
 
     case zoomIn, zoomOut, resetZoom, reloadFromOrigin, stopLoading, printPage, showDownloads
-    case openFile, savePage, exportAsPDF
+    case openFile, savePage, exportAsPDF, capturePortrait
     case nextTab, previousTab, recentTab, previousRecentTab
     case tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, lastTab
     case toggleFavorite, duplicateTab, renameTab, closeOtherTabs, closeFollowingTabs
@@ -22,7 +22,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
     /// use shortcuts web applications and editors commonly claim.
     public var keyRouting: KeyRouting {
         switch self {
-        case .commandPalette, .findInPage, .findNext, .findPrevious, .copyLink, .openFile, .savePage, .exportAsPDF,
+        case .commandPalette, .findInPage, .findNext, .findPrevious, .copyLink, .openFile, .savePage, .exportAsPDF, .capturePortrait,
              .profiles, .passwords, .controlCenter, .clearCookies, .clearCache, .siteSettings, .stopLoading: .pageFirst
         default: .reserved
         }

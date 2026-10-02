@@ -16,6 +16,7 @@ extension BrowserModel {
         case .back: return currentPage?.canGoBack == true
         case .forward: return currentPage?.canGoForward == true
         case .reload, .reloadFromOrigin, .zoomIn, .zoomOut, .resetZoom, .printPage, .savePage, .exportAsPDF: return currentPage != nil
+        case .capturePortrait: return currentPage != nil && internalPage == nil
         case .stopLoading: return currentPage?.isLoading == true
         case .duplicateTab, .renameTab, .toggleFavorite, .newGroup: return selectedTab != nil
         case .moveToSpace: return selectedTab != nil && session.spaces.count > 1
@@ -109,6 +110,7 @@ extension BrowserModel {
         case .openFile: chooseFileToOpen()
         case .savePage: if let page = currentPage { savePage(page, as: .webArchive) }
         case .exportAsPDF: if let page = currentPage { savePage(page, as: .pdf) }
+        case .capturePortrait: capturePortrait()
         case .newProfile: present(.profile())
         case .newSpace: present(.space(nil))
         case .showHistory: show(.history)

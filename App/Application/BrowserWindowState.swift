@@ -16,6 +16,8 @@ final class BrowserWindowState {
     var downloadsPresented = false
     var siteSettingsPresented = false
     var controlCenterPresented = false
+    /// The quick portrait popover on the address (docs/PORTRAIT.md › Quick capture).
+    var portrait: PortraitStudio?
     /// The tab or group whose name is being edited in the sidebar.
     var renaming: RenameTarget?
     /// Counts copies, so the address can confirm each one.
@@ -29,7 +31,9 @@ final class BrowserWindowState {
         if renaming == target { renaming = nil }
     }
 
-    var holdsSidebarOpen: Bool { siteSettingsPresented || controlCenterPresented || downloadsPresented || renaming != nil }
+    var holdsSidebarOpen: Bool {
+        siteSettingsPresented || controlCenterPresented || downloadsPresented || portrait != nil || renaming != nil
+    }
     /// Changes when the New Tab page or a browser page should focus its search field.
     var inputFocusRequest = UUID()
     var settingsRoute = SettingsRoute.section(.general)
@@ -61,6 +65,8 @@ enum WindowPrompt: Identifiable {
     /// A page's `alert`, `confirm` or `prompt`, for the selected tab.
     case pageDialog(PageDialogRequest)
     case error(String)
+    /// The studio framing a capture of the selected page (docs/PORTRAIT.md).
+    case portrait(PortraitStudio)
 
     var id: String {
         switch self {
@@ -76,6 +82,7 @@ enum WindowPrompt: Identifiable {
         case .confirmation(let confirmation): "confirmation.\(confirmation.id)"
         case .pageDialog(let request): "pageDialog.\(request.id)"
         case .error(let message): "error.\(message)"
+        case .portrait(let studio): "portrait.\(studio.id)"
         }
     }
 

@@ -34,6 +34,7 @@ struct BrowserMenuCommands: Commands {
             Divider()
             command(.savePage)
             command(.exportAsPDF)
+            command(.capturePortrait)
             Divider()
             command(.importBrowserData)
         }

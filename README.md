@@ -28,6 +28,7 @@ See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, c
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search.
 - Find in page, downloads with progress in the Finder, popups in tabs or in windows of their own, page dialogs, file inputs, opening files of the Mac, saving pages as web archives or PDF, favicons, and a developer mode with Web Inspector ([Browsing](docs/BROWSING.md)).
 - A default browser for the Mac: links from other apps open in a tab, pages ask before handing a link to another app, and apps sign in through Aero with `ASWebAuthenticationSession` ([Other apps](docs/OTHER_APPS.md)).
+- Portrait mode: the page, visible or whole, framed on a gradient, aurora, solid, desktop or site-colored backdrop, sized for where it goes, then copied, saved, shared or dragged out ([Portrait mode](docs/PORTRAIT.md)).
 - Site controls: copy link, share, certificate, site data and permissions, ad and tracker blocking, automatic picture in picture ([Site Controls](docs/SITE_CONTROLS.md)).
 - A first-launch onboarding that imports spaces, favorites, history and passwords from Arc, Chrome, Dia, Brave, Edge, Vivaldi or Safari; open tabs are never imported ([Onboarding](docs/ONBOARDING.md)).
 - Passwords per profile in the macOS keychain: saved after sign-in, filled on request, strong passwords for new accounts, import from Chrome, Arc, Dia, Brave, Edge, Vivaldi or CSV, and CSV export; passkeys through WebKit and macOS in builds signed with Apple's browser entitlement ([Passwords](docs/PASSWORDS.md)).
@@ -47,6 +48,7 @@ Not implemented yet: Aero's password filling in website popup windows.
 - [Performance](docs/PERFORMANCE.md): page budgets, hibernation and measurement commands.
 - [Shortcuts](docs/SHORTCUTS.md): defaults, overrides and keyboard routing.
 - [Site controls](docs/SITE_CONTROLS.md): permissions, blocking and picture in picture.
+- [Portrait mode](docs/PORTRAIT.md): page captures framed for sharing.
 - [Extensions](docs/EXTENSIONS.md): installation, compatibility, desktop integration and limits.
 - [Software updates](docs/UPDATES.md): channel isolation, signing and publication setup.
 - [Design](docs/DESIGN.md) and [contributor rules](AGENTS.md).

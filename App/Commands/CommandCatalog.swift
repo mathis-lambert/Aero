@@ -52,6 +52,7 @@ extension BrowserCommand {
         case .openFile: String(localized: "Open File…")
         case .savePage: String(localized: "Save As…")
         case .exportAsPDF: String(localized: "Export as PDF…")
+        case .capturePortrait: String(localized: "Capture in Portrait Mode")
         case .showHistory: String(localized: "Show All History")
         case .findInPage: String(localized: "Find…")
         case .findNext: String(localized: "Find Next")
@@ -85,6 +86,7 @@ extension BrowserCommand {
         case .openFile: String(localized: "Open a web page, image or PDF from this Mac in a new tab.")
         case .savePage: String(localized: "Save the page as a web archive, with its images and styles.")
         case .exportAsPDF: String(localized: "Save the whole page as a PDF document.")
+        case .capturePortrait: String(localized: "Frame the page on a backdrop, then copy, save or share the picture.")
         case .importBrowserData: String(localized: "Bring favorites, history and passwords from another browser.")
         case .showHistory: String(localized: "Open browsing history for the current profile.")
         case .findInPage: String(localized: "Find text on the current page.")
@@ -166,6 +168,7 @@ extension BrowserCommand {
         case .openFile: "doc"
         case .savePage: "square.and.arrow.down.on.square"
         case .exportAsPDF: "doc.richtext"
+        case .capturePortrait: "camera.macro"
         case .showHistory: "clock"
         case .findInPage: "text.magnifyingglass"
         case .findNext: "chevron.down"
@@ -202,13 +205,15 @@ extension BrowserCommand {
         case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
-             .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings, .savePage, .exportAsPDF: .page
+             .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings, .savePage, .exportAsPDF, .capturePortrait: .page
         default: .navigation
         }
     }
 
     func matchesSearch(_ query: String) -> Bool {
         if title.localizedStandardContains(query) { return true }
+        // The words people search for a capture by, which Arc's title does not use.
+        if self == .capturePortrait { return String(localized: "screenshot picture image").localizedStandardContains(query) }
         // Keep the familiar menu title while making the reset action discoverable with the other zoom actions.
         return self == .resetZoom && String(localized: "zoom reset 100%").localizedStandardContains(query)
     }
