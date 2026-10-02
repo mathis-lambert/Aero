@@ -202,3 +202,27 @@ private func location() -> URL { FileManager.default.temporaryDirectory.appendin
     #expect(try db.query("PRAGMA foreign_keys") { $0.integer(0) } == [1])
     #expect(try db.query("SELECT parent_id FROM child") { $0.integer(0) } == [1])
 }
+
+// Failure modes: a group's place among loose favorites is lost on reload, or a group moved to another space is
+// saved under its old one and the save fails.
+@Test func groupsKeepTheirPlaceAndTheirSpaceAcrossSaves() async throws {
+    let folder = location()
+    defer { try? FileManager.default.removeItem(at: folder) }
+    var session = BrowserSession(profileName: "Personal")
+    let main = session.spaces[0]
+    let work = try session.addSpace(name: "Work", profileID: main.profileID, color: .initial)
+    let opened = [session.open(URL(string: "https://example.test/a")!, in: main.id), session.open(URL(string: "https://example.test/b")!, in: main.id)]
+    let tabs = opened.compactMap(\.self)
+    for tab in tabs { _ = session.move(id: tab.id, to: .list(group: nil), before: nil) }
+    let added = session.addGroup(named: "Reading", in: main.id)
+    let group = try #require(added)
+    _ = session.moveGroup(id: group.id, before: tabs[1].id)
+    let store = BrowserStore(directory: folder)
+    try await store.save(session, revision: 1)
+    #expect(try await store.load()?.pinned(in: main.id) == [.tab(tabs[0].id), .group(group.id), .tab(tabs[1].id)])
+
+    _ = session.transferGroup(id: group.id, to: work.id, before: nil)
+    try await store.save(session, revision: 2)
+    await store.close()
+    #expect(try await BrowserStore(directory: folder).load() == session)
+}

@@ -94,7 +94,9 @@ final class SidebarJourneys: E2ETestCase {
     }
 
     /// Groups, renaming and duplicating from context menus that show only what applies; the menu bar holds what
-    /// it should; the command bar's move asks which group; everything survives a relaunch.
+    /// it should; the command bar's move asks which group; everything survives a relaunch. Then several tabs at once:
+    /// ⌘ and ⇧ pick them, their menu acts on all, and they drag together to another space, by resting on the page's
+    /// side or onto the space's icon. The selection rules themselves are covered by SidebarTabsTests.
     func testGroupsMenusAndTheMovePrompt() throws {
         try launch { seed in
             seed.addTab("solid.html", title: "Solid fixture")
@@ -117,7 +119,7 @@ final class SidebarJourneys: E2ETestCase {
         groupHeaders["Reading"].click()
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite").isEmpty }, "The header closes the group")
         groupHeaders["Reading"].rightClick()
-        expectMenu("context group", ["Rename Group…", "Expand Group", "Ungroup"])
+        expectMenu("context group", ["Rename Group…", "Expand Group", "Move to Space", "Ungroup"])
         app.windows.menuItems["Expand Group"].click()
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite").count == 2 })
 
@@ -174,6 +176,94 @@ final class SidebarJourneys: E2ETestCase {
         chooseInContextMenu(of: groupHeaders["Reading"], "Ungroup")
         XCTAssertTrue(poll { self.labels(of: "sidebar.group").isEmpty })
         XCTAssertEqual(labels(of: "sidebar.favorite"), ["Solid fixture", "Shortcuts", "Shortcuts"], "Ungrouping keeps the favorites")
+
+        XCUIElement.perform(withKeyModifiers: .command) { favoriteRows.element(boundBy: 0).click() }
+        XCUIElement.perform(withKeyModifiers: .shift) { favoriteRows.element(boundBy: 2).click() }
+        XCTAssertTrue(poll { (0..<3).allSatisfy { self.favoriteRows.element(boundBy: $0).isSelected } }, "⇧ takes the range from the tab ⌘-clicked")
+        XCTAssertTrue(app.buttons["sidebar.newTab"].isSelected, "Picking tabs shows none of them")
+        favoriteRows.element(boundBy: 1).rightClick()
+        expectMenu("context selected tabs", ["Copy Links", "Duplicate 3 Tabs", "Add to Favorites", "Pin Tabs", "New Group with 3 Tabs", "Move to Space", "Close 3 Tabs"],
+                   absent: ["Copy Link", "Rename Tab…", "Remove from Favorites"])
+        app.windows.menuItems["Duplicate 3 Tabs"].click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.tab") == ["Solid fixture", "Shortcuts", "Shortcuts"] }, "The copies are open tabs, in order")
+        XCTAssertFalse(favoriteRows.element(boundBy: 0).isSelected, "Acting ends the selection")
+
+        XCUIElement.perform(withKeyModifiers: .command) { tabRows.element(boundBy: 0).click() }
+        XCUIElement.perform(withKeyModifiers: .command) { tabRows.element(boundBy: 1).click() }
+        let side = element("sidebar.pages").coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5)).withOffset(CGVector(dx: -6, dy: 0))
+        holdDrag(tabRows.element(boundBy: 1), to: side, hold: 1.5)
+        XCTAssertTrue(poll { self.space("Work").isSelected }, "Resting on the page's side goes to the next space")
+        let confirm = app.buttons["spaces.confirmTransfer"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: Self.renderTimeout), "Another profile asks once for both")
+        attachScreenshot("move tabs to another profile")
+        confirm.click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.tab") == ["Solid fixture", "Shortcuts"] }, "Both tabs arrive together, in order")
+
+        space("Main").click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.tab") == ["Shortcuts"] }, "The other tab stays")
+        // Released before resting long enough to open the space.
+        holdDrag(tabRows["Shortcuts"], to: space("Work").coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)), hold: 0.2)
+        XCTAssertTrue(confirm.waitForExistence(timeout: Self.renderTimeout), "A space's icon takes a dropped tab")
+        confirm.click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.tab").isEmpty }, "Main: \(labels(of: "sidebar.tab"))")
+        space("Work").click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.tab") == ["Solid fixture", "Shortcuts", "Shortcuts"] }, "Work: \(labels(of: "sidebar.tab"))")
+
+        // Groups move too: among the others, and with their tabs to another space; a closed one opens under a tab.
+        XCUIElement.perform(withKeyModifiers: .command) { tabRows.element(boundBy: 0).click() }
+        XCUIElement.perform(withKeyModifiers: .command) { tabRows.element(boundBy: 1).click() }
+        chooseInContextMenu(of: tabRows.element(boundBy: 0), "New Group with 2 Tabs")
+        replaceText(of: rename, with: "Alpha\n")
+        chooseInContextMenu(of: tabRows.element(boundBy: 0), "New Group with Tab")
+        replaceText(of: rename, with: "Beta\n")
+        XCTAssertTrue(poll { self.labels(of: "sidebar.group") == ["Alpha", "Beta"] && self.labels(of: "sidebar.tab").isEmpty })
+        holdDrag(groupHeaders["Beta"], to: groupHeaders["Alpha"].coordinate(withNormalizedOffset: Self.upperHalf), hold: Self.dropHold)
+        XCTAssertTrue(poll { self.labels(of: "sidebar.group") == ["Beta", "Alpha"] }, "Groups: \(labels(of: "sidebar.group"))")
+        XCTAssertEqual(labels(of: "sidebar.favorite"), ["Shortcuts", "Solid fixture", "Shortcuts"], "Each group's tabs follow it")
+        attachScreenshot("groups reordered")
+
+        groupHeaders["Alpha"].click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Shortcuts"] })
+        // Picking the tab up shows the empty grid's target above, which moves the rows down.
+        let header = groupHeaders["Alpha"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).withOffset(CGVector(dx: 0, dy: 48))
+        holdDrag(favoriteRows.element(boundBy: 0), to: header, hold: 1.5)
+        XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Solid fixture", "Shortcuts", "Shortcuts"] },
+                      "Resting on a closed group opens it, and the tab stays in it: \(labels(of: "sidebar.favorite"))")
+
+        holdDrag(groupHeaders["Alpha"], to: space("Main").coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)), hold: 0.2)
+        XCTAssertTrue(confirm.waitForExistence(timeout: Self.renderTimeout), "A group's tabs change profile too")
+        confirm.click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.group") == ["Beta"] && self.labels(of: "sidebar.favorite").isEmpty })
+        space("Main").click()
+        XCTAssertTrue(poll { self.labels(of: "sidebar.group") == ["Alpha"] }, "Main: \(labels(of: "sidebar.group"))")
+        XCTAssertEqual(labels(of: "sidebar.favorite").suffix(3), ["Solid fixture", "Shortcuts", "Shortcuts"], "…with its tabs, in order")
+
+        // Groups and pinned tabs take any order, and keep it.
+        holdDrag(groupHeaders["Alpha"], to: favoriteRows.element(boundBy: 0).coordinate(withNormalizedOffset: Self.upperHalf), hold: Self.dropHold)
+        XCTAssertTrue(poll { self.favoriteRows.element(boundBy: 0).frame.minY > self.groupHeaders["Alpha"].frame.maxY }, "A group goes above pinned tabs")
+        groupHeaders["Alpha"].click()
+        XCTAssertTrue(poll { self.favoriteRows.count == 3 })
+        // The empty grid's target moves the rows down, as above.
+        holdDrag(favoriteRows.element(boundBy: 2), to: groupHeaders["Alpha"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).withOffset(CGVector(dx: 0, dy: 48)),
+                 hold: Self.dropHold)
+        let tabAboveGroup = { self.favoriteRows.element(boundBy: 0).frame.maxY < self.groupHeaders["Alpha"].frame.minY && self.favoriteRows.count == 3 }
+        XCTAssertTrue(poll(tabAboveGroup), "A header's top drops a tab above its group, not in it")
+        attachScreenshot("tab above group")
+        quitAndRelaunch()
+        XCTAssertTrue(poll(tabAboveGroup), "The order survives a relaunch")
+
+        // ⌘ picks groups too; they move with the tabs picked along.
+        XCUIElement.perform(withKeyModifiers: .command) { groupHeaders["Alpha"].click() }
+        XCUIElement.perform(withKeyModifiers: .command) { favoriteRows.element(boundBy: 2).click() }
+        XCTAssertTrue(poll { self.groupHeaders["Alpha"].isSelected && self.favoriteRows.element(boundBy: 2).isSelected })
+        XCTAssertEqual(labels(of: "sidebar.favorite"), ["Shortcuts", "Solid fixture", "Shortcuts"], "⌘ on a header neither opens nor closes it")
+        groupHeaders["Alpha"].rightClick()
+        expectMenu("context selected groups", ["Copy Links", "Expand Groups", "Move to Space", "Ungroup"], absent: ["Rename Group…"])
+        app.typeKey(.escape, modifierFlags: [])
+        holdDrag(groupHeaders["Alpha"], to: favoriteRows.element(boundBy: 0).coordinate(withNormalizedOffset: Self.upperHalf), hold: Self.dropHold)
+        XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Shortcuts", "Shortcuts", "Solid fixture"]
+                          && self.favoriteRows.element(boundBy: 0).frame.minY > self.groupHeaders["Alpha"].frame.maxY },
+                      "The group and the tab picked with it land together, in order: \(labels(of: "sidebar.favorite"))")
     }
 
     /// The sidebar's controls line up with the window's, hide with it, reveal at the left edge, resize within
@@ -272,6 +362,12 @@ final class SidebarJourneys: E2ETestCase {
         source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
             .click(forDuration: Self.dragHold, thenDragTo: destination, withVelocity: .default, thenHoldForDuration: Self.dropHold)
         // Accessibility reports the final frames before the sidebar's spring settles.
+        pause(0.5)
+    }
+
+    private func holdDrag(_ source: XCUIElement, to destination: XCUICoordinate, hold: TimeInterval) {
+        source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .click(forDuration: Self.dragHold, thenDragTo: destination, withVelocity: .default, thenHoldForDuration: hold)
         pause(0.5)
     }
 

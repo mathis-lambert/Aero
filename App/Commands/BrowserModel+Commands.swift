@@ -82,9 +82,9 @@ extension BrowserModel {
                 if tab.isFavorite { removeFavorite(tab.id) }
                 else { moveTab(tab.id, to: .grid, before: nil) }
             }
-        case .duplicateTab: if let id = window.selectedTabID { duplicateTab(id) }
+        case .duplicateTab: duplicateTabs(commandTabs)
         case .renameTab: if let id = window.selectedTabID { window.renaming = .tab(id) }
-        case .newGroup: if let id = window.selectedTabID { newGroup(with: id) }
+        case .newGroup: newGroup(with: commandTabs)
         case .closeOtherTabs, .closeFollowingTabs:
             let ordered = orderedTabs
             if let index = ordered.firstIndex(where: { $0.id == window.selectedTabID }) {
@@ -92,7 +92,7 @@ extension BrowserModel {
                 for tab in closing { closeTab(tab.id) }
             }
         case .moveToGroup, .moveToSpace:
-            if let id = window.selectedTabID { present(.moveTab(.init(tabID: id, target: command == .moveToSpace ? .space : .group))) }
+            if window.selectedTabID != nil { present(.moveTab(.init(tabIDs: commandTabs, target: command == .moveToSpace ? .space : .group))) }
         case .nextSpace, .previousSpace:
             let spaces = session.spaces
             if let index = spaces.firstIndex(where: { $0.id == window.selectedSpaceID }) {
@@ -101,7 +101,7 @@ extension BrowserModel {
         case .back: currentPage?.goBack()
         case .forward: currentPage?.goForward()
         case .reload: currentPage?.reload()
-        case .closeTab: if let id = window.selectedTabID { closeTab(id) }
+        case .closeTab: closeTabs(commandTabs)
         case .reopenTab: reopenTab()
         case .toggleSidebar: window.sidebarPinned.toggle()
         case .profiles: showSettings(.section(.profiles))
@@ -138,8 +138,7 @@ extension BrowserModel {
     /// Includes collapsed groups; hiding a group does not renumber the browser's tabs.
     var orderedTabs: [BrowserTab] {
         guard let space else { return [] }
-        let layout = SidebarTabs(session: session, space: space, drop: nil)
-        return layout.grid + layout.groups.flatMap(\.tabs) + layout.loose + layout.open
+        return SidebarTabs(session: session, space: space, drop: nil).ordered
     }
 
     func selectAdjacentTab(backwards: Bool) {

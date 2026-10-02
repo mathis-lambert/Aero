@@ -312,6 +312,7 @@ final class BrowserModel {
         window.controlCenterPresented = false
         window.portrait = nil
         window.renaming = nil
+        window.tabSelection.clear()
         selectTab(lastSelection[id])
     }
 
@@ -470,7 +471,7 @@ final class BrowserModel {
         persist()
     }
 
-    /// Drops never move a tab into another space.
+    /// Within the tab's space; `moveTabs(_:toSpace:at:showing:)` crosses spaces.
     func moveTab(_ id: UUID, to place: TabPlace, before targetID: UUID?) {
         guard !isChangingStructure else { return }
         let wasFavorite = session.tabs.first { $0.id == id }?.isFavorite
@@ -502,15 +503,6 @@ final class BrowserModel {
         guard let tab = session.tabs.first(where: { $0.id == id }), tab.name != nil || name != tab.displayTitle else { return }
         session.rename(id: id, to: name)
         persist()
-    }
-
-    /// The group asks for its name at once.
-    func newGroup(with tabID: UUID) {
-        guard !isChangingStructure else { return }
-        guard let spaceID = session.tabs.first(where: { $0.id == tabID })?.spaceID,
-              let group = session.addGroup(named: String(localized: "New Group"), in: spaceID) else { return }
-        moveTab(tabID, to: .list(group: group.id), before: nil)
-        window.renaming = .group(group.id)
     }
 
     func renameGroup(_ id: UUID, to name: String) {

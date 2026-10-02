@@ -84,7 +84,7 @@ item. Titles that toggle say what they will do (Show/Hide Sidebar, Add to/Remove
 
 Move to Group and Move to Space list their choices as submenus, the same ones as the tab's context menu. From the
 command bar or a shortcut, the same moves open a prompt naming the tab, marking where it is now, with the arrows
-choosing and Return moving it. Some commands stay out of the menu bar: numbered tabs and recent tabs belong to
+choosing and Return moving it. With several tabs picked in the sidebar, these items act on all of them. Some commands stay out of the menu bar: numbered tabs and recent tabs belong to
 the keyboard, profiles and passwords to Settings, and clearing a site's cookies or cache to its controls. Their
 shortcuts always go to Aero, since a page could not pass one on to a menu item.
 
@@ -96,7 +96,9 @@ then closing or removing it, which comes last and is marked destructive when it 
 | Item | Contents |
 | --- | --- |
 | Tab or favorite | Copy Link · Duplicate Tab, Rename Tab… · Add to Favorites and Pin Tab for an open tab; Move to Pinned Tabs or Move to Favorites Grid, and Remove from Favorites, for a favorite · New Group with Tab, Move to Group ›, Move to Space › · Close Tab, while its page is open |
-| Group | Rename Group…, Collapse or Expand Group · Ungroup, which keeps its tabs pinned |
+| Group | Rename Group…, Collapse or Expand Group, Move to Space › · Ungroup, which keeps its tabs pinned |
+| Groups picked with ⌘ or ⇧, with or without tabs | Copy Links · Collapse or Expand Groups, Move to Space › · Ungroup |
+| Several tabs picked with ⌘ or ⇧ | Copy Links · Duplicate *n* Tabs · Add to Favorites, Pin Tabs · New Group with *n* Tabs, Move to Group ›, Move to Space › · Close *n* Tabs ([Browsing](BROWSING.md) › Several tabs at once) |
 | Space | Edit Space… · Move Left, Move Right · Delete Space… |
 | Reload button | Reload Without Cache · Clear Cookies, Clear Cache · Site Settings… |
 | Extension | The extension's own items · Pin or Unpin Extension, Open Extension Options · Extension Settings…, Manage Extensions… · Remove Extension… |

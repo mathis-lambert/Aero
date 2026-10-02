@@ -135,17 +135,29 @@ public struct BrowserSession: Equatable, Sendable {
         tabs[index].title = title
     }
 
-    /// Moves a tab before another tab of its space, or to the end, into `place`. Tabs never change
-    /// space this way, and only enter a group of their own space.
+    /// Moves a tab into `place` of its own space, before `targetID` or at the end. Among the pinned favorites the
+    /// target may be a group as well as a tab: groups and loose favorites keep any order. Tabs never change space
+    /// this way, and only enter a group of their own space.
     public mutating func move(id: UUID, to place: TabPlace, before targetID: UUID?) -> Bool {
         guard id != targetID, let index = tabs.firstIndex(where: { $0.id == id }) else { return false }
         let spaceID = tabs[index].spaceID
-        if let targetID, tabs.first(where: { $0.id == targetID })?.spaceID != spaceID { return false }
         guard isValid(place, in: spaceID) else { return false }
-        var tab = tabs.remove(at: index)
-        tab.place = place
-        let destination = targetID.flatMap { target in tabs.firstIndex { $0.id == target } } ?? tabs.endIndex
-        tabs.insert(tab, at: destination)
+        if place == .list(group: nil) {
+            var items = pinned(in: spaceID).filter { $0 != .tab(id) }
+            let at = targetID.map { target in items.firstIndex { $0.id == target } } ?? items.endIndex
+            guard let at else { return false }
+            tabs[index].place = place
+            items.insert(.tab(id), at: at)
+            arrange(items, in: spaceID)
+            return true
+        }
+        if let targetID, tabs.first(where: { $0.id == targetID })?.spaceID != spaceID { return false }
+        keepingPinnedOrder(of: [spaceID]) { session in
+            var tab = session.tabs.remove(at: index)
+            tab.place = place
+            let destination = targetID.flatMap { target in session.tabs.firstIndex { $0.id == target } } ?? session.tabs.endIndex
+            session.tabs.insert(tab, at: destination)
+        }
         return true
     }
 
@@ -168,14 +180,42 @@ public struct BrowserSession: Equatable, Sendable {
     /// Same-profile transfers keep the tab identity and its live page. Crossing profiles gives
     /// the tab a new identity. A favorite stays one, outside any group.
     public mutating func transfer(id: UUID, to spaceID: UUID) -> BrowserTab? {
-        guard spaces.contains(where: { $0.id == spaceID }), let index = tabs.firstIndex(where: { $0.id == id }),
-              tabs[index].spaceID != spaceID else { return nil }
-        let original = tabs.remove(at: index)
+        guard spaces.contains(where: { $0.id == spaceID }), let original = tabs.first(where: { $0.id == id }),
+              original.spaceID != spaceID else { return nil }
         let place: TabPlace = switch original.place {
         case .grid: .grid
         case .list: .list(group: nil)
         case .open: .open
         }
+        return keepingPinnedOrder(of: [original.spaceID, spaceID]) { $0.relocate(id, to: spaceID, place: place) }
+    }
+
+    /// Moves a group, with its tabs in their order, to another space, before `targetID` of its pinned list or last.
+    /// Each tab's identity there, as `transfer` gives it, is returned by its old one.
+    public mutating func transferGroup(id: UUID, to spaceID: UUID, before targetID: UUID?) -> [UUID: UUID]? {
+        guard let source = spaces.firstIndex(where: { $0.groups.contains { $0.id == id } }), spaces[source].id != spaceID,
+              let target = spaces.firstIndex(where: { $0.id == spaceID }),
+              let index = spaces[source].groups.firstIndex(where: { $0.id == id }) else { return nil }
+        var destination = pinned(in: spaceID)
+        let at = targetID.map { target in destination.firstIndex { $0.id == target } } ?? destination.endIndex
+        guard let at else { return nil }
+        let remaining = pinned(in: spaces[source].id).filter { $0 != .group(id) }
+        let members = tabs.filter { $0.place == .list(group: id) }.map(\.id)
+        spaces[target].groups.append(spaces[source].groups.remove(at: index))
+        var moved: [UUID: UUID] = [:]
+        for member in members {
+            moved[member] = relocate(member, to: spaceID, place: .list(group: id))?.id
+        }
+        destination.insert(.group(id), at: at)
+        arrange(remaining, in: spaces[source].id)
+        arrange(destination, in: spaceID)
+        return moved
+    }
+
+    /// Same-profile moves keep the tab's identity; crossing profiles gives it a new one.
+    private mutating func relocate(_ id: UUID, to spaceID: UUID, place: TabPlace) -> BrowserTab? {
+        guard let index = tabs.firstIndex(where: { $0.id == id }) else { return nil }
+        let original = tabs.remove(at: index)
         let sameProfile = spaces.first { $0.id == original.spaceID }?.profileID == spaces.first { $0.id == spaceID }?.profileID
         let tab = BrowserTab(id: sameProfile ? original.id : UUID(), spaceID: spaceID, url: original.url, title: original.title, name: original.name, place: place)
         tabs.append(tab)
@@ -184,9 +224,76 @@ public struct BrowserSession: Equatable, Sendable {
 
     public mutating func addGroup(named name: String, in spaceID: UUID) -> TabGroup? {
         guard let index = spaces.firstIndex(where: { $0.id == spaceID }), let name = Self.trimmed(name) else { return nil }
-        let group = TabGroup(id: UUID(), name: name, isCollapsed: false)
+        let loose = tabs.count { $0.spaceID == spaceID && $0.place == .list(group: nil) }
+        let group = TabGroup(id: UUID(), name: name, isCollapsed: false, slot: loose)
         spaces[index].groups.append(group)
         return group
+    }
+
+    /// Moves a group before another entry of its space's pinned list, a group or a loose favorite, or last; its tabs
+    /// follow it.
+    @discardableResult
+    public mutating func moveGroup(id: UUID, before targetID: UUID?) -> Bool {
+        guard id != targetID, let spaceID = spaces.first(where: { $0.groups.contains { $0.id == id } })?.id else { return false }
+        var items = pinned(in: spaceID).filter { $0 != .group(id) }
+        let at = targetID.map { target in items.firstIndex { $0.id == target } } ?? items.endIndex
+        guard let at else { return false }
+        items.insert(.group(id), at: at)
+        arrange(items, in: spaceID)
+        return true
+    }
+
+    /// A space's pinned list as the sidebar shows it: each group after the number of loose favorites its slot
+    /// counts, in their order. Out-of-range slots read as the nearest valid one.
+    public func pinned(in spaceID: UUID) -> [PinnedItem] {
+        guard let space = spaces.first(where: { $0.id == spaceID }) else { return [] }
+        let loose = tabs.filter { $0.spaceID == spaceID && $0.place == .list(group: nil) }.map(\.id)
+        var items: [PinnedItem] = [], next = 0
+        for group in space.groups {
+            let slot = min(max(group.slot, next), loose.count)
+            items += loose[next..<slot].map(PinnedItem.tab)
+            items.append(.group(group.id))
+            next = slot
+        }
+        return items + loose[next...].map(PinnedItem.tab)
+    }
+
+    /// Writes a space's pinned list back: the groups' order and slots, and the loose favorites' order within the
+    /// positions they already hold. `items` must hold exactly the space's groups and loose favorites.
+    private mutating func arrange(_ items: [PinnedItem], in spaceID: UUID) {
+        guard let space = spaces.firstIndex(where: { $0.id == spaceID }) else { return }
+        var groups: [TabGroup] = [], loose: [UUID] = []
+        for item in items {
+            switch item {
+            case .tab(let id): loose.append(id)
+            case .group(let id):
+                guard var group = spaces[space].groups.first(where: { $0.id == id }) else { continue }
+                group.slot = loose.count
+                groups.append(group)
+            }
+        }
+        spaces[space].groups = groups
+        let positions = tabs.indices.filter { tabs[$0].spaceID == spaceID && tabs[$0].place == .list(group: nil) }
+        guard positions.count == loose.count else { return }
+        let records = Dictionary(uniqueKeysWithValues: positions.map { (tabs[$0].id, tabs[$0]) })
+        for (position, id) in zip(positions, loose) {
+            if let tab = records[id] { tabs[position] = tab }
+        }
+    }
+
+    /// Runs `change`, then keeps each space's pinned entries in their order, with new ones last.
+    @discardableResult
+    private mutating func keepingPinnedOrder<Result>(of spaceIDs: [UUID], _ change: (inout BrowserSession) -> Result) -> Result {
+        let previous = spaceIDs.map { pinned(in: $0) }
+        let result = change(&self)
+        for (spaceID, items) in zip(spaceIDs, previous) {
+            let current = pinned(in: spaceID)
+            let present = Set(current)
+            let kept = items.filter(present.contains)
+            let known = Set(kept)
+            arrange(kept + current.filter { !known.contains($0) }, in: spaceID)
+        }
+        return result
     }
 
     /// A blank name keeps the current one.
@@ -199,10 +306,14 @@ public struct BrowserSession: Equatable, Sendable {
         updateGroup(id) { $0.isCollapsed = collapsed }
     }
 
-    /// Its favorites stay, as loose rows.
+    /// Its favorites stay where it was, as loose rows.
     public mutating func removeGroup(id: UUID) {
-        for index in spaces.indices { spaces[index].groups.removeAll { $0.id == id } }
+        guard let spaceID = spaces.first(where: { $0.groups.contains { $0.id == id } })?.id else { return }
+        let members = tabs.filter { $0.place == .list(group: id) }.map { PinnedItem.tab($0.id) }
+        let items = pinned(in: spaceID).flatMap { $0 == .group(id) ? members : [$0] }
         for index in tabs.indices where tabs[index].place == .list(group: id) { tabs[index].place = .list(group: nil) }
+        for index in spaces.indices { spaces[index].groups.removeAll { $0.id == id } }
+        arrange(items, in: spaceID)
     }
 
     private mutating func updateGroup(_ id: UUID, _ change: (inout TabGroup) -> Void) {
@@ -219,12 +330,12 @@ public struct BrowserSession: Equatable, Sendable {
     @discardableResult
     public mutating func close(id: UUID) -> BrowserTab? {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return nil }
-        return tabs.remove(at: index)
+        return keepingPinnedOrder(of: [tabs[index].spaceID]) { $0.tabs.remove(at: index) }
     }
 
     public mutating func restore(_ tab: BrowserTab) {
         guard spaces.contains(where: { $0.id == tab.spaceID }), !tabs.contains(where: { $0.id == tab.id }) else { return }
-        tabs.append(tab)
+        keepingPinnedOrder(of: [tab.spaceID]) { $0.tabs.append(tab) }
     }
 
     /// Reconcile page events received during a structural commit, only for surviving identities.

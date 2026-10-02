@@ -84,9 +84,10 @@ struct BrowserMenuCommands: Commands {
             command(.renameTab)
             Divider()
             command(.newGroup)
-            if let browser, let tab = browser.selectedTab {
-                MoveToGroupMenu(browser: browser, tab: tab).disabled(!browser.isEnabled(.moveToGroup))
-                MoveToSpaceMenu(browser: browser, tab: tab).disabled(!browser.isEnabled(.moveToSpace))
+            if let browser, browser.selectedTab != nil {
+                let tabs = browser.tabs(browser.commandTabs)
+                MoveToGroupMenu(browser: browser, tabs: tabs).disabled(!browser.isEnabled(.moveToGroup))
+                MoveToSpaceMenu(browser: browser, tabs: tabs).disabled(!browser.isEnabled(.moveToSpace))
             } else {
                 Menu("Move to Group", systemImage: BrowserCommand.moveToGroup.symbol) {}.disabled(true)
                 Menu("Move to Space", systemImage: BrowserCommand.moveToSpace.symbol) {}.disabled(true)

@@ -215,10 +215,13 @@ struct BrowserWindowView: View {
             browser.window.siteSettingsPresented = false
             browser.window.controlCenterPresented = false
             browser.window.portrait = nil
+            browser.window.tabSelection.clear()
         }
         .onExitCommand {
             // Escape reaches here only after focused controls have had their dismissal opportunity.
-            if browser.window.controlBar == nil, browser.window.prompt == nil,
+            if !browser.window.tabSelection.isEmpty {
+                browser.window.tabSelection.clear()
+            } else if browser.window.controlBar == nil, browser.window.prompt == nil,
                !browser.window.find.isPresented, browser.window.renaming == nil,
                !browser.window.holdsSidebarOpen, browser.isEnabled(.stopLoading) {
                 browser.perform(.stopLoading)
@@ -252,7 +255,7 @@ struct WindowPromptView: View {
         case .space(let target): SpacePrompt(browser: browser, profileID: target)
         case .removeSpace(let id, _): SpaceRemovalPrompt(browser: browser, spaceID: id)
         case .moveTab(let move): TabMovePrompt(browser: browser, presentation: move)
-        case .transferTab(let id, let destination): TabTransferPrompt(browser: browser, tabID: id, spaceID: destination)
+        case .transferTabs(let transfer): TabTransferPrompt(browser: browser, transfer: transfer)
         case .profile(_, let onCreated): ProfilePrompt(browser: browser, onCreated: onCreated)
         case .clearHistory(let clear): ClearHistoryPrompt(browser: browser, clear: clear)
         case .extensionRequest(let request): ExtensionRequestPrompt(browser: browser, request: request)
