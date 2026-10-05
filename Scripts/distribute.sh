@@ -51,6 +51,9 @@ command=(xcodebuild ARCHS=arm64 -project Aero.xcodeproj -scheme "$product" -conf
     'CODE_SIGN_IDENTITY=Developer ID Application' archive)
 write_manifest
 "${command[@]}" 2>&1 | tee "$output/archive.log"
+# Only the stable identity has Apple's passkey approval; its profile is named in Stable.xcconfig.
+profiles=''
+[[ "$channel" != stable ]] || profiles='<key>provisioningProfiles</key><dict><key>app.getaero.browser</key><string>Aero Stable Passkeys Developer ID</string></dict>'
 cat > "$output/ExportOptions.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -59,6 +62,7 @@ cat > "$output/ExportOptions.plist" <<PLIST
 <key>signingStyle</key><string>manual</string>
 <key>signingCertificate</key><string>Developer ID Application</string>
 <key>teamID</key><string>$APPLE_TEAM_ID</string>
+$profiles
 </dict></plist>
 PLIST
 xcodebuild -exportArchive -archivePath "$archive" -exportOptionsPlist "$output/ExportOptions.plist" \
@@ -84,6 +88,9 @@ codesign --verify --deep --strict "$app"
 codesign -d --entitlements :- "$app" > "$output/entitlements.plist" 2>/dev/null
 if [[ "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.get-task-allow' "$output/entitlements.plist" 2>/dev/null || true)" == true ]]; then
     fail 'Distribution must not allow debugging (get-task-allow).'
+fi
+if [[ "$channel" == stable && "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.developer.web-browser.public-key-credential' "$output/entitlements.plist" 2>/dev/null || true)" != true ]]; then
+    fail 'Stable distribution lost its passkey entitlement.'
 fi
 [[ "$(lipo -archs "$app/Contents/MacOS/$product")" == arm64 ]] || fail 'Distribution must be arm64 only.'
 ditto -c -k --keepParent "$app" "$output/notary-app.zip"

@@ -4,3 +4,6 @@ PRODUCT_NAME = Aero
 PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser
 AERO_CHANNEL = stable
 AERO_DATA_DIRECTORY = Aero
+// Apple approved passkeys for this identity only; distribution installs the profile (docs/BUILD_AND_RELEASE.md).
+CODE_SIGN_ENTITLEMENTS = Configuration/Stable.entitlements
+PROVISIONING_PROFILE_SPECIFIER = Aero Stable Passkeys Developer ID

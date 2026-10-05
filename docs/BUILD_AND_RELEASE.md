@@ -124,6 +124,7 @@ The `distribution` GitHub environment contains these Apple signing credentials, 
 | Secret | APPLE_CERTIFICATE_P12_BASE64 | Base64 PKCS#12 certificate and private key |
 | Secret | APPLE_CERTIFICATE_PASSWORD | PKCS#12 export password |
 | Secret | APPLE_API_PRIVATE_KEY | App Store Connect team API key, PEM .p8 content |
+| Secret | APPLE_PASSKEY_PROFILE_BASE64 | Base64 "Aero Stable Passkeys Developer ID" provisioning profile |
 | Variable | APPLE_TEAM_ID | Apple Developer team |
 | Variable | APPLE_API_KEY_ID | API key identifier |
 | Variable | APPLE_API_ISSUER_ID | API issuer UUID |
@@ -138,7 +139,13 @@ Before changing this pipeline, account for: missing toolchain/components; absent
 
 Validate a source Debug build and Release DMG without a Developer ID identity, inspect channel metadata, and run `StorageJourneys` and `SettingsJourneys` with retained xcresult and reproduction manifests. Inspect the mounted DMG and copy its app to a temporary install directory before launch. Official acceptance also requires the signed pipeline and a real downloaded/quarantined install, ideally on another Mac, including an offline launch. Verify channel website-data isolation through browsing before claiming it as experimentally validated. Test the custom Finder icon after installation; Xcode removes its resource-fork metadata from reused build products before signing.
 
-Passkeys and any future managed entitlements are separate features. Add only approved capabilities and the required provisioning profiles to their explicit channel identities; do not make ordinary source builds depend on publication credentials.
+### Stable passkey signing
+
+Apple granted the `com.apple.developer.web-browser.public-key-credential` managed capability to `app.getaero.browser` only. `Stable.xcconfig` signs the stable app with `Stable.entitlements` and the Developer ID provisioning profile "Aero Stable Passkeys Developer ID"; the export options name the same profile. Dev, Beta and Nightly keep their entitlements and sign without a profile; their identities would each need Apple's approval. Only distribution builds the Stable configuration.
+
+The workflow installs the profile from `APPLE_PASSKEY_PROFILE_BASE64` into Xcode's `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` and removes it during cleanup. For a local stable distribution, copy the downloaded profile there under its UUID (`security cms -D -i <profile> | plutil -extract UUID raw -`). Xcode rejects an absent or expired profile, another team or bundle identifier, a profile without the passkey entitlement or one that does not include the signing certificate; `distribute.sh` then checks that the exported signature kept the entitlement. The profile lists the Developer ID certificate: after replacing the certificate, regenerate the profile under the same name and update the secret.
+
+A signature only proves the entitlement is present. macOS refuses to launch an app whose profile does not authorize it, so a stable release also requires launching the notarized app and the passkey scenarios in [PASSWORDS.md](PASSWORDS.md#passkeys).
 
 ## References
 

@@ -114,6 +114,21 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -k "$keychain_password" "$SIGNING_KEYCHAIN" >/dev/null
           security list-keychains -d user -s "$SIGNING_KEYCHAIN" "$HOME/Library/Keychains/login.keychain-db"
           rm "$RUNNER_TEMP/aero-signing.p12"
+      # Only Stable.xcconfig names this profile; without it, a stable archive fails in Xcode.
+      - name: Install passkey provisioning profile
+        env:
+          PASSKEY_PROFILE: ${{ secrets.APPLE_PASSKEY_PROFILE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$PASSKEY_PROFILE" || exit 0
+          umask 077
+          printf '%s' "$PASSKEY_PROFILE" | base64 --decode > "$RUNNER_TEMP/aero-passkeys.provisionprofile"
+          uuid=$(security cms -D -i "$RUNNER_TEMP/aero-passkeys.provisionprofile" | plutil -extract UUID raw -)
+          profiles="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          mkdir -p "$profiles"
+          echo "PASSKEY_PROFILE_FILE=$profiles/$uuid.provisionprofile" >> "$GITHUB_ENV"
+          mv "$RUNNER_TEMP/aero-passkeys.provisionprofile" "$profiles/$uuid.provisionprofile"
       # Stable and beta notes are the annotated tag's message, reviewed with the tag; nightlies list their changes.
       - name: Select release notes
         env:
@@ -165,7 +180,8 @@ jobs:
         shell: bash
         run: |
           if [[ -f "$RUNNER_TEMP/aero-signing.keychain-db" ]]; then security delete-keychain "$RUNNER_TEMP/aero-signing.keychain-db"; fi
-          rm -f "$RUNNER_TEMP/aero-signing.p12" "$RUNNER_TEMP/aero-notary.p8" "$RUNNER_TEMP/aero-sparkle-key"
+          rm -f "$RUNNER_TEMP/aero-signing.p12" "$RUNNER_TEMP/aero-notary.p8" "$RUNNER_TEMP/aero-sparkle-key" "$RUNNER_TEMP/aero-passkeys.provisionprofile"
+          if [[ -n "${PASSKEY_PROFILE_FILE:-}" ]]; then rm -f "$PASSKEY_PROFILE_FILE"; fi
 
   publish-feed:
     needs: [prepare, distribute]
