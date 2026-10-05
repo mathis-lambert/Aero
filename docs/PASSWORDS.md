@@ -76,7 +76,15 @@ An import never overwrites a different saved password for the same login; it rep
 
 ## Passkeys
 
-Aero does not take part in passkey requests: WebKit performs them with AuthenticationServices, and macOS shows its own sheet (iCloud Keychain, a password app, a nearby phone or a security key). WebKit does so only in a browser holding Apple's `com.apple.developer.web-browser.public-key-credential` entitlement, granted on request and usable only with a provisioning profile; source builds lack it, and pages see WebKit's own answer.
+Aero does not take part in passkey requests: WebKit performs them with AuthenticationServices, and macOS shows its own sheet (iCloud Keychain, a password app, a nearby phone or a security key). WebKit does so only in a browser holding Apple's `com.apple.developer.web-browser.public-key-credential` entitlement, granted on request and usable only with a provisioning profile. Apple granted it to the stable identity, `app.getaero.browser`, which is signed with its profile ([BUILD_AND_RELEASE.md](BUILD_AND_RELEASE.md#stable-passkey-signing)); Dev, Beta, Nightly and source builds lack it, and pages see WebKit's own answer. Passkeys belong to macOS and the chosen credential provider, not to Aero's profiles or password vault.
+
+Check on the notarized stable app before releasing a newly entitled build:
+
+1. Create a passkey on a test website, restart Aero and sign in with it; sign in with a passkey created in another browser.
+2. Note how macOS asks for access to passkeys on first use, then check denial and recovery in System Settings › Privacy & Security.
+3. Cancel the system sheet and retry; close the requesting tab while the sheet is open.
+4. Leave a page with conditional passkey suggestions open, quit Aero, relaunch it and sign in again: an abandoned request must not block later ones.
+5. A security key, a nearby phone or a third-party provider when available.
 
 ## Profiles
 

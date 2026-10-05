@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- Not sandboxed. The hardened runtime blocks these devices unless the app declares them. Keep Stable.entitlements in step. -->
+<!-- Aero.entitlements plus passkeys, which Apple's provisioning profile authorizes for the stable identity. -->
 <plist version="1.0"><dict>
     <key>com.apple.security.device.camera</key><true/>
     <key>com.apple.security.device.audio-input</key><true/>
     <key>com.apple.security.personal-information.location</key><true/>
+    <key>com.apple.developer.web-browser.public-key-credential</key><true/>
 </dict></plist>
