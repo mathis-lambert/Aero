@@ -112,11 +112,11 @@ the `.xcresult` and attached screenshots before enabling automatic triggers. Clo
 logs in its reports; the local `/tmp` manifest from `Scripts/test.sh` is not produced by Cloud's native test action.
 Apple Developer membership includes 25 compute hours per month; monitor usage before adding scheduled Full runs.
 
-The configured **E2E Smoke** workflow currently starts manually from a branch, uses **Aero Dev / Smoke**,
-builds with **Xcode 27 (27A266a)** on **macOS 27 (26A428)**, and tests on **macOS 26.6.2 (25G83)**.
-Start it from Xcode's **Report navigator > Cloud > Aero > E2E Smoke > Start Build**. Use `fix/compatibility`
-until the Cloud preparation has landed on `main`. Automatic pull-request triggers and a separate Full workflow
-should be enabled only after the first Smoke run succeeds.
+The configured **E2E Smoke** and **E2E Full** workflows start manually from a branch and use **Aero Dev**
+with the corresponding **Smoke** or **Full** plan. Both build with **Xcode 27 (27A266a)** on
+**macOS 27 (26A428)** and test on **macOS 26.6.2 (25G83)**. Start either from Xcode's
+**Report navigator > Cloud > Aero > workflow > Start Build**. Use `fix/compatibility` until the Cloud preparation
+has landed on `main`. Enable automatic pull-request triggers only after the first Smoke run succeeds.
 
 References: [workflow actions](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions),
 [custom scripts](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts),
