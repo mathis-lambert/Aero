@@ -12,9 +12,8 @@ class E2ETestCase: XCTestCase {
     static let renderTimeout: TimeInterval = 5
     private static let pollInterval: TimeInterval = 0.2
 
-    /// Read by the app itself, from the repository: the sandboxed runner has no folder the app may read.
-    static let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-        .appendingPathComponent("Fixtures", isDirectory: true)
+    /// Travels with the test products; Cloud runs tests separately from the source checkout.
+    static let fixtures = Bundle(for: E2ETestCase.self).bundleURL.appendingPathComponent("Contents/Resources/Fixtures", isDirectory: true)
 
     private(set) var app: XCUIApplication!
     private(set) var server: FixtureServer!
@@ -24,6 +23,9 @@ class E2ETestCase: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        guard FileManager.default.fileExists(atPath: Self.fixtures.path) else {
+            throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: Self.fixtures.path])
+        }
         server = try FixtureServer()
         dataRoot = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent("AeroUITests-\(UUID().uuidString)", isDirectory: true)

@@ -78,3 +78,39 @@ and a patch of the tested working tree.
 
 Still checked by hand: physical keyboard layouts and input methods, device permissions, passkey ceremonies and the
 default browser confirmation on a signed build, Reduce Motion, and frame pacing in Instruments.
+
+## Xcode Cloud
+
+Use Xcode Cloud's **Test** action to run journeys on Apple's Macs without taking over the developer's desktop.
+Cloud builds test products and runs them in a separate phase; fixtures therefore come from the UI test bundle,
+not a source checkout path. The runner fails before launching Aero if that resource folder is missing.
+
+Onboard `Aero.xcodeproj` from **Integrate > Xcode Cloud > Create Workflow** in Xcode, select the Apple Developer
+team and authorize access to the Aero GitHub repository. An App Store Connect app record may be needed for first
+onboarding; using Cloud for tests does not require publishing Aero to the Mac App Store. Keep this a test workflow
+with no archive, distribution or TestFlight post-action.
+
+Configure the workflow as follows:
+
+- Scheme: **Aero Dev**; action: **Test**, configuration **Debug**, destination **macOS on Apple Silicon**.
+- Select **Smoke** for pull requests targeting `main`; use **Full** for a separate manual workflow initially.
+- Disable parallel execution of UI journeys: they share a desktop, focus and the system pasteboard.
+- Select **Xcode 27.0 (27A266a)** explicitly. Do not use a latest-version alias: `Scripts/check-toolchain.sh`
+  rejects a different version. If Cloud does not offer the pinned version or an arm64 test destination, the workflow
+  cannot run this checkout; update the toolchain deliberately rather than bypassing that check.
+- Select a compatible build OS and the desired test OS among Cloud's available destinations. A run on macOS 27
+  does not verify macOS 26 compatibility.
+
+`ci_scripts/ci_post_clone.sh` checks the selected toolchain and installs its build-only Metal component. Cloud
+owns the test action; do not call `Scripts/test.sh` from a custom build script. Local ad hoc signing remains the
+source default; resolve any Cloud signing requirements through the workflow/team configuration rather than adding
+personal signing settings to the repository.
+
+Start one manual Smoke run to verify Cloud signing, runner launch, fixture access and desktop interactions. Inspect
+the `.xcresult` and attached screenshots before enabling automatic triggers. Cloud retains result bundles and build
+logs in its reports; the local `/tmp` manifest from `Scripts/test.sh` is not produced by Cloud's native test action.
+Apple Developer membership includes 25 compute hours per month; monitor usage before adding scheduled Full runs.
+
+References: [workflow actions](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions),
+[custom scripts](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts),
+[getting started](https://developer.apple.com/xcode-cloud/get-started/).
