@@ -32,6 +32,7 @@
         // Redefining a fixed global would throw and stop the extension's script. The definition is taken as the
         // replacement above instead.
         const defineProperty = Object.defineProperty;
+        const defineProperties = Object.defineProperties;
         const redefines = (target, key) => target === globalThis && nativeGlobals.has(key);
         const replace = (key, descriptor) => {
             if (descriptor && "value" in descriptor) replacements.set(key, { value: descriptor.value });
@@ -44,10 +45,22 @@
                 return target;
             },
             defineProperties(target, descriptors) {
-                for (const key of Reflect.ownKeys(Object(descriptors))) {
-                    if (redefines(target, key)) replace(key, descriptors[key]);
-                    else defineProperty(target, key, descriptors[key]);
+                // Ordinary objects retain native descriptor validation, enumeration and failure behavior.
+                if (target !== globalThis || descriptors == null) return defineProperties(target, descriptors);
+                const properties = Object(descriptors);
+                const ordinary = Object.create(null);
+                const globals = new Map();
+                for (const key of Reflect.ownKeys(properties)) {
+                    if (!Object.getOwnPropertyDescriptor(properties, key)?.enumerable) continue;
+                    const descriptor = properties[key];
+                    if (redefines(target, key)) {
+                        // Let the engine validate and normalize protected globals too, before replacing any.
+                        const validated = defineProperty({}, key, descriptor);
+                        globals.set(key, Object.getOwnPropertyDescriptor(validated, key));
+                    } else ordinary[key] = descriptor;
                 }
+                defineProperties(target, ordinary);
+                for (const [key, descriptor] of globals) replace(key, descriptor);
                 return target;
             }
         };

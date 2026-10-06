@@ -4,7 +4,6 @@ import SwiftUI
 struct SpacesSettingsView: View {
     let browser: BrowserModel
     let navigate: (SettingsRoute) -> Void
-    @State private var dragSessionID: DragSession.ID?
     @State private var reorders = 0
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
@@ -26,16 +25,8 @@ struct SpacesSettingsView: View {
                 Button { newSpace() } label: { Label("New space…", systemImage: "plus") }
             }
         }
-        .onDragSessionUpdated { session in
-            switch session.phase {
-            case .initial, .active: dragSessionID = session.id
-            case .ended: if dragSessionID == session.id { dragSessionID = nil }
-            default: break
-            }
-        }
         .listStyle(.inset)
         .sensoryFeedback(.levelChange, trigger: reorders)
-        .sensoryFeedback(.levelChange, trigger: dragSessionID) { _, new in new != nil }
         .disabled(browser.isChangingStructure)
     }
 

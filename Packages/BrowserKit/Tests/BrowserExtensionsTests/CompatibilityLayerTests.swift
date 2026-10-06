@@ -6,7 +6,8 @@ import Testing
 // The compatibility layer in JavaScriptCore, with a stand-in for WebKit's `chrome` and for Aero's scheme: every
 // request is recorded, and each route answers what the test sets. Failure modes: an addition that replaces WebKit's
 // own API, one lost from `browser` or `chrome`, a namespace left unreferenced, a request that names the wrong route or
-// forgets its arguments, a callback never called, and permissions Aero provides answered by WebKit.
+// forgets its arguments, a callback never called, permissions Aero provides answered by WebKit, and intercepted
+// property definitions that apply non-enumerable descriptors or mutate objects before validating all descriptors.
 
 @Test func additionsFillOnlyWhatWebKitLacks() throws {
     let harness = try CompatibilityHarness(api: "{ webNavigation: { onCompleted: { addListener() { globalThis.nativeUsed = true; } } } }")
@@ -72,6 +73,42 @@ import Testing
         globalThis.results.push(globalThis.other === 2);
         """)
     #expect(harness.string("JSON.stringify(results)") == "[true,true,true,true]")
+}
+
+@Test func ordinaryPropertyDefinitionsKeepNativeFailureAndEnumerationBehavior() throws {
+    let harness = try CompatibilityHarness()
+    harness.run("""
+        const descriptors = {};
+        Object.defineProperty(descriptors, "hidden", { value: { value: 42 }, enumerable: false });
+        const target = {};
+        Object.defineProperties(target, descriptors);
+        const partial = {};
+        let refused = false;
+        try { Object.defineProperties(partial, { first: { value: 1 }, invalid: { get: 123 } }); }
+        catch (error) { refused = error instanceof TypeError; }
+        globalThis.results = [!Object.hasOwn(target, "hidden"), refused, !Object.hasOwn(partial, "first")];
+        """)
+    #expect(harness.string("JSON.stringify(results)") == "[true,true,true]")
+}
+
+@Test func batchGlobalDefinitionsPreserveNativePropertiesAndValidateReplacements() throws {
+    let harness = try CompatibilityHarness()
+    harness.run("""
+        const runtime = chrome.runtime;
+        const definitions = {};
+        Object.defineProperty(definitions, "ignored", { value: { value: 1 }, enumerable: false });
+        definitions.chrome = { value: { runtime, polyfilled: true } };
+        Object.defineProperty(globalThis, "existing", { value: 1, writable: true, configurable: true });
+        definitions.existing = { value: 2 };
+        Object.defineProperties(globalThis, definitions);
+        let refused = false;
+        try { Object.defineProperties(globalThis, { chrome: { value: { runtime, changed: true } }, invalid: { get: 123 } }); }
+        catch (error) { refused = error instanceof TypeError; }
+        const existing = Object.getOwnPropertyDescriptor(globalThis, "existing");
+        globalThis.results = [chrome.polyfilled === true, !Object.hasOwn(globalThis, "ignored"),
+            existing.value === 2 && existing.writable && existing.configurable, refused, chrome.changed === undefined];
+        """)
+    #expect(harness.string("JSON.stringify(results)") == "[true,true,true,true,true]")
 }
 
 @Test func passwordSavingIsAChromeSettingOfTheProfile() throws {
