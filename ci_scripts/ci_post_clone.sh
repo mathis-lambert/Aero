@@ -3,4 +3,3 @@
 set -euo pipefail
 cd "${CI_PRIMARY_REPOSITORY_PATH:?Xcode Cloud must provide the repository path}"
 Scripts/check-toolchain.sh
-xcodebuild -downloadComponent MetalToolchain

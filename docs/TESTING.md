@@ -86,8 +86,8 @@ Cloud builds test products and runs them in a separate phase; fixtures therefore
 not a source checkout path. The runner fails before launching Aero if that resource folder is missing.
 
 Onboard `Aero.xcodeproj` from **Integrate > Xcode Cloud > Create Workflow** in Xcode, select the Apple Developer
-team and authorize access to the Aero GitHub repository. An App Store Connect app record may be needed for first
-onboarding; using Cloud for tests does not require publishing Aero to the Mac App Store. Keep this a test workflow
+team and authorize access to the Aero GitHub repository. Xcode 27 supports onboarding a product for building and
+testing without an App Store app record. Keep this a test workflow
 with no archive, distribution or TestFlight post-action.
 
 Configure the workflow as follows:
@@ -101,7 +101,8 @@ Configure the workflow as follows:
 - Select a compatible build OS and the desired test OS among Cloud's available destinations. A run on macOS 27
   does not verify macOS 26 compatibility.
 
-`ci_scripts/ci_post_clone.sh` checks the selected toolchain and installs its build-only Metal component. Cloud
+`ci_scripts/ci_post_clone.sh` checks the selected toolchain. The pinned Cloud image already includes Metal;
+downloading that component again fails with an "already imported" error. Cloud
 owns the test action; do not call `Scripts/test.sh` from a custom build script. Local ad hoc signing remains the
 source default; resolve any Cloud signing requirements through the workflow/team configuration rather than adding
 personal signing settings to the repository.
@@ -110,6 +111,12 @@ Start one manual Smoke run to verify Cloud signing, runner launch, fixture acces
 the `.xcresult` and attached screenshots before enabling automatic triggers. Cloud retains result bundles and build
 logs in its reports; the local `/tmp` manifest from `Scripts/test.sh` is not produced by Cloud's native test action.
 Apple Developer membership includes 25 compute hours per month; monitor usage before adding scheduled Full runs.
+
+The configured **E2E Smoke** workflow currently starts manually from a branch, uses **Aero Dev / Smoke**,
+builds with **Xcode 27 (27A266a)** on **macOS 27 (26A428)**, and tests on **macOS 26.6.2 (25G83)**.
+Start it from Xcode's **Report navigator > Cloud > Aero > E2E Smoke > Start Build**. Use `fix/compatibility`
+until the Cloud preparation has landed on `main`. Automatic pull-request triggers and a separate Full workflow
+should be enabled only after the first Smoke run succeeds.
 
 References: [workflow actions](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions),
 [custom scripts](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts),
