@@ -205,3 +205,24 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     #expect(visits.map(\.transition) == [.autoTopLevel, .typed])
     #expect(try await store.recentVisits(profileID: profile, since: now - 5 * day, limit: 1).map(\.title) == ["Mail"])
 }
+
+// Failure modes: the control bar's history misses a page visited often but long ago, counts reloads as visits,
+// or reads another profile's pages.
+@Test func matchesCountVisitsWithoutReloads() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let store = fixture.store()
+    let profile = UUID()
+    let now = Date.now
+    let often = try url("https://docs.example/swift")
+    for index in 0..<5 { try await store.recordVisit(to: often, title: "Swift documentation", profileID: profile, at: now.addingTimeInterval(-90 * day + Double(index))) }
+    let reloaded = try url("https://swift.example/blog")
+    try await store.recordVisit(to: reloaded, title: "Swift blog", profileID: profile, at: now)
+    for _ in 0..<9 { try await store.recordVisit(to: reloaded, title: "Swift blog", profileID: profile, at: now, transition: .reload) }
+    try await store.recordVisit(to: url("https://other.example/swift"), title: "Swift elsewhere", profileID: UUID())
+
+    let matches = try await store.matches(profileID: profile, query: "swi", limit: 10)
+    #expect(matches.map(\.url) == [often, reloaded], "The most visited first, however old; another profile's page left out")
+    #expect(matches.map(\.visitCount) == [5, 1], "Reloads are not visits")
+    #expect(try await store.matches(profileID: profile, query: "  ", limit: 10).isEmpty)
+}

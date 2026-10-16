@@ -115,6 +115,19 @@ public actor HistoryStore {
                                   bindings, row: Self.entry)
     }
 
+    /// The pages matching every word of `query`, for the control bar to rank: the most visited first, each with its
+    /// visits, reloads left out. No words, no pages.
+    public func matches(profileID: UUID, query: String, limit: Int) throws -> [HistoryEntry] {
+        guard let match = Self.matchExpression(query) else { return [] }
+        return try open().query("""
+            SELECT pages.id, pages.url, pages.title, pages.last_visit,
+                   (SELECT count(*) FROM visits WHERE visits.page_id = pages.id AND visits.transition != 'reload') AS visited
+            FROM pages_fts JOIN pages ON pages.id = pages_fts.rowid
+            WHERE pages.profile_id = ? AND pages_fts MATCH ?
+            ORDER BY visited DESC, pages.last_visit DESC, pages.id DESC LIMIT ?
+            """, [.text(profileID.uuidString), .text(match), .integer(Int64(max(0, limit)))], row: Self.countedEntry)
+    }
+
     @discardableResult
     public func delete(_ ids: [HistoryEntry.ID], profileID: UUID) throws -> [URL] {
         let database = try open()
