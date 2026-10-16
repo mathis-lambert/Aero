@@ -17,8 +17,8 @@ struct SidebarView: View {
             .frame(height: BrowserDesign.sidebarHeaderHeight)
 
             AddressBar(browser: browser)
-                .padding(.horizontal, BrowserDesign.rowInset)
-                .padding(.top, 8)
+                .padding(.horizontal, BrowserDesign.sidebarInset)
+                .padding(.top, 2)
                 .padding(.bottom, 4)
 
             SpacePager(browser: browser)
@@ -30,29 +30,27 @@ struct SidebarView: View {
     private var footer: some View {
         HStack(spacing: 0) {
             DownloadsButton(downloads: browser.downloads, presented: Bindable(browser.window).downloadsPresented, shortcut: browser.shortcuts.shortcut(for: .showDownloads)) { browser.perform(.showDownloads) }
-            Spacer(minLength: 4)
             SpaceBar(browser: browser)
-            Spacer(minLength: 4)
             IconButton(symbol: "plus", label: "New space", size: BrowserDesign.navigationButtonSize) {
                 browser.present(.space(nil))
             }
             .accessibilityIdentifier("sidebar.addSpace")
         }
-        .padding(.horizontal, BrowserDesign.rowInset)
+        .padding(.horizontal, BrowserDesign.sidebarInset)
         .frame(height: Self.footerHeight)
     }
 
     private var navigation: some View {
         HStack(spacing: 0) {
-            IconButton(symbol: "sidebar.left", label: "Toggle sidebar", size: BrowserDesign.navigationButtonSize, shortcut: browser.shortcuts.shortcut(for: .toggleSidebar)) { browser.perform(.toggleSidebar) }
+            IconButton(symbol: "sidebar.left", label: "Toggle sidebar", size: BrowserDesign.headerButtonSize, shortcut: browser.shortcuts.shortcut(for: .toggleSidebar)) { browser.perform(.toggleSidebar) }
                 .accessibilityIdentifier("sidebar.toggle")
-            IconButton(symbol: "chevron.left", label: "Back", size: BrowserDesign.navigationButtonSize, shortcut: browser.shortcuts.shortcut(for: .back)) { browser.perform(.back) }
+            IconButton(symbol: "chevron.left", label: "Back", size: BrowserDesign.headerButtonSize, shortcut: browser.shortcuts.shortcut(for: .back)) { browser.perform(.back) }
                 .disabled(!browser.isEnabled(.back))
                 .accessibilityIdentifier("sidebar.back")
-            IconButton(symbol: "chevron.right", label: "Forward", size: BrowserDesign.navigationButtonSize, shortcut: browser.shortcuts.shortcut(for: .forward)) { browser.perform(.forward) }
+            IconButton(symbol: "chevron.right", label: "Forward", size: BrowserDesign.headerButtonSize, shortcut: browser.shortcuts.shortcut(for: .forward)) { browser.perform(.forward) }
                 .disabled(!browser.isEnabled(.forward))
                 .accessibilityIdentifier("sidebar.forward")
-            IconButton(symbol: browser.currentPage?.isLoading == true ? "xmark" : "arrow.clockwise", label: browser.currentPage?.isLoading == true ? "Stop loading" : "Reload page", size: BrowserDesign.navigationButtonSize,
+            IconButton(symbol: browser.currentPage?.isLoading == true ? "xmark" : "arrow.clockwise", label: browser.currentPage?.isLoading == true ? "Stop loading" : "Reload page", size: BrowserDesign.headerButtonSize,
                        shortcut: browser.shortcuts.shortcut(for: browser.currentPage?.isLoading == true ? .stopLoading : .reload)) {
                 browser.perform(browser.currentPage?.isLoading == true ? .stopLoading : .reload)
             }

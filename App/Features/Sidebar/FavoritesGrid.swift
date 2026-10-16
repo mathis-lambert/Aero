@@ -3,12 +3,15 @@ import BrowserCore
 import SwiftUI
 
 /// Favorites as tiles of their favicon. A dragged tab takes a slot as a gap, and the tiles after it
-/// move aside; an empty grid exposes a tinted target only during a drag.
+/// move aside; an empty grid exposes a tinted target only during a drag. The tile metrics here also draw the drag
+/// image and the onboarding's sidebar.
 struct FavoritesGrid: View {
-    static let spacing: CGFloat = 8
-    static let tileHeight: CGFloat = 44
+    static let spacing: CGFloat = 6
+    static let tileHeight: CGFloat = 38
+    static let iconSize: CGFloat = 18
+    static let radius: CGFloat = 10
     /// Three columns at the sidebar's minimum width; extra room adds columns.
-    static let minimumTileWidth = floor((BrowserDesign.sidebarWidth - 2 * BrowserDesign.rowInset - 2 * spacing) / 3)
+    static let minimumTileWidth = floor((BrowserDesign.sidebarWidth - 2 * BrowserDesign.sidebarInset - 2 * spacing) / 3)
 
     static func columnCount(in width: CGFloat) -> Int {
         max(1, Int((width + spacing) / (minimumTileWidth + spacing)))
@@ -19,8 +22,8 @@ struct FavoritesGrid: View {
         return (width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
     }
     /// The site initial, or a browser page's symbol, stands in for a missing favicon.
-    private static let placeholderSize: CGFloat = 18
-    private static let initialFont = Font.system(size: placeholderSize, weight: .medium, design: .rounded)
+    static let placeholderSize: CGFloat = 15
+    static let initialFont = Font.system(size: placeholderSize, weight: .medium, design: .rounded)
 
     let browser: BrowserModel
     let tabs: [BrowserTab]
@@ -37,9 +40,9 @@ struct FavoritesGrid: View {
     var body: some View {
         if tabs.isEmpty {
             if dragging {
-                RoundedRectangle(cornerRadius: BrowserDesign.Radius.card)
+                RoundedRectangle(cornerRadius: Self.radius)
                     .strokeBorder(Color.accentColor.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                    .background(Color.accentColor.opacity(0.05), in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                    .background(Color.accentColor.opacity(0.05), in: RoundedRectangle(cornerRadius: Self.radius))
                     .overlay { Image(systemName: "plus").foregroundStyle(Color.accentColor) }
                     .frame(height: Self.tileHeight)
                     .accessibilityLabel("Favorites grid")
@@ -61,7 +64,7 @@ struct FavoritesGrid: View {
         let highlight = isActive ? selectionColors(for: tab) : (fill: palette.favoriteTileHover, border: palette.line)
         let fill = isLifted ? palette.fill : isActive ? highlight.fill : hoveredTabID == tab.id ? palette.favoriteTileHover : palette.favoriteTile
         return Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
-            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize, fetchingMissing: tab.url) {
+            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: Self.iconSize, fetchingMissing: tab.url) {
                 if let page = InternalPage(url: tab.url) {
                     Image(systemName: page.symbol).font(.system(size: Self.placeholderSize)).foregroundStyle(.secondary)
                 } else {
@@ -72,9 +75,9 @@ struct FavoritesGrid: View {
             .frame(maxWidth: .infinity)
             .frame(height: Self.tileHeight)
             .browserSurface(fill: fill, border: isLifted ? .clear : highlight.border,
-                            radius: BrowserDesign.Radius.card, borderWidth: isActive ? 1.5 : 1)
+                            radius: Self.radius, borderWidth: isActive ? 1.5 : 1)
             .shadow(color: isActive ? highlight.border.opacity(0.24) : .clear, radius: 4, y: 1)
-            .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+            .contentShape(RoundedRectangle(cornerRadius: Self.radius))
         }
         .buttonStyle(.plain)
         .onHover { hovering in

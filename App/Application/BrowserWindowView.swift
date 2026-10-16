@@ -150,6 +150,10 @@ struct BrowserWindowView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
+                    // On a shape of its own: a shadow on the web view would render it offscreen on every frame.
+                    .background {
+                        RoundedRectangle(cornerRadius: BrowserDesign.Radius.page).fill(palette.canvas).pageShadow(palette.scheme)
+                    }
                     .padding(.trailing, BrowserDesign.pageInset)
                     .padding(.vertical, BrowserDesign.pageInset)
                     .padding(.leading, browser.window.sidebarPinned ? 0 : BrowserDesign.pageInset)

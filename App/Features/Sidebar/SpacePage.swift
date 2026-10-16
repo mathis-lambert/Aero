@@ -32,21 +32,6 @@ struct SpacePage: View, @MainActor Equatable {
         let targetedGroup: UUID? = if case .list(let group?) = drop?.destination.place { group } else { nil }
         ScrollView {
             VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
-                HStack(alignment: .firstTextBaseline) {
-                    Button { browser.showSettings(.space(space.id)) } label: {
-                        HStack(spacing: 8) {
-                            SpaceIcon(space: space, size: 13)
-                            Text(verbatim: space.name).font(.headline).lineLimit(1)
-                        }
-                    }.buttonStyle(.plain)
-                        .layoutPriority(1)
-                    Spacer(minLength: 8)
-                    Text(verbatim: browser.session.profiles.first { $0.id == space.profileID }?.name ?? "")
-                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
-                .padding(.horizontal, BrowserDesign.rowInset)
-                .padding(.bottom, 8)
-
                 FavoritesGrid(browser: browser, tabs: tabs.grid, selectedTabID: selectedTabID, marked: marked, lifted: lifted, dragging: draggingTabs, layout: layout)
                     .dropFrame(.section(.grid), in: layout)
 
@@ -63,7 +48,7 @@ struct SpacePage: View, @MainActor Equatable {
                 }
 
                 // The line takes drops for the end of the pinned list, which may be empty.
-                Divider().padding(.vertical, 6)
+                Divider().padding(.vertical, 4)
                     .frame(minHeight: tabs.pinned.isEmpty ? 30 : nil)
                     .contentShape(Rectangle())
                     .accessibilityIdentifier("sidebar.pinnedDropZone")
@@ -80,8 +65,10 @@ struct SpacePage: View, @MainActor Equatable {
             .browserAnimation(value: dragging)
             .browserAnimation(value: marked)
             .browserAnimation(value: space.groups)
-            .padding(.horizontal, BrowserDesign.rowInset)
-            .padding(.top, 12)
+            // The rows fill the page's width whatever their own: a grid alone would size the column to its tiles.
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, BrowserDesign.sidebarInset)
+            .padding(.top, 8)
         }
         .tint(space.color.tint)
         .accentColor(space.color.tint)

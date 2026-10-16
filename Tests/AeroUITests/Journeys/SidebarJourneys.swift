@@ -5,6 +5,8 @@ import XCTest
 @MainActor
 final class SidebarJourneys: E2ETestCase {
     private static let dragHold: TimeInterval = 0.6
+    /// Picking a tab up over an empty grid shows its target: a tile's height plus the rows' spacing.
+    private static let emptyGridExpansion: CGFloat = 42
     /// Over the target before releasing, so the drop delegate has seen where the drag is.
     private static let dropHold: TimeInterval = 0.3
     /// Drops land by the half of the element under the pointer.
@@ -225,7 +227,7 @@ final class SidebarJourneys: E2ETestCase {
         groupHeaders["Alpha"].click()
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Shortcuts"] })
         // Picking the tab up shows the empty grid's target above, which moves the rows down.
-        let header = groupHeaders["Alpha"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).withOffset(CGVector(dx: 0, dy: 48))
+        let header = groupHeaders["Alpha"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).withOffset(CGVector(dx: 0, dy: Self.emptyGridExpansion))
         holdDrag(favoriteRows.element(boundBy: 0), to: header, hold: 1.5)
         XCTAssertTrue(poll { self.labels(of: "sidebar.favorite") == ["Solid fixture", "Shortcuts", "Shortcuts"] },
                       "Resting on a closed group opens it, and the tab stays in it: \(labels(of: "sidebar.favorite"))")
@@ -244,7 +246,7 @@ final class SidebarJourneys: E2ETestCase {
         groupHeaders["Alpha"].click()
         XCTAssertTrue(poll { self.favoriteRows.count == 3 })
         // The empty grid's target moves the rows down, as above.
-        holdDrag(favoriteRows.element(boundBy: 2), to: groupHeaders["Alpha"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).withOffset(CGVector(dx: 0, dy: 48)),
+        holdDrag(favoriteRows.element(boundBy: 2), to: groupHeaders["Alpha"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).withOffset(CGVector(dx: 0, dy: Self.emptyGridExpansion)),
                  hold: Self.dropHold)
         let tabAboveGroup = { self.favoriteRows.element(boundBy: 0).frame.maxY < self.groupHeaders["Alpha"].frame.minY && self.favoriteRows.count == 3 }
         XCTAssertTrue(poll(tabAboveGroup), "A header's top drops a tab above its group, not in it")
@@ -355,9 +357,9 @@ final class SidebarJourneys: E2ETestCase {
     // MARK: - Helpers
 
     private func drag(_ source: XCUIElement, to target: XCUIElement, at offset: CGVector) {
-        // With an empty grid, pickup reveals a 44-point target plus the section spacing; XCTest resolves the
-        // destination before pickup, so follow the row's resulting position.
-        let expansion: CGFloat = tiles.count == 0 ? 48 : 0
+        // With an empty grid, pickup reveals its target; XCTest resolves the destination before pickup, so follow the
+        // row's resulting position.
+        let expansion: CGFloat = tiles.count == 0 ? Self.emptyGridExpansion : 0
         let destination = target.coordinate(withNormalizedOffset: offset).withOffset(CGVector(dx: 0, dy: expansion))
         source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
             .click(forDuration: Self.dragHold, thenDragTo: destination, withVelocity: .default, thenHoldForDuration: Self.dropHold)

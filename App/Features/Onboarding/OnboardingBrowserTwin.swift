@@ -7,8 +7,9 @@ import SwiftUI
 struct OnboardingBrowserTwin: View {
     /// A compact browser window, in points.
     nonisolated static let size = CGSize(width: 780, height: 520)
-    /// The favorites' rows below the space's name, where imported favorites land.
-    nonisolated static let favoritesArea = CGRect(x: 2 * BrowserDesign.rowInset, y: BrowserDesign.sidebarHeaderHeight + 48 + 40, width: 180, height: 180)
+    /// The favorites' rows under the address (2 + 36 + 4 points) and the page's top (8), where imported favorites land.
+    nonisolated static let favoritesArea = CGRect(x: BrowserDesign.sidebarInset + BrowserDesign.rowInset, y: BrowserDesign.sidebarHeaderHeight + 42 + 8,
+                                                  width: 180, height: 180)
     private static let pageRadius = BrowserDesign.Radius.page
     private static let footerHeight: CGFloat = 44
     /// Two rows of tiles, as a narrow sidebar shows them.
@@ -72,7 +73,7 @@ struct OnboardingBrowserTwin: View {
                     Image(systemName: symbol)
                         .font(BrowserDesign.Typography.chrome.weight(.medium))
                         .foregroundStyle(symbol == "sidebar.left" ? palette.ink : palette.secondary.opacity(0.6))
-                        .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
+                        .frame(width: BrowserDesign.headerButtonSize, height: BrowserDesign.headerButtonSize)
                 }
             }
             .frame(height: BrowserDesign.sidebarHeaderHeight)
@@ -86,8 +87,8 @@ struct OnboardingBrowserTwin: View {
             .padding(.horizontal, 12)
             .frame(height: 36)
             .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
-            .padding(.horizontal, BrowserDesign.rowInset)
-            .padding(.top, 8)
+            .padding(.horizontal, BrowserDesign.sidebarInset)
+            .padding(.top, 2)
             .padding(.bottom, 4)
 
             spacePage(space)
@@ -101,21 +102,31 @@ struct OnboardingBrowserTwin: View {
             HStack(spacing: 0) {
                 Image(systemName: "arrow.down.circle").foregroundStyle(palette.secondary)
                     .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
-                Spacer(minLength: 4)
-                HStack(spacing: 2) {
+                // `SpaceBar`, drawn: the space shown as a capsule with its name, the others as icons.
+                HStack(spacing: 0) {
                     ForEach(browser.session.spaces) { item in
-                        SpaceIcon(space: item, size: 13)
-                            .opacity(item.id == space.id ? 1 : 0.5)
-                            .frame(width: 24, height: 24)
-                            .background(item.id == space.id ? palette.fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                        let selected = item.id == space.id
+                        HStack(spacing: 6) {
+                            SpaceIcon(space: item, size: 13).scaleEffect(selected ? 1 : SpaceBar.otherScale)
+                            if selected {
+                                Text(verbatim: item.name).font(BrowserDesign.Typography.label).lineLimit(1)
+                                    .frame(maxWidth: SpaceBar.maximumNameWidth, alignment: .leading)
+                                    .layoutPriority(-1)
+                            }
+                        }
+                        .opacity(selected ? 1 : 0.55)
+                        .padding(.horizontal, selected ? 10 : 0)
+                        .frame(minWidth: SpaceBar.iconSize)
+                        .frame(height: SpaceBar.height)
+                        .background(selected ? item.color.tint.opacity(0.16) : .clear, in: Capsule())
                     }
                 }
-                Spacer(minLength: 4)
+                .frame(maxWidth: .infinity)
                 Image(systemName: "plus").foregroundStyle(palette.secondary)
                     .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
             }
             .font(BrowserDesign.Typography.chrome.weight(.medium))
-            .padding(.horizontal, BrowserDesign.rowInset)
+            .padding(.horizontal, BrowserDesign.sidebarInset)
             .frame(height: Self.footerHeight)
         }
     }
@@ -124,18 +135,6 @@ struct OnboardingBrowserTwin: View {
     private func spacePage(_ space: BrowserSpace) -> some View {
         let tabs = SidebarTabs(session: browser.session, space: space, drop: nil)
         return VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
-            HStack(alignment: .firstTextBaseline) {
-                HStack(spacing: 8) {
-                    SpaceIcon(space: space, size: 13)
-                    Text(verbatim: space.name).font(.headline).lineLimit(1)
-                }
-                Spacer(minLength: 8)
-                Text(verbatim: browser.session.profiles.first { $0.id == space.profileID }?.name ?? "")
-                    .font(.caption).foregroundStyle(palette.secondary).lineLimit(1)
-            }
-            .padding(.horizontal, BrowserDesign.rowInset)
-            .padding(.bottom, 8)
-
             if !tabs.grid.isEmpty {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: FavoritesGrid.spacing), count: 3), spacing: FavoritesGrid.spacing) {
                     ForEach(tabs.grid.prefix(Self.tileLimit)) { tile($0) }
@@ -161,7 +160,7 @@ struct OnboardingBrowserTwin: View {
                         .animation(.spring(duration: 0.45, bounce: 0.18).delay(onboarding.step == .importing ? 0.75 + Double(index) * 0.06 : 0)),
                                             removal: .opacity))
             }
-            Divider().padding(.vertical, 6).padding(.horizontal, BrowserDesign.rowInset)
+            Divider().padding(.vertical, 4).padding(.horizontal, BrowserDesign.rowInset)
             HStack(spacing: BrowserDesign.rowInset) {
                 Image(systemName: "plus").frame(width: BrowserDesign.rowIconWidth)
                 Text("New tab")
@@ -172,15 +171,15 @@ struct OnboardingBrowserTwin: View {
             .background(palette.raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
         }
         .font(BrowserDesign.Typography.chrome)
-        .padding(.horizontal, BrowserDesign.rowInset)
-        .padding(.top, 12)
+        .padding(.horizontal, BrowserDesign.sidebarInset)
+        .padding(.top, 8)
     }
 
     private func tile(_ tab: BrowserTab) -> some View {
-        favicon(tab, size: BrowserDesign.pinnedIconSize, initial: .system(size: 18, weight: .medium, design: .rounded))
+        favicon(tab, size: FavoritesGrid.iconSize, initial: FavoritesGrid.initialFont)
             .frame(maxWidth: .infinity)
             .frame(height: FavoritesGrid.tileHeight)
-            .browserSurface(fill: palette.favoriteTile, border: palette.line, radius: BrowserDesign.Radius.card)
+            .browserSurface(fill: palette.favoriteTile, border: palette.line, radius: FavoritesGrid.radius)
             .transition(.scale(scale: 0.8).combined(with: .opacity))
     }
 

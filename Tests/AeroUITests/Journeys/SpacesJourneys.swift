@@ -173,7 +173,8 @@ final class SpacesJourneys: E2ETestCase {
         quitAndRelaunch()
         XCTAssertEqual(labels(of: "sidebar.space"), ["Research", "Main"])
         let research = space("Research"), main = space("Main")
-        XCTAssertEqual((research.frame.midX + main.frame.midX) / 2, app.buttons["sidebar.newTab"].frame.midX, accuracy: 3, "Space icons are centered")
+        // The shown space is a wide capsule beside the others: the group, not each icon, is centered.
+        XCTAssertEqual((research.frame.minX + main.frame.maxX) / 2, app.buttons["sidebar.newTab"].frame.midX, accuracy: 3, "The spaces are centered")
         openSettings("spaces")
         app.buttons["spaces.row.Research"].click()
         XCTAssertEqual(app.textFields["spaces.emoji"].value as? String, "🚀")
