@@ -1862,6 +1862,16 @@
         }
       }
     },
+    "Close %lld Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer %lld onglets"
+          }
+        }
+      }
+    },
     "Close find bar" : {
       "localizations" : {
         "en" : {
@@ -1972,6 +1982,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fermer la fenêtre"
+          }
+        }
+      }
+    },
+    "Collapse Groups" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replier les groupes"
           }
         }
       }
@@ -2172,6 +2192,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier le lien"
+          }
+        }
+      }
+    },
+    "Copy Links" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier les liens"
           }
         }
       }
@@ -2754,6 +2784,26 @@
         }
       }
     },
+    "Duplicate %lld Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliquer %lld onglets"
+          }
+        }
+      }
+    },
+    "Expand Groups" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Développer les groupes"
+          }
+        }
+      }
+    },
     "Export as PDF…" : {
       "localizations" : {
         "en" : {
@@ -3032,6 +3082,26 @@
         }
       }
     },
+    "Move Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer les onglets"
+          }
+        }
+      }
+    },
+    "New Group with %lld Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau groupe avec %lld onglets"
+          }
+        }
+      }
+    },
     "No extensions in this profile yet." : {
       "localizations" : {
         "en" : {
@@ -3214,6 +3284,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marge"
+          }
+        }
+      }
+    },
+    "Pin Tabs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler les onglets"
           }
         }
       }
@@ -8575,6 +8655,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La page n’a pas pu être enregistrée. Réessayez ou choisissez un autre dossier."
+          }
+        }
+      }
+    },
+    "The pages will reload. Unsaved input may be lost. Cookies and history stay in the original profile." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pages seront rechargées. Les saisies non enregistrées risquent d’être perdues. Les cookies et l’historique restent dans le profil d’origine."
           }
         }
       }

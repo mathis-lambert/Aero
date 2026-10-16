@@ -167,8 +167,8 @@ public actor BrowserStore {
             return try BrowserSpace(id: row.uuid(0), profileID: row.uuid(1), name: row.text(2), color: color, emoji: row.optionalText(4))
         }
         for index in spaces.indices {
-            spaces[index].groups = try db.query("SELECT id, name, collapsed FROM tab_groups WHERE space_id = ? ORDER BY position", [.text(spaces[index].id.uuidString)]) {
-                try TabGroup(id: $0.uuid(0), name: $0.text(1), isCollapsed: $0.integer(2) != 0)
+            spaces[index].groups = try db.query("SELECT id, name, collapsed, slot FROM tab_groups WHERE space_id = ? ORDER BY position", [.text(spaces[index].id.uuidString)]) {
+                try TabGroup(id: $0.uuid(0), name: $0.text(1), isCollapsed: $0.integer(2) != 0, slot: Int($0.integer(3)))
             }
         }
         let tabs = try db.query("SELECT id, space_id, url, title, custom_name, placement, group_id FROM tabs ORDER BY position") { row -> BrowserTab in
@@ -236,8 +236,8 @@ public actor BrowserStore {
             if oldSpaces[space.id] != space || previous?.spaces.indices.contains(position) != true || previous?.spaces[position].id != space.id {
                 try db.run("INSERT INTO spaces (id,profile_id,name,color,emoji,position) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET profile_id=excluded.profile_id,name=excluded.name,color=excluded.color,emoji=excluded.emoji,position=excluded.position", [.text(space.id.uuidString), .text(space.profileID.uuidString), .text(space.name), .text(space.color.hex), text(space.emoji), .integer(Int64(position))])
                 for (index, group) in space.groups.enumerated() {
-                    try db.run("INSERT INTO tab_groups (id,space_id,name,collapsed,position) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,collapsed=excluded.collapsed,position=excluded.position",
-                               [.text(group.id.uuidString), .text(space.id.uuidString), .text(group.name), .integer(group.isCollapsed ? 1 : 0), .integer(Int64(index))])
+                    try db.run("INSERT INTO tab_groups (id,space_id,name,collapsed,position,slot) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET space_id=excluded.space_id,name=excluded.name,collapsed=excluded.collapsed,position=excluded.position,slot=excluded.slot",
+                               [.text(group.id.uuidString), .text(space.id.uuidString), .text(group.name), .integer(group.isCollapsed ? 1 : 0), .integer(Int64(index)), .integer(Int64(group.slot))])
                 }
             }
         }

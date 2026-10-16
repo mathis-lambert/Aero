@@ -7,7 +7,6 @@ import UniformTypeIdentifiers
 /// `dropDestination` never commits a tab dropped in the sidebar, as `SidebarJourneys` shows, so the drop is AppKit's.
 struct SidebarDropTarget: NSViewRepresentable {
     let browser: BrowserModel
-    let space: BrowserSpace
     let layout: TabDropLayout
     let onMove: (CGPoint?) -> TabPlace?
     let onDrop: () -> Bool
@@ -22,21 +21,38 @@ struct SidebarDropTarget: NSViewRepresentable {
 
     func updateNSView(_ view: DropView, context: Context) {
         layout.rightToLeft = layoutDirection == .rightToLeft
-        view.layout = layout
+        view.isDragging = { browser.window.tabDrag != nil }
         view.onMove = onMove
         view.onDrop = onDrop
+        view.onEnd = { browser.window.tabDrag = nil }
         view.makePreviews = {
-            guard let id = layout.draggedTabID, let tab = browser.tabs(in: space).first(where: { $0.id == id }) else { return nil }
+            guard let drag = browser.window.tabDrag else { return nil }
             let palette = BrowserPalette(scheme: colorScheme)
-            let icon = browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).image }
             let width = layout.frames[.section(.open)]?.width ?? (BrowserDesign.sidebarWidth - 2 * BrowserDesign.rowInset)
-            return (Self.preview(tab: tab, icon: icon, grid: false, width: width, palette: palette, rightToLeft: layoutDirection == .rightToLeft),
-                    Self.preview(tab: tab, icon: icon, grid: true, width: width, palette: palette, rightToLeft: layoutDirection == .rightToLeft))
+            let rightToLeft = layoutDirection == .rightToLeft
+            let count = drag.items.count
+            // A group shows as its header: the folder and its name, never as a tile.
+            if case .group(let groupID) = drag.picked {
+                guard let group = browser.session.spaces.lazy.flatMap(\.groups).first(where: { $0.id == groupID }) else { return nil }
+                let image = Self.preview(title: group.name, icon: nil, symbol: "folder", initial: nil, count: count, grid: false,
+                                         width: width, palette: palette, rightToLeft: rightToLeft)
+                return (image, image)
+            }
+            guard let tab = browser.session.tabs.first(where: { $0.id == drag.picked.id }) else { return nil }
+            let icon = browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).image }
+            let page = InternalPage(url: tab.url)
+            let initial = page == nil ? String(tab.url.siteName.prefix(1)).uppercased() : nil
+            let symbol = page?.symbol ?? "globe"
+            return (Self.preview(title: tab.displayTitle, icon: icon, symbol: symbol, initial: initial, count: count, grid: false,
+                                 width: width, palette: palette, rightToLeft: rightToLeft),
+                    Self.preview(title: tab.displayTitle, icon: icon, symbol: symbol, initial: initial, count: count, grid: true,
+                                 width: width, palette: palette, rightToLeft: rightToLeft))
         }
     }
 
-    /// Native drawing avoids starting a SwiftUI render inside AppKit's mouse tracking loop.
-    private static func preview(tab: BrowserTab, icon: NSImage?, grid: Bool, width: CGFloat,
+    /// Native drawing avoids starting a SwiftUI render inside AppKit's mouse tracking loop. A tile without a favicon
+    /// shows `initial` when there is one, else `symbol`; several items show their count on the trailing top corner.
+    private static func preview(title: String, icon: NSImage?, symbol: String, initial: String?, count: Int, grid: Bool, width: CGFloat,
                                 palette: BrowserPalette, rightToLeft: Bool) -> NSImage {
         let size = NSSize(width: grid ? FavoritesGrid.tileWidth(in: width) : width,
                           height: grid ? FavoritesGrid.tileHeight : BrowserDesign.tabRowHeight)
@@ -48,8 +64,7 @@ struct SidebarDropTarget: NSViewRepresentable {
         let textInset = inset * 2 + BrowserDesign.rowIconWidth
         let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         let textHeight = ceil(font.ascender - font.descender)
-        let fallback = InternalPage(url: tab.url)?.symbol ?? "globe"
-        let symbol = NSImage(systemSymbolName: fallback, accessibilityDescription: nil)?
+        let symbol = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)?
             .withSymbolConfiguration(.init(paletteColors: [ink]))
         return NSImage(size: size, flipped: false) { bounds in
             let radius = grid ? BrowserDesign.Radius.card : BrowserDesign.Radius.control
@@ -60,8 +75,8 @@ struct SidebarDropTarget: NSViewRepresentable {
             shape.stroke()
             let x = grid ? (size.width - iconSize) / 2 : rightToLeft ? size.width - inset - iconSize : inset
             let iconRect = CGRect(x: x, y: (size.height - iconSize) / 2, width: iconSize, height: iconSize)
-            if grid, icon == nil, InternalPage(url: tab.url) == nil {
-                let text = String(tab.url.siteName.prefix(1)).uppercased() as NSString
+            if grid, icon == nil, let initial {
+                let text = initial as NSString
                 let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 18, weight: .medium), .foregroundColor: ink]
                 let textSize = text.size(withAttributes: attributes)
                 text.draw(at: CGPoint(x: (size.width - textSize.width) / 2, y: (size.height - textSize.height) / 2), withAttributes: attributes)
@@ -74,23 +89,38 @@ struct SidebarDropTarget: NSViewRepresentable {
                 paragraph.alignment = rightToLeft ? .right : .left
                 let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink, .paragraphStyle: paragraph]
                 let rect = CGRect(x: rightToLeft ? inset : textInset, y: (size.height - textHeight) / 2, width: max(0, size.width - textInset - inset), height: textHeight)
-                (tab.displayTitle as NSString).draw(in: rect, withAttributes: attributes)
+                (title as NSString).draw(in: rect, withAttributes: attributes)
             }
+            if count > 1 { drawBadge(count, in: bounds, rightToLeft: rightToLeft) }
             return true
         }
     }
 
+    private static func drawBadge(_ count: Int, in bounds: CGRect, rightToLeft: Bool) {
+        let text = count.formatted() as NSString
+        let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 11, weight: .semibold), .foregroundColor: NSColor.white]
+        let size = text.size(withAttributes: attributes)
+        let height: CGFloat = 18
+        let badgeWidth = max(height, size.width + 10)
+        let x = rightToLeft ? bounds.minX + 4 : bounds.maxX - badgeWidth - 4
+        let badge = CGRect(x: x, y: bounds.maxY - height - 4, width: badgeWidth, height: height)
+        NSColor.controlAccentColor.setFill()
+        NSBezierPath(roundedRect: badge, xRadius: height / 2, yRadius: height / 2).fill()
+        text.draw(at: CGPoint(x: badge.midX - size.width / 2, y: badge.midY - size.height / 2), withAttributes: attributes)
+    }
+
     final class DropView: NSView {
-        var layout: TabDropLayout?
+        var isDragging: () -> Bool = { false }
         var onMove: (CGPoint?) -> TabPlace? = { _ in nil }
         var onDrop: () -> Bool = { false }
+        var onEnd: () -> Void = {}
         var makePreviews: () -> (NSImage, NSImage)? = { nil }
         private var previews: (NSImage, NSImage)?
         private var grid: Bool?
 
         override var isFlipped: Bool { true }
         override func hitTest(_ point: NSPoint) -> NSView? {
-            layout?.draggedTabID != nil ? super.hitTest(point) : nil
+            isDragging() ? super.hitTest(point) : nil
         }
 
         override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
@@ -100,7 +130,7 @@ struct SidebarDropTarget: NSViewRepresentable {
         }
 
         override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
-            guard layout?.draggedTabID != nil, let previews else { return [] }
+            guard isDragging(), let previews else { return [] }
             let point = convert(sender.draggingLocation, from: nil)
             let asGrid = onMove(point) == .grid
             if grid != asGrid {
@@ -123,12 +153,12 @@ struct SidebarDropTarget: NSViewRepresentable {
 
         override func draggingEnded(_ sender: any NSDraggingInfo) {
             _ = onMove(nil)
-            layout?.draggedTabID = nil
+            onEnd()
             previews = nil
             grid = nil
         }
 
-        override func prepareForDragOperation(_ sender: any NSDraggingInfo) -> Bool { layout?.draggedTabID != nil }
+        override func prepareForDragOperation(_ sender: any NSDraggingInfo) -> Bool { isDragging() }
 
         override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
             _ = onMove(convert(sender.draggingLocation, from: nil))

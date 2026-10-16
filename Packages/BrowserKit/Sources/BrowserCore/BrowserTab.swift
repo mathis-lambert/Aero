@@ -5,8 +5,22 @@ public struct TabGroup: Identifiable, Equatable, Sendable {
     public let id: UUID
     public var name: String
     public var isCollapsed: Bool
-    package init(id: UUID, name: String, isCollapsed: Bool) {
-        self.id = id; self.name = name; self.isCollapsed = isCollapsed
+    /// How many loose favorites of its space are listed above it (`BrowserSession.pinned(in:)`).
+    public package(set) var slot: Int
+    package init(id: UUID, name: String, isCollapsed: Bool, slot: Int = 0) {
+        self.id = id; self.name = name; self.isCollapsed = isCollapsed; self.slot = slot
+    }
+}
+
+/// An entry of a space's pinned list, under the grid: a loose favorite or a group, in any order.
+public enum PinnedItem: Hashable, Sendable {
+    case tab(UUID)
+    case group(UUID)
+
+    public var id: UUID {
+        switch self {
+        case .tab(let id), .group(let id): id
+        }
     }
 }
 

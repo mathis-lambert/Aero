@@ -1,11 +1,13 @@
 import BrowserCore
 import SwiftUI
 
-/// One icon per space in the sidebar's footer: its emoji, or a dot in its color.
+/// One icon per space in the sidebar's footer: its emoji, or a dot in its color. Tabs dragged onto an icon go to
+/// its space (`SpaceDropTarget`).
 struct SpaceBar: View {
     private static let iconSize: CGFloat = 24
 
     let browser: BrowserModel
+    @State private var targetedSpaceID: UUID?
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -24,11 +26,15 @@ struct SpaceBar: View {
     }
 
     private func icon(_ space: BrowserSpace, selected: Bool) -> some View {
-        Button { browser.switchSpace(space.id) } label: {
+        let targeted = targetedSpaceID == space.id
+        return Button { browser.switchSpace(space.id) } label: {
             SpaceIcon(space: space, size: 13)
-                .opacity(selected ? 1 : 0.5)
+                .opacity(selected || targeted ? 1 : 0.5)
+                .scaleEffect(targeted ? 1.2 : 1)
             .frame(width: Self.iconSize, height: Self.iconSize)
-            .background(selected ? palette.fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+            .background(targeted ? space.color.tint.opacity(0.25) : selected ? palette.fill : .clear,
+                        in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+            .browserAnimation(value: targeted)
             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
         }
         .buttonStyle(QuietButtonStyle())
@@ -36,6 +42,12 @@ struct SpaceBar: View {
         .accessibilityLabel(Text(verbatim: space.name))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("sidebar.space")
+        // Behind the button, so clicks reach it; drags find the native view all the same.
+        .background(SpaceDropTarget(browser: browser, space: space, targeted: Binding {
+            targetedSpaceID == space.id
+        } set: { targeted in
+            if targeted { targetedSpaceID = space.id } else if targetedSpaceID == space.id { targetedSpaceID = nil }
+        }))
         .contextMenu {
             Button("Edit Space…", systemImage: "pencil") { browser.showSettings(.space(space.id)) }
             Divider()

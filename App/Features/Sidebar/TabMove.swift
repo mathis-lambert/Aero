@@ -17,27 +17,34 @@ enum TabMoveChoice: Identifiable, Equatable {
 }
 
 extension BrowserModel {
-    /// The groups of the tab's space, then “Out of Group” when it is in one.
-    func groupChoices(for tab: BrowserTab) -> [TabMoveChoice] {
-        let groups = session.spaces.first { $0.id == tab.spaceID }?.groups ?? []
-        let isGrouped = if case .list(group: .some) = tab.place { true } else { false }
+    /// The groups of the tabs' space, then “Out of Group” when one of them is in a group.
+    func groupChoices(for tabs: [BrowserTab]) -> [TabMoveChoice] {
+        let groups = session.spaces.first { $0.id == tabs.first?.spaceID }?.groups ?? []
+        let isGrouped = tabs.contains { if case .list(group: .some) = $0.place { true } else { false } }
         return groups.map(TabMoveChoice.group) + (isGrouped ? [.ungroup] : [])
     }
 
-    func isCurrent(_ choice: TabMoveChoice, for tab: BrowserTab) -> Bool {
-        switch choice {
-        case .group(let group): tab.place == .list(group: group.id)
-        case .ungroup: false
-        case .space(let space): tab.spaceID == space.id
+    /// Where every one of the tabs already is.
+    func isCurrent(_ choice: TabMoveChoice, for tabs: [BrowserTab]) -> Bool {
+        !tabs.isEmpty && tabs.allSatisfy { tab in
+            switch choice {
+            case .group(let group): tab.place == .list(group: group.id)
+            case .ungroup: false
+            case .space(let space): tab.spaceID == space.id
+            }
         }
     }
 
-    func move(_ tabID: UUID, to choice: TabMoveChoice) {
+    /// Out of Group moves only the grouped tabs, which stay pinned.
+    func move(_ tabIDs: [UUID], to choice: TabMoveChoice) {
         switch choice {
-        case .group(let group): moveTab(tabID, to: .list(group: group.id), before: nil)
-        case .ungroup: moveTab(tabID, to: .list(group: nil), before: nil)
-        case .space(let space): moveTab(tabID, toSpace: space.id)
+        case .group(let group): moveTabs(tabIDs, to: .list(group: group.id), before: nil)
+        case .ungroup:
+            let grouped = tabs(tabIDs).filter { if case .list(group: .some) = $0.place { true } else { false } }
+            moveTabs(grouped.map(\.id), to: .list(group: nil), before: nil)
+        case .space(let space): moveTabs(tabIDs, toSpace: space.id)
         }
+        window.tabSelection.clear()
     }
 
     /// The profile's name, when there are several to tell spaces apart.
@@ -50,26 +57,30 @@ extension BrowserModel {
 /// The same choices in the context menu and the menu bar; the command bar and shortcuts show `TabMovePrompt`.
 struct MoveToGroupMenu: View {
     let browser: BrowserModel
-    let tab: BrowserTab
+    let tabs: [BrowserTab]
 
     var body: some View {
         Menu("Move to Group", systemImage: BrowserCommand.moveToGroup.symbol) {
-            let groups = browser.session.spaces.first { $0.id == tab.spaceID }?.groups ?? []
-            ForEach(groups) { group in
-                Button { browser.move(tab.id, to: .group(group)) } label: { Text(verbatim: group.name) }
-                    .disabled(tab.place == .list(group: group.id))
+            let choices = browser.groupChoices(for: tabs)
+            ForEach(choices) { choice in
+                if case .group(let group) = choice {
+                    Button { browser.move(tabs.map(\.id), to: choice) } label: { Text(verbatim: group.name) }
+                        .disabled(browser.isCurrent(choice, for: tabs))
+                }
             }
-            if case .list(group: .some) = tab.place {
+            if choices.contains(.ungroup) {
                 Divider()
-                Button("Out of Group") { browser.move(tab.id, to: .ungroup) }
+                Button("Out of Group") { browser.move(tabs.map(\.id), to: .ungroup) }
             }
         }
     }
 }
 
+/// The spaces, grouped by profile once there are several, for tabs or a group.
 struct MoveToSpaceMenu: View {
     let browser: BrowserModel
-    let tab: BrowserTab
+    let isCurrent: (BrowserSpace) -> Bool
+    let move: (BrowserSpace) -> Void
 
     var body: some View {
         Menu("Move to Space", systemImage: BrowserCommand.moveToSpace.symbol) {
@@ -83,15 +94,21 @@ struct MoveToSpaceMenu: View {
 
     private func buttons(_ spaces: [BrowserSpace]) -> some View {
         ForEach(spaces) { space in
-            Button { browser.move(tab.id, to: .space(space)) } label: { Text(verbatim: space.name) }
-                .disabled(space.id == tab.spaceID)
+            Button { move(space) } label: { Text(verbatim: space.name) }
+                .disabled(isCurrent(space))
         }
+    }
+}
+
+extension MoveToSpaceMenu {
+    init(browser: BrowserModel, tabs: [BrowserTab]) {
+        self.init(browser: browser, isCurrent: { browser.isCurrent(.space($0), for: tabs) }) { browser.move(tabs.map(\.id), to: .space($0)) }
     }
 }
 
 struct TabMovePresentation: Equatable {
     enum Target { case group, space }
-    let tabID: UUID
+    let tabIDs: [UUID]
     let target: Target
 }
 
@@ -107,22 +124,23 @@ struct TabMovePrompt: View {
     @FocusState private var focused: Bool
     @Environment(\.palette) private var palette
 
-    private var tab: BrowserTab? { browser.session.tabs.first { $0.id == presentation.tabID } }
+    private var tabs: [BrowserTab] { browser.tabs(presentation.tabIDs) }
 
     private var choices: [TabMoveChoice] {
-        guard let tab else { return [] }
-        return presentation.target == .group ? browser.groupChoices(for: tab) : browser.session.spaces.map(TabMoveChoice.space)
+        let tabs = tabs
+        guard !tabs.isEmpty else { return [] }
+        return presentation.target == .group ? browser.groupChoices(for: tabs) : browser.session.spaces.map(TabMoveChoice.space)
     }
 
     private var available: [TabMoveChoice] {
-        guard let tab else { return [] }
-        return choices.filter { !browser.isCurrent($0, for: tab) }
+        let tabs = tabs
+        return choices.filter { !browser.isCurrent($0, for: tabs) }
     }
 
     var body: some View {
         Prompt(title: presentation.target == .group ? Text("Move to Group") : Text("Move to Space")) {
             VStack(alignment: .leading, spacing: 10) {
-                if let tab { header(tab) }
+                header(tabs)
                 Divider()
                 list
             }
@@ -146,17 +164,22 @@ struct TabMovePrompt: View {
             await Task.yield()
             focused = true
         }
-        .onChange(of: tab == nil) { _, closed in if closed { browser.dismissPrompt() } }
+        .onChange(of: tabs.isEmpty) { _, closed in if closed { browser.dismissPrompt() } }
     }
 
-    /// The tab being moved, so the question is never ambiguous.
-    private func header(_ tab: BrowserTab) -> some View {
+    /// The tab being moved, or how many, so the question is never ambiguous.
+    @ViewBuilder private func header(_ tabs: [BrowserTab]) -> some View {
         HStack(spacing: 8) {
-            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
-                Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe").foregroundStyle(palette.secondary)
+            if let tab = tabs.first, tabs.count == 1 {
+                FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.tabIconSize) {
+                    Image(systemName: InternalPage(url: tab.url)?.symbol ?? "globe").foregroundStyle(palette.secondary)
+                }
+                .frame(width: BrowserDesign.rowIconWidth)
+                Text(verbatim: tab.displayTitle).lineLimit(1).truncationMode(.middle).foregroundStyle(palette.secondary)
+            } else {
+                Image(systemName: "square.on.square").foregroundStyle(palette.secondary).frame(width: BrowserDesign.rowIconWidth)
+                Text("\(tabs.count) tabs").foregroundStyle(palette.secondary)
             }
-            .frame(width: BrowserDesign.rowIconWidth)
-            Text(verbatim: tab.displayTitle).lineLimit(1).truncationMode(.middle).foregroundStyle(palette.secondary)
         }
         .padding(.horizontal, BrowserDesign.rowInset)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -177,7 +200,7 @@ struct TabMovePrompt: View {
     }
 
     private func row(_ choice: TabMoveChoice) -> some View {
-        let isCurrent = tab.map { browser.isCurrent(choice, for: $0) } ?? false
+        let isCurrent = browser.isCurrent(choice, for: tabs)
         let selected = selection == choice.id
         return Button {
             selection = choice.id
@@ -246,6 +269,6 @@ struct TabMovePrompt: View {
         guard let selection, let choice = available.first(where: { $0.id == selection }) else { return }
         browser.dismissPrompt()
         // A move to another profile's space asks next, with its own prompt.
-        browser.move(presentation.tabID, to: choice)
+        browser.move(presentation.tabIDs, to: choice)
     }
 }

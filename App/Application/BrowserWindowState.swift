@@ -18,6 +18,24 @@ final class BrowserWindowState {
     var controlCenterPresented = false
     /// The quick portrait popover on the address (docs/PORTRAIT.md › Quick capture).
     var portrait: PortraitStudio?
+    /// Tabs and groups picked with ⌘ or ⇧ in the sidebar (docs/BROWSING.md › Several tabs at once).
+    var tabSelection = TabSelection()
+    /// What is being dragged from the sidebar, which any space's page can take. Aero's destinations end it; a drag
+    /// released elsewhere, on a page or in another app, ends at the next click, before the click reaches the sidebar.
+    var tabDrag: TabDrag? {
+        didSet {
+            if tabDrag == nil, let monitor = dragEndMonitor {
+                NSEvent.removeMonitor(monitor)
+                dragEndMonitor = nil
+            } else if tabDrag != nil, dragEndMonitor == nil {
+                dragEndMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+                    MainActor.assumeIsolated { self?.tabDrag = nil }
+                    return event
+                }
+            }
+        }
+    }
+    @ObservationIgnored private var dragEndMonitor: Any?
     /// The tab or group whose name is being edited in the sidebar.
     var renaming: RenameTarget?
     /// Counts copies, so the address can confirm each one.
@@ -39,6 +57,8 @@ final class BrowserWindowState {
     var settingsRoute = SettingsRoute.section(.general)
     var settingsRequest = UUID()
     let find = FindInPage()
+
+    isolated deinit { if let dragEndMonitor { NSEvent.removeMonitor(dragEndMonitor) } }
 }
 
 enum RenameTarget: Equatable {
@@ -55,7 +75,7 @@ enum WindowPrompt: Identifiable {
     case space(UUID?)
     case removeSpace(UUID, inSettings: Bool = false)
     case moveTab(TabMovePresentation)
-    case transferTab(UUID, UUID)
+    case transferTabs(TabTransfer)
     /// Carries the History page's own clearing, which then reloads it.
     case clearHistory((HistoryClearRange) -> Void)
     /// Shown in the Settings window when asked from there.
@@ -73,8 +93,8 @@ enum WindowPrompt: Identifiable {
         case .quit: "quit"
         case .space(let target): "space.\(target?.uuidString ?? "new")"
         case .removeSpace(let id, _): "removeSpace.\(id)"
-        case .moveTab(let move): "moveTab.\(move.tabID)"
-        case .transferTab(let id, _): "transferTab.\(id)"
+        case .moveTab(let move): "moveTab.\(move.tabIDs.map(\.uuidString).joined(separator: ","))"
+        case .transferTabs(let transfer): "transferTabs.\(transfer.items.map(\.id.uuidString).joined(separator: ","))"
         case .profile: "profile"
         case .clearHistory: "clearHistory"
         case .extensionRequest(let request): "extension.\(request.id)"

@@ -1,3 +1,4 @@
+import AppKit
 import BrowserCore
 import SwiftUI
 
@@ -15,11 +16,12 @@ struct SelectionHighlight: View {
 }
 
 /// A favorite or an open tab in the sidebar's list. Closing a favorite only unloads it, hence its
-/// minus; a dragged tab shows as a gap where it would land.
+/// minus; a dragged tab shows as a gap where it would land, and a tab picked with ⌘ or ⇧ as selected.
 struct TabRow: View {
     let browser: BrowserModel
     let tab: BrowserTab
     let selected: Bool
+    let marked: Bool
     let lifted: Bool
     let selection: Namespace.ID
     let layout: TabDropLayout
@@ -34,11 +36,12 @@ struct TabRow: View {
                     RenameField(name: tab.displayTitle) { browser.renameTab(tab.id, to: $0) } end: { browser.window.endRenaming(.tab(tab.id)) }
                 }
             } else {
-                Button { browser.showTab(tab) } label: {
+                Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
                     label { Text(verbatim: tab.displayTitle).lineLimit(1).truncationMode(.tail) }
                 }
                 .buttonStyle(.plain)
-                .tabDraggable(tab, in: layout)
+                .tabDraggable(tab, browser: browser)
+                .accessibilityAddTraits(selected || marked ? .isSelected : [])
                 .accessibilityIdentifier(tab.isFavorite ? "sidebar.favorite" : "sidebar.tab")
             }
             Button {
@@ -61,11 +64,11 @@ struct TabRow: View {
         .background {
             if lifted { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(palette.fill) }
             else if selected { SelectionHighlight(namespace: selection) }
+            else if marked { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(palette.raised) }
             else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(hovered ? palette.hover : .clear) }
         }
         .onHover { hovered = $0 }
         .accessibilityElement(children: .contain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
         .contextMenu { TabContextMenu(browser: browser, tab: tab) }
         .dropFrame(.tab(tab.id), in: layout)
     }

@@ -18,13 +18,25 @@ While its field is empty, New Tab shows up to six frequent sites and the last th
 
 ## Favorites and open tabs
 
-Each space has a favorites grid, pinned favorites with optional groups, and ordinary tabs. New Tab is a permanent selectable row.
+Each space has a favorites grid, a pinned list of favorites and groups in any order, and ordinary tabs. New Tab is a permanent selectable row.
 
 - Closing a favorite releases its page but retains its record. Favorites start closed after relaunch. Removing an open favorite turns it into an ordinary tab; removing a closed favorite deletes it.
 - Closing an ordinary tab removes it; Reopen Closed Tab restores it.
-- Dragging reorganizes tabs within the space. The insertion marker is the committed destination; canceling leaves the order unchanged. External drags export URLs; incoming files, text and tabs from other spaces are rejected.
+- Dragging reorganizes tabs. The insertion marker is the committed destination; canceling leaves the order unchanged. External drags export URLs; incoming files and text are rejected. A drag can take tabs to another space: see Several tabs at once.
 - Move to Space preserves a live page within the same profile. Crossing profiles requires confirmation and a new page identity; see [Spaces](SPACES.md).
-- Ungroup preserves the group's favorites. Custom names persist independently of website titles.
+- Ungroup leaves the group's favorites pinned where it was. Custom names persist independently of website titles.
+- A group's place among the loose favorites is its slot, the number of loose favorites above it (`BrowserSession.pinned(in:)`); closing, unpinning or moving away a favorite above it never moves it past another entry.
+
+## Several tabs at once
+
+⌘-click picks a tab or a group's header in the sidebar without showing or opening it, along with the tab shown; ⌘-click again drops it. ⇧-click picks everything on screen from the last item ⌘-clicked, else the shown tab, to the one clicked, groups' headers included; a closed group's rows are not on screen. Picked tabs and groups look selected. Showing another tab, changing space, Escape or an action on them ends the selection. It belongs to the window and is never saved. `TabSelection` holds the rules, `SidebarTabs.entries(of:)` the order of picked groups and tabs.
+
+- **Context menu**: on a picked tab it acts on all of them, in sidebar order: Copy Links · Duplicate *n* Tabs · Add to Favorites, Pin Tabs · New Group with *n* Tabs, Move to Group ›, Move to Space › · Close *n* Tabs. On a tab outside the selection it acts on that tab alone, as before.
+- **With groups picked**, a picked group's or tab's context menu offers Copy Links · Collapse or Expand Groups, Move to Space › · Ungroup, for all of them; a picked group's tabs go with it. Dragged, they all land together, in order, in the pinned list, tabs from the grid or the open tabs included.
+- **Tabs menu and shortcuts**: Duplicate Tab, New Group with Tab, Move to Group, Move to Space and Close Tab act on the selection when it includes the shown tab.
+- **Dragging** a picked tab takes the others along: they land together, in order, and the page shows the gap they will fill. The drag image counts them.
+- **Groups** drag by their header. The group shows as a gap where it would land, its tabs with it; it moves before the first entry of the pinned list, group or loose favorite, whose middle is below the pointer, else last. A tab lands before or after a group as it does a tab: a header's top quarter drops before its group, a closed group's bottom quarter after it, the rest into it. Resting a dragged tab on a closed group for half a second opens it, so the tab can go between its rows; until then the tab keeps its place, as a gap, and the group lights up, so the rows never close up under the pointer. A group a drag opened closes again when the drag ends without tabs landing in it. A group's context menu has Move to Space › too.
+- **Another space**: resting a drag on a side of the page for half a second lights that side in the next space's color, then slides to that space, where the tabs drop at a place of its page. Released before the pointer moves again, they go to the end of their kind of place in the space now shown. Resting on a space's icon in the footer opens it the same way; dropping on the icon moves them there directly. A group goes with its tabs, in their order, before the group under the pointer or last. Within a profile, tabs keep their identity and live page; across profiles one confirmation covers them all, as for Move to Space. A tab still downloading keeps every tab where it is. A tab that was shown when the drag began is shown again in its new space.
 
 ## History
 

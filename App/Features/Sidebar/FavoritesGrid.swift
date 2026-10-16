@@ -25,7 +25,10 @@ struct FavoritesGrid: View {
     let browser: BrowserModel
     let tabs: [BrowserTab]
     let selectedTabID: UUID?
-    let lifted: UUID?
+    let marked: Set<UUID>
+    let lifted: Set<UUID>
+    /// Tabs are being dragged, so an empty grid shows where they can go.
+    let dragging: Bool
     let layout: TabDropLayout
     @State private var hoveredTabID: UUID?
     @Environment(\.browserReduceMotion) private var reduceMotion
@@ -33,7 +36,7 @@ struct FavoritesGrid: View {
 
     var body: some View {
         if tabs.isEmpty {
-            if layout.draggedTabID != nil {
+            if dragging {
                 RoundedRectangle(cornerRadius: BrowserDesign.Radius.card)
                     .strokeBorder(Color.accentColor.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
                     .background(Color.accentColor.opacity(0.05), in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
@@ -52,12 +55,12 @@ struct FavoritesGrid: View {
     }
 
     private func tile(_ tab: BrowserTab) -> some View {
-        let selected = selectedTabID == tab.id
-        let isLifted = lifted == tab.id
+        let selected = selectedTabID == tab.id || marked.contains(tab.id)
+        let isLifted = lifted.contains(tab.id)
         let isActive = selected && !isLifted
         let highlight = isActive ? selectionColors(for: tab) : (fill: palette.favoriteTileHover, border: palette.line)
         let fill = isLifted ? palette.fill : isActive ? highlight.fill : hoveredTabID == tab.id ? palette.favoriteTileHover : palette.favoriteTile
-        return Button { browser.showTab(tab) } label: {
+        return Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: BrowserDesign.pinnedIconSize, fetchingMissing: tab.url) {
                 if let page = InternalPage(url: tab.url) {
                     Image(systemName: page.symbol).font(.system(size: Self.placeholderSize)).foregroundStyle(.secondary)
@@ -88,7 +91,7 @@ struct FavoritesGrid: View {
                 .frame(width: 200)
                 .padding(10)
         }
-        .tabDraggable(tab, in: layout)
+        .tabDraggable(tab, browser: browser)
         .accessibilityIdentifier("sidebar.tile")
         .dropFrame(.tab(tab.id), in: layout)
     }

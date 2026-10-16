@@ -46,5 +46,7 @@ extension DatabaseSchema {
         ) STRICT;
         """, """
         ALTER TABLE profiles ADD COLUMN password_extension TEXT;
+        """, """
+        ALTER TABLE tab_groups ADD COLUMN slot INTEGER NOT NULL DEFAULT 0 CHECK(slot >= 0);
         """])
 }
