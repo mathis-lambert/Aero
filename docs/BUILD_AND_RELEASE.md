@@ -8,7 +8,7 @@ One Xcode project, one application target and the local BrowserKit package own t
 
 ## Toolchain
 
-`Configuration/Toolchain.env` pins Xcode 27.0 (27A266a), which supplies Swift 6.4. The Swift language mode is 6, the architecture arm64 and the deployment target macOS 26.0. Both the CLI and the Xcode application build phase check the selected Xcode version.
+`Configuration/Toolchain.env` pins Xcode 27.1 (27A9275), which supplies Swift 6.4. The Swift language mode is 6, the architecture arm64 and the deployment target macOS 26.0. Both the CLI and the Xcode application build phase check the selected Xcode version.
 
 Install the Metal Toolchain once:
 

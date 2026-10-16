@@ -95,7 +95,7 @@ Configure the workflow as follows:
 - Scheme: **Aero Dev**; action: **Test**, configuration **Debug**, destination **macOS on Apple Silicon**.
 - Select **Smoke** for pull requests targeting `main`; use **Full** for a separate manual workflow initially.
 - Disable parallel execution of UI journeys: they share a desktop, focus and the system pasteboard.
-- Select **Xcode 27.0 (27A266a)** explicitly. Do not use a latest-version alias: `Scripts/check-toolchain.sh`
+- Select **Xcode 27.1 (27A9275)** explicitly. Do not use a latest-version alias: `Scripts/check-toolchain.sh`
   rejects a different version. If Cloud does not offer the pinned version or an arm64 test destination, the workflow
   cannot run this checkout; update the toolchain deliberately rather than bypassing that check.
 - Select a compatible build OS and the desired test OS among Cloud's available destinations. A run on macOS 27
@@ -113,10 +113,9 @@ logs in its reports; the local `/tmp` manifest from `Scripts/test.sh` is not pro
 Apple Developer membership includes 25 compute hours per month; monitor usage before adding scheduled Full runs.
 
 The configured **E2E Smoke** and **E2E Full** workflows start manually from a branch and use **Aero Dev**
-with the corresponding **Smoke** or **Full** plan. Both build with **Xcode 27 (27A266a)** on
+with the corresponding **Smoke** or **Full** plan. Both build with **Xcode 27.1 (27A9275)** on
 **macOS 27 (26A428)** and test on **macOS 26.6.2 (25G83)**. Start either from Xcode's
-**Report navigator > Cloud > Aero > workflow > Start Build**. Use `fix/compatibility` until the Cloud preparation
-has landed on `main`. Enable automatic pull-request triggers only after the first Smoke run succeeds.
+**Report navigator > Cloud > Aero > workflow > Start Build**. Enable automatic pull-request triggers only after the first Smoke run succeeds.
 
 References: [workflow actions](https://developer.apple.com/documentation/xcode/configuring-your-xcode-cloud-workflow-s-actions),
 [custom scripts](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts),

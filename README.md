@@ -4,7 +4,7 @@ A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. For Ap
 
 ## Build from source
 
-Use Xcode 27.0 (27A266a), including its Metal Toolchain (`xcodebuild -downloadComponent MetalToolchain`), on an Apple Silicon Mac. No Apple developer account is required.
+Use Xcode 27.1 (27A9275), including its Metal Toolchain (`xcodebuild -downloadComponent MetalToolchain`), on an Apple Silicon Mac. No Apple developer account is required.
 
 Open `Aero.xcodeproj`, select **Aero Dev**, then Run. Or:
 
