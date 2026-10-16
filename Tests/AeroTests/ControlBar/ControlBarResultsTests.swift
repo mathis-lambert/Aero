@@ -10,6 +10,7 @@ import Testing
 // 4. With nothing local matching, the search row is not first, or suggestions lose the engine's order.
 // 5. The shown tab is offered, or a page open in a tab also shows as history.
 // 6. One kind fills the list past its share.
+// 7. A command that cannot run now is offered, or a suggestion kept from earlier text repeats the search row.
 
 struct ControlBarResultsTests {
     private let now = Date(timeIntervalSinceReferenceDate: 800_000_000)
@@ -26,7 +27,7 @@ struct ControlBarResultsTests {
     private func rank(_ text: String, tabs: [BrowserTab] = [], shown: UUID? = nil, history: [HistoryEntry] = [],
                       commands: [BrowserCommand] = BrowserCommand.allCases, suggestions: [String] = []) -> [String] {
         ControlBarResults.rank(text, tabs: tabs, shownTabID: shown, history: history, commands: commands,
-                               suggestions: suggestions, now: now).map(\.id)
+                               isAvailable: { $0 != .newSpace }, suggestions: suggestions, now: now).map(\.id)
     }
 
     @Test func aCommandTypedWithItsWordsComesFirst() {
@@ -55,6 +56,14 @@ struct ControlBarResultsTests {
         let rows = rank("mail", tabs: [mail, docs], shown: docs.id, history: [visit(1, "Inbox", "https://mail.example/", visits: 50)], commands: [])
         #expect(rows == ["tab.\(mail.id)", "search.mail"])
         #expect(!rank("docs", tabs: [mail, docs], shown: docs.id, commands: []).contains("tab.\(docs.id)"))
+    }
+
+    @Test func unavailableCommandsAndRepeatedSuggestionsAreLeftOut() {
+        // Titles follow the app's language, which the test host may not have in English.
+        #expect(!rank(BrowserCommand.newSpace.title).contains("command.newSpace"), "A command that cannot run now is not offered")
+        #expect(rank(BrowserCommand.newTab.title).first == "command.newTab")
+        let rows = rank("aero  browser", commands: [], suggestions: ["Aero browser", "aero browser macos"])
+        #expect(rows == ["search.aero  browser", "suggestion.aero browser macos"], "A suggestion kept from earlier text never repeats the search")
     }
 
     @Test func eachKindKeepsToItsShare() {

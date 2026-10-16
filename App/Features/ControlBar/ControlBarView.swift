@@ -123,7 +123,7 @@ struct ControlBarView: View {
     private func results(_ items: [ControlBarItem], selected: Int?) -> some View {
         ScrollView {
             VStack(spacing: Self.rowSpacing) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     row(item, index: index, selected: index == selected)
                 }
             }
@@ -159,7 +159,7 @@ struct ControlBarView: View {
             if !pointerMoved {
                 if let pointer, pointer != location { pointerMoved = true } else { pointer = location }
             }
-            if pointerMoved, !selected { model.select(index) }
+            if pointerMoved, !selected { model.select(item) }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: item.title))

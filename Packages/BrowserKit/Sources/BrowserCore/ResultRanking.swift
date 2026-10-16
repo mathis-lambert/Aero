@@ -23,11 +23,12 @@ public enum ResultRanking {
 
     /// The text typed, folded for comparison and split into words.
     public struct Query: Sendable {
+        /// Folded, with each run of spaces as one, so how many were typed never matters.
         let folded: String
-        let words: [String]
+        public let words: [String]
 
         public init(_ text: String) {
-            folded = ResultRanking.fold(text).trimmingCharacters(in: .whitespacesAndNewlines)
+            folded = ResultRanking.fold(text).split(whereSeparator: \.isWhitespace).joined(separator: " ")
             words = ResultRanking.words(of: folded)
         }
 

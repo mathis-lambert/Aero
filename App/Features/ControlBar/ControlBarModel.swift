@@ -74,7 +74,7 @@ final class ControlBarModel {
         let query = query
         guard !query.isEmpty else { return isOverlay ? availableCommands.map(ControlBarItem.command) : [] }
         return ControlBarResults.rank(query, tabs: browser.tabs, shownTabID: browser.window.selectedTabID, history: history,
-                                      commands: availableCommands, suggestions: suggestions, now: .now)
+                                      commands: Self.searchableCommands, isAvailable: browser.isEnabled, suggestions: suggestions, now: .now)
     }
 
     /// The highlighted row of `items`: the row chosen while it is listed, else the first.
@@ -83,10 +83,7 @@ final class ControlBarModel {
         return chosen.flatMap { id in items.firstIndex { $0.id == id } } ?? 0
     }
 
-    func select(_ index: Int) {
-        let items = items
-        if items.indices.contains(index) { chosen = items[index].id }
-    }
+    func select(_ item: ControlBarItem) { chosen = item.id }
 
     func moveSelection(by offset: Int) {
         let items = items
@@ -156,7 +153,8 @@ final class ControlBarModel {
         return (try? await browser.history.matches(profileID: profileID, query: query, limit: Self.historyCandidates)) ?? []
     }
 
-    private var availableCommands: [BrowserCommand] {
-        BrowserCommand.allCases.filter { $0 != .commandPalette && browser.isEnabled($0) }
-    }
+    /// Every command but the one that opens the bar.
+    private static let searchableCommands = BrowserCommand.allCases.filter { $0 != .commandPalette }
+
+    private var availableCommands: [BrowserCommand] { Self.searchableCommands.filter(browser.isEnabled) }
 }

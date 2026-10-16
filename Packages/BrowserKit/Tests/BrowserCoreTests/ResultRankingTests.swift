@@ -19,6 +19,7 @@ struct ResultRankingTests {
         let portrait = try #require(match("capture portrait", title: "Capture in Portrait Mode"))
         #expect(portrait >= ResultRanking.searchScore, "Whole words of the title, around another one")
         #expect(match("portrait capture", title: "Capture in Portrait Mode") != nil, "In any order")
+        #expect(match("capture  portrait\t", title: "capture portrait") == match("capture portrait", title: "capture portrait"), "However many spaces")
         let started = try #require(match("cap port", title: "Capture in Portrait Mode"))
         #expect(started >= ResultRanking.searchScore, "Word starts are enough to go above the search row")
         #expect(match("capture video", title: "Capture in Portrait Mode") == nil, "A word found nowhere excludes it")
