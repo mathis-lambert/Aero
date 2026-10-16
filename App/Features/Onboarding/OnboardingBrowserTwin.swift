@@ -73,7 +73,7 @@ struct OnboardingBrowserTwin: View {
                     Image(systemName: symbol)
                         .font(BrowserDesign.Typography.chrome.weight(.medium))
                         .foregroundStyle(symbol == "sidebar.left" ? palette.ink : palette.secondary.opacity(0.6))
-                        .frame(width: BrowserDesign.headerButtonSize, height: BrowserDesign.headerButtonSize)
+                        .frame(width: BrowserDesign.sidebarButtonSize, height: BrowserDesign.sidebarButtonSize)
                 }
             }
             .frame(height: BrowserDesign.sidebarHeaderHeight)
@@ -101,29 +101,28 @@ struct OnboardingBrowserTwin: View {
 
             HStack(spacing: 0) {
                 Image(systemName: "arrow.down.circle").foregroundStyle(palette.secondary)
-                    .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
+                    .frame(width: BrowserDesign.sidebarButtonSize, height: BrowserDesign.sidebarButtonSize)
                 // `SpaceBar`, drawn: the space shown as a capsule with its name, the others as icons.
                 HStack(spacing: 0) {
                     ForEach(browser.session.spaces) { item in
                         let selected = item.id == space.id
-                        HStack(spacing: 6) {
-                            SpaceIcon(space: item, size: 13).scaleEffect(selected ? 1 : SpaceBar.otherScale)
+                        HStack(spacing: SpaceBar.nameSpacing) {
+                            SpaceIcon(space: item, size: 12).grayscale(selected ? 0 : 1).opacity(selected ? 1 : SpaceBar.otherOpacity)
                             if selected {
-                                Text(verbatim: item.name).font(BrowserDesign.Typography.label).lineLimit(1)
+                                Text(verbatim: item.name).font(SpaceBar.nameFont).lineLimit(1)
                                     .frame(maxWidth: SpaceBar.maximumNameWidth, alignment: .leading)
                                     .layoutPriority(-1)
                             }
                         }
-                        .opacity(selected ? 1 : 0.55)
-                        .padding(.horizontal, selected ? 10 : 0)
+                        .padding(.horizontal, selected ? SpaceBar.capsulePadding : 0)
                         .frame(minWidth: SpaceBar.iconSize)
                         .frame(height: SpaceBar.height)
-                        .background(selected ? item.color.tint.opacity(0.16) : .clear, in: Capsule())
+                        .background(selected ? palette.fill : .clear, in: Capsule())
                     }
                 }
                 .frame(maxWidth: .infinity)
                 Image(systemName: "plus").foregroundStyle(palette.secondary)
-                    .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
+                    .frame(width: BrowserDesign.sidebarButtonSize, height: BrowserDesign.sidebarButtonSize)
             }
             .font(BrowserDesign.Typography.chrome.weight(.medium))
             .padding(.horizontal, BrowserDesign.sidebarInset)
@@ -143,7 +142,7 @@ struct OnboardingBrowserTwin: View {
             }
             ForEach(tabs.groups, id: \.group.id) { group, _ in
                 HStack(spacing: BrowserDesign.rowInset) {
-                    Image(systemName: "folder").font(BrowserDesign.Typography.label).foregroundStyle(palette.secondary)
+                    FolderIcon(isOpen: false, tint: palette.secondary)
                         .frame(width: BrowserDesign.rowIconWidth)
                     Text(verbatim: group.name).lineLimit(1)
                     Spacer(minLength: 0)

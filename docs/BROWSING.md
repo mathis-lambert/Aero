@@ -31,6 +31,7 @@ Each space has a favorites grid, a pinned list of favorites and groups in any or
 - Closing an ordinary tab removes it; Reopen Closed Tab restores it.
 - Dragging reorganizes tabs. The insertion marker is the committed destination; canceling leaves the order unchanged. External drags export URLs; incoming files and text are rejected. A drag can take tabs to another space: see Several tabs at once.
 - Move to Space preserves a live page within the same profile. Crossing profiles requires confirmation and a new page identity; see [Spaces](SPACES.md).
+- A group's folder opens with it: its front flap swings forward in perspective as the group opens and closes back over it (`FolderIcon`); a dragged tab about to go in lifts it a little. Reduce Motion changes it without moving.
 - Ungroup leaves the group's favorites pinned where it was. Custom names persist independently of website titles.
 - A group's place among the loose favorites is its slot, the number of loose favorites above it (`BrowserSession.pinned(in:)`); closing, unpinning or moving away a favorite above it never moves it past another entry.
 

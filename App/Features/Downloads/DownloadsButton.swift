@@ -16,7 +16,7 @@ struct DownloadsButton: View {
     @Environment(\.browserReduceMotion) private var reduceMotion
 
     var body: some View {
-        IconButton(symbol: "arrow.down.circle", label: "Downloads", size: BrowserDesign.navigationButtonSize, shortcut: shortcut, action: toggle)
+        IconButton(symbol: "arrow.down.circle", label: "Downloads", size: BrowserDesign.sidebarButtonSize, shortcut: shortcut, action: toggle)
             .overlay { if let progress { ring(progress) } }
             // Takes the hit as a new download's file lands: a kick, then a damped wobble on its base.
             .keyframeAnimator(initialValue: Landing(), trigger: reduceMotion ? nil : downloads.lastStarted) { [reduceMotion] button, landing in
