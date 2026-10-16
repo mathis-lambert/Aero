@@ -102,9 +102,8 @@ struct OnboardingBrowserTwin: View {
             HStack(spacing: 0) {
                 Image(systemName: "arrow.down.circle").foregroundStyle(palette.secondary)
                     .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
-                Spacer(minLength: 4)
                 // `SpaceBar`, drawn: the space shown as a capsule with its name, the others as icons.
-                HStack(spacing: 2) {
+                HStack(spacing: 0) {
                     ForEach(browser.session.spaces) { item in
                         let selected = item.id == space.id
                         HStack(spacing: 6) {
@@ -112,7 +111,7 @@ struct OnboardingBrowserTwin: View {
                             if selected {
                                 Text(verbatim: item.name).font(BrowserDesign.Typography.label).lineLimit(1)
                                     .frame(maxWidth: SpaceBar.maximumNameWidth, alignment: .leading)
-                                    .fixedSize(horizontal: true, vertical: false)
+                                    .layoutPriority(-1)
                             }
                         }
                         .opacity(selected ? 1 : 0.55)
@@ -122,7 +121,7 @@ struct OnboardingBrowserTwin: View {
                         .background(selected ? item.color.tint.opacity(0.16) : .clear, in: Capsule())
                     }
                 }
-                Spacer(minLength: 4)
+                .frame(maxWidth: .infinity)
                 Image(systemName: "plus").foregroundStyle(palette.secondary)
                     .frame(width: BrowserDesign.navigationButtonSize, height: BrowserDesign.navigationButtonSize)
             }

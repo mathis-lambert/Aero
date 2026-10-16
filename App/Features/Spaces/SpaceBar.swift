@@ -4,8 +4,9 @@ import SwiftUI
 /// The spaces in the sidebar's footer, where the space shown says who it is: a capsule in its color with its icon,
 /// its name and, once there are several, its profile's. The others are smaller icons, their emoji or a dot in their
 /// color. One capsule morphs from space to space, so choosing one slides it there and blends its color; the name
-/// fades in from its icon. Every space stays on screen: the name gives way first, cut short, the tooltip giving it
-/// whole. Tabs dragged onto a space go to it (`SpaceDropTarget`).
+/// fades in from its icon. Every space stays on screen while it can: the name gives way first, cut short, the tooltip
+/// giving it whole; past that the spaces scroll, the shown one kept in the middle. Tabs dragged onto a space go to it
+/// (`SpaceDropTarget`).
 struct SpaceBar: View {
     static let height: CGFloat = 28
     /// The width of a space not shown.
@@ -14,16 +15,35 @@ struct SpaceBar: View {
     static let otherScale: CGFloat = 0.85
     /// A long name stops here; the tooltip and the space's settings give it whole.
     static let maximumNameWidth: CGFloat = 96
+    /// The narrowest the shown space gets before the spaces scroll instead: its icon and a few letters.
+    private static let minimumCapsuleWidth: CGFloat = 70
     /// Softer and a little longer than the shell's spring, for the capsule to travel and settle.
     private static let motion = Animation.spring(duration: 0.42, bounce: 0.16)
 
     let browser: BrowserModel
     @State private var targetedSpaceID: UUID?
+    @State private var width: CGFloat = 0
     @Environment(\.palette) private var palette
     @Environment(\.browserReduceMotion) private var reduceMotion
 
     var body: some View {
         let selectedID = browser.window.selectedSpaceID
+        let others = CGFloat(max(0, browser.session.spaces.count - 1))
+        Group {
+            if width == 0 || others * Self.iconSize + Self.minimumCapsuleWidth <= width {
+                row(selectedID)
+            } else {
+                ScrollView(.horizontal) { row(selectedID).scrollTargetLayout() }
+                    .scrollIndicators(.hidden)
+                    .scrollPosition(id: Binding(get: { selectedID }, set: { _ in }), anchor: .center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: Self.height)
+        .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
+    }
+
+    private func row(_ selectedID: UUID?) -> some View {
         HStack(spacing: 0) {
             ForEach(browser.session.spaces) { space in item(space, selected: space.id == selectedID) }
         }
@@ -39,8 +59,6 @@ struct SpaceBar: View {
             }
         }
         .animation(reduceMotion ? nil : Self.motion, value: selectedID)
-        .frame(maxWidth: .infinity)
-        .frame(height: Self.height)
     }
 
     private func item(_ space: BrowserSpace, selected: Bool) -> some View {
