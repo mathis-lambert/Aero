@@ -30,9 +30,13 @@ enum BrowserDesign {
         static let field = Font.system(size: fieldSize)
     }
 
-    static let sidebarWidth: CGFloat = 212
-    static let sidebarHeaderHeight: CGFloat = 52
-    static let windowControlsWidth: CGFloat = 96
+    static let sidebarWidth: CGFloat = 196
+    static let sidebarHeaderHeight: CGFloat = 42
+    /// The window's buttons end about 80 points in; the rest keeps them clear of the sidebar's own.
+    static let windowControlsWidth: CGFloat = 90
+    /// The sidebar header's buttons, beside the window's, smaller than `navigationButtonSize` so the row fits the
+    /// sidebar's minimum width.
+    static let headerButtonSize: CGFloat = 26
     static let sidebarRevealEdgeWidth: CGFloat = 8
     static let controlHeight: CGFloat = 32
     static let navigationButtonSize: CGFloat = 28
@@ -41,11 +45,12 @@ enum BrowserDesign {
     static let rowIconWidth: CGFloat = 18
     /// Horizontal inset of sidebar and list rows, and the gap between their icon and label.
     static let rowInset: CGFloat = 10
+    /// The sidebar's margin at its sides: around the address, the pages and the footer.
+    static let sidebarInset: CGFloat = 6
     static let pageInset: CGFloat = 6
     /// Margin of panels floating over the page: the revealed sidebar and the find bar.
     static let floatingInset: CGFloat = 12
     static let tabIconSize: CGFloat = 16
-    static let pinnedIconSize: CGFloat = 22
     static let downloadIconSize: CGFloat = 24
     static let faviconCornerRatio: CGFloat = 0.22
     static let motion = Animation.spring(duration: 0.28, bounce: 0.08)
@@ -106,6 +111,12 @@ extension View {
     /// Panels floating over the page: the revealed sidebar and the find bar.
     func floatShadow() -> some View {
         shadow(color: .black.opacity(0.2), radius: 20, x: 5, y: 4)
+    }
+
+    /// The page, raised a little above the sidebar and the window: a soft shadow on every side. Darker in dark
+    /// appearance, where a light one would not show.
+    func pageShadow(_ scheme: ColorScheme) -> some View {
+        shadow(color: .black.opacity(scheme == .dark ? 0.45 : 0.14), radius: 8, x: 0, y: 1)
     }
 
     /// Centered panels: the control bar and prompts.

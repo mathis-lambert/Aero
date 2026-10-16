@@ -14,7 +14,7 @@ Multiple spaces may share a profile. At least one active profile and one space m
 
 Profiles lists identities; selecting one opens its name and linked spaces. Spaces lists all spaces and owns native drag reordering. Selecting a space opens its appearance and profile. Names commit on Return, focus loss or leaving the page; creation requires confirmation. Empty or overlong names are rejected.
 
-`SpaceForm` is shared by creation and editing: name, optional single emoji, sRGB color (`#RRGGBB`) and profile. New profiles can be created from the form. Custom color edits save after a 300 ms pause or on leaving; presets save immediately. The sidebar heading and centered switcher use the same space identity.
+`SpaceForm` is shared by creation and editing: name, optional single emoji, sRGB color (`#RRGGBB`) and profile. New profiles can be created from the form. Custom color edits save after a 300 ms pause or on leaving; presets save immediately. The footer's switcher shows the space's identity: its icon, its name in a capsule of its color, and its profile's name when there are several profiles. One capsule slides between spaces. Every space stays on screen: the name is cut short first, and its tooltip gives it whole. Edit Space… in its context menu opens the form.
 
 ## Identity transitions
 

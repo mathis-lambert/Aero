@@ -28,7 +28,7 @@ struct SidebarDropTarget: NSViewRepresentable {
         view.makePreviews = {
             guard let drag = browser.window.tabDrag else { return nil }
             let palette = BrowserPalette(scheme: colorScheme)
-            let width = layout.frames[.section(.open)]?.width ?? (BrowserDesign.sidebarWidth - 2 * BrowserDesign.rowInset)
+            let width = layout.frames[.section(.open)]?.width ?? (BrowserDesign.sidebarWidth - 2 * BrowserDesign.sidebarInset)
             let rightToLeft = layoutDirection == .rightToLeft
             let count = drag.items.count
             // A group shows as its header: the folder and its name, never as a tile.
@@ -59,7 +59,7 @@ struct SidebarDropTarget: NSViewRepresentable {
         let fill = NSColor(grid ? palette.favoriteTileHover : palette.raised)
         let border = NSColor(palette.line)
         let ink = NSColor(palette.ink)
-        let iconSize = grid ? BrowserDesign.pinnedIconSize : BrowserDesign.tabIconSize
+        let iconSize = grid ? FavoritesGrid.iconSize : BrowserDesign.tabIconSize
         let inset = BrowserDesign.rowInset
         let textInset = inset * 2 + BrowserDesign.rowIconWidth
         let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
@@ -67,7 +67,7 @@ struct SidebarDropTarget: NSViewRepresentable {
         let symbol = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)?
             .withSymbolConfiguration(.init(paletteColors: [ink]))
         return NSImage(size: size, flipped: false) { bounds in
-            let radius = grid ? BrowserDesign.Radius.card : BrowserDesign.Radius.control
+            let radius = grid ? FavoritesGrid.radius : BrowserDesign.Radius.control
             let shape = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: radius, yRadius: radius)
             fill.setFill()
             shape.fill()
@@ -77,7 +77,10 @@ struct SidebarDropTarget: NSViewRepresentable {
             let iconRect = CGRect(x: x, y: (size.height - iconSize) / 2, width: iconSize, height: iconSize)
             if grid, icon == nil, let initial {
                 let text = initial as NSString
-                let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 18, weight: .medium), .foregroundColor: ink]
+                let plain = NSFont.systemFont(ofSize: FavoritesGrid.placeholderSize, weight: .medium)
+                // The tile's rounded initial (`FavoritesGrid.initialFont`).
+                let rounded = plain.fontDescriptor.withDesign(.rounded).flatMap { NSFont(descriptor: $0, size: FavoritesGrid.placeholderSize) } ?? plain
+                let attributes: [NSAttributedString.Key: Any] = [.font: rounded, .foregroundColor: ink]
                 let textSize = text.size(withAttributes: attributes)
                 text.draw(at: CGPoint(x: (size.width - textSize.width) / 2, y: (size.height - textSize.height) / 2), withAttributes: attributes)
             } else if let image = icon ?? symbol {
