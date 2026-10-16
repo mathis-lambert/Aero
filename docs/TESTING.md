@@ -113,7 +113,8 @@ logs in its reports; the local `/tmp` manifest from `Scripts/test.sh` is not pro
 Apple Developer membership includes 25 compute hours per month; monitor usage before adding scheduled Full runs.
 
 The configured **E2E Smoke** and **E2E Full** workflows start manually from a branch and use **Aero Dev**
-with the corresponding **Smoke** or **Full** plan. Both build with **Xcode 27.1 (27A9275)** on
+with the corresponding **Smoke** or **Full** plan. Both must select **Xcode 27.1 (27A9275)**, in their settings rather than
+the repository: on another Xcode, `ci_post_clone.sh` stops the run. They build on
 **macOS 27 (26A428)** and test on **macOS 26.6.2 (25G83)**. Start either from Xcode's
 **Report navigator > Cloud > Aero > workflow > Start Build**. Enable automatic pull-request triggers only after the first Smoke run succeeds.
 

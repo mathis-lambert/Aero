@@ -20,8 +20,22 @@ final class BrowserWindowState {
     var portrait: PortraitStudio?
     /// Tabs and groups picked with ⌘ or ⇧ in the sidebar (docs/BROWSING.md › Several tabs at once).
     var tabSelection = TabSelection()
-    /// What is being dragged from the sidebar, which any space's page can take.
-    var tabDrag: TabDrag?
+    /// What is being dragged from the sidebar, which any space's page can take. Aero's destinations end it; a drag
+    /// released elsewhere, on a page or in another app, ends at the next click, before the click reaches the sidebar.
+    var tabDrag: TabDrag? {
+        didSet {
+            if tabDrag == nil, let monitor = dragEndMonitor {
+                NSEvent.removeMonitor(monitor)
+                dragEndMonitor = nil
+            } else if tabDrag != nil, dragEndMonitor == nil {
+                dragEndMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+                    MainActor.assumeIsolated { self?.tabDrag = nil }
+                    return event
+                }
+            }
+        }
+    }
+    @ObservationIgnored private var dragEndMonitor: Any?
     /// The tab or group whose name is being edited in the sidebar.
     var renaming: RenameTarget?
     /// Counts copies, so the address can confirm each one.
@@ -43,6 +57,8 @@ final class BrowserWindowState {
     var settingsRoute = SettingsRoute.section(.general)
     var settingsRequest = UUID()
     let find = FindInPage()
+
+    isolated deinit { if let dragEndMonitor { NSEvent.removeMonitor(dragEndMonitor) } }
 }
 
 enum RenameTarget: Equatable {

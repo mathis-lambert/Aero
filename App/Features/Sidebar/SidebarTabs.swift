@@ -52,9 +52,10 @@ struct SidebarTabs {
                 else { _ = session.transferGroup(id: id, to: space.id, before: pinnedDrop?.before) }
             }
         }
-        let tabs = Dictionary(grouping: session.tabs.lazy.filter { $0.spaceID == space.id }, by: \.place)
-        let records = Dictionary(uniqueKeysWithValues: session.tabs.map { ($0.id, $0) })
-        let groups = Dictionary(uniqueKeysWithValues: session.spaces.flatMap(\.groups).map { ($0.id, $0) })
+        let own = session.tabs.filter { $0.spaceID == space.id }
+        let tabs = Dictionary(grouping: own, by: \.place)
+        let records = Dictionary(uniqueKeysWithValues: own.map { ($0.id, $0) })
+        let groups = Dictionary(uniqueKeysWithValues: (session.spaces.first { $0.id == space.id }?.groups ?? []).map { ($0.id, $0) })
         grid = tabs[.grid, default: []]
         pinned = session.pinned(in: space.id).compactMap { item in
             switch item {

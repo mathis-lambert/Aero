@@ -79,7 +79,7 @@ struct TabGroupSection: View {
         }
         if browser.session.spaces.count > 1 {
             MoveToSpaceMenu(browser: browser, isCurrent: { $0.groups.contains { $0.id == group.id } }) { space in
-                browser.moveGroup(group.id, toSpace: space.id)
+                browser.moveEntries([.group(group.id)], toSpace: space.id)
             }
         }
         Divider()

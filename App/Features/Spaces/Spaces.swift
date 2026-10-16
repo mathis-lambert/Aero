@@ -97,11 +97,6 @@ extension BrowserModel {
         transfer(TabTransfer(items: ids.map(PinnedItem.tab), spaceID: spaceID, destination: destination, showing: showing))
     }
 
-    /// Moves a group, with its tabs in their order, to another space, at the end of its pinned list.
-    func moveGroup(_ id: UUID, toSpace spaceID: UUID, showing: UUID? = nil) {
-        transfer(TabTransfer(items: [.group(id)], spaceID: spaceID, showing: showing))
-    }
-
     /// Moves groups, with their tabs, and tabs to another space: groups at the end of its pinned list, tabs each to the
     /// end of their kind of place.
     func moveEntries(_ items: [PinnedItem], toSpace spaceID: UUID) {

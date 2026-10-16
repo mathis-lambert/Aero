@@ -262,6 +262,7 @@ public struct BrowserSession: Equatable, Sendable {
     /// positions they already hold. `items` must hold exactly the space's groups and loose favorites.
     private mutating func arrange(_ items: [PinnedItem], in spaceID: UUID) {
         guard let space = spaces.firstIndex(where: { $0.id == spaceID }) else { return }
+        let positions = tabs.indices.filter { tabs[$0].spaceID == spaceID && tabs[$0].place == .list(group: nil) }
         var groups: [TabGroup] = [], loose: [UUID] = []
         for item in items {
             switch item {
@@ -272,9 +273,8 @@ public struct BrowserSession: Equatable, Sendable {
                 groups.append(group)
             }
         }
+        guard positions.count == loose.count, groups.count == spaces[space].groups.count else { return }
         spaces[space].groups = groups
-        let positions = tabs.indices.filter { tabs[$0].spaceID == spaceID && tabs[$0].place == .list(group: nil) }
-        guard positions.count == loose.count else { return }
         let records = Dictionary(uniqueKeysWithValues: positions.map { (tabs[$0].id, tabs[$0]) })
         for (position, id) in zip(positions, loose) {
             if let tab = records[id] { tabs[position] = tab }

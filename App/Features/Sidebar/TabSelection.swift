@@ -33,9 +33,9 @@ struct TabSelection: Equatable {
 
     /// What an action on `id` applies to: every picked tab still there, in sidebar order, when `id` is one of them;
     /// otherwise `id` alone, as a right-click outside the selection means.
-    func targets(for id: UUID, in order: [UUID]) -> [UUID] {
+    func targets(for id: UUID, in order: @autoclosure () -> [UUID]) -> [UUID] {
         guard ids.count > 1, ids.contains(id) else { return [id] }
-        let targets = order.filter(ids.contains)
+        let targets = order().filter(ids.contains)
         return targets.count > 1 ? targets : [id]
     }
 }
@@ -43,30 +43,31 @@ struct TabSelection: Equatable {
 extension BrowserModel {
     /// A click on a tab in the sidebar: ⌘ picks it, ⇧ picks the range up to it, a plain click shows it.
     func click(_ tab: BrowserTab, modifiers: NSEvent.ModifierFlags) {
-        guard tab.spaceID == window.selectedSpaceID, let space else { showTab(tab); return }
-        if modifiers.contains(.command) {
-            window.tabSelection.toggle(tab.id, shown: window.selectedTabID)
-        } else if modifiers.contains(.shift) {
-            let order = SidebarTabs(session: session, space: space, drop: nil).visibleOrder
-            window.tabSelection.extend(to: tab.id, shown: window.selectedTabID, visible: order)
-        } else {
-            window.tabSelection.clear()
-            showTab(tab)
-        }
+        // A tab of a page sliding away is shown, never picked.
+        guard tab.spaceID != window.selectedSpaceID || pick(.tab(tab.id), modifiers: modifiers) else { return }
+        window.tabSelection.clear()
+        showTab(tab)
     }
 
     /// A click on a group's header: ⌘ picks it, ⇧ picks the range up to it, a plain click opens or closes it.
     func click(_ group: TabGroup, modifiers: NSEvent.ModifierFlags) {
-        guard let space, space.groups.contains(where: { $0.id == group.id }) else { return }
+        guard space?.groups.contains(where: { $0.id == group.id }) == true, pick(.group(group.id), modifiers: modifiers) else { return }
+        window.tabSelection.clear()
+        setGroupCollapsed(group.id, !group.isCollapsed)
+    }
+
+    /// Picks `item` for ⌘ or ⇧ and returns false; without either, returns true for the plain click.
+    private func pick(_ item: PinnedItem, modifiers: NSEvent.ModifierFlags) -> Bool {
+        guard let space else { return true }
         if modifiers.contains(.command) {
-            window.tabSelection.toggle(group.id, shown: window.selectedTabID)
+            // The tab on screen joins a pick of tabs, not of groups, which would carry it along.
+            let shown = if case .tab = item { window.selectedTabID } else { UUID?.none }
+            window.tabSelection.toggle(item.id, shown: shown)
         } else if modifiers.contains(.shift) {
             let order = SidebarTabs(session: session, space: space, drop: nil).visibleOrder
-            window.tabSelection.extend(to: group.id, shown: window.selectedTabID, visible: order)
-        } else {
-            window.tabSelection.clear()
-            setGroupCollapsed(group.id, !group.isCollapsed)
-        }
+            window.tabSelection.extend(to: item.id, shown: window.selectedTabID, visible: order)
+        } else { return true }
+        return false
     }
 
     /// The groups and tabs an action on `id` applies to when the selection holds a group as well as `id`, in sidebar

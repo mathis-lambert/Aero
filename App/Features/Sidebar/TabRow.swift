@@ -69,7 +69,6 @@ struct TabRow: View {
         }
         .onHover { hovered = $0 }
         .accessibilityElement(children: .contain)
-        .accessibilityAddTraits(selected || marked ? .isSelected : [])
         .contextMenu { TabContextMenu(browser: browser, tab: tab) }
         .dropFrame(.tab(tab.id), in: layout)
     }
