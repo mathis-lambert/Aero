@@ -16,7 +16,7 @@ Install the Metal Toolchain once:
 xcodebuild -downloadComponent MetalToolchain
 ```
 
-Select the required Xcode with `DEVELOPER_DIR` or `xcode-select`. CI uses the standard ARM `xcode-27` runner and explicitly selects `/Applications/Xcode_27.0.0.app/Contents/Developer`; it fails if Apple tooling differs from the pin. This runner image is currently in public preview. Updating the toolchain is a reviewed configuration change, not a silent switch to latest.
+Select the required Xcode with `DEVELOPER_DIR` or `xcode-select`. CI uses the standard ARM `xcode-27` runner and explicitly selects `/Applications/Xcode_27.1.0.app/Contents/Developer`; it fails if Apple tooling differs from the pin. This runner image is currently in public preview. Updating the toolchain is a reviewed configuration change, not a silent switch to latest.
 
 ## Source builds
 
