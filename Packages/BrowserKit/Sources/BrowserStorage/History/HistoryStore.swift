@@ -116,8 +116,8 @@ public actor HistoryStore {
     }
 
     /// The pages matching every word of `query`, for the control bar to rank: the most visited first, each with its
-    /// visits, reloads left out. No words, no pages. `pages.visit_count` holds the count, kept by triggers on `visits`,
-    /// so a query that matches most of the history sorts integers instead of counting visits page by page.
+    /// visits, reloads left out. No words, no pages. The count is `pages.visit_count`, which the triggers on `visits`
+    /// keep, so even a query matching most of the history only sorts stored integers.
     public func matches(profileID: UUID, query: String, limit: Int) throws -> [HistoryEntry] {
         guard let match = Self.matchExpression(query) else { return [] }
         return try open().query("""
