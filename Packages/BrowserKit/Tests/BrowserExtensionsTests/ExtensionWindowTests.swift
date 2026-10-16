@@ -1,4 +1,5 @@
 import AppKit
+import BrowserCore
 import Foundation
 import Testing
 import WebKit
@@ -55,4 +56,33 @@ import WebKit
     #expect(!context.isInspectable)
     loaded.registry.isInspectable = true
     #expect(context.isInspectable)
+}
+
+// WebKit hides every tab of a window without an active one. With none of the profile's tabs selected, as on the New
+// Tab page or in another profile's space, the tab last activated stays active, or the first one.
+@MainActor
+@Test func theMainWindowKeepsAnActiveTabWithoutASelection() async throws {
+    let loaded = try await LoadedExtension(manifest: #"{"manifest_version":3,"name":"Tabs example","version":"1"}"#,
+                                           files: ["page.html": "<html><body>Tabs</body></html>"])
+    defer { loaded.close() }
+    let first = BrowserTab(spaceID: UUID(), url: try #require(URL(string: "https://example.com/first")))
+    let second = BrowserTab(spaceID: first.spaceID, url: try #require(URL(string: "https://example.com/second")))
+    loaded.host.browserTabs = [first, second]
+    for tab in [first, second] { loaded.owner.didOpenTab(tab.id) }
+    let page = try await loaded.page("page.html")
+    func activeIndices() async throws -> [Int] {
+        try await page.callAsyncJavaScript("""
+            const tabs = await chrome.tabs.query({});
+            return tabs.length === \(loaded.host.browserTabs.count) ? tabs.filter(tab => tab.active).map(tab => tab.index) : [];
+            """, contentWorld: .page) as? [Int] ?? []
+    }
+    #expect(try await activeIndices() == [0], "Before any selection, the first tab")
+    loaded.host.selectedTabID = second.id
+    loaded.owner.didActivateTab(second.id, previous: nil)
+    #expect(try await activeIndices() == [1])
+    loaded.host.selectedTabID = nil
+    #expect(try await activeIndices() == [1], "The New Tab page leaves the last tab active")
+    loaded.host.browserTabs = [first]
+    loaded.owner.didCloseTab(second.id)
+    #expect(try await activeIndices() == [0], "A closed tab is not kept")
 }
