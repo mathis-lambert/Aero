@@ -21,6 +21,7 @@ struct TabGroupSection: View {
     let layout: TabDropLayout
 
     @Environment(\.palette) private var palette
+    @Environment(\.browserReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
@@ -89,10 +90,10 @@ struct TabGroupSection: View {
 
     private func label(@ViewBuilder _ content: () -> some View) -> some View {
         HStack(spacing: BrowserDesign.rowInset) {
-            Image(systemName: "folder")
-                .font(BrowserDesign.Typography.chrome)
-                .foregroundStyle(isTargeted ? Color.accentColor : .secondary)
-                .symbolEffect(.bounce, value: isTargeted)
+            FolderIcon(isOpen: !group.isCollapsed, tint: isTargeted ? Color.accentColor : .secondary)
+                // A dragged tab about to go in lifts it a little.
+                .scaleEffect(isTargeted ? 1.15 : 1)
+                .animation(reduceMotion ? nil : BrowserDesign.motion, value: isTargeted)
                 .frame(width: BrowserDesign.rowIconWidth)
             content()
         }
