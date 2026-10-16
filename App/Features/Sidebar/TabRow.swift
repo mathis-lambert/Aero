@@ -38,7 +38,7 @@ struct TabRow: View {
                     label { Text(verbatim: tab.displayTitle).lineLimit(1).truncationMode(.tail) }
                 }
                 .buttonStyle(.plain)
-                .tabDraggable(tab)
+                .tabDraggable(tab, in: layout)
                 .accessibilityIdentifier(tab.isFavorite ? "sidebar.favorite" : "sidebar.tab")
             }
             Button {

@@ -91,8 +91,13 @@ final class MainWindowAdapter: NSObject, WKWebExtensionWindow {
         (owner.host?.tabIDs(inProfile: owner.profileID) ?? []).map(owner.tab)
     }
 
+    /// WebKit hides every tab of a window without an active one. While none of the profile's tabs is selected, on the
+    /// New Tab page or in another profile's space, the tab last activated stands in, or the first one.
     func activeTab(for context: WKWebExtensionContext) -> (any WKWebExtensionTab)? {
-        owner.host?.selectedTabID(inProfile: owner.profileID).map(owner.tab)
+        guard let host = owner.host else { return nil }
+        let ids = host.tabIDs(inProfile: owner.profileID)
+        let active = [host.selectedTabID(inProfile: owner.profileID), owner.lastActiveTabID].compactMap { $0 }.first(where: ids.contains)
+        return (active ?? ids.first).map(owner.tab)
     }
 
     func frame(for context: WKWebExtensionContext) -> CGRect { window?.frame ?? .null }

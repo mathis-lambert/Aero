@@ -88,7 +88,7 @@ struct FavoritesGrid: View {
                 .frame(width: 200)
                 .padding(10)
         }
-        .tabDraggable(tab)
+        .tabDraggable(tab, in: layout)
         .accessibilityIdentifier("sidebar.tile")
         .dropFrame(.tab(tab.id), in: layout)
     }

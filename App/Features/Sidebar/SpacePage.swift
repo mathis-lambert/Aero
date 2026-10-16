@@ -12,7 +12,6 @@ struct SpacePage: View, @MainActor Equatable {
     let space: BrowserSpace
     @Namespace private var selection
     @State private var drop: TabDrop?
-    @State private var dragSessionID: DragSession.ID?
     @State private var layout = TabDropLayout()
 
     var body: some View {
@@ -73,20 +72,6 @@ struct SpacePage: View, @MainActor Equatable {
         .coordinateSpace(.named(TabDropLayout.space))
         .overlay(SidebarDropTarget(browser: browser, space: space, layout: layout,
                                    onMove: { update(at: $0, tabs: tabs) }, onDrop: performDrop))
-        .onDragSessionUpdated { session in
-            switch session.phase {
-            case .initial, .active:
-                guard session.id != dragSessionID,
-                      let id = session.draggedItemIDs(for: UUID.self).first,
-                      browser.tabs(in: space).contains(where: { $0.id == id }) else { return }
-                dragSessionID = session.id
-                layout.draggedTabID = id
-                NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
-            case .ended:
-                if session.id == dragSessionID { layout.draggedTabID = nil }
-            default: break
-            }
-        }
         .onChange(of: tabs.frameTargets, initial: true) { _, targets in
             layout.frames = layout.frames.filter { targets.contains($0.key) }
         }

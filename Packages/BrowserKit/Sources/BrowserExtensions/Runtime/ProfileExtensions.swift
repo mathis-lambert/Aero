@@ -39,6 +39,8 @@ public final class ProfileExtensions: NSObject {
     @ObservationIgnored var nativeSessions: [String: [NativeSession]] = [:]
     @ObservationIgnored lazy var mainWindow = MainWindowAdapter(owner: self)
     @ObservationIgnored var tabs: [UUID: BrowserTabAdapter] = [:]
+    /// The tab last activated, which stays active for extensions while none of the profile's tabs is selected.
+    @ObservationIgnored var lastActiveTabID: UUID?
     @ObservationIgnored var windows: [ExtensionWindow] = []
     @ObservationIgnored var authentication: [String: [UUID: ExtensionAuthentication]] = [:]
     @ObservationIgnored let offscreen = OffscreenDocuments()
@@ -311,11 +313,13 @@ public final class ProfileExtensions: NSObject {
     public func didOpenTab(_ tabID: UUID) { controller.didOpenTab(tab(tabID)) }
 
     public func didCloseTab(_ tabID: UUID) {
+        if lastActiveTabID == tabID { lastActiveTabID = nil }
         guard let closed = tabs.removeValue(forKey: tabID) else { return }
         controller.didCloseTab(closed, windowIsClosing: false)
     }
 
     public func didActivateTab(_ tabID: UUID, previous: UUID?) {
+        lastActiveTabID = tabID
         controller.didActivateTab(tab(tabID), previousActiveTab: previous.map(tab))
         controller.didSelectTabs([tab(tabID)])
         if let previous { controller.didDeselectTabs([tab(previous)]) }

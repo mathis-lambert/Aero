@@ -21,13 +21,25 @@ final class WindowControls {
 
     isolated deinit { observers.forEach(NotificationCenter.default.removeObserver) }
 
-    private var group: NSView? { window?.standardWindowButton(.closeButton)?.superview }
+    /// Move only a common container of all three native buttons, excluding the window's content view.
+    private var group: NSView? {
+        guard let window else { return nil }
+        let buttons = Self.types.compactMap { window.standardWindowButton($0) }
+        guard buttons.count == Self.types.count, let parent = buttons.first?.superview,
+              parent !== window.contentView,
+              buttons.allSatisfy({ $0.superview === parent }) else { return nil }
+        return parent
+    }
     private var slot: NSView? { slots.last { $0.view?.window === window }?.view }
 
     func attach(to window: NSWindow) {
         guard self.window !== window else { return }
-        self.window = window
         let center = NotificationCenter.default
+        observers.forEach(center.removeObserver)
+        observers.removeAll()
+        titlebar = nil
+        isChangingFullScreen = false
+        self.window = window
         for name in [NSWindow.willEnterFullScreenNotification, NSWindow.willExitFullScreenNotification] {
             observers.append(center.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.isChangingFullScreen = true; self?.place() }

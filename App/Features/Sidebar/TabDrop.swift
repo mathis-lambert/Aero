@@ -1,5 +1,5 @@
 import BrowserCore
-import CoreTransferable
+import AppKit
 import Observation
 import SwiftUI
 import UniformTypeIdentifiers
@@ -7,16 +7,6 @@ import UniformTypeIdentifiers
 extension UTType {
     /// Declared in Info.plist; only Aero reads it, other apps receive the tab's address.
     static let aeroTab = UTType(exportedAs: "app.getaero.browser.tab")
-}
-
-struct TabDragItem: Codable, Transferable {
-    let tabID: UUID
-    let url: URL
-
-    static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(contentType: .aeroTab)
-        ProxyRepresentation(exporting: \.url)
-    }
 }
 
 /// Where a dropped tab lands: its place, before `before` or at the end.
@@ -86,8 +76,19 @@ final class TabDropLayout {
 }
 
 extension View {
-    func tabDraggable(_ tab: BrowserTab) -> some View {
-        draggable(TabDragItem.self, id: \.tabID, item: TabDragItem(tabID: tab.id, url: tab.url))
+    func tabDraggable(_ tab: BrowserTab, in layout: TabDropLayout) -> some View {
+        onDrag {
+            // Activate the native destination at pickup, without relying on SwiftUI session IDs.
+            layout.draggedTabID = tab.id
+            NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
+            let provider = NSItemProvider(object: tab.url as NSURL)
+            let data = Data(tab.id.uuidString.utf8)
+            provider.registerDataRepresentation(forTypeIdentifier: UTType.aeroTab.identifier, visibility: .ownProcess) { completion in
+                completion(data, nil)
+                return nil
+            }
+            return provider
+        }
             .dragConfiguration(DragConfiguration(operationsWithinApp: .init(allowCopy: false, allowMove: true)))
     }
 
