@@ -205,3 +205,63 @@ private func url(_ string: String) throws -> URL { try #require(URL(string: stri
     #expect(visits.map(\.transition) == [.autoTopLevel, .typed])
     #expect(try await store.recentVisits(profileID: profile, since: now - 5 * day, limit: 1).map(\.title) == ["Mail"])
 }
+
+// Failure modes: the control bar's history misses a page visited often but long ago, counts reloads as visits,
+// or reads another profile's pages.
+@Test func matchesCountVisitsWithoutReloads() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let store = fixture.store()
+    let profile = UUID()
+    let now = Date.now
+    let often = try url("https://docs.example/swift")
+    for index in 0..<5 { try await store.recordVisit(to: often, title: "Swift documentation", profileID: profile, at: now.addingTimeInterval(-90 * day + Double(index))) }
+    let reloaded = try url("https://swift.example/blog")
+    try await store.recordVisit(to: reloaded, title: "Swift blog", profileID: profile, at: now)
+    for _ in 0..<9 { try await store.recordVisit(to: reloaded, title: "Swift blog", profileID: profile, at: now, transition: .reload) }
+    try await store.recordVisit(to: url("https://other.example/swift"), title: "Swift elsewhere", profileID: UUID())
+
+    let matches = try await store.matches(profileID: profile, query: "swi", limit: 10)
+    #expect(matches.map(\.url) == [often, reloaded], "The most visited first, however old; another profile's page left out")
+    #expect(matches.map(\.visitCount) == [5, 1], "Reloads are not visits")
+    #expect(try await store.matches(profileID: profile, query: "  ", limit: 10).isEmpty)
+}
+
+// Failure modes: the visit count drifts from the visits as they are added, cleared, retired or deleted with their
+// page; reloads count; or an existing history upgrades with every page at zero visits.
+@Test func visitCountsFollowTheVisits() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    let store = fixture.store()
+    let profile = UUID()
+    let now = Date.now
+    let page = try url("https://docs.example/swift")
+    for days in [0.0, 1, 2, 40] { try await store.recordVisit(to: page, title: "Swift", profileID: profile, at: now.addingTimeInterval(-days * day)) }
+    try await store.recordVisit(to: page, title: "Swift", profileID: profile, at: now, transition: .reload)
+    #expect(try await store.matches(profileID: profile, query: "swift", limit: 1).first?.visitCount == 4, "Reloads are not visits")
+    try await store.clear(profileID: profile, since: now.addingTimeInterval(-1.5 * day))
+    #expect(try await store.matches(profileID: profile, query: "swift", limit: 1).first?.visitCount == 2, "Cleared visits leave the count")
+    try await store.delete(url: page, profileID: profile)
+    try await store.recordVisit(to: page, title: "Swift", profileID: profile, at: now)
+    #expect(try await store.matches(profileID: profile, query: "swift", limit: 1).first?.visitCount == 1, "A page deleted and visited again starts over")
+}
+
+@Test func upgradingCountsTheVisitsAlreadyRecorded() async throws {
+    let fixture = Fixture()
+    defer { fixture.remove() }
+    try FileManager.default.createDirectory(at: fixture.folder, withIntermediateDirectories: true)
+    let profile = UUID()
+    do {
+        let earlier = try SQLiteDatabase(file: fixture.file)
+        try DatabaseSchema(identifier: HistoryStore.schema.identifier, migrations: Array(HistoryStore.schema.migrations.prefix(2)))
+            .prepare(earlier, file: fixture.file)
+        // Recent, so retention leaves them.
+        let now = SQLiteDatabase.Value.real(Date.now.timeIntervalSinceReferenceDate)
+        try earlier.run("INSERT INTO pages (profile_id, url, title, last_visit) VALUES (?, 'https://docs.example/swift', 'Swift', ?)", [.text(profile.uuidString), now])
+        for transition in ["link", "typed", "reload"] {
+            try earlier.run("INSERT INTO visits (page_id, visited_at, transition) VALUES (1, ?, ?)", [now, .text(transition)])
+        }
+    }
+    let matches = try await fixture.store().matches(profileID: profile, query: "swift", limit: 1)
+    #expect(matches.map(\.visitCount) == [2], "Visits recorded before the upgrade count, reloads left out")
+}

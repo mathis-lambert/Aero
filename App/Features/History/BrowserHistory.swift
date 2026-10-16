@@ -71,6 +71,13 @@ final class BrowserHistory {
         return try await store.entries(profileID: profileID, matching: query, before: cursor, limit: limit)
     }
 
+    /// The pages matching `query`, most visited first, for the control bar to rank.
+    func matches(profileID: UUID, query: String, limit: Int) async throws -> [HistoryEntry] {
+        writePendingTitles()
+        _ = await lastWrite?.result
+        return try await store.matches(profileID: profileID, query: query, limit: limit)
+    }
+
     /// Imported pages, queued after pending writes like any other history change (docs/ONBOARDING.md).
     func importPages(_ pages: [ImportedPage], profileID: UUID) async throws {
         try await enqueue { try await $0.importPages(pages, profileID: profileID) }.value

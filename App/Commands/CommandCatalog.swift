@@ -210,13 +210,23 @@ extension BrowserCommand {
         }
     }
 
-    func matchesSearch(_ query: String) -> Bool {
-        if title.localizedStandardContains(query) { return true }
-        // The words people search for a capture by, which Arc's title does not use.
-        if self == .capturePortrait { return String(localized: "screenshot picture image").localizedStandardContains(query) }
+    /// Other words people search a command by, which its title does not use.
+    var searchAliases: [String] {
+        switch self {
+        // Arc's title does not say what it makes.
+        case .capturePortrait: [String(localized: "screenshot picture image")]
         // Keep the familiar menu title while making the reset action discoverable with the other zoom actions.
-        return self == .resetZoom && String(localized: "zoom reset 100%").localizedStandardContains(query)
+        case .resetZoom: [String(localized: "zoom reset 100%")]
+        default: []
+        }
     }
+
+    /// How well `query` matches the title or an alias (`ResultRanking`), nil when it does not.
+    func searchScore(_ query: ResultRanking.Query) -> Double? {
+        ResultRanking.match(query, title: title, aliases: searchAliases)
+    }
+
+    func matchesSearch(_ query: String) -> Bool { searchScore(ResultRanking.Query(query)) != nil }
 
     var tabIndex: Int? {
         [.tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8].firstIndex(of: self)

@@ -14,7 +14,8 @@ final class BrowsingJourneys: E2ETestCase {
     private func item(_ label: String) -> XCUIElement { app.descendants(matching: .any).matching(identifier: "controlBar.item")[label] }
 
     /// New Tab is one permanent row whose bar ⌘K and ⌘L focus; over a tab, ⌘L replaces its page, ⌘K opens a new
-    /// tab, and the bar finds history, open tabs and commands.
+    /// tab, and the bar ranks history, open tabs and commands above the search when they match better. The ranking
+    /// rules themselves are covered by ResultRankingTests and ControlBarResultsTests.
     func testTheControlBarOpensSearchesAndSwitches() throws {
         try launch()
         let newTab = app.buttons["sidebar.newTab"]
@@ -51,7 +52,11 @@ final class BrowsingJourneys: E2ETestCase {
 
         app.typeKey("k", modifierFlags: .command)
         controlBarInput.typeText("alpine")
-        XCTAssertTrue(poll { self.items.contains("Alpine Lake") }, "History matches the words of a visited page")
+        XCTAssertTrue(poll { self.items.first == "Alpine Lake" }, "A visited page matching its words goes above the search: \(items)")
+        attachScreenshot("control bar ranked")
+        app.typeKey("a", modifierFlags: .command)
+        controlBarInput.typeText("capture portrait")
+        XCTAssertTrue(poll { self.items.first == "Capture in Portrait Mode" }, "A command found by its words, around another one: \(items)")
         app.typeKey("a", modifierFlags: .command)
         controlBarInput.typeText("Solid")
         XCTAssertTrue(poll { self.items.contains("Solid fixture") }, "An open tab matches its title")

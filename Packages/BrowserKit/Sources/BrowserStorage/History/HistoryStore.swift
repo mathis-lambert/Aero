@@ -115,6 +115,19 @@ public actor HistoryStore {
                                   bindings, row: Self.entry)
     }
 
+    /// The pages matching every word of `query`, for the control bar to rank: the most visited first, each with its
+    /// visits, reloads left out. No words, no pages. The count is `pages.visit_count`, which the triggers on `visits`
+    /// keep, so even a query matching most of the history only sorts stored integers.
+    public func matches(profileID: UUID, query: String, limit: Int) throws -> [HistoryEntry] {
+        guard let match = Self.matchExpression(query) else { return [] }
+        return try open().query("""
+            SELECT pages.id, pages.url, pages.title, pages.last_visit, pages.visit_count
+            FROM pages_fts JOIN pages ON pages.id = pages_fts.rowid
+            WHERE pages.profile_id = ? AND pages_fts MATCH ?
+            ORDER BY pages.visit_count DESC, pages.last_visit DESC, pages.id DESC LIMIT ?
+            """, [.text(profileID.uuidString), .text(match), .integer(Int64(max(0, limit)))], row: Self.countedEntry)
+    }
+
     @discardableResult
     public func delete(_ ids: [HistoryEntry.ID], profileID: UUID) throws -> [URL] {
         let database = try open()
@@ -265,7 +278,7 @@ public actor HistoryStore {
         return db
     }
 
-    private static let schema = DatabaseSchema(identifier: 0x41454849, migrations: ["""
+    static let schema = DatabaseSchema(identifier: 0x41454849, migrations: ["""
                 CREATE TABLE pages (
                     id INTEGER PRIMARY KEY,
                     profile_id TEXT NOT NULL,
@@ -299,6 +312,15 @@ public actor HistoryStore {
                 ALTER TABLE visits ADD COLUMN transition TEXT NOT NULL DEFAULT 'auto_toplevel';
                 ALTER TABLE visits ADD COLUMN referring_visit_id INTEGER REFERENCES visits(id) ON DELETE SET NULL;
                 CREATE INDEX visits_referring ON visits(referring_visit_id);
+                """, """
+                ALTER TABLE pages ADD COLUMN visit_count INTEGER NOT NULL DEFAULT 0;
+                UPDATE pages SET visit_count = (SELECT count(*) FROM visits WHERE visits.page_id = pages.id AND visits.transition != 'reload');
+                CREATE TRIGGER visits_counted AFTER INSERT ON visits WHEN new.transition != 'reload' BEGIN
+                    UPDATE pages SET visit_count = visit_count + 1 WHERE id = new.page_id;
+                END;
+                CREATE TRIGGER visits_uncounted AFTER DELETE ON visits WHEN old.transition != 'reload' BEGIN
+                    UPDATE pages SET visit_count = visit_count - 1 WHERE id = old.page_id;
+                END;
                 """])
 
     // MARK: - Values

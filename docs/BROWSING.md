@@ -4,9 +4,16 @@
 
 The same address, search and command field appears on New Tab and over a page. ⌘L replaces the current page; ⌘K opens results in a new tab. On New Tab, both focus its existing field.
 
-Results are ordered: address/search, engine suggestions, current-space tabs, profile history, commands. Return opens the selected result; Escape dismisses the overlay or clears New Tab. Commands use the same dispatcher as menus and shortcuts; see [Shortcuts](SHORTCUTS.md).
+Results of every kind mix by one score (`ResultRanking` in BrowserCore, `ControlBarResults` in the app). An address typed in full comes first; otherwise the search row sits among the results, at a fixed score:
 
-Suggestions use an ephemeral session without profile cookies or credentials. Address-like input is never sent. Requests are delayed until typing pauses and canceled when the query changes. Local history publishes independently of network responses.
+- Every word typed must start a word of a result's title, alias or address (host without `www.`, then path), in any order and with words between them: “capture portrait” finds Capture in Portrait Mode. Case, accents and width are ignored. A whole word counts more than its start; a title or host that starts with the whole query more again. A word of three letters or more found inside a word still matches, under the search row.
+- An open tab of the space gains a little; the tab shown is not offered. A visited page gains with its visits, reloads left out, and a little with how recent the last one is; pages open in the space leave the history. The history offers its most visited matching pages, however old.
+- Engine suggestions are weighed so they always stay under the search row, the closest to the query first.
+- Each kind keeps to its share: three tabs, four commands, four visited pages, four suggestions. Equal scores keep this order: tabs, commands, history, the search row, suggestions.
+
+The first row is selected until the arrows or the pointer choose another; results arriving later never move a chosen row. Return opens the selected result; Escape dismisses the overlay or clears New Tab. Commands use the same dispatcher as menus and shortcuts; see [Shortcuts](SHORTCUTS.md). Settings › Shortcuts filters commands with the same matching.
+
+Suggestions use an ephemeral session without profile cookies or credentials. Address-like input is never sent. Requests are delayed until typing pauses and canceled when the query changes. Local history answers at once, without waiting for the pause or the engine; until new results arrive, the previous ones are ranked against the new text.
 
 ## New Tab
 

@@ -57,6 +57,8 @@ Uninstall first persists `isRemoving`, unloads the extension, uses WebKit data-r
 
 `HistoryStore` opens lazily on its actor. One database contains profile-scoped pages and visits, plus an FTS5 title/address index maintained by triggers. Every operation requires a profile; cursor pagination uses `(last_visit, id)` to preserve equal-timestamp entries.
 
+`pages.visit_count` holds each page's visits, reloads left out, for the control bar's ranking (`matches`). Triggers on `visits` keep it, so recording, clearing, retention and a page's deletion all count without code of their own; history version 3 adds it and counts the visits already recorded. Measured on 50,000 pages and 500,000 visits, a one-letter query that matches most pages takes about 5 ms instead of 160 ms when the count was computed per page.
+
 Failed writes retry in order with their original timestamps, before a later clear can commit. Pending writes are memory-only and cannot survive forced termination. Read failures can retry without disabling browsing. Visits older than a year are pruned in batches of 500 on store activity, at most hourly when caught up and once a minute while catching up.
 
 ## Storage settings

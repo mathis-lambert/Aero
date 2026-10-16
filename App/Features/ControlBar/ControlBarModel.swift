@@ -16,7 +16,7 @@ struct ControlBarPresentation {
     let initialText: String
 }
 
-/// One row of results. See docs/BROWSING.md › Control bar for their order.
+/// One row of results, ranked by `ControlBarResults`. See docs/BROWSING.md › Control bar.
 enum ControlBarItem {
     case open(URL)
     case search(String)
@@ -24,25 +24,39 @@ enum ControlBarItem {
     case tab(BrowserTab)
     case history(HistoryEntry)
     case command(BrowserCommand)
+
+    /// The same row across rankings, so the selection stays on it when results arrive.
+    var id: String {
+        switch self {
+        case .open(let url): "open.\(url.absoluteString)"
+        case .search(let query): "search.\(query)"
+        case .suggestion(let suggestion): "suggestion.\(suggestion)"
+        case .tab(let tab): "tab.\(tab.id)"
+        case .history(let entry): "history.\(entry.id)"
+        case .command(let command): "command.\(command.rawValue)"
+        }
+    }
 }
 
 /// The text, results and selection of one control bar. Suggestions and history arrive
 /// asynchronously; only the latest text may update them.
 @MainActor @Observable
 final class ControlBarModel {
-    /// Waits for a pause in typing before asking the engine and the history.
+    /// Waits for a pause in typing before asking the engine; the history, on this Mac, answers at once.
     private static let typingPause = Duration.milliseconds(120)
-    private static let maximumTabs = 3
-    private static let maximumHistory = 3
+    /// Visited pages to rank, most visited first, so pages already open can be left out.
+    private static let historyCandidates = 24
 
     let target: ControlBarTarget
     /// Over a tab rather than on the New Tab page. With no text, it lists the commands and doubles
     /// as the shortcut reference; the New Tab page shows no list until you type.
     let isOverlay: Bool
     var text: String {
-        didSet { if text != oldValue { selection = 0 } }
+        didSet { if text != oldValue { chosen = nil } }
     }
-    private(set) var selection = 0
+    /// The row moved to with the arrows or the pointer; until then the selection is the first row, whichever it
+    /// becomes as results arrive.
+    private var chosen: String?
     private(set) var suggestions: [String] = []
     private(set) var history: [HistoryEntry] = []
     @ObservationIgnored private let browser: BrowserModel
@@ -58,28 +72,23 @@ final class ControlBarModel {
 
     var items: [ControlBarItem] {
         let query = query
-        guard !query.isEmpty else { return isOverlay ? commands(matching: nil) : [] }
-        let go: ControlBarItem = NavigationInput.address(from: query).map(ControlBarItem.open) ?? .search(query)
-        let tabs = browser.tabs
-        let openURLs = Set(tabs.map(\.url))
-        return [go]
-            + suggestions.map(ControlBarItem.suggestion)
-            + openTabs(tabs, matching: query).map(ControlBarItem.tab)
-            + history.filter { !openURLs.contains($0.url) }.prefix(Self.maximumHistory).map(ControlBarItem.history)
-            + commands(matching: query)
+        guard !query.isEmpty else { return isOverlay ? availableCommands.map(ControlBarItem.command) : [] }
+        return ControlBarResults.rank(query, tabs: browser.tabs, shownTabID: browser.window.selectedTabID, history: history,
+                                      commands: Self.searchableCommands, isAvailable: browser.isEnabled, suggestions: suggestions, now: .now)
     }
 
-    /// The highlighted row of `items`, kept inside the list as it shrinks.
+    /// The highlighted row of `items`: the row chosen while it is listed, else the first.
     func selectedIndex(in items: [ControlBarItem]) -> Int? {
-        items.isEmpty ? nil : min(selection, items.count - 1)
+        guard !items.isEmpty else { return nil }
+        return chosen.flatMap { id in items.firstIndex { $0.id == id } } ?? 0
     }
 
-    func select(_ index: Int) { selection = index }
+    func select(_ item: ControlBarItem) { chosen = item.id }
 
     func moveSelection(by offset: Int) {
         let items = items
         guard let index = selectedIndex(in: items) else { return }
-        selection = min(max(index + offset, 0), items.count - 1)
+        chosen = items[min(max(index + offset, 0), items.count - 1)].id
     }
 
     func activateSelection() {
@@ -104,19 +113,22 @@ final class ControlBarModel {
         text = ""
     }
 
-    /// Runs for each text, from the view's task: a newer text cancels it before it updates anything.
+    /// Runs for each text, from the view's task: a newer text cancels it before it updates anything. The previous
+    /// results stay, ranked against the new text, until the new ones replace them.
     func refresh() async {
         let query = query
-        suggestions = []
-        history = []
-        guard !query.isEmpty else { return }
-        do { try await Task.sleep(for: Self.typingPause) } catch { return }
-        async let suggested: Void = refreshSuggestions(for: query)
+        guard !query.isEmpty else {
+            suggestions = []
+            history = []
+            return
+        }
         async let visited: Void = refreshHistory(for: query)
-        _ = await (suggested, visited)
+        async let suggested: Void = refreshSuggestions(for: query)
+        _ = await (visited, suggested)
     }
 
     private func refreshSuggestions(for query: String) async {
+        do { try await Task.sleep(for: Self.typingPause) } catch { return }
         let results = await suggestions(for: query)
         guard !Task.isCancelled, self.query == query else { return }
         suggestions = results
@@ -135,30 +147,14 @@ final class ControlBarModel {
         return await browser.suggestionFetcher.suggestions(from: url, for: query)
     }
 
-    /// Asks for extra entries so that pages already open can be left out.
     private func visits(matching query: String) async -> [HistoryEntry] {
         guard let profileID = browser.profile?.id else { return [] }
-        let limit = Self.maximumHistory + Self.maximumTabs
         // Best effort: an unavailable history only leaves its rows out.
-        return (try? await browser.history.entries(profileID: profileID, matching: query, limit: limit)) ?? []
+        return (try? await browser.history.matches(profileID: profileID, query: query, limit: Self.historyCandidates)) ?? []
     }
 
-    /// Other tabs of the space whose title or address matches.
-    private func openTabs(_ tabs: [BrowserTab], matching query: String) -> [BrowserTab] {
-        let selectedID = browser.window.selectedTabID
-        let matches = tabs.lazy.filter { tab in
-            tab.id != selectedID
-                && (tab.displayTitle.localizedStandardContains(query) || tab.url.absoluteString.localizedStandardContains(query))
-        }
-        return Array(matches.prefix(Self.maximumTabs))
-    }
+    /// Every command but the one that opens the bar.
+    private static let searchableCommands = BrowserCommand.allCases.filter { $0 != .commandPalette }
 
-    private func commands(matching query: String?) -> [ControlBarItem] {
-        BrowserCommand.allCases
-            .filter { command in
-                command != .commandPalette && browser.isEnabled(command)
-                    && (query.map(command.matchesSearch) ?? true)
-            }
-            .map(ControlBarItem.command)
-    }
+    private var availableCommands: [BrowserCommand] { Self.searchableCommands.filter(browser.isEnabled) }
 }

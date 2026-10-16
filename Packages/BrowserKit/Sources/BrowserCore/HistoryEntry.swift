@@ -14,7 +14,7 @@ public struct HistoryEntry: Identifiable, Equatable, Sendable {
     }
     public var cursor: Cursor { Cursor(date: lastVisit, id: id) }
 
-    package init(id: Int64, url: URL, title: String, lastVisit: Date, visitCount: Int = 0) {
+    public init(id: Int64, url: URL, title: String, lastVisit: Date, visitCount: Int = 0) {
         self.id = id
         self.url = url
         self.title = title
