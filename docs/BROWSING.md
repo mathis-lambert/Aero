@@ -77,7 +77,7 @@ Settings › General › Developer mode makes every page, extension background, 
 
 Find searches the selected page with wrapping, case-insensitive matching. Escape restores page focus; switching tabs closes it. Results report presence, not a count. Page-first shortcuts let web editors handle their own find.
 
-Downloads use sanitized unique filenames in Downloads, with quarantine and source metadata; Finder and the Dock show their progress on the file, as for Safari's. Closing a tab does not cancel them. The downloads popover supports cancel, retry, Show in Finder and clearing inactive entries. The list lasts only for the session; tests write inside their isolated data directory.
+Downloads use sanitized unique filenames in Downloads, with quarantine and source metadata; Finder and the Dock show their progress on the file, as for Safari's. Closing a tab does not cancel them. The downloads button's circle fills as a pie with the bytes received of the downloads under way, grey while they are all paused. The popover gives each download's speed over its last seconds and the time left at that speed (`TransferRate`), and pauses, resumes, cancels and retries it: a pause keeps WebKit's resume data, so the download continues where it stopped when the server allows, and starts over otherwise. A finished file opens with a double click, drags out as the file itself, and its menu shows it in the Finder, renames it in place with its stem selected, as in the Finder (a name already taken is refused, never replaced), copies its address, or moves it to the Trash, never deleting it. Removing a download from the list, or clearing the inactive ones, leaves its file. The list lasts only for the session; tests write inside their isolated data directory.
 
 ## Quitting
 

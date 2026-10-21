@@ -125,12 +125,12 @@ final class TrackedDownload {
 
     /// The fields `downloads.onChanged` reports.
     var changeableFields: [String: Any] {
-        ["state": download.state.rawValue, "filename": download.destination?.path ?? "", "totalBytes": download.totalBytes ?? -1,
+        ["state": download.state.rawValue, "paused": download.isPaused, "filename": download.destination?.path ?? "", "totalBytes": download.totalBytes ?? -1,
          "exists": download.destination.map { FileManager.default.fileExists(atPath: $0.path) } ?? false]
     }
 
-    /// The fields of Chrome's `DownloadItem` Aero reports. Aero has no pause and no danger check beyond Gatekeeper's
-    /// quarantine, so a download is never paused and has no known danger.
+    /// The fields of Chrome's `DownloadItem` Aero reports. Aero has no danger check beyond Gatekeeper's quarantine, so a
+    /// download has no known danger.
     static let fields: Set = ["id", "url", "finalUrl", "filename", "state", "paused", "canResume", "danger", "mime", "incognito",
                               "startTime", "endTime", "bytesReceived", "totalBytes", "fileSize", "exists", "byExtensionId", "error"]
 
@@ -138,7 +138,7 @@ final class TrackedDownload {
     var item: [String: Any] {
         var item: [String: Any] = [
             "id": id, "url": download.sourceURL?.absoluteString ?? "", "finalUrl": (download.finalURL ?? download.sourceURL)?.absoluteString ?? "",
-            "filename": download.destination?.path ?? "", "state": download.state.rawValue, "paused": false, "canResume": download.canResume,
+            "filename": download.destination?.path ?? "", "state": download.state.rawValue, "paused": download.isPaused, "canResume": download.canResume,
             "danger": "safe", "mime": download.mimeType ?? "", "incognito": false, "startTime": startTime.ISO8601Format(),
             "bytesReceived": download.receivedBytes, "totalBytes": download.totalBytes ?? -1, "fileSize": download.totalBytes ?? -1,
             "exists": download.destination.map { FileManager.default.fileExists(atPath: $0.path) } ?? false, "byExtensionId": extensionID

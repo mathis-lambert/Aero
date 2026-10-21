@@ -117,6 +117,8 @@ public protocol ExtensionDownload: AnyObject {
     var destination: URL? { get }
     var endTime: Date? { get }
     var canResume: Bool { get }
+    /// Stopped at the user's request; its state stays in progress, as in Chrome.
+    var isPaused: Bool { get }
     var state: ExtensionDownloadState { get }
     var receivedBytes: Int64 { get }
     var totalBytes: Int64? { get }
