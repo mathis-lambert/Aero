@@ -34,9 +34,9 @@ enum BrowserDesign {
     static let sidebarHeaderHeight: CGFloat = 42
     /// The window's buttons end about 80 points in; the rest keeps them clear of the sidebar's own.
     static let windowControlsWidth: CGFloat = 90
-    /// The sidebar header's buttons, beside the window's, smaller than `navigationButtonSize` so the row fits the
-    /// sidebar's minimum width.
-    static let headerButtonSize: CGFloat = 26
+    /// The sidebar's own buttons, in its header beside the window's and in its footer around the spaces: smaller than
+    /// `navigationButtonSize`, so both rows fit the sidebar's minimum width.
+    static let sidebarButtonSize: CGFloat = 26
     static let sidebarRevealEdgeWidth: CGFloat = 8
     static let controlHeight: CGFloat = 32
     static let navigationButtonSize: CGFloat = 28

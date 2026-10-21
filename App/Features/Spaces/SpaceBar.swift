@@ -1,27 +1,31 @@
 import BrowserCore
 import SwiftUI
 
-/// The spaces in the sidebar's footer, where the space shown says who it is: a capsule in its color with its icon,
-/// its name and, once there are several, its profile's. The others are smaller icons, their emoji or a dot in their
-/// color. One capsule morphs from space to space, so choosing one slides it there and blends its color; the name
-/// fades in from its icon. Every space stays on screen while it can: the name gives way first, cut short, the tooltip
-/// giving it whole; past that the spaces scroll, the shown one kept in the middle. Tabs dragged onto a space go to it
+/// The spaces in the sidebar's footer, kept quiet: the space shown has its icon and name on a neutral pill, the
+/// others are small grey icons that take their color back under the pointer. The pill slides from space to space and
+/// the name fades in. Every space stays on screen while it can: the name gives way first, cut short, the tooltip giving
+/// it whole; past that the spaces scroll, the shown one kept in the middle. Tabs dragged onto a space go to it
 /// (`SpaceDropTarget`).
 struct SpaceBar: View {
-    static let height: CGFloat = 28
+    static let height: CGFloat = 22
     /// The width of a space not shown.
     static let iconSize: CGFloat = 18
-    /// Spaces not shown are this much smaller.
-    static let otherScale: CGFloat = 0.85
+    static let nameFont = Font.system(size: 11, weight: .medium)
+    /// Spaces not shown, until the pointer or a dragged tab is over them.
+    static let otherOpacity: Double = 0.45
     /// A long name stops here; the tooltip and the space's settings give it whole.
     static let maximumNameWidth: CGFloat = 96
+    /// The pill's inner margin, and the gap between its icon and name.
+    static let capsulePadding: CGFloat = 7
+    static let nameSpacing: CGFloat = 5
     /// The narrowest the shown space gets before the spaces scroll instead: its icon and a few letters.
-    private static let minimumCapsuleWidth: CGFloat = 70
-    /// Softer and a little longer than the shell's spring, for the capsule to travel and settle.
-    private static let motion = Animation.spring(duration: 0.42, bounce: 0.16)
+    private static let minimumCapsuleWidth: CGFloat = 60
+    /// Quick and without bounce: the pill is there by the time the page has slid.
+    private static let motion = Animation.spring(duration: 0.22, bounce: 0)
 
     let browser: BrowserModel
     @State private var targetedSpaceID: UUID?
+    @State private var hoveredSpaceID: UUID?
     @State private var width: CGFloat = 0
     @Environment(\.palette) private var palette
     @Environment(\.browserReduceMotion) private var reduceMotion
@@ -49,10 +53,10 @@ struct SpaceBar: View {
         }
         .backgroundPreferenceValue(SelectedSpaceBounds.self) { anchor in
             GeometryReader { proxy in
-                if let anchor, let space = browser.space {
+                if let anchor {
                     let frame = proxy[anchor]
                     Capsule()
-                        .fill(space.color.tint.opacity(0.16))
+                        .fill(palette.fill)
                         .frame(width: frame.width, height: frame.height)
                         .offset(x: frame.minX, y: frame.minY)
                 }
@@ -63,39 +67,38 @@ struct SpaceBar: View {
 
     private func item(_ space: BrowserSpace, selected: Bool) -> some View {
         let targeted = targetedSpaceID == space.id
+        let lit = selected || targeted || hoveredSpaceID == space.id
         return Button { browser.switchSpace(space.id) } label: {
-            HStack(spacing: 6) {
-                SpaceIcon(space: space, size: 13)
-                    .scaleEffect(selected || targeted ? 1 : Self.otherScale)
+            HStack(spacing: Self.nameSpacing) {
+                SpaceIcon(space: space, size: 12)
+                    .grayscale(lit ? 0 : 1)
+                    .opacity(lit ? 1 : Self.otherOpacity)
                 if selected {
-                    HStack(spacing: 6) {
-                        Text(verbatim: space.name)
-                            .font(BrowserDesign.Typography.label)
-                            .foregroundStyle(palette.ink)
-                        if let profile = browser.profileName(of: space) {
-                            Text(verbatim: profile)
-                                .font(BrowserDesign.Typography.caption)
-                                .foregroundStyle(palette.secondary)
-                        }
+                    let name = Text(verbatim: space.name).font(Self.nameFont).foregroundStyle(palette.ink).lineLimit(1)
+                    // Its own width when it fits, so the pill hugs it; cut short within what is left otherwise.
+                    ViewThatFits(in: .horizontal) {
+                        name.fixedSize()
+                        name.frame(maxWidth: Self.maximumNameWidth, alignment: .leading)
                     }
-                    .lineLimit(1)
-                    .frame(maxWidth: Self.maximumNameWidth, alignment: .leading)
                     .layoutPriority(-1)
-                    .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .leading)))
+                        // The name leaving goes at once: fading, it would no longer hold its room and overlap the icons.
+                        .transition(.asymmetric(insertion: .opacity, removal: .identity))
                 }
             }
-            .opacity(selected || targeted ? 1 : 0.55)
-            .padding(.horizontal, selected ? 10 : 0)
+            .padding(.horizontal, selected ? Self.capsulePadding : 0)
             .frame(minWidth: Self.iconSize)
             .frame(height: Self.height)
             .anchorPreference(key: SelectedSpaceBounds.self, value: .bounds) { selected ? $0 : nil }
             .background {
-                if targeted, !selected { Capsule().fill(space.color.tint.opacity(0.25)) }
+                if targeted, !selected { Capsule().fill(space.color.tint.opacity(0.22)) }
             }
-            .animation(reduceMotion ? nil : BrowserDesign.hover, value: targeted)
+            .animation(reduceMotion ? nil : BrowserDesign.hover, value: lit)
             .contentShape(Capsule())
         }
-        .buttonStyle(QuietButtonStyle(radius: Self.height / 2))
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            if hovering { hoveredSpaceID = space.id } else if hoveredSpaceID == space.id { hoveredSpaceID = nil }
+        }
         .tooltip(space.name)
         .accessibilityLabel(Text(verbatim: space.name))
         .accessibilityAddTraits(selected ? .isSelected : [])
