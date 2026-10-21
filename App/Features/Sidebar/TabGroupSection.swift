@@ -4,7 +4,8 @@ import SwiftUI
 
 /// A group of favorites: a header that opens and closes it, then its rows, indented. Dragged by its header, the
 /// group shows as a gap where it would land; a closed group lights up when a dragged tab would go into it. ⌘ or ⇧ on
-/// the header picks the group with other groups and tabs.
+/// the header picks the group with other groups and tabs, and resting on a closed group's header lists its tabs
+/// beside it (`folderPreview`).
 struct TabGroupSection: View {
     private static let indent: CGFloat = 12
 
@@ -22,6 +23,7 @@ struct TabGroupSection: View {
 
     @Environment(\.palette) private var palette
     @Environment(\.browserReduceMotion) private var reduceMotion
+    @State private var hovered = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
@@ -62,6 +64,8 @@ struct TabGroupSection: View {
             }
             .buttonStyle(QuietButtonStyle())
             .groupDraggable(group, browser: browser)
+            .folderPreview(browser: browser, groupID: group.id, enabled: group.isCollapsed && !tabs.isEmpty && browser.window.tabDrag == nil)
+            .onHover { hovered = $0 }
             .accessibilityLabel(Text(verbatim: group.name))
             .accessibilityAddTraits(isMarked ? .isSelected : [])
             .accessibilityIdentifier("sidebar.group")
@@ -90,7 +94,7 @@ struct TabGroupSection: View {
 
     private func label(@ViewBuilder _ content: () -> some View) -> some View {
         HStack(spacing: BrowserDesign.rowInset) {
-            FolderIcon(isOpen: !group.isCollapsed, tint: isTargeted ? Color.accentColor : .secondary)
+            FolderIcon(isOpen: !group.isCollapsed, isPeeking: hovered, tint: isTargeted ? Color.accentColor : .secondary)
                 // A dragged tab about to go in lifts it a little.
                 .scaleEffect(isTargeted ? 1.15 : 1)
                 .animation(reduceMotion ? nil : BrowserDesign.motion, value: isTargeted)
