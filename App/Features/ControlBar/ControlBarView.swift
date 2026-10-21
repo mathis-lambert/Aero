@@ -56,8 +56,9 @@ struct ControlBarView: View {
                 results(items, selected: selected)
             }
         }
-        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
+        // The results are clipped to the bar; the glass behind them is not, so it samples what lies under the bar.
         .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card, style: .continuous))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .controlBarGlow(accent: browser.accent.light(in: palette.scheme), cornerRadius: BrowserDesign.Radius.card, delay: lightDelay)
         .panelShadow()
         .frame(maxWidth: Self.width)

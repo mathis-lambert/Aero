@@ -33,9 +33,6 @@ struct FavoritesGrid: View {
     /// Tabs are being dragged, so an empty grid shows where they can go.
     let dragging: Bool
     let layout: TabDropLayout
-    @State private var hoveredTabID: UUID?
-    @Environment(\.browserReduceMotion) private var reduceMotion
-    @Environment(\.palette) private var palette
 
     var body: some View {
         if tabs.isEmpty {
@@ -58,44 +55,54 @@ struct FavoritesGrid: View {
     }
 
     private func tile(_ tab: BrowserTab) -> some View {
-        let selected = selectedTabID == tab.id || marked.contains(tab.id)
-        let isLifted = lifted.contains(tab.id)
-        return Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
-            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: Self.iconSize, fetchingMissing: tab.url) {
+        FavoriteTile(browser: browser, tab: tab, selected: selectedTabID == tab.id || marked.contains(tab.id),
+                     isLifted: lifted.contains(tab.id))
+            .dropFrame(.tab(tab.id), in: layout)
+    }
+}
+
+/// One favorite. It owns its hover, so the pointer crossing the grid redraws only the tiles it enters and leaves.
+private struct FavoriteTile: View {
+    let browser: BrowserModel
+    let tab: BrowserTab
+    let selected: Bool
+    let isLifted: Bool
+    @State private var hovered = false
+    @Environment(\.browserReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
+            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: FavoritesGrid.iconSize, fetchingMissing: tab.url) {
                 if let page = InternalPage(url: tab.url) {
-                    Image(systemName: page.symbol).font(.system(size: Self.placeholderSize)).foregroundStyle(.secondary)
+                    Image(systemName: page.symbol).font(.system(size: FavoritesGrid.placeholderSize)).foregroundStyle(.secondary)
                 } else {
-                    Text(verbatim: String(tab.url.siteName.prefix(1)).uppercased()).font(Self.initialFont)
+                    Text(verbatim: String(tab.url.siteName.prefix(1)).uppercased()).font(FavoritesGrid.initialFont)
                 }
             }
             .opacity(isLifted ? 0 : 1)
             .frame(maxWidth: .infinity)
-            .frame(height: Self.tileHeight)
-            .modifier(TileSurface(state: isLifted ? .lifted : selected ? .active(glow: glowColor(for: tab)) : hoveredTabID == tab.id ? .hovered : .resting))
-            .contentShape(RoundedRectangle(cornerRadius: Self.radius))
+            .frame(height: FavoritesGrid.tileHeight)
+            .modifier(TileSurface(state: isLifted ? .lifted : selected ? .active(glow: glowColor) : hovered ? .hovered : .resting))
+            .contentShape(RoundedRectangle(cornerRadius: FavoritesGrid.radius))
         }
         .buttonStyle(.plain)
-        .onHover { hovering in
-            if hovering { hoveredTabID = tab.id }
-            else if hoveredTabID == tab.id { hoveredTabID = nil }
-        }
-        .animation(reduceMotion ? nil : BrowserDesign.hover, value: hoveredTabID == tab.id)
+        .onHover { hovered = $0 }
+        .animation(reduceMotion ? nil : BrowserDesign.hover, value: hovered)
         .tooltip(tab.displayTitle)
         .accessibilityLabel(tab.displayTitle)
         .accessibilityAddTraits(selected ? .isSelected : [])
         .contextMenu { TabContextMenu(browser: browser, tab: tab) }
-        .popover(isPresented: renaming(tab), arrowEdge: .bottom) {
+        .popover(isPresented: renaming, arrowEdge: .bottom) {
             RenameField(name: tab.displayTitle) { browser.renameTab(tab.id, to: $0) } end: { browser.window.endRenaming(.tab(tab.id)) }
                 .frame(width: 200)
                 .padding(10)
         }
         .tabDraggable(tab, browser: browser)
         .accessibilityIdentifier("sidebar.tile")
-        .dropFrame(.tab(tab.id), in: layout)
     }
 
     /// The favicon's color, or the space's, made vivid enough to glow: a dull or dark icon still lights its glass.
-    private func glowColor(for tab: BrowserTab) -> Color {
+    private var glowColor: Color {
         let iconColor = browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).color }
         let tint = iconColor ?? NSColor(browser.accent.tint)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
@@ -105,7 +112,7 @@ struct FavoritesGrid: View {
     }
 
     /// A tile has no title to edit in place, so its name is edited in a popover.
-    private func renaming(_ tab: BrowserTab) -> Binding<Bool> {
+    private var renaming: Binding<Bool> {
         Binding { browser.window.renaming == .tab(tab.id) } set: { if !$0 { browser.window.endRenaming(.tab(tab.id)) } }
     }
 }

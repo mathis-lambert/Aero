@@ -34,13 +34,15 @@ final class Favicon {
 @MainActor
 final class FaviconCache {
     /// Covers the sidebar and a few screens of history.
-    private static let capacity = 256
+    static let capacity = 256
 
     private let store: FaviconStore
     private let fetcher = FaviconFetcher()
     private var entries: [FaviconKey: Favicon] = [:]
-    /// Least recently shown first.
-    private var recent: [FaviconKey] = []
+    /// When each entry was last shown, in lookups: every view asks on each render, so a lookup costs no scan, and the
+    /// least recently shown entry is found only when one must go.
+    private var lastShown: [FaviconKey: UInt64] = [:]
+    private var lookups: UInt64 = 0
     private var refreshTasks: [FaviconKey: Task<Void, Never>] = [:]
     private var fallbackTasks: [FaviconKey: Task<Void, Never>] = [:]
     private var refreshed: Set<FaviconKey> = []
@@ -61,7 +63,7 @@ final class FaviconCache {
         // Drain any cache write already submitted before removing the profile directory.
         for task in pending { await task.value }
         entries = entries.filter { $0.key.profileID != id }
-        recent.removeAll { $0.profileID == id }
+        lastShown = lastShown.filter { $0.key.profileID != id }
         refreshed = refreshed.filter { $0.profileID != id }
         try await store.removeProfile(id)
     }
@@ -86,19 +88,22 @@ final class FaviconCache {
         pending.forEach { $0.cancel() }
         for task in pending { await task.value }
         entries = [:]
-        recent = []
+        lastShown = [:]
         refreshed = []
         try await store.removeAll()
     }
 
     /// Looking an icon up starts reading it from disk the first time.
     func favicon(for key: FaviconKey) -> Favicon {
-        recent.removeAll { $0 == key }
-        recent.append(key)
+        lookups += 1
+        lastShown[key] = lookups
         if let favicon = entries[key] { return favicon }
         let favicon = Favicon()
         entries[key] = favicon
-        if recent.count > Self.capacity { entries[recent.removeFirst()] = nil }
+        if entries.count > Self.capacity, let oldest = lastShown.min(by: { $0.value < $1.value })?.key {
+            entries[oldest] = nil
+            lastShown[oldest] = nil
+        }
         Task { [store] in
             guard let data = await store.icon(host: key.host, profileID: key.profileID), favicon.image == nil else { return }
             let color = await FaviconColor.extract(from: data)

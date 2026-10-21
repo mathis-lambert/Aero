@@ -257,8 +257,8 @@ struct OnboardingBrowserTwin: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card, style: .continuous))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .controlBarGlow(accent: accent.light(in: scheme), cornerRadius: BrowserDesign.Radius.card, delay: delay)
         .panelShadow()
     }
