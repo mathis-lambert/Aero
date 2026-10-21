@@ -122,7 +122,6 @@ private struct SiteTile: View {
         var body: some View {
             let key = browser.profile.flatMap { FaviconKey(profileID: $0.id, url: site.url) }
             let iconColor = key.flatMap { browser.favicons.favicon(for: $0).color }
-            let shape = RoundedRectangle(cornerRadius: SiteTile.cardRadius, style: .continuous)
             let lifted = hovered || focused
             VStack(spacing: 8) {
                 FaviconView(cache: browser.favicons, key: key, size: SiteTile.icon, fetchingMissing: site.url) {
@@ -131,11 +130,7 @@ private struct SiteTile: View {
                         .foregroundStyle(browser.accent.light(in: palette.scheme))
                 }
                 .frame(width: SiteTile.card, height: SiteTile.card)
-                .background {
-                    shape.fill(palette.raised)
-                    shape.fill((iconColor.map { Color(nsColor: $0) } ?? browser.accent.tint).opacity(palette.scheme == .dark ? 0.16 : 0.08))
-                }
-                .overlay { shape.strokeBorder(palette.line) }
+                .browserGlass(.control, tint: iconColor.map { Color(nsColor: $0) } ?? browser.accent.tint, radius: SiteTile.cardRadius)
                 .overlay {
                     if focused {
                         RoundedRectangle(cornerRadius: SiteTile.cardRadius + 3, style: .continuous)
@@ -194,7 +189,9 @@ private struct ClosedTabPill: View {
             }
             .padding(.horizontal, 10)
             .frame(height: Self.height)
-            .background(hovered ? palette.pressed : palette.fill, in: Capsule())
+            // Under the pointer it brightens behind its title, on the glass.
+            .background { if hovered { Capsule().fill(palette.hover) } }
+            .browserGlass(.control, radius: Self.height / 2)
             .overlay {
                 if focused { Capsule().strokeBorder(browser.accent.light(in: palette.scheme), lineWidth: 2).padding(-2) }
             }

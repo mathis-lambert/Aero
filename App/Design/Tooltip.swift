@@ -25,7 +25,7 @@ private struct TooltipLabel: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.control)
+        .browserGlass(.panel, radius: BrowserDesign.Radius.control)
         .fixedSize()
     }
 }

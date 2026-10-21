@@ -18,7 +18,7 @@ struct Prompt<Content: View, Actions: View>: View {
 
     var body: some View {
         layout
-            .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.window)
+            .browserGlass(.panel, radius: BrowserDesign.Radius.window)
             .panelShadow()
             .accessibilityElement(children: .contain)
     }

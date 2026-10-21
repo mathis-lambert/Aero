@@ -8,6 +8,8 @@ import SwiftUI
 final class WindowControls {
     private static let identifiers = ["window.close", "window.minimize", "window.fullScreen"]
     private static let types: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
+    private static let firstButtonCenter: CGFloat = 20
+    private static let buttonSpacing: CGFloat = 23
 
     private weak var window: NSWindow?
     /// Headers showing the controls, oldest first; the latest one holds the group.
@@ -95,7 +97,9 @@ final class WindowControls {
         group.frame = slot.bounds
         for (index, type) in Self.types.enumerated() {
             guard let button = window?.standardWindowButton(type) else { continue }
-            button.setFrameOrigin(NSPoint(x: 26 - button.frame.width / 2 + CGFloat(index) * 23, y: (slot.bounds.height - button.frame.height) / 2))
+            // As far from the window's leading edge as from its top, close to its rounded corner.
+            button.setFrameOrigin(NSPoint(x: Self.firstButtonCenter - button.frame.width / 2 + CGFloat(index) * Self.buttonSpacing,
+                                          y: (slot.bounds.height - button.frame.height) / 2))
         }
     }
 

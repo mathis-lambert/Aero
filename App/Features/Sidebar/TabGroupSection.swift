@@ -8,6 +8,8 @@ import SwiftUI
 /// beside it (`folderPreview`).
 struct TabGroupSection: View {
     private static let indent: CGFloat = 12
+    private static let paneBleed: CGFloat = 2
+    private static let paneMargin: CGFloat = 4
 
     let browser: BrowserModel
     let group: TabGroup
@@ -32,7 +34,7 @@ struct TabGroupSection: View {
                 .background {
                     if isLifted { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(palette.fill) }
                     else if isTargeted { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(Color.accentColor.opacity(0.18)) }
-                    else if isMarked { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(palette.raised) }
+                    else if isMarked { Color.clear.browserGlass(.hover, radius: BrowserDesign.Radius.control) }
                 }
                 .dropFrame(.groupHeader(group.id), in: layout)
             if !group.isCollapsed, !isLifted {
@@ -43,7 +45,21 @@ struct TabGroupSection: View {
                 }
             }
         }
+        // An open folder holds its tabs on a pane of glass, just past their edges, so the selected one stands out on it.
+        // The pane reaches up into the spacing above, so the header never moves as the folder opens; only the room
+        // below its tabs grows, keeping it apart from a folder open after it.
+        .padding(.bottom, hasPane ? Self.paneBleed + Self.paneMargin : 0)
+        .background {
+            if hasPane {
+                Color.clear
+                    .browserGlass(.container, radius: BrowserDesign.Radius.control + Self.paneBleed)
+                    .padding(EdgeInsets(top: -Self.paneBleed, leading: -Self.paneBleed, bottom: Self.paneMargin, trailing: -Self.paneBleed))
+                    .transition(.opacity)
+            }
+        }
     }
+
+    private var hasPane: Bool { !group.isCollapsed && !isLifted && !tabs.isEmpty }
 
     @ViewBuilder private var header: some View {
         if browser.window.renaming == .group(group.id) {

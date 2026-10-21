@@ -55,7 +55,7 @@ struct PasswordPickerView: View {
         }
         .padding(4)
         .frame(width: width)
-        .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.card)
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .floatShadow()
         .onHover { browser.passwords.pickerHoverChanged($0, for: picker.id) }
         .offset(origin(width: width))
@@ -130,7 +130,7 @@ struct PasswordOfferView: View {
         }
         .padding(16)
         .frame(width: Self.width)
-        .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.card)
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .floatShadow()
         .background(KeyboardToPrompt())
         .accessibilityElement(children: .contain)

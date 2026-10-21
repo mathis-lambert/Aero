@@ -84,9 +84,7 @@ struct HistoryView: View {
         }
         .padding(.horizontal, 14)
         .frame(height: Self.searchHeight)
-        .browserSurface(fill: palette.raised,
-                        border: palette.line,
-                        radius: BrowserDesign.Radius.card)
+        .browserGlass(.control, radius: BrowserDesign.Radius.card)
     }
 
     @ViewBuilder private var content: some View {

@@ -2,15 +2,14 @@ import AppKit
 import BrowserCore
 import SwiftUI
 
-/// One shape shared by the selected row, so selection slides between rows instead of blinking.
+/// One glass lens shared by the selected row, so selection slides between rows instead of blinking.
 struct SelectionHighlight: View {
     static let id = "sidebar.selection"
     let namespace: Namespace.ID
-    @Environment(\.palette) private var palette
 
     var body: some View {
-        RoundedRectangle(cornerRadius: BrowserDesign.Radius.control)
-            .fill(palette.raised)
+        Color.clear
+            .browserGlass(.selection, radius: BrowserDesign.Radius.control)
             .matchedGeometryEffect(id: Self.id, in: namespace)
     }
 }
@@ -64,7 +63,7 @@ struct TabRow: View {
         .background {
             if lifted { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(palette.fill) }
             else if selected { SelectionHighlight(namespace: selection) }
-            else if marked { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(palette.raised) }
+            else if marked { Color.clear.browserGlass(.hover, radius: BrowserDesign.Radius.control) }
             else { RoundedRectangle(cornerRadius: BrowserDesign.Radius.control).fill(hovered ? palette.hover : .clear) }
         }
         .onHover { hovered = $0 }

@@ -44,9 +44,10 @@ struct FindBar: View {
         .padding(.leading, 12)
         .padding(.trailing, 4)
         .frame(width: Self.width, height: BrowserDesign.controlHeight + 8)
-        .browserSurface(fill: palette.raised,
-                        border: find.hasNoMatches ? palette.miss : palette.line,
-                        radius: BrowserDesign.Radius.card)
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
+        .overlay {
+            if find.hasNoMatches { RoundedRectangle(cornerRadius: BrowserDesign.Radius.card, style: .continuous).strokeBorder(palette.miss) }
+        }
         .floatShadow()
         .shake(trigger: find.missCount)
         .browserAnimation(value: find.hasNoMatches)

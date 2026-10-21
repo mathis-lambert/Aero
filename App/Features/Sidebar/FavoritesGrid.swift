@@ -60,9 +60,6 @@ struct FavoritesGrid: View {
     private func tile(_ tab: BrowserTab) -> some View {
         let selected = selectedTabID == tab.id || marked.contains(tab.id)
         let isLifted = lifted.contains(tab.id)
-        let isActive = selected && !isLifted
-        let highlight = isActive ? selectionColors(for: tab) : (fill: palette.favoriteTileHover, border: palette.line)
-        let fill = isLifted ? palette.fill : isActive ? highlight.fill : hoveredTabID == tab.id ? palette.favoriteTileHover : palette.favoriteTile
         return Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
             FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: Self.iconSize, fetchingMissing: tab.url) {
                 if let page = InternalPage(url: tab.url) {
@@ -74,9 +71,7 @@ struct FavoritesGrid: View {
             .opacity(isLifted ? 0 : 1)
             .frame(maxWidth: .infinity)
             .frame(height: Self.tileHeight)
-            .browserSurface(fill: fill, border: isLifted ? .clear : highlight.border,
-                            radius: Self.radius, borderWidth: isActive ? 1.5 : 1)
-            .shadow(color: isActive ? highlight.border.opacity(0.24) : .clear, radius: 4, y: 1)
+            .modifier(TileSurface(state: isLifted ? .lifted : selected ? .active(glow: glowColor(for: tab)) : hoveredTabID == tab.id ? .hovered : .resting))
             .contentShape(RoundedRectangle(cornerRadius: Self.radius))
         }
         .buttonStyle(.plain)
@@ -99,23 +94,42 @@ struct FavoritesGrid: View {
         .dropFrame(.tab(tab.id), in: layout)
     }
 
-    /// Keep the hover surface's HSL lightness; only its hue and subtle saturation change.
-    private func selectionColors(for tab: BrowserTab) -> (fill: Color, border: Color) {
+    /// The favicon's color, or the space's, made vivid enough to glow: a dull or dark icon still lights its glass.
+    private func glowColor(for tab: BrowserTab) -> Color {
         let iconColor = browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).color }
         let tint = iconColor ?? NSColor(browser.accent.tint)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         (tint.usingColorSpace(.sRGB) ?? tint).getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
-        let lightness = palette.favoriteHighlightLightness
-        let s = min(Double(saturation) * 0.4, 0.35)
-        let value = lightness + s * min(lightness, 1 - lightness)
-        let fill = Color(hue: Double(hue), saturation: 2 * (1 - lightness / value), brightness: value)
-        let border = Color(hue: Double(hue), saturation: min(Double(saturation), 0.8),
-                           brightness: palette.scheme == .dark ? 0.85 : 0.65)
-        return (fill, border)
+        // A grey icon glows grey, faintly, rather than taking a hue it does not have.
+        return Color(hue: Double(hue), saturation: min(Double(saturation), 0.85), brightness: max(Double(brightness), 0.75))
     }
 
     /// A tile has no title to edit in place, so its name is edited in a popover.
     private func renaming(_ tab: BrowserTab) -> Binding<Bool> {
         Binding { browser.window.renaming == .tab(tab.id) } set: { if !$0 { browser.window.endRenaming(.tab(tab.id)) } }
+    }
+}
+
+/// A tile's surface: recessed at rest, brighter under the pointer, and a tinted lens when active, its icon's color
+/// glowing through it. Hovering adds no glass, which would come and go over the icon at each pass of the pointer. A
+/// dragged tile leaves a plain gap.
+private struct TileSurface: ViewModifier {
+    enum State {
+        case resting, hovered, active(glow: Color), lifted
+    }
+
+    let state: State
+    @Environment(\.palette) private var palette
+
+    func body(content: Content) -> some View {
+        switch state {
+        case .resting: content.browserSurface(fill: palette.favoriteTile, border: palette.line, radius: FavoritesGrid.radius)
+        case .hovered: content.browserSurface(fill: palette.favoriteTileHover, border: palette.line, radius: FavoritesGrid.radius)
+        case .active(let glow):
+            content
+                .browserGlass(.selection, tint: glow, radius: FavoritesGrid.radius)
+                .glassGlow(glow, radius: FavoritesGrid.radius)
+        case .lifted: content.browserSurface(fill: palette.fill, border: .clear, radius: FavoritesGrid.radius)
+        }
     }
 }

@@ -65,8 +65,7 @@ struct BrowserPalette {
     var sidebar: Color { scheme == .dark ? Color(white: 0.13) : Color(white: 0.93) }
     /// Favorites are recessed at rest and brighten above the sidebar on hover.
     var favoriteTile: Color { scheme == .dark ? Color(white: 0.09) : Color(white: 0.87) }
-    var favoriteHighlightLightness: Double { scheme == .dark ? 0.20 : 0.97 }
-    var favoriteTileHover: Color { Color(white: favoriteHighlightLightness) }
+    var favoriteTileHover: Color { Color(white: scheme == .dark ? 0.20 : 0.97) }
     var canvas: Color { scheme == .dark ? Color(white: 0.085) : Color(white: 0.975) }
     /// Opaque, so it reads the same with Reduce Transparency.
     var raised: Color { scheme == .dark ? Color(white: 0.17) : .white }
@@ -74,7 +73,7 @@ struct BrowserPalette {
     var secondary: Color { scheme == .dark ? Color(red: 0.65, green: 0.67, blue: 0.65) : Color(red: 0.39, green: 0.41, blue: 0.39) }
     /// The only divider and border color.
     var line: Color { ink.opacity(scheme == .dark ? 0.15 : 0.11) }
-    /// Neutral fills over any chrome surface: hover, then fields and selected rows, then press.
+    /// Neutral fills over any chrome surface: hover, then fields and lifted rows, then press.
     var hover: Color { ink.opacity(0.04) }
     var fill: Color { ink.opacity(0.06) }
     var pressed: Color { ink.opacity(0.10) }
@@ -181,6 +180,8 @@ struct IconButton: View {
     let symbol: String
     let label: LocalizedStringKey
     var size: CGFloat = BrowserDesign.controlHeight
+    /// Half the size makes it round, as inside a capsule.
+    var radius = BrowserDesign.Radius.control
     /// Shown in the tooltip; pass the command's, so it matches the menu.
     var shortcut: KeyboardShortcut?
     var action: () -> Void
@@ -190,9 +191,9 @@ struct IconButton: View {
             Image(systemName: symbol)
                 .font(BrowserDesign.Typography.chrome.weight(.medium))
                 .frame(width: size, height: size)
-                .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                .contentShape(RoundedRectangle(cornerRadius: radius))
         }
-        .buttonStyle(QuietButtonStyle())
+        .buttonStyle(QuietButtonStyle(radius: radius))
         .tooltip(Text(label), shortcut: shortcut)
         .accessibilityLabel(Text(label))
     }

@@ -72,8 +72,7 @@ struct OnboardingStage: View {
         }
         .padding(22)
         .frame(width: 320, alignment: .leading)
-        .background(palette.raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
-        .overlay(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card).strokeBorder(palette.line))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .shadow(color: .black.opacity(0.12), radius: 25, y: 18)
     }
 }
@@ -197,8 +196,7 @@ private struct SourceCovers: View {
         }
         .padding(8)
         .frame(width: Self.cardWidth)
-        .background(palette.raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
-        .overlay(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card).strokeBorder(palette.line))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
     }
 }
 
@@ -254,7 +252,7 @@ private struct MappingCard: View {
                                 .labelStyle(.titleAndIcon)
                                 .font(BrowserDesign.Typography.caption).foregroundStyle(palette.secondary)
                                 .padding(.horizontal, 7).frame(height: 20)
-                                .background(palette.fill, in: Capsule())
+                                .browserGlass(.control, radius: 10)
                         }
                         .padding(.horizontal, 10)
                         .frame(width: Self.aeroColumn, height: 34)
@@ -277,8 +275,7 @@ private struct MappingCard: View {
             }
         }
         .frame(width: 500)
-        .background(palette.raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card + 4))
-        .overlay(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card + 4).strokeBorder(palette.line))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card + 4)
         .panelShadow()
         .browserAnimation(value: choice.favorites)
         .onAppear { arrived = true }

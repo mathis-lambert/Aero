@@ -122,7 +122,7 @@ struct BrowserWindowView: View {
                                             }
                                             .padding(12)
                                             .frame(width: 340)
-                                            .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.card)
+                                            .browserGlass(.panel, radius: BrowserDesign.Radius.card)
                                             .accessibilityIdentifier("passwords.failure")
                                         }
                                         if browser.window.find.isPresented {
@@ -170,7 +170,7 @@ struct BrowserWindowView: View {
                         SidebarView(browser: browser)
                             .frame(width: sidebarWidth)
                             .frame(maxHeight: .infinity)
-                            .browserSurface(fill: palette.sidebar, border: palette.line, radius: BrowserDesign.Radius.floatingSidebar)
+                            .browserGlass(.sidebar, radius: BrowserDesign.Radius.floatingSidebar)
                             .overlay(alignment: .trailing) {
                                 resizeHandle(width: sidebarWidth, maximum: maximumWidth)
                             }
