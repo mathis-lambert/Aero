@@ -33,3 +33,11 @@ private func name(_ suggested: String, taken: Set<String> = []) -> String {
     #expect(numbered.hasSuffix(" 2.pdf"))
     #expect(numbered.utf8.count <= DownloadFilename.maximumByteCount)
 }
+
+@Test func renamingKeepsTheFileInPlaceAndVisible() {
+    #expect(DownloadFilename.renamed("  Report final.pdf ") == "Report final.pdf")
+    #expect(DownloadFilename.renamed("../elsewhere.pdf") == "elsewhere.pdf")
+    #expect(DownloadFilename.renamed(".hidden") == "hidden")
+    #expect(DownloadFilename.renamed(" . ") == nil)
+    #expect(DownloadFilename.renamed(String(repeating: "é", count: 200)) == nil, "Over the disk's limit")
+}

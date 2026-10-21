@@ -213,12 +213,13 @@ private final class DownloadForExtension: ExtensionDownload {
     var mimeType: String? { download.mimeType }
     var destination: URL? { download.destination }
     var endTime: Date? { download.endTime }
-    var canResume: Bool { download.state == .failed && download.canResume }
+    var canResume: Bool { download.state == .paused || download.state == .failed && download.canResume }
+    var isPaused: Bool { download.state == .paused }
     var receivedBytes: Int64 { download.completedBytes }
     var totalBytes: Int64? { download.totalBytes }
     var state: ExtensionDownloadState {
         switch download.state {
-        case .downloading: .inProgress
+        case .downloading, .paused: .inProgress
         case .finished: .complete
         case .failed, .cancelled: .interrupted
         }

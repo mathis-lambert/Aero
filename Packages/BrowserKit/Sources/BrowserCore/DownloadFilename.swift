@@ -20,6 +20,13 @@ public enum DownloadFilename {
         return fit(stem, suffix: " " + UUID().uuidString + fileExtension)
     }
 
+    /// The name a downloaded file is renamed to, made safe as a suggested name is; `nil` when nothing usable is left
+    /// or it is too long for the disk.
+    public static func renamed(_ name: String) -> String? {
+        guard let name = sanitized(name), name.utf8.count <= maximumByteCount else { return nil }
+        return name
+    }
+
     /// Keeps the last path component, replaces the separators Finder shows as slashes, and drops
     /// control characters and leading dots, which would hide the file.
     private static func sanitized(_ name: String) -> String? {
