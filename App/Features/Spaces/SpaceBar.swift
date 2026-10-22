@@ -55,8 +55,8 @@ struct SpaceBar: View {
             GeometryReader { proxy in
                 if let anchor {
                     let frame = proxy[anchor]
-                    Capsule()
-                        .fill(palette.fill)
+                    Color.clear
+                        .browserGlass(.control, radius: frame.height / 2)
                         .frame(width: frame.width, height: frame.height)
                         .offset(x: frame.minX, y: frame.minY)
                 }

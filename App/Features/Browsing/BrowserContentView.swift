@@ -12,11 +12,7 @@ struct BrowserContentView: View {
             WebPageHost(page: page)
                 .opacity(page.hasRenderedFirstFrame ? 1 : 0)
                 .pageRevealAnimation(value: page.hasRenderedFirstFrame)
-            if page.isLoading {
-                ProgressView(value: page.progress)
-                    .progressViewStyle(.linear)
-                    .frame(height: 2)
-            }
+            if page.isLoading { PageProgress(page: page) }
             if let failure = page.failure {
                 ContentUnavailableView {
                     Label(failure == .processTerminated ? "This page needs to be reloaded" : "This page could not be opened",
@@ -30,6 +26,17 @@ struct BrowserContentView: View {
                 .background(palette.canvas)
             }
         }
+    }
+}
+
+/// The load's progress, in its own view: each step redraws the bar alone, not the page around it.
+private struct PageProgress: View {
+    let page: BrowserPage
+
+    var body: some View {
+        ProgressView(value: page.progress)
+            .progressViewStyle(.linear)
+            .frame(height: 2)
     }
 }
 

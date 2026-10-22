@@ -13,7 +13,6 @@ struct AddressBar: View {
 
     let browser: BrowserModel
     @State private var showsCopied = false
-    @Environment(\.palette) private var palette
 
     var body: some View {
         HStack(spacing: 0) {
@@ -39,23 +38,23 @@ struct AddressBar: View {
                 }
                 .padding(.horizontal, 12)
                 .frame(maxHeight: .infinity)
-                .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                .contentShape(Capsule())
             }
-            .buttonStyle(QuietButtonStyle())
+            .buttonStyle(QuietButtonStyle(radius: Self.height / 2))
             .accessibilityLabel("Open location")
             .accessibilityIdentifier("sidebar.location")
             if browser.currentSite != nil {
                 HStack(spacing: 0) {
                     if let profileID = browser.profile?.id, let extensions = browser.extensions.extensionsIfMade(for: profileID) {
                         ForEach(browser.installedExtensions(inProfile: profileID).filter { $0.isEnabled && $0.isPinned }.prefix(Self.pinnedLimit)) { record in
-                            ExtensionButton(browser: browser, extensions: extensions, record: record, size: Self.buttonSize, anchorsPopup: true)
+                            ExtensionButton(browser: browser, extensions: extensions, record: record, size: Self.buttonSize, radius: Self.buttonSize / 2, anchorsPopup: true)
                         }
                     }
                     IconButton(symbol: showsCopied ? "checkmark" : BrowserCommand.copyLink.symbol, label: showsCopied ? "Link copied" : "Copy link",
-                               size: Self.buttonSize, shortcut: browser.shortcuts.shortcut(for: .copyLink)) { browser.perform(.copyLink) }
+                               size: Self.buttonSize, radius: Self.buttonSize / 2, shortcut: browser.shortcuts.shortcut(for: .copyLink)) { browser.perform(.copyLink) }
                         .contentTransition(.symbolEffect(.replace))
                         .accessibilityIdentifier("address.copyLink")
-                    IconButton(symbol: BrowserCommand.controlCenter.symbol, label: "Site controls", size: Self.buttonSize) {
+                    IconButton(symbol: BrowserCommand.controlCenter.symbol, label: "Site controls", size: Self.buttonSize, radius: Self.buttonSize / 2) {
                         browser.window.controlCenterPresented.toggle()
                     }
                     .background(AnchorView(key: ExtensionAnchor.controlCenter, anchors: browser.window.extensionAnchors))
@@ -70,7 +69,7 @@ struct AddressBar: View {
         }
         .font(BrowserDesign.Typography.chrome)
         .frame(height: Self.height)
-        .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+        .browserGlass(.control, radius: Self.height / 2)
         // From the bar's trailing end, under the site controls: centered, it would reach past the window's leading edge.
         .popover(isPresented: Binding(get: { browser.window.portrait != nil }, set: { if !$0 { browser.window.portrait = nil } }),
                  attachmentAnchor: .point(UnitPoint(x: 0.88, y: 1)), arrowEdge: .bottom) {

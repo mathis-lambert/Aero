@@ -61,7 +61,7 @@ private struct FolderPreviewList: View {
         .frame(height: max(0, CGFloat(min(tabs.count, Self.visibleRows)) * (BrowserDesign.tabRowHeight + SidebarTabs.rowSpacing) - SidebarTabs.rowSpacing))
         .padding(6)
         .frame(width: Self.width)
-        .browserSurface(fill: palette.sidebar, border: palette.line, radius: BrowserDesign.Radius.card)
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         // A row leaving closes up as in the sidebar, the card with it, before the panel fits what is left.
         .browserAnimation(value: tabs.map(\.id))
         .shadow(color: .black.opacity(palette.scheme == .dark ? 0.4 : 0.16), radius: 6, y: 2)

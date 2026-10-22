@@ -86,7 +86,7 @@ struct OnboardingBrowserTwin: View {
             .font(BrowserDesign.Typography.chrome)
             .padding(.horizontal, 12)
             .frame(height: 36)
-            .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+            .browserGlass(.control, radius: 18)
             .padding(.horizontal, BrowserDesign.sidebarInset)
             .padding(.top, 2)
             .padding(.bottom, 4)
@@ -117,7 +117,7 @@ struct OnboardingBrowserTwin: View {
                         .padding(.horizontal, selected ? SpaceBar.capsulePadding : 0)
                         .frame(minWidth: SpaceBar.iconSize)
                         .frame(height: SpaceBar.height)
-                        .background(selected ? palette.fill : .clear, in: Capsule())
+                        .background { if selected { Color.clear.browserGlass(.control, radius: SpaceBar.height / 2) } }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -167,7 +167,7 @@ struct OnboardingBrowserTwin: View {
             }
             .padding(.horizontal, BrowserDesign.rowInset)
             .frame(height: BrowserDesign.tabRowHeight)
-            .background(palette.raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+            .browserGlass(.selection, radius: BrowserDesign.Radius.control)
         }
         .font(BrowserDesign.Typography.chrome)
         .padding(.horizontal, BrowserDesign.sidebarInset)
@@ -250,15 +250,15 @@ struct OnboardingBrowserTwin: View {
                         .font(BrowserDesign.Typography.chrome)
                         .padding(.horizontal, BrowserDesign.rowInset)
                         .frame(height: BrowserDesign.tabRowHeight)
-                        .background(index == 0 ? palette.fill : .clear, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+                        .background { if index == 0 { Color.clear.browserGlass(.selection, radius: BrowserDesign.Radius.control) } }
                     }
                 }
                 .padding(8)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(palette.raised)
-        .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+        .clipShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card, style: .continuous))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .controlBarGlow(accent: accent.light(in: scheme), cornerRadius: BrowserDesign.Radius.card, delay: delay)
         .panelShadow()
     }
@@ -285,8 +285,7 @@ struct OnboardingBrowserTwin: View {
             }
         }
         .padding(10)
-        .background(palette.raised, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card + 4))
-        .overlay(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card + 4).strokeBorder(palette.line))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card + 4)
         .panelShadow()
         .transition(.scale(scale: 0.94).combined(with: .opacity))
     }
@@ -302,7 +301,7 @@ private struct TwinWindowControls: View {
                 Circle().fill(Self.colors[index])
                     .overlay(Circle().strokeBorder(.black.opacity(0.12), lineWidth: 0.5))
                     .frame(width: 12, height: 12)
-                    .offset(x: 20 + CGFloat(index) * 23)
+                    .offset(x: 14 + CGFloat(index) * 23)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

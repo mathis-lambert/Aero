@@ -26,7 +26,7 @@ struct PageZoomIndicator: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+        .browserGlass(.panel, radius: BrowserDesign.Radius.card)
         .allowsHitTesting(false)
         .task(id: feedback.id) {
             do { try await Task.sleep(for: .seconds(2)) }

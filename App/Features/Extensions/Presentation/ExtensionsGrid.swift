@@ -8,15 +8,14 @@ struct ExtensionsGrid: View {
     private static let tileSize: CGFloat = 44
 
     let browser: BrowserModel
-    @Environment(\.palette) private var palette
 
     var body: some View {
         if let profileID = browser.profile?.id {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.tileSize), spacing: 8)], alignment: .leading, spacing: 8) {
                 if let extensions = browser.extensions.extensionsIfMade(for: profileID) {
                     ForEach(browser.installedExtensions(inProfile: profileID).filter(\.isEnabled)) { record in
-                        ExtensionButton(browser: browser, extensions: extensions, record: record, size: Self.tileSize)
-                            .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                        ExtensionButton(browser: browser, extensions: extensions, record: record, size: Self.tileSize, radius: BrowserDesign.Radius.card)
+                            .browserGlass(.control, radius: BrowserDesign.Radius.card)
                     }
                 }
                 tile("Get extensions", symbol: "plus", identifier: "controlCenter.getExtensions") {
@@ -31,7 +30,7 @@ struct ExtensionsGrid: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .frame(width: Self.tileSize, height: Self.tileSize)
-                .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                .browserGlass(.control, radius: BrowserDesign.Radius.card)
                 .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
         }
         .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))

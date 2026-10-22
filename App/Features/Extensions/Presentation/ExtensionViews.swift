@@ -16,6 +16,7 @@ struct ExtensionButton: View {
     let extensions: ProfileExtensions
     let record: InstalledExtension
     let size: CGFloat
+    var radius = BrowserDesign.Radius.control
     /// Registered as its popup's anchor; buttons that go away with their popover leave it to the control center's.
     var anchorsPopup = false
 
@@ -36,9 +37,9 @@ struct ExtensionButton: View {
                         .accessibilityHidden(true)
                 }
             }
-            .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.control))
+            .contentShape(RoundedRectangle(cornerRadius: radius))
         }
-        .buttonStyle(QuietButtonStyle())
+        .buttonStyle(QuietButtonStyle(radius: radius))
         .background { if anchorsPopup { AnchorView(key: record.id, anchors: browser.window.extensionAnchors) } }
         .tooltip(action.map(\.label).flatMap { $0.isEmpty ? nil : $0 } ?? name)
         .overlay { ExtensionMenuHost { ExtensionMenu.make(browser: browser, extensions: extensions, record: record) } }

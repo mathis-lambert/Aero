@@ -36,7 +36,7 @@ struct PortraitStudioView: View {
             .padding(.vertical, 14)
         }
         .frame(maxWidth: Self.maximumSize.width, maxHeight: Self.maximumSize.height)
-        .browserSurface(fill: palette.raised, border: palette.line, radius: BrowserDesign.Radius.window)
+        .browserGlass(.panel, radius: BrowserDesign.Radius.window)
         .panelShadow()
         .padding(32)
         .tint(browser.accent.tint)

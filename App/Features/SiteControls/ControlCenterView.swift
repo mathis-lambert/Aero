@@ -11,7 +11,6 @@ struct ControlCenterView: View {
     let browser: BrowserModel
     let site: BrowserModel.CurrentSite
     @State private var showsSiteSettings = false
-    @Environment(\.palette) private var palette
 
     var body: some View {
         if showsSiteSettings {
@@ -23,7 +22,7 @@ struct ControlCenterView: View {
                         ShareLink(item: url) {
                             Label("Share", systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity, minHeight: Self.tileHeight)
-                                .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                                .browserGlass(.control, radius: BrowserDesign.Radius.card)
                                 .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
                         }
                         .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
@@ -32,7 +31,7 @@ struct ControlCenterView: View {
                     Button { browser.perform(.capturePortrait) } label: {
                         Image(systemName: BrowserCommand.capturePortrait.symbol)
                             .frame(width: Self.tileHeight, height: Self.tileHeight)
-                            .background(palette.fill, in: RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
+                            .browserGlass(.control, radius: BrowserDesign.Radius.card)
                             .contentShape(RoundedRectangle(cornerRadius: BrowserDesign.Radius.card))
                     }
                     .buttonStyle(QuietButtonStyle(radius: BrowserDesign.Radius.card))
@@ -69,7 +68,7 @@ struct ControlCenterView: View {
 
     private func siteSwitch(_ permission: SitePermission, title: LocalizedStringKey, identifier: String) -> some View {
         Toggle(title, isOn: Binding(get: { browser.isOn(permission, at: site) }, set: { _ in browser.toggle(permission, at: site) }))
-            .toggleStyle(ControlCenterToggleStyle(symbol: permission.symbol))
+            .toggleStyle(ControlCenterToggleStyle(symbol: permission.symbol, accent: browser.accent.tint))
             .accessibilityIdentifier(identifier)
     }
 
@@ -123,11 +122,11 @@ struct ControlCenterView: View {
     }
 }
 
-/// A switch of the control center, drawn like the system's: a round symbol filled while on.
+/// A switch of the control center, drawn like the system's: a round symbol on glass, colored through while on.
 private struct ControlCenterToggleStyle: ToggleStyle {
     private static let iconSize: CGFloat = 30
     let symbol: String
-    @Environment(\.palette) private var palette
+    let accent: Color
 
     func makeBody(configuration: Configuration) -> some View {
         Button { configuration.isOn.toggle() } label: {
@@ -136,7 +135,7 @@ private struct ControlCenterToggleStyle: ToggleStyle {
                     .font(BrowserDesign.Typography.label)
                     .foregroundStyle(configuration.isOn ? AnyShapeStyle(.white) : AnyShapeStyle(.secondary))
                     .frame(width: Self.iconSize, height: Self.iconSize)
-                    .background(configuration.isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(palette.fill), in: Circle())
+                    .browserGlass(configuration.isOn ? .accent : .control, tint: accent, radius: Self.iconSize / 2)
                 VStack(alignment: .leading, spacing: 1) {
                     configuration.label.lineLimit(1)
                     Text(configuration.isOn ? "On" : "Off").font(BrowserDesign.Typography.caption).foregroundStyle(.secondary)
