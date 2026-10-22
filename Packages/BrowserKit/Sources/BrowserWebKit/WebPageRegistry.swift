@@ -26,6 +26,9 @@ public final class WebPageRegistry {
     /// Set before the first page is created.
     public weak var extensions: PageExtensions?
     public let downloads: DownloadCoordinator
+    /// The title of the context menu item previewing a link (docs/BROWSING.md › Peek); display text, so the app
+    /// localizes it. Set before the first page is created.
+    public var peekMenuTitle: String?
     /// Developer mode: Web Inspector opens from every page's context menu (docs/BROWSING.md › Developer mode).
     public var pagesAreInspectable = false {
         didSet { for live in livePages.values { live.page.webView.isInspectable = pagesAreInspectable } }
@@ -196,6 +199,8 @@ public final class WebPageRegistry {
             return self.transition(page, tabID: tabID, profileID: profileID, to: target, from: origin)
         }
         page.onPasswordForm = { [weak self] event, frame in self?.delegate?.page(tabID, passwordForm: event, in: frame) }
+        page.onPeek = { [weak self] request in self?.delegate?.page(tabID, peek: request) }
+        page.peekMenuTitle = peekMenuTitle
         page.contentBlocker = contentBlocker
         page.onClose = { [weak self] in
             guard let opener = self?.livePages[tabID]?.openerTabID else { return }
@@ -307,6 +312,31 @@ public final class WebPageRegistry {
         page.contentBlocker = contentBlocker
         Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
         return page
+    }
+
+    /// A link previewed over its tab (docs/BROWSING.md › Peek): a page outside any tab, with the tab's profile, whose
+    /// downloads, links for other apps, site permissions, dialogs and popups belong to the tab. It records no history
+    /// and previews no further links until it becomes a tab.
+    public func makePeekPage(_ url: URL, from tabID: UUID) -> BrowserPage? {
+        guard let opener = livePages[tabID] else { return nil }
+        let page = BrowserPage(configuration: websiteConfiguration(forProfile: opener.profileID))
+        page.webView.isInspectable = pagesAreInspectable
+        page.contentBlocker = contentBlocker
+        page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
+        page.onApplicationLink = { [weak self] url in self?.delegate?.page(tabID, requestsApplicationFor: url) }
+        page.onPermission = { [weak self] permission, origin in self?.delegate?.page(tabID, decisionFor: permission, at: origin) }
+        page.onDialog = { [weak self] dialog in await self?.delegate?.page(tabID, presents: dialog) ?? .dismissed }
+        page.onPopup = { [weak self] configuration, url, features in self?.openPopup(from: tabID, configuration: configuration, url: url, features: features) }
+        page.load(URLRequest(url: url), transition: .link, referrer: opener.page.url)
+        Self.signposter.emitEvent(Diagnostics.Signpost.pageCreated)
+        return page
+    }
+
+    /// The peek's page becomes the tab's, as it is: nothing reloads, and the document shown is recorded as visited.
+    public func adoptPeekPage(_ page: BrowserPage, as tabID: UUID, profileID: UUID) {
+        connect(page, to: tabID, profileID: profileID)
+        livePages[tabID] = LivePage(page: page, profileID: profileID, lastActive: .now)
+        if let url = page.url { delegate?.page(tabID, didVisit: HistoryNavigation(url: url, transition: .link)) }
     }
 
     /// Ends a page outside any tab, a sign-in's or a popup window's: its web content process and, for a private

@@ -117,6 +117,7 @@ final class BrowserModel {
         let nativeHosts = testing == nil ? NativeMessagingHost.defaultFolders
             : environment["AERO_TEST_NATIVE_HOSTS"].map { [URL(fileURLWithPath: $0, isDirectory: true)] } ?? []
         let pages = WebPageRegistry(downloads: downloads, contentBlocker: contentBlocker, ephemeral: testing != nil, hibernation: preferences.hibernation)
+        pages.peekMenuTitle = String(localized: "Open Link in Peek")
         self.pages = pages
         extensions = ExtensionRegistry(folder: folder.appendingPathComponent("Extensions", isDirectory: true), nativeHostFolders: nativeHosts,
                                        ephemeral: testing != nil) { pages.dataStore(for: $0) }
@@ -320,6 +321,7 @@ final class BrowserModel {
         // A page's dialog belongs to its tab: leaving the tab dismisses it.
         if case .pageDialog(let request) = window.prompt, request.tabID != id { dismissPrompt() }
         guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = profile?.id else {
+            endPeek()
             passwords.closePicker()
             window.find.dismiss()
             window.selectedTabID = nil
@@ -330,6 +332,8 @@ final class BrowserModel {
         if tab.isFavorite { openedFavorites.insert(id) }
         passwords.closePicker(unless: id)
         let previous = window.selectedTabID
+        // A preview belongs to the tab it was opened from.
+        if previous != id { endPeek() }
         if previous != id { window.find.dismiss() }
         window.selectedTabID = id
         if previous != id { extensionsDidSelect(tab, previous: previous) }

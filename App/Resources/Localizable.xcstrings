@@ -10735,6 +10735,46 @@
           }
         }
       }
+    },
+    "Open Link in Peek" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le lien en aperçu"
+          }
+        }
+      }
+    },
+    "Open Peek in Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir l’aperçu dans un onglet"
+          }
+        }
+      }
+    },
+    "Open the link previewed over the page in a tab of its own." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le lien affiché en aperçu par-dessus la page dans un onglet à part."
+          }
+        }
+      }
+    },
+    "Close Peek" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer l’aperçu"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

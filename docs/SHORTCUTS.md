@@ -30,6 +30,7 @@ pinned tabs and open tabs; Command-9 selects the last one.
 | Next / previous space | Control-Command-Right / Control-Command-Left |
 | Recent / reverse recent | Control-Tab / Shift-Control-Tab |
 | Tabs 1–8 / last | Command-1…8 / Command-9 |
+| Open peek in tab / close peek | Command-O / Escape, while a link is previewed ([Browsing](BROWSING.md) › Peek) |
 
 Other catalog actions can be assigned without a default binding. Zoom is live-page state, not a persistent site setting.
 
@@ -56,6 +57,9 @@ to produce punctuation/digits as part of that character. Plus/equals have one no
 - Empty list: explicitly disabled, including future defaults.
 - A one-element list: the explicit user binding instead of the catalog default. Version 1 accepts one canonical binding per command; plus/equals are equivalent spellings of one binding.
 - Stable command IDs and unknown entries survive edits. Translations never affect identity.
+- Conflicts are within a scope: the window's commands, or the preview's (Open Peek in Tab), which
+  acts only while a link is previewed and so may share a binding with a window command, as Command-O
+  does with Open File. While a link is previewed, the preview's command takes the binding.
 - Explicit bindings resolve before defaults. Conflicting defaults stay inactive and Settings
   names the winning command. Duplicate saved overrides are resolved in catalog order and reported.
 - Replacing an assignment removes only the conflicting binding from the previous command and
@@ -79,7 +83,7 @@ item. Titles that toggle say what they will do (Show/Hide Sidebar, Add to/Remove
 | Edit | Native editing, Copy Link, Find › Find…, Find Next, Find Previous |
 | View | Show/Hide Sidebar · Reload Page, Reload Without Cache, Stop Loading · Zoom In, Zoom Out, Actual Size · Show Downloads, Site Controls, Site Settings… |
 | History | Back, Forward · Reopen Closed Tab · Show All History |
-| Tabs | Next Tab, Previous Tab · Add to Favorites, Duplicate Tab, Rename Tab… · New Group with Tab, Move to Group ›, Move to Space › · Close Other Tabs, Close Tabs Below |
+| Tabs | Next Tab, Previous Tab · Add to Favorites, Duplicate Tab, Rename Tab…, Open Peek in Tab · New Group with Tab, Move to Group ›, Move to Space › · Close Other Tabs, Close Tabs Below |
 | Spaces | New Space… · every space, checked when shown, under its profile's name once there are several · Next Space, Previous Space |
 
 Move to Group and Move to Space list their choices as submenus, the same ones as the tab's context menu. From the
@@ -103,6 +107,7 @@ then closing or removing it, which comes last and is marked destructive when it 
 | Reload button | Reload Without Cache · Clear Cookies, Clear Cache · Site Settings… |
 | Extension | The extension's own items · Pin or Unpin Extension, Open Extension Options · Extension Settings…, Manage Extensions… · Remove Extension… |
 | History entries | Open, Open in New Tab · Copy Link · Delete from History |
+| Link in a page | WebKit's own items, with Open Link in Peek after Open Link in New Window · the extensions' items |
 
 ## Routing and lifetime
 

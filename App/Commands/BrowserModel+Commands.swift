@@ -30,6 +30,7 @@ extension BrowserModel {
         case .findInPage, .findNext, .findPrevious: return currentPage != nil
         case .reopenTab: return canReopen
         case .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: return currentSite != nil
+        case .openPeekInTab: return window.peek?.phase == .open
         default: return true
         }
     }
@@ -120,6 +121,7 @@ extension BrowserModel {
         case .clearCookies: Task { await clearSiteData(.cookies) }
         case .clearCache: Task { await clearSiteData(.cache) }
         case .siteSettings: window.siteSettingsPresented = true
+        case .openPeekInTab: openPeekInTab()
         }
     }
 

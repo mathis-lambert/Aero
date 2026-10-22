@@ -30,6 +30,8 @@ public protocol WebPageRegistryDelegate: AnyObject {
     func page(_ tabID: UUID, decisionFor permission: SitePermission, at origin: SiteOrigin) -> SiteDecision?
     /// The page's `alert`, `confirm` or `prompt`; the page waits for the answer.
     func page(_ tabID: UUID, presents dialog: PageDialog) async -> PageDialogAnswer
+    /// The person pressed or force clicked a link of the page to preview it (docs/BROWSING.md › Peek).
+    func page(_ tabID: UUID, peek request: PeekRequest)
     /// A sign-in or sign-up form of the page, or of one of its frames, reported focus or a submission.
     func page(_ tabID: UUID, passwordForm event: PasswordFormEvent, in frame: PasswordFrame)
 }

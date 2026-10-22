@@ -192,7 +192,7 @@ extension BrowserPage {
         switch kind {
         case "focus":
             guard let field = (body["field"] as? String).flatMap(PasswordField.init(rawValue:)) else { return }
-            onPasswordForm(.focused(field, placement(body["rect"])), frame)
+            onPasswordForm(.focused(field, viewRect(fromPage: body["rect"])), frame)
         case "blur":
             onPasswordForm(.blurred, frame)
         case "typed":
@@ -225,11 +225,4 @@ extension BrowserPage {
     }
 
     /// CSS pixels of the top document to points of the web view.
-    private func placement(_ value: Any?) -> CGRect? {
-        guard let rect = value as? [String: Any], let x = rect["x"] as? Double, let y = rect["y"] as? Double,
-              let width = rect["width"] as? Double, let height = rect["height"] as? Double,
-              [x, y, width, height].allSatisfy(\.isFinite), width > 0, height > 0 else { return nil }
-        let scale = webView.pageZoom * webView.magnification
-        return CGRect(x: x * scale, y: y * scale, width: width * scale, height: height * scale)
-    }
 }
