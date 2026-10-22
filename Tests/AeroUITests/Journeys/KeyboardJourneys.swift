@@ -13,7 +13,8 @@ final class KeyboardJourneys: E2ETestCase {
     }
 
     /// Pages that claim every Command key keep their page-first shortcuts, Aero keeps its reserved ones, zoom
-    /// says what it did, and tabs follow sidebar order or recent use.
+    /// says what it did, tabs follow sidebar order or recent use, and a link's peek closes with Escape and opens in a
+    /// tab with Command-O, which is Open File otherwise.
     func testPagesKeepTheirShortcutsAndAeroKeepsItsOwn() throws {
         try launch()
         open("shortcuts.html", expecting: "Shortcuts fixture")
@@ -90,6 +91,25 @@ final class KeyboardJourneys: E2ETestCase {
         app.typeKey("1", modifierFlags: .command)
         XCTAssertTrue(page("Solid fixture").waitForExistence(timeout: Self.pageTimeout), "Numbered tabs count favorites first")
         attachScreenshot("tab order")
+
+        app.typeKey("2", modifierFlags: .command)
+        XCTAssertTrue(shows("Shortcuts fixture"))
+        let link = app.webViews.links["Solid link"]
+        let peek = element("peek")
+        chooseInContextMenu(of: link, "Open Link in Peek")
+        XCTAssertTrue(peek.webViews.staticTexts["Solid fixture"].waitForExistence(timeout: Self.pageTimeout), "The link opens in a peek")
+        attachScreenshot("peek")
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(peek.waitForNonExistence(timeout: Self.renderTimeout), "Escape closes the peek")
+        XCTAssertTrue(shows("Shortcuts fixture"), "…and leaves the page where it was")
+        let tabs = tabRows.count
+        chooseInContextMenu(of: link, "Open Link in Peek")
+        XCTAssertTrue(peek.webViews.staticTexts["Solid fixture"].waitForExistence(timeout: Self.pageTimeout))
+        app.typeKey("o", modifierFlags: .command)
+        XCTAssertTrue(peek.waitForNonExistence(timeout: Self.renderTimeout), "Command-O opens the peek in a tab, though the page claims it")
+        XCTAssertFalse(app.sheets.firstMatch.exists, "…not Open File")
+        XCTAssertEqual(tabRows.count, tabs + 1)
+        XCTAssertTrue(shows("Solid fixture"))
     }
 
     /// Recording replaces a conflicting shortcut, restoring brings the default back, and a shortcut can be left to

@@ -523,8 +523,10 @@ final class PageWebView: WKWebView {
     /// The identifier WebKit gives its Open Link in New Window item. The SDK does not export it; should it change, the
     /// preview item is simply not offered.
     private static let openLinkInNewWindow = "WKMenuItemIdentifierOpenLinkInNewWindow"
-    /// Set while WebKit's Open Link in New Window runs for the preview item.
-    private var peekRequested = false
+    /// When the preview item ran WebKit's Open Link in New Window, whose new window the page asks for a moment later.
+    private var peekRequested: ContinuousClock.Instant?
+    /// Past this, a new window the page asks for is the page's own.
+    private static let peekRequestLifetime = Duration.seconds(2)
 
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
         super.willOpenMenu(menu, with: event)
@@ -544,14 +546,14 @@ final class PageWebView: WKWebView {
     /// for as the preview's.
     @objc private func peekLink(_ sender: NSMenuItem) {
         guard let open = sender.representedObject as? NSMenuItem, let action = open.action else { return }
-        peekRequested = true
+        peekRequested = .now
         NSApp.sendAction(action, to: open.target, from: open)
-        peekRequested = false
     }
 
+    /// Whether the new window the page asks for is the preview's; asking answers once.
     func takePeekRequest() -> Bool {
-        defer { peekRequested = false }
-        return peekRequested
+        defer { peekRequested = nil }
+        return peekRequested.map { .now - $0 < Self.peekRequestLifetime } ?? false
     }
 
     override func mouseDown(with event: NSEvent) {
