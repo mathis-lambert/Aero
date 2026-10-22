@@ -58,6 +58,7 @@ extension BrowserCommand {
         case .findNext: String(localized: "Find Next")
         case .findPrevious: String(localized: "Find Previous")
         case .copyLink: String(localized: "Copy Link")
+        case .openPeekInTab: String(localized: "Open Peek in Tab")
         case .controlCenter: String(localized: "Site Controls")
         case .clearCookies: String(localized: "Clear Cookies")
         case .clearCache: String(localized: "Clear Cache")
@@ -115,6 +116,7 @@ extension BrowserCommand {
         case .moveToGroup: String(localized: "Choose a group for the current tab.")
         case .moveToSpace: String(localized: "Move the current tab to another space.")
         case .nextSpace, .previousSpace: String(localized: "Switch spaces in their listed order.")
+        case .openPeekInTab: String(localized: "Open the link previewed over the page in a tab of its own.")
         }
     }
 
@@ -174,6 +176,7 @@ extension BrowserCommand {
         case .findNext: "chevron.down"
         case .findPrevious: "chevron.up"
         case .copyLink: "link"
+        case .openPeekInTab: "arrow.up.left.and.arrow.down.right"
         case .controlCenter: "switch.2"
         case .clearCookies: "trash"
         case .clearCache: "externaldrive.badge.xmark"
@@ -197,11 +200,16 @@ extension BrowserCommand {
         }
     }
 
+    /// Where the command's shortcut acts. One shortcut may serve a command of each scope: while a link is previewed,
+    /// the preview's command takes it.
+    var shortcutScope: ShortcutScope { self == .openPeekInTab ? .peek : .window }
+
     var category: Category {
         switch self {
         case .newTab, .closeTab, .reopenTab, .nextTab, .previousTab, .recentTab, .previousRecentTab,
              .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab,
-             .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace: .tabs
+             .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace,
+             .openPeekInTab: .tabs
         case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
@@ -266,7 +274,14 @@ extension BrowserCommand {
         case .previousRecentTab: return [.init("\t", [.control, .shift])]
         case .lastTab: return [.init("9")]
         case .toggleFavorite: return [.init("d")]
+        case .openPeekInTab: return [.init("o")]
         default: return []
         }
     }
+}
+
+enum ShortcutScope {
+    case window
+    /// While a link is previewed over the page (docs/BROWSING.md › Peek).
+    case peek
 }

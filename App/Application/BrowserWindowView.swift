@@ -149,11 +149,15 @@ struct BrowserWindowView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // Under a link's preview, what the page shows blurs; its frame stays sharp.
+                    .peekBackdrop(browser)
                     .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
                     // On a shape of its own: a shadow on the web view would render it offscreen on every frame.
                     .background {
                         RoundedRectangle(cornerRadius: BrowserDesign.Radius.page).fill(palette.canvas).pageShadow(palette.scheme)
                     }
+                    // The whole page, frame and shadow included, steps back in the window under a link's preview.
+                    .peekPresentation(browser)
                     .padding(.trailing, BrowserDesign.pageInset)
                     .padding(.vertical, BrowserDesign.pageInset)
                     .padding(.leading, browser.window.sidebarPinned ? 0 : BrowserDesign.pageInset)
@@ -223,7 +227,9 @@ struct BrowserWindowView: View {
         }
         .onExitCommand {
             // Escape reaches here only after focused controls have had their dismissal opportunity.
-            if !browser.window.tabSelection.isEmpty {
+            if browser.window.peek != nil {
+                browser.dismissPeek()
+            } else if !browser.window.tabSelection.isEmpty {
                 browser.window.tabSelection.clear()
             } else if browser.window.controlBar == nil, browser.window.prompt == nil,
                !browser.window.find.isPresented, browser.window.renaming == nil,

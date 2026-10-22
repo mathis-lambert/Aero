@@ -12,7 +12,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     private static let frameLoadInterruptedByPolicyChange = 102
 
     public var webView: WKWebView { pageView }
-    private let pageView: PageWebView
+    let pageView: PageWebView
     public private(set) var isLoading = false
     public private(set) var progress = 0.0
     public private(set) var canGoBack = false
@@ -22,6 +22,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public private(set) var isSecure = false
     /// False until the first document has rendered a frame; later navigations keep it true.
     public private(set) var hasRenderedFirstFrame = false
+    /// The address shown, once the page has one.
+    public private(set) var url: URL?
 
     public enum PageFailure { case loadFailed, processTerminated, unsupportedNavigation }
 
@@ -50,6 +52,13 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private var dialogsSuppressed = false
     /// Reports of the page's sign-in and sign-up forms. See docs/PASSWORDS.md.
     @ObservationIgnored var onPasswordForm: ((PasswordFormEvent, PasswordFrame) -> Void)?
+    /// What the person asks of a link's preview (docs/BROWSING.md › Peek).
+    @ObservationIgnored var onPeek: ((PeekRequest) -> Void)?
+    /// The context menu's item previewing a link; none without one.
+    @ObservationIgnored var peekMenuTitle: String? {
+        get { pageView.peekMenuTitle }
+        set { pageView.peekMenuTitle = newValue }
+    }
     /// The extensions' items for the context menu the page is opening.
     @ObservationIgnored var onContextMenu: (() -> [NSMenuItem])? {
         get { pageView.extensionMenuItems }
@@ -94,6 +103,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         configuration.userContentController.addUserScript(PageScripts.editedFieldTracker)
         configuration.userContentController.addUserScript(PasswordScripts.forms)
         configuration.userContentController.add(PasswordFormBridge(), contentWorld: PageScripts.world, name: PasswordScripts.handlerName)
+        configuration.userContentController.addUserScript(PeekScripts.linkFinder)
         return configuration
     }
 
@@ -103,6 +113,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
+        // Aero previews links itself (docs/BROWSING.md › Peek): WebKit's own preview would open beside it.
+        webView.allowsLinkPreview = false
+        pageView.onForcePress = { [weak self] press, point in self?.handle(press, at: point) }
         // WKWebView posts these on the main thread; applying them directly avoids a task per progress tick.
         let refresh: @Sendable (WKWebView, Any) -> Void = { [weak self] _, _ in MainActor.assumeIsolated { self?.refresh() } }
         observations = [
@@ -220,6 +233,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onPageNavigation = nil
         onClose = nil
         onPasswordForm = nil
+        onPeek = nil
+        peekMenuTitle = nil
         onContextMenu = nil
         contentBlocker = nil
         firstFrameTimeout?.cancel()
@@ -238,6 +253,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         canGoBack = webView.canGoBack
         canGoForward = webView.canGoForward
         isSecure = webView.url?.scheme == "https" && webView.hasOnlySecureContent
+        url = webView.url
         guard let url = webView.url else { return }
         if NavigationInput.isExtensionURL(url) { onMetadata?(url, webView.title ?? ""); return }
         guard NavigationInput.isWebURL(url) else { return }
@@ -406,6 +422,11 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
         guard let url = navigationAction.request.url, !url.absoluteString.isEmpty else { return onPopup?(configuration, nil, windowFeatures) }
         if interceptsNavigation?(url) == true { return nil }
+        // The context menu's preview asked WebKit to open the link in a new window: it opens in the peek instead.
+        if pageView.takePeekRequest() {
+            if NavigationInput.isWebURL(url) { onPeek?(.open(url, nil)) }
+            return nil
+        }
         if NavigationInput.isWebURL(url) || url.scheme?.lowercased() == "about" { return onPopup?(configuration, url, windowFeatures) }
         if NavigationInput.target(of: url) == .application { onApplicationLink?(url) }
         return nil
@@ -486,15 +507,111 @@ extension BrowserPage {
 
 
 /// A page's view: WebKit's, with the extensions' items added to its context menu, after WebKit's own, as Safari shows
-/// them.
+/// them, and on a link an item previewing it.
 final class PageWebView: WKWebView {
     var extensionMenuItems: (() -> [NSMenuItem])?
+    var peekMenuTitle: String?
+    var onForcePress: ((ForcePress, CGPoint) -> Void)?
+    /// The press under way went deep, or became a force click.
+    private var pressWentDeep = false
+    private var pressForced = false
+    /// Changes with each press, and as a deep press is released: the page's late answers about an earlier one are
+    /// stale.
+    private(set) var pressGeneration = 0
+    /// Where a press starts a preview, past most clicks' pressure, on the way to a force click.
+    private static let deepPressure: Float = 0.5
+    /// The identifier WebKit gives its Open Link in New Window item. The SDK does not export it; should it change, the
+    /// preview item is simply not offered.
+    private static let openLinkInNewWindow = "WKMenuItemIdentifierOpenLinkInNewWindow"
+    /// Set while WebKit's Open Link in New Window runs for the preview item.
+    private var peekRequested = false
 
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
         super.willOpenMenu(menu, with: event)
+        if let peekMenuTitle, let open = menu.items.firstIndex(where: { $0.identifier?.rawValue == Self.openLinkInNewWindow }) {
+            let item = NSMenuItem(title: peekMenuTitle, action: #selector(peekLink(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = menu.items[open]
+            menu.insertItem(item, at: open + 1)
+        }
         let items = extensionMenuItems?() ?? []
         guard !items.isEmpty else { return }
         menu.addItem(.separator())
         for item in items { menu.addItem(item) }
+    }
+
+    /// WebKit alone knows the link the menu is for: its own item opens it, and the page takes the new window it asks
+    /// for as the preview's.
+    @objc private func peekLink(_ sender: NSMenuItem) {
+        guard let open = sender.representedObject as? NSMenuItem, let action = open.action else { return }
+        peekRequested = true
+        NSApp.sendAction(action, to: open.target, from: open)
+        peekRequested = false
+    }
+
+    func takePeekRequest() -> Bool {
+        defer { peekRequested = false }
+        return peekRequested
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        pressWentDeep = false
+        pressForced = false
+        pressGeneration += 1
+        super.mouseDown(with: event)
+    }
+
+    override func pressureChange(with event: NSEvent) {
+        super.pressureChange(with: event)
+        guard let onForcePress, !pressForced else { return }
+        if event.stage >= 2 {
+            pressForced = true
+            onForcePress(.forceClick, pagePoint(of: event))
+        } else if event.stage == 1, event.pressure >= Self.deepPressure {
+            if !pressWentDeep {
+                pressWentDeep = true
+                onForcePress(.deep, pagePoint(of: event))
+            }
+            onForcePress(.pressure(Double((event.pressure - Self.deepPressure) / (1 - Self.deepPressure))), .zero)
+        } else if event.stage == 1, pressWentDeep {
+            onForcePress(.pressure(0), .zero)
+        }
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        super.mouseUp(with: event)
+        endPress()
+    }
+
+    /// A deep press that moves drags its link: the press ends there, as the drag, not the view, receives the release.
+    override func beginDraggingSession(with items: [NSDraggingItem], event: NSEvent, source: any NSDraggingSource) -> NSDraggingSession {
+        endPress()
+        return super.beginDraggingSession(with: items, event: event, source: source)
+    }
+
+    private func endPress() {
+        if pressWentDeep, !pressForced {
+            pressGeneration += 1
+            onForcePress?(.released, .zero)
+        }
+        pressWentDeep = false
+        pressForced = false
+    }
+
+    /// The event's place from the view's top left, as the page measures it.
+    private func pagePoint(of event: NSEvent) -> CGPoint {
+        let point = convert(event.locationInWindow, from: nil)
+        return CGPoint(x: point.x, y: isFlipped ? point.y : bounds.height - point.y)
+    }
+}
+
+extension BrowserPage {
+    /// A rectangle a page script measured, in CSS pixels of the viewport, in the web view's points.
+    func viewRect(fromPage value: Any?) -> CGRect? {
+        guard let rect = value as? [String: Any], let x = rect["x"] as? Double, let y = rect["y"] as? Double,
+              let width = rect["width"] as? Double, let height = rect["height"] as? Double,
+              [x, y, width, height].allSatisfy(\.isFinite), width > 0, height > 0 else { return nil }
+        let scale = webView.pageZoom * webView.magnification
+        return CGRect(x: x * scale, y: y * scale, width: width * scale, height: height * scale)
     }
 }

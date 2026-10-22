@@ -42,10 +42,25 @@ private struct PageProgress: View {
 
 /// Attaching a view never starts a navigation; the registry owns that lifecycle.
 private struct WebPageHost: NSViewRepresentable {
+    /// The container last given each page shows it. A page moves from a preview to its tab: the preview's container,
+    /// still fading out, must never take its web view back.
+    private static let owners = NSMapTable<BrowserPage, NSView>.weakToWeakObjects()
+
     let page: BrowserPage
+
+    final class Coordinator {
+        weak var page: BrowserPage?
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
     func makeNSView(context: Context) -> NSView { NSView() }
+
     func updateNSView(_ container: NSView, context: Context) {
-        guard page.webView.superview !== container else { return }
+        if context.coordinator.page !== page {
+            context.coordinator.page = page
+            Self.owners.setObject(container, forKey: page)
+        }
+        guard Self.owners.object(forKey: page) === container, page.webView.superview !== container else { return }
         container.subviews.forEach { $0.removeFromSuperview() }
         let webView = page.webView
         webView.removeFromSuperview()

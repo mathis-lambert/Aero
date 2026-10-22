@@ -4,7 +4,8 @@ import Foundation
 import Testing
 
 // docs/SHORTCUTS.md › Persistence and resolution. Written as failure modes first:
-// 1. A shipped default shadows another default or a native command, so one of them silently never works.
+// 1. A shipped default shadows another default of its scope or a native command, so one of them silently never works;
+//    or a command of another scope, such as the preview's ⌘O, blocks a window command's.
 // 2. Recording a taken shortcut leaves two owners, or the displaced default comes back after a relaunch.
 // 3. A newly shipped default wins over a person's explicit choice.
 // 4. Unreadable or unsupported saved data is overwritten, edited, or lost by Restore defaults.
@@ -30,14 +31,24 @@ final class ShortcutPreferencesTests {
     @Test func shippedDefaultsResolveWithoutConflicts() {
         let preferences = preferences()
         #expect(preferences.blocked.isEmpty)
-        var owners: [ShortcutBinding: BrowserCommand] = [:]
+        var owners: [ShortcutScope: [ShortcutBinding: BrowserCommand]] = [:]
         for command in BrowserCommand.allCases {
             #expect(preferences.effective[command, default: []] == command.defaultBindings, "\(command) keeps its default")
             for binding in command.defaultBindings {
-                #expect(owners.updateValue(command, forKey: binding) == nil, "\(command) shares \(binding) with another default")
+                #expect(owners[command.shortcutScope, default: [:]].updateValue(command, forKey: binding) == nil,
+                        "\(command) shares \(binding) with another default")
                 #expect(preferences.nativeConflict(binding, for: command) == nil, "\(command)'s default shadows a native command")
             }
         }
+    }
+
+    @Test func aShortcutServesOneCommandPerScope() {
+        let preferences = preferences()
+        let open = ShortcutBinding("o")
+        #expect(preferences.effective[.openFile] == [open] && preferences.effective[.openPeekInTab] == [open])
+        preferences.assign(open, to: .newTab)
+        #expect(preferences.effective[.openFile, default: []].isEmpty, "Within the window, the shortcut moves")
+        #expect(preferences.effective[.openPeekInTab] == [open], "The preview keeps its own")
     }
 
     @Test func recordingATakenShortcutMovesItForGood() {

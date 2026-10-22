@@ -82,6 +82,7 @@ struct BrowserMenuCommands: Commands {
                     symbol: isFavorite ? "star.slash" : nil)
             command(.duplicateTab)
             command(.renameTab)
+            command(.openPeekInTab)
             Divider()
             command(.newGroup)
             if let browser, browser.selectedTab != nil {

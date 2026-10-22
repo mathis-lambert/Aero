@@ -10,6 +10,15 @@ final class BrowserWindowState {
     var zoomFeedback: PageZoomFeedback?
     /// The control bar over the selected tab; the New Tab page shows its own.
     var controlBar: ControlBarPresentation?
+    /// The link previewed over the selected tab (docs/BROWSING.md › Peek).
+    var peek: Peek?
+    /// How far the press on the previewed link has gone toward a force click, from 0 to 1. Apart from `peek`, so its
+    /// many updates redraw the preview alone.
+    var peekPressure = 0.0
+    /// How far the preview is out of its link, from 0 to 1, and whether it has grown over the page to become a tab. The
+    /// preview's view animates them; the page behind follows them (`PeekPresentation`).
+    var peekReveal: CGFloat = 0
+    var peekExpanded = false
     /// The question the window asks; one at a time.
     var prompt: WindowPrompt?
     /// Popovers on the sidebar's reload button and address; the sidebar appears for them when hidden.

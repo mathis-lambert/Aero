@@ -107,7 +107,9 @@ final class ShortcutPreferences {
     }
 
     func conflicts(for binding: ShortcutBinding, excluding command: BrowserCommand) -> [BrowserCommand] {
-        BrowserCommand.allCases.filter { $0 != command && effective[$0, default: []].contains(binding) }
+        BrowserCommand.allCases.filter {
+            $0 != command && $0.shortcutScope == command.shortcutScope && effective[$0, default: []].contains(binding)
+        }
     }
 
     func assign(_ binding: ShortcutBinding, to command: BrowserCommand) {
@@ -154,7 +156,7 @@ final class ShortcutPreferences {
 
     private func resolve() {
         var resolved: [BrowserCommand: [ShortcutBinding]] = [:]
-        var owners: [ShortcutBinding: BrowserCommand] = [:]
+        var owners: [ShortcutScope: [ShortcutBinding: BrowserCommand]] = [:]
         var blocked: [BrowserCommand: [String]] = [:]
         // Explicit choices always win over newly shipped defaults. Catalog order breaks corrupt duplicates deterministically.
         let commands = BrowserCommand.allCases
@@ -164,10 +166,10 @@ final class ShortcutPreferences {
                     blocked[command, default: []].append(native)
                     continue
                 }
-                if let owner = owners[binding], owner != command {
+                if let owner = owners[command.shortcutScope]?[binding], owner != command {
                     blocked[command, default: []].append(owner.title)
                 } else {
-                    owners[binding] = command
+                    owners[command.shortcutScope, default: [:]][binding] = command
                     if !resolved[command, default: []].contains(binding) { resolved[command, default: []].append(binding) }
                 }
             }
