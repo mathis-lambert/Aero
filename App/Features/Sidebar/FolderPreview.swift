@@ -162,6 +162,8 @@ private enum FolderPreviews {
     private static var refitTask: Task<Void, Never>?
     private static var presence: FolderPreviewPresence?
     private static var hiding: Task<Void, Never>?
+    /// The browser of the preview shown: a tab dragged out of it keeps its row alive until the drag ends.
+    private static weak var browser: BrowserModel?
     /// Ends the preview as Aero stops being active; AppKit would show it again on return, wherever the pointer then is.
     private static var deactivation: Task<Void, Never>?
     /// The header clicked while under the pointer: no preview until the pointer leaves it.
@@ -231,20 +233,36 @@ private enum FolderPreviews {
         hiding = Task {
             do { try await Task.sleep(for: departure) } catch { return }
             panel.orderOut(nil)
+            if let content = panel.contentView { release(content) }
+        }
+    }
+
+    /// Lets the hidden preview's rows go, unless one of them is the source of a tab being dragged out of it: the drag
+    /// would lose its source. They go once it ends, if no other preview has shown since.
+    private static func release(_ content: NSView) {
+        guard panel.contentView === content, !panel.isVisible else { return }
+        guard let browser, browser.window.tabDrag != nil else {
             panel.contentView = nil
-            Self.presence = nil
+            presence = nil
+            return
+        }
+        withObservationTracking { _ = browser.window.tabDrag } onChange: {
+            Task { @MainActor in release(content) }
         }
     }
 
     private static func show(for view: FolderPreviewAnchor.AnchorView) {
         guard anchor === view, NSApp.isActive, let (browser, groupID) = view.content, let window = view.window,
               let frame = view.screenFrame, let screen = window.screen?.visibleFrame else { return }
-        let list = FolderPreviewList(browser: browser, groupID: groupID, close: { close() }, refit: { refit() })
+        let presence = FolderPreviewPresence()
+        // A hidden preview kept for a drag must not end or resize the one shown after it.
+        let list = FolderPreviewList(browser: browser, groupID: groupID,
+                                     close: { [weak presence] in if Self.presence === presence { close() } },
+                                     refit: { [weak presence] in if Self.presence === presence, panel.isVisible { refit() } })
             .onHover { hovering in
                 overPanel = hovering
                 if !hovering { closeSoon() } else { pending?.cancel() }
             }
-        let presence = FolderPreviewPresence()
         let root = list
             .environment(\.layoutDirection, view.userInterfaceLayoutDirection == .rightToLeft ? .rightToLeft : .leftToRight)
             .modifier(FolderPreviewEntrance(presence: presence))
@@ -262,6 +280,7 @@ private enum FolderPreviews {
         hiding?.cancel()
         hiding = nil
         self.presence = presence
+        self.browser = browser
         panel.contentView = content
         if deactivation == nil {
             deactivation = Task {
