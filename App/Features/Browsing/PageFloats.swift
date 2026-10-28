@@ -2,7 +2,8 @@ import BrowserWebKit
 import SwiftUI
 
 extension View {
-    /// What floats over the selected tab's page: the password picker and offers, the find bar and the zoom indicator.
+    /// What floats over the selected tab's page: the swipe through its history, the password picker and offers, the find
+    /// bar and the zoom indicator.
     /// In a split, they float over the focused pane only; the others keep the modifier, so no pane is rebuilt as the
     /// focus moves.
     func pageFloats(_ browser: BrowserModel, page: BrowserPage, isFocused: Bool = true) -> some View {
@@ -17,6 +18,7 @@ private struct PageFloats: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .swipeNavigation(browser, page: page)
             .overlay(alignment: .topLeading) {
                 if isFocused, let picker = browser.passwords.picker, picker.tabID == browser.window.selectedTabID {
                     GeometryReader { area in
