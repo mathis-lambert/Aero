@@ -116,14 +116,18 @@ struct HistoryView: View {
             .focused($focus, equals: .list)
             .onDeleteCommand { delete(selection) }
             .contextMenu(forSelectionType: HistoryEntry.ID.self) { ids in
-                if !ids.isEmpty {
-                    Button("Open", systemImage: "arrow.up.forward.square") { open(ids) }
-                    Button("Open in New Tab", systemImage: "plus.square.on.square") { openInBackground(ids) }
-                    Divider()
-                    Button("Copy Link", systemImage: BrowserCommand.copyLink.symbol) { browser.copy(selectedEntries(ids).map(\.url)) }
-                    Divider()
-                    Button("Delete from History", systemImage: "trash", role: .destructive) { delete(ids) }
+                // Each item's symbol before its title (`menuIcons`).
+                Group {
+                    if !ids.isEmpty {
+                        Button("Open", systemImage: "arrow.up.forward.square") { open(ids) }
+                        Button("Open in New Tab", systemImage: "plus.square.on.square") { openInBackground(ids) }
+                        Divider()
+                        Button("Copy Link", systemImage: BrowserCommand.copyLink.symbol) { browser.copy(selectedEntries(ids).map(\.url)) }
+                        Divider()
+                        Button("Delete from History", systemImage: "trash", role: .destructive) { delete(ids) }
+                    }
                 }
+                .menuIcons()
             } primaryAction: { ids in
                 open(ids)
             }

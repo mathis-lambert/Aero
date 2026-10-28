@@ -7,6 +7,8 @@ import SwiftUI
 enum GlassRole {
     /// The selected tab or favorite.
     case selection
+    /// A favorite at rest: half-strength clear glass, still, letting the window through.
+    case tile
     /// The address, a control of a panel, a website tile: full glass answering the pointer, `tint` coloring it a little.
     case control
     /// A control that is on: glass colored through with `tint`.
@@ -61,6 +63,7 @@ private struct BrowserGlass: ViewModifier {
         switch role {
         case .selection, .control, .accent, .panel, .sidebar: 1
         case .hover: 0.7
+        case .tile: 0.5
         case .container: 0.4
         }
     }
@@ -69,6 +72,7 @@ private struct BrowserGlass: ViewModifier {
         let dark = palette.scheme == .dark
         switch role {
         case .selection: return .regular.tint(tint?.opacity(dark ? 0.26 : 0.14)).interactive()
+        case .tile: return .clear
         case .control: return .regular.tint(tint?.opacity(dark ? 0.16 : 0.08)).interactive()
         case .accent: return .regular.tint(tint ?? .accentColor).interactive()
         case .hover, .container: return .clear
@@ -79,6 +83,7 @@ private struct BrowserGlass: ViewModifier {
     private var opaqueFill: Color {
         switch role {
         case .selection: palette.raised
+        case .tile: palette.favoriteTile
         case .control: palette.fill
         case .accent: tint ?? .accentColor
         case .hover: palette.favoriteTileHover

@@ -39,7 +39,7 @@ struct DownloadRow: View {
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { open() }
         .modifier(FileDrag(file: download.state == .finished ? download.destination : nil, filename: download.filename))
-        .contextMenu { menu }
+        .iconContextMenu { menu }
         .onChange(of: renaming) { if renaming == download.id { problem = nil } }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("downloads.row")

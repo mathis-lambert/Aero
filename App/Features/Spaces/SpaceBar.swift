@@ -1,25 +1,27 @@
 import BrowserCore
 import SwiftUI
 
-/// The spaces in the sidebar's footer, kept quiet: the space shown has its icon and name on a neutral pill, the
+/// The spaces in the sidebar's footer, small and quiet: the space shown has its icon and name on a faint pill, the
 /// others are small grey icons that take their color back under the pointer. The pill slides from space to space and
 /// the name fades in. Every space stays on screen while it can: the name gives way first, cut short, the tooltip giving
 /// it whole; past that the spaces scroll, the shown one kept in the middle. Tabs dragged onto a space go to it
 /// (`SpaceDropTarget`).
 struct SpaceBar: View {
-    static let height: CGFloat = 22
+    static let height: CGFloat = 18
     /// The width of a space not shown.
-    static let iconSize: CGFloat = 18
-    static let nameFont = Font.system(size: 11, weight: .medium)
+    static let iconSize: CGFloat = 15
+    /// The icon itself: an emoji, or its color's dot.
+    static let glyphSize: CGFloat = 10
+    static let nameFont = Font.system(size: 10, weight: .medium)
     /// Spaces not shown, until the pointer or a dragged tab is over them.
-    static let otherOpacity: Double = 0.45
+    static let otherOpacity: Double = 0.4
     /// A long name stops here; the tooltip and the space's settings give it whole.
-    static let maximumNameWidth: CGFloat = 96
+    static let maximumNameWidth: CGFloat = 80
     /// The pill's inner margin, and the gap between its icon and name.
-    static let capsulePadding: CGFloat = 7
-    static let nameSpacing: CGFloat = 5
+    static let capsulePadding: CGFloat = 6
+    static let nameSpacing: CGFloat = 3
     /// The narrowest the shown space gets before the spaces scroll instead: its icon and a few letters.
-    private static let minimumCapsuleWidth: CGFloat = 60
+    private static let minimumCapsuleWidth: CGFloat = 50
     /// Quick and without bounce: the pill is there by the time the page has slid.
     private static let motion = Animation.spring(duration: 0.22, bounce: 0)
 
@@ -55,8 +57,8 @@ struct SpaceBar: View {
             GeometryReader { proxy in
                 if let anchor {
                     let frame = proxy[anchor]
-                    Color.clear
-                        .browserGlass(.control, radius: frame.height / 2)
+                    Capsule()
+                        .fill(palette.fill)
                         .frame(width: frame.width, height: frame.height)
                         .offset(x: frame.minX, y: frame.minY)
                 }
@@ -70,7 +72,7 @@ struct SpaceBar: View {
         let lit = selected || targeted || hoveredSpaceID == space.id
         return Button { browser.switchSpace(space.id) } label: {
             HStack(spacing: Self.nameSpacing) {
-                SpaceIcon(space: space, size: 12)
+                SpaceIcon(space: space, size: Self.glyphSize)
                     .grayscale(lit ? 0 : 1)
                     .opacity(lit ? 1 : Self.otherOpacity)
                 if selected {
@@ -109,7 +111,7 @@ struct SpaceBar: View {
         } set: { targeted in
             if targeted { targetedSpaceID = space.id } else if targetedSpaceID == space.id { targetedSpaceID = nil }
         }))
-        .contextMenu {
+        .iconContextMenu {
             Button("Edit Space…", systemImage: "pencil") { browser.showSettings(.space(space.id)) }
             Divider()
             Button("Move Left", systemImage: "arrow.left") { browser.reorderSpace(space.id, by: -1) }

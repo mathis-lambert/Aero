@@ -63,7 +63,7 @@ enum BrowserDesign {
 struct BrowserPalette {
     let scheme: ColorScheme
     var sidebar: Color { scheme == .dark ? Color(white: 0.13) : Color(white: 0.93) }
-    /// Favorites are recessed at rest and brighten above the sidebar on hover.
+    /// Favorites with Reduce Transparency: recessed at rest, brightening above the sidebar on hover.
     var favoriteTile: Color { scheme == .dark ? Color(white: 0.09) : Color(white: 0.87) }
     var favoriteTileHover: Color { Color(white: scheme == .dark ? 0.20 : 0.97) }
     var canvas: Color { scheme == .dark ? Color(white: 0.085) : Color(white: 0.975) }
