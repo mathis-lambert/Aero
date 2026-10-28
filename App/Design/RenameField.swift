@@ -4,6 +4,7 @@ import SwiftUI
 /// its stem selected, as in the Finder, so typing keeps the extension.
 struct RenameField: View {
     let name: String
+    var label: LocalizedStringKey = "Name"
     var isFilename = false
     let save: (String) -> Void
     let end: () -> Void
@@ -13,7 +14,7 @@ struct RenameField: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        TextField("Name", text: $text, selection: $selection)
+        TextField(label, text: $text, selection: $selection)
             .textFieldStyle(.plain)
             .focused($focused)
             .onSubmit { finish(saving: true) }

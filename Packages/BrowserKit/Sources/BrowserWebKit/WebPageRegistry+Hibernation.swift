@@ -29,7 +29,7 @@ extension WebPageRegistry {
 
     func hibernationPlan() -> HibernationPlan {
         let candidates = livePages.map { tabID, live in
-            HibernationCandidate(tabID: tabID, isActive: tabID == activeTabID, isFavorite: delegate?.isFavorite(tabID) == true,
+            HibernationCandidate(tabID: tabID, isActive: isShown(tabID), isFavorite: delegate?.isFavorite(tabID) == true,
                                  lastActive: live.lastActive, lastExemption: live.lastExemption)
         }
         return policy.plan(for: candidates, now: .now)
@@ -47,14 +47,14 @@ extension WebPageRegistry {
             let interval = Self.signposter.beginInterval(Diagnostics.Signpost.hibernationCheck)
             let blocker = await page.hibernationBlocker()
             Self.signposter.endInterval(Diagnostics.Signpost.hibernationCheck, interval)
-            guard !Task.isCancelled, livePages[tabID]?.page === page, tabID != activeTabID else { continue }
+            guard !Task.isCancelled, livePages[tabID]?.page === page, !isShown(tabID) else { continue }
             guard blocker == nil, !hasPopupRelationship(tabID), !downloads.isDownloading(from: tabID) else {
                 livePages[tabID]?.lastExemption = .now
                 continue
             }
             // Best effort: a page whose storage cannot be read hibernates without it.
             let storage = try? await page.webView.fetchData(of: .sessionStorage)
-            guard !Task.isCancelled, livePages[tabID]?.page === page, tabID != activeTabID else { continue }
+            guard !Task.isCancelled, livePages[tabID]?.page === page, !isShown(tabID) else { continue }
             hibernate(tabID, sessionStorage: storage)
         }
     }

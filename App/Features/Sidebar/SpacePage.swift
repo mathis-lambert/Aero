@@ -26,21 +26,21 @@ struct SpacePage: View, @MainActor Equatable {
         let isCurrent = space.id == browser.window.selectedSpaceID
         let selectedTabID = isCurrent ? browser.window.selectedTabID : nil
         let marked = isCurrent ? Set(browser.window.tabSelection.ids) : []
-        let lifted = Set((drop?.tabIDs ?? []) + (pinnedDrop?.items.map(\.id) ?? []))
+        let lifted = Set(tabs.carried(drop?.tabIDs ?? []) + (pinnedDrop?.items.map(\.id) ?? []))
         let dragging = browser.window.tabDrag != nil
         let draggingTabs = browser.window.tabDrag.map { !$0.movesGroups } ?? false
         let targetedGroup: UUID? = if case .list(let group?) = drop?.destination.place { group } else { nil }
         ScrollView {
             VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
-                FavoritesGrid(browser: browser, tabs: tabs.grid, selectedTabID: selectedTabID, marked: marked, lifted: lifted, dragging: draggingTabs, layout: layout)
+                FavoritesGrid(browser: browser, entries: tabs.entries(of: tabs.grid), selectedTabID: selectedTabID, marked: marked, lifted: lifted, dragging: draggingTabs, layout: layout)
                     .dropFrame(.section(.grid), in: layout)
 
                 // Groups and loose favorites, in any order.
                 ForEach(tabs.pinned) { item in
                     switch item {
-                    case .tab(let tab): row(tab, selectedTabID: selectedTabID, marked: marked, lifted: lifted)
-                    case .group(let group, let tabs):
-                        TabGroupSection(browser: browser, group: group, tabs: tabs, selectedTabID: selectedTabID, marked: marked, lifted: lifted,
+                    case .entry(let entry): row(entry, selectedTabID: selectedTabID, marked: marked, lifted: lifted)
+                    case .group(let group, let members):
+                        TabGroupSection(browser: browser, group: group, entries: tabs.entries(of: members), selectedTabID: selectedTabID, marked: marked, lifted: lifted,
                                         isMarked: marked.contains(group.id), isLifted: lifted.contains(group.id), isTargeted: targetedGroup == group.id,
                                         selection: selection, layout: layout)
                             .dropFrame(.section(.list(group: group.id)), in: layout)
@@ -56,7 +56,9 @@ struct SpacePage: View, @MainActor Equatable {
 
                 VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
                     newTabButton(selected: isCurrent && selectedTabID == nil)
-                    ForEach(tabs.open) { row($0, selectedTabID: selectedTabID, marked: marked, lifted: lifted) }
+                    ForEach(tabs.entries(of: tabs.open)) { entry in
+                        row(entry, selectedTabID: selectedTabID, marked: marked, lifted: lifted)
+                    }
                 }
                 .dropFrame(.section(.open), in: layout)
             }
@@ -92,9 +94,8 @@ struct SpacePage: View, @MainActor Equatable {
         }
     }
 
-    private func row(_ tab: BrowserTab, selectedTabID: UUID?, marked: Set<UUID>, lifted: Set<UUID>) -> some View {
-        TabRow(browser: browser, tab: tab, selected: selectedTabID == tab.id, marked: marked.contains(tab.id),
-               lifted: lifted.contains(tab.id), selection: selection, layout: layout)
+    private func row(_ entry: SidebarTabs.Entry, selectedTabID: UUID?, marked: Set<UUID>, lifted: Set<UUID>) -> some View {
+        EntryRow(browser: browser, entry: entry, selectedTabID: selectedTabID, marked: marked, lifted: lifted, selection: selection, layout: layout)
     }
 
     /// The side a drag rests on takes a faint line of the next space's color, before the page slides to it.
@@ -171,7 +172,7 @@ struct SpacePage: View, @MainActor Equatable {
             }
             return .list(group: nil)
         }
-        let next = layout.destination(at: point, for: drag.tabIDs, in: tabs, current: drop?.destination)
+        let next = layout.destination(at: point, for: tabs.carried(drag.tabIDs), in: tabs, current: drop?.destination)
             .map { TabDrop(tabIDs: drag.tabIDs, destination: $0) }
         if next != drop {
             if next != nil { NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now) }

@@ -10,7 +10,7 @@ struct BrowserWindowView: View {
     @State private var sidebarRevealed = false
     @State private var resizingSidebarWidth: CGFloat?
     @State private var windowControls = WindowControls()
-    @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
     @Environment(\.palette) private var palette
     @Environment(\.browserReduceMotion) private var reduceMotion
 
@@ -93,70 +93,25 @@ struct BrowserWindowView: View {
                             }
                             .transition(.move(edge: .leading).combined(with: .opacity))
                     }
-                    ZStack {
-                        if let internalPage = browser.internalPage {
-                            InternalPageView(page: internalPage, browser: browser)
-                                .id(browser.window.selectedTabID)
-                        } else if let page = browser.currentPage {
-                            BrowserContentView(page: page)
-                                .overlay(alignment: .topLeading) {
-                                    if let picker = browser.passwords.picker, picker.tabID == browser.window.selectedTabID {
-                                        GeometryReader { area in
-                                            PasswordPickerView(browser: browser, picker: picker, bounds: area.size)
-                                        }
-                                        .transition(.opacity)
-                                    }
-                                }
-                                .overlay(alignment: .topTrailing) {
-                                    VStack(alignment: .trailing, spacing: 8) {
-                                        if let offer = browser.passwords.offer, offer.tabID == browser.window.selectedTabID {
-                                            PasswordOfferView(browser: browser, offer: offer)
-                                                .transition(.move(edge: .top).combined(with: .opacity))
-                                        }
-                                        if let failure = browser.passwords.failure {
-                                            HStack(alignment: .top, spacing: 8) {
-                                                Text(failure)
-                                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                                Button("Dismiss", systemImage: "xmark") { browser.passwords.failure = nil }
-                                                    .labelStyle(.iconOnly)
-                                            }
-                                            .padding(12)
-                                            .frame(width: 340)
-                                            .browserGlass(.panel, radius: BrowserDesign.Radius.card)
-                                            .accessibilityIdentifier("passwords.failure")
-                                        }
-                                        if browser.window.find.isPresented {
-                                            FindBar(find: browser.window.find, page: page, shortcuts: browser.shortcuts)
-                                                .transition(.move(edge: .top).combined(with: .opacity))
-                                        }
-                                        if let feedback = browser.window.zoomFeedback, feedback.tabID == browser.window.selectedTabID {
-                                            PageZoomIndicator(feedback: feedback) {
-                                                if browser.window.zoomFeedback?.id == feedback.id { browser.window.zoomFeedback = nil }
-                                            }
-                                            .transition(.asymmetric(
-                                                insertion: .scale(scale: 0.88, anchor: .topTrailing).combined(with: .opacity),
-                                                removal: .opacity
-                                            ))
-                                        }
-                                    }
-                                    .padding(BrowserDesign.floatingInset)
-                                    .browserAnimation(value: browser.window.zoomFeedback != nil)
-                                    .browserAnimation(value: browser.passwords.offer?.id)
-                                }
+                    Group {
+                        // A tab alone is a layout of one pane, so a pane coming beside it, or going, moves the same page.
+                        if let layout = browser.paneLayout {
+                            SplitPageView(browser: browser, layout: layout)
+                                .id(browser.window.paneGroup)
                         } else {
                             NewTabView(browser: browser)
                                 .id([browser.window.selectedSpaceID, browser.profile?.id])
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
+                                .background {
+                                    RoundedRectangle(cornerRadius: BrowserDesign.Radius.page).fill(palette.canvas).pageShadow(palette.scheme)
+                                }
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    // Under a link's preview, what the page shows blurs; its frame stays sharp.
-                    .peekBackdrop(browser)
-                    .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
-                    // On a shape of its own: a shadow on the web view would render it offscreen on every frame.
-                    .background {
-                        RoundedRectangle(cornerRadius: BrowserDesign.Radius.page).fill(palette.canvas).pageShadow(palette.scheme)
-                    }
-                    // The whole page, frame and shadow included, steps back in the window under a link's preview.
+                    .splitDropZones(browser)
+                    .pageCornerActions(browser)
+                    // The whole page, frame and shadow included, or the split's panes, step back in the window under a
+                    // link's preview.
                     .peekPresentation(browser)
                     .padding(.trailing, BrowserDesign.pageInset)
                     .padding(.vertical, BrowserDesign.pageInset)
@@ -202,7 +157,7 @@ struct BrowserWindowView: View {
             }
         }
         .ignoresSafeArea(.container, edges: .top)
-        .background(palette.sidebar)
+        .modifier(WindowBackdrop(accent: browser.accent))
         .foregroundStyle(palette.ink)
         .font(BrowserDesign.Typography.chrome)
         .tint(browser.accent.tint)
@@ -211,7 +166,7 @@ struct BrowserWindowView: View {
         .browserAnimation(value: browser.window.controlBar != nil)
         .browserAnimation(value: browser.window.find.isPresented)
         .downloadFlights(browser.downloads)
-        .onChange(of: browser.window.settingsRequest) { openSettings() }
+        .onChange(of: browser.window.settingsRequest) { openWindow(id: SettingsView.windowID) }
         .prompt(prompt, onCancel: browser.dismissPrompt) { WindowPromptView(browser: browser, prompt: $0) }
         .onChange(of: browser.window.sidebarPinned) { _, _ in
             sidebarRevealed = false

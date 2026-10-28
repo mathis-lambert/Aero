@@ -1,6 +1,6 @@
 # Storage
 
-Browser state and history use SQLite; preferences use UserDefaults; caches are disposable files. The browser baseline is application ID `0x41455232`, version 1, with no legacy reader or importer; version 2 adds each profile's password extension. Future shipped schemas evolve through ordered transactional migrations.
+Browser state and history use SQLite; preferences use UserDefaults; caches are disposable files. The browser baseline is application ID `0x41455232`, version 1, with no legacy reader or importer; version 2 adds each profile's password extension, version 3 a group's slot among the pinned favorites, version 4 split views (docs/SPLIT_VIEW.md), version 5 a favorite's pinned page, its current address for favorites already kept (docs/BROWSING.md › Pinned pages), and version 6 a folder's icon. Future shipped schemas evolve through ordered transactional migrations.
 
 ## Ownership and layout
 
@@ -8,7 +8,7 @@ Browser state and history use SQLite; preferences use UserDefaults; caches are d
 
 The baseline starts with fresh profiles. There is no import, compatibility alias, dual write or old-format decoder. Obsolete pre-release files outside `Storage` are disposable after stopping the old app; cleanup is an explicit development operation, not an application startup fallback. Unknown or corrupt current databases still use recovery rather than silent data deletion.
 
-- `Browser.sqlite`: profiles, multiple spaces per profile, groups, tabs/favorites, site decisions, extension registrations and grants. Explicit SQL columns, foreign keys, placement checks and domain validation own the format. BrowserStorage owns the schema mapping; BrowserCore contains the domain records.
+- `Browser.sqlite`: profiles, multiple spaces per profile, groups, tabs/favorites, split views, site decisions, extension registrations and grants. Explicit SQL columns, foreign keys, placement checks and domain validation own the format. BrowserStorage owns the schema mapping; BrowserCore contains the domain records.
 - `History.sqlite`: separate high-volume history/FTS tables, logically scoped per profile. Failure does not stop browsing. No cross-database foreign key is claimed; profile deletion coordinates both stores and WebKit through a recoverable intent.
 - `Extensions/<profile UUID>/<package UUID>`: immutable prepared packages; the registry chooses the active package. WebKit extension context IDs remain stable extension IDs.
 - Website and extension runtime databases are owned by WebKit's public APIs, never copied or migrated by BrowserStorage.

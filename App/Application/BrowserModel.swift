@@ -45,6 +45,8 @@ final class BrowserModel {
     var openedFavorites: Set<UUID> = []
 
     let pages: WebPageRegistry
+    /// The shells of terminal tabs (docs/TERMINAL.md).
+    let terminals = TerminalSessions()
     /// Every profile's extensions (docs/EXTENSIONS.md).
     let extensions: ExtensionRegistry
     let extensionNotifications: ExtensionNotifications
@@ -263,6 +265,8 @@ final class BrowserModel {
 
     func persist() {
         guard isReady else { return }
+        // A shell ends with its tab, however the tab went: closed, its space removed, or given a new identity.
+        terminals.keep(only: Set(session.tabs.map(\.id)))
         revision += 1
         needsSave = true
         guard !isChangingStructure else { return }
@@ -290,6 +294,7 @@ final class BrowserModel {
         guard isReady else { return true }
         titleSaveTask?.cancel(); titleSaveTask = nil
         await saveTask?.value
+        for tab in session.tabs where InternalPage(url: tab.url) == .terminal { recordTerminalDirectory(of: tab.id) }
         revision += 1
         do {
             try await store.save(session, revision: revision)
@@ -318,6 +323,8 @@ final class BrowserModel {
     }
 
     func selectTab(_ id: UUID?, recordRecent: Bool = true) {
+        let shownPanes = Set(paneLayout?.tabIDs ?? [])
+        defer { if Set(paneLayout?.tabIDs ?? []).isDisjoint(with: shownPanes) { window.paneGroup = UUID() } }
         // A page's dialog belongs to its tab: leaving the tab dismisses it.
         if case .pageDialog(let request) = window.prompt, request.tabID != id { dismissPrompt() }
         guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = profile?.id else {
@@ -329,20 +336,30 @@ final class BrowserModel {
             pages.deactivate()
             return
         }
-        if tab.isFavorite { openedFavorites.insert(id) }
+        // A favorite opens as it shows, with the other panes of its split, all favorites too.
+        if tab.isFavorite { openedFavorites.formUnion(session.split(containing: id)?.tabIDs ?? [id]) }
         passwords.closePicker(unless: id)
         let previous = window.selectedTabID
-        // A preview belongs to the tab it was opened from.
-        if previous != id { endPeek() }
+        // A preview, or a New Tab pane, belongs to the tab it was opened from.
+        if previous != id {
+            endPeek()
+            window.newPane = nil
+        }
         if previous != id { window.find.dismiss() }
+        if let previous, previous != id { recordTerminalDirectory(of: previous) }
         window.selectedTabID = id
         if previous != id { extensionsDidSelect(tab, previous: previous) }
         if recordRecent { markRecent(id) }
+        // The other panes of its split show with it (docs/SPLIT_VIEW.md).
+        let webPanes = (session.split(containing: id)?.tabIDs ?? [id]).compactMap { pane in
+            tabs.first { $0.id == pane && InternalPage(url: $0.url) == nil }
+        }
         if InternalPage(url: tab.url) != nil {
             currentPage = nil
-            pages.deactivate()
+            if let shown = webPanes.first { _ = pages.activate(shown, profileID: profileID, alongside: webPanes) }
+            else { pages.deactivate() }
         } else {
-            currentPage = pages.activate(tab, profileID: profileID)
+            currentPage = pages.activate(tab, profileID: profileID, alongside: webPanes)
         }
     }
 
@@ -370,8 +387,10 @@ final class BrowserModel {
         guard !isChangingStructure else { return }
         guard let tab = tabs.first(where: { $0.id == id }), NavigationInput.isTabURL(url) else { return }
         session.updateTab(id: id, url: url, title: "")
-        if InternalPage(url: url) != nil { pages.close(tabID: id) }
-        else if InternalPage(url: tab.url) == nil, window.selectedTabID == id { pages.load(url, inTab: id) }
+        // A live page goes there, shown or not; without one, the page made on selection does, never a hibernated
+        // page's former state.
+        if InternalPage(url: url) == nil, InternalPage(url: tab.url) == nil, pages.livePage(id) != nil { pages.load(url, inTab: id) }
+        else { pages.close(tabID: id) }
         persist()
         selectTab(id)
     }
@@ -406,14 +425,21 @@ final class BrowserModel {
 
     /// Opens what the control bar chose, then closes the bar over the tab.
     func load(_ url: URL, in target: ControlBarTarget) {
-        if target == .currentTab, let id = window.selectedTabID { navigate(id, to: url) }
-        else { open(url) }
+        let focused = window.selectedTabID
+        switch target {
+        case .currentTab: if let focused { navigate(focused, to: url) } else { open(url) }
+        case .newTab: open(url)
+        case .newPane:
+            if window.newPane != nil, let spaceID = space?.id, let tab = addTab(url, in: spaceID) { openInNewPane(tab.id) }
+            else { open(url) }
+        }
         window.controlBar = nil
     }
 
-    /// Closing a favorite unloads its page and keeps it. An open tab is removed; popups closed by
-    /// their page are not offered by Reopen Closed Tab.
-    func closeTab(_ id: UUID, rememberForReopen: Bool = true) {
+    /// Closing a favorite unloads its page and keeps it, back on its pinned page. An open tab is removed, and so is a
+    /// favorite's pane, as a view of its split closes, unless `unloadingPanes`; popups closed by their page are not
+    /// offered by Reopen Closed Tab.
+    func closeTab(_ id: UUID, rememberForReopen: Bool = true, unloadingPanes: Bool = false) {
         guard !isChangingStructure else { return }
         guard let tab = session.tabs.first(where: { $0.id == id }) else { return }
         let wasSelected = window.selectedTabID == id
@@ -423,20 +449,40 @@ final class BrowserModel {
         passwords.forget(tabID: id)
         openedFavorites.remove(id)
         recentTabs.removeAll { $0 == id }
-        if !tab.isFavorite {
+        if !tab.isFavorite || (!unloadingPanes && session.split(containing: id) != nil) {
             session.close(id: id)
             extensionsDidClose(tab)
             if rememberForReopen {
                 closedTabs.append(tab)
                 if closedTabs.count > Self.maximumClosedTabs { closedTabs.removeFirst() }
             }
-            persist()
+        } else {
+            session.returnToPinnedPage(id: id)
         }
+        persist()
         if wasSelected { selectTab(next) }
     }
 
     func isTabOpen(_ tab: BrowserTab) -> Bool {
         !tab.isFavorite || openedFavorites.contains(tab.id)
+    }
+
+    /// The favorite shows its pinned page again (docs/BROWSING.md › Pinned pages).
+    func returnToPinnedPage(_ id: UUID) {
+        guard let tab = tab(id), tab.hasLeftPinnedPage, let pinnedURL = tab.pinnedURL else { return }
+        navigate(id, to: pinnedURL)
+    }
+
+    /// The page the favorite shows becomes its pinned page.
+    func pinCurrentPage(_ id: UUID) {
+        guard !isChangingStructure, let tab = tab(id), session.setPinnedURL(id: id, to: tab.url) else { return }
+        persist()
+    }
+
+    /// An address typed for the favorite's pinned page, as the address field reads one.
+    func setPinnedPage(_ id: UUID, to text: String) {
+        guard !isChangingStructure, let url = NavigationInput.address(from: text), session.setPinnedURL(id: id, to: url) else { return }
+        persist()
     }
 
     /// Removing a closed favorite deletes its record; an open one becomes an ordinary tab.
@@ -453,12 +499,19 @@ final class BrowserModel {
     }
 
     /// The open tab below a removed one, else above; after a favorite, the tab shown before it.
-    func tabShown(afterRemoving tab: BrowserTab) -> UUID? {
+    /// What shows once `tab` goes, never one of the tabs `going` with it.
+    func tabShown(afterRemoving tab: BrowserTab, along going: Set<UUID> = []) -> UUID? {
+        let gone = going.union([tab.id])
+        // In a split, the pane after it, else before it, takes the focus.
+        if let panes = session.split(containing: tab.id)?.tabIDs, let index = panes.firstIndex(of: tab.id),
+           let pane = panes[(index + 1)...].first(where: { !gone.contains($0) }) ?? panes[..<index].last(where: { !gone.contains($0) }) {
+            return pane
+        }
         if tab.isFavorite {
             let ids = Set(tabs.map(\.id))
-            return recentTabs.first { $0 != tab.id && ids.contains($0) }
+            return recentTabs.first { !gone.contains($0) && ids.contains($0) }
         }
-        let open = tabs.filter { !$0.isFavorite }
+        let open = tabs.filter { !$0.isFavorite && ($0.id == tab.id || !gone.contains($0.id)) }
         guard let index = open.firstIndex(where: { $0.id == tab.id }) else { return nil }
         if open.indices.contains(index + 1) { return open[index + 1].id }
         return index > 0 ? open[index - 1].id : nil
@@ -476,19 +529,29 @@ final class BrowserModel {
     }
 
     /// Within the tab's space; `moveTabs(_:toSpace:at:showing:)` crosses spaces.
+    /// A pane of a split moves its split.
     func moveTab(_ id: UUID, to place: TabPlace, before targetID: UUID?) {
         guard !isChangingStructure else { return }
-        let wasFavorite = session.tabs.first { $0.id == id }?.isFavorite
-        let index = extensionIndex(of: id)
-        guard session.move(id: id, to: place, before: targetID) else { return }
-        if let moved = tab(id) {
-            if extensionIndex(of: id) != index { extensionsDidMove(moved, fromIndex: index) }
-            if wasFavorite != place.isFavorite { extensionsDidChange(moved, .pinned) }
+        if movingTabs([id], { session.move(id: id, to: place, before: targetID) }) { persist() }
+    }
+
+    /// Runs `change`, which may move the tabs and the panes of their splits within their space, then tells extensions
+    /// and page lifetimes which of them moved or became, or stopped being, favorites.
+    func movingTabs(_ ids: [UUID], _ change: () -> Bool) -> Bool {
+        let watched = Set(ids.flatMap { session.split(containing: $0)?.tabIDs ?? [$0] })
+        let before = watched.compactMap { id in tab(id).map { (id: id, wasFavorite: $0.isFavorite, index: extensionIndex(of: id)) } }
+        guard change() else { return false }
+        var favoritesChanged = false
+        for old in before {
+            guard let moved = tab(old.id) else { continue }
+            if extensionIndex(of: old.id) != old.index { extensionsDidMove(moved, fromIndex: old.index) }
+            guard moved.isFavorite != old.wasFavorite else { continue }
+            favoritesChanged = true
+            extensionsDidChange(moved, .pinned)
+            if moved.isFavorite { openedFavorites.insert(old.id) } else { openedFavorites.remove(old.id) }
         }
-        if wasFavorite == false, place.isFavorite { openedFavorites.insert(id) }
-        if !place.isFavorite { openedFavorites.remove(id) }
-        if wasFavorite != place.isFavorite { pages.refreshHibernationSchedule() }
-        persist()
+        if favoritesChanged { pages.refreshHibernationSchedule() }
+        return true
     }
 
     @discardableResult
@@ -512,6 +575,13 @@ final class BrowserModel {
     func renameGroup(_ id: UUID, to name: String) {
         guard !isChangingStructure else { return }
         session.renameGroup(id: id, to: name)
+        persist()
+    }
+
+    /// `nil` gives the folder back.
+    func setGroupIcon(_ id: UUID, to icon: String?) {
+        guard !isChangingStructure else { return }
+        session.setGroupIcon(id: id, to: icon)
         persist()
     }
 

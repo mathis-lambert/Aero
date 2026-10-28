@@ -10,6 +10,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
     case toggleFavorite, duplicateTab, renameTab, closeOtherTabs, closeFollowingTabs
     case newGroup, moveToGroup, moveToSpace, nextSpace, previousSpace
     case openPeekInTab
+    case newPane, separateSplit, nextPane, previousPane, newTerminal
 
     /// Who receives the command's shortcut while a web page has keyboard focus.
     public enum KeyRouting: Sendable {

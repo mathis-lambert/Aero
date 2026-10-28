@@ -64,13 +64,15 @@ struct MoveToGroupMenu: View {
             let choices = browser.groupChoices(for: tabs)
             ForEach(choices) { choice in
                 if case .group(let group) = choice {
-                    Button { browser.move(tabs.map(\.id), to: choice) } label: { Text(verbatim: group.name) }
+                    Button { browser.move(tabs.map(\.id), to: choice) } label: {
+                        Label { Text(verbatim: group.name) } icon: { Image(systemName: group.icon ?? "folder") }
+                    }
                         .disabled(browser.isCurrent(choice, for: tabs))
                 }
             }
             if choices.contains(.ungroup) {
                 Divider()
-                Button("Out of Group") { browser.move(tabs.map(\.id), to: .ungroup) }
+                Button("Out of Group", systemImage: "folder.badge.minus") { browser.move(tabs.map(\.id), to: .ungroup) }
             }
         }
     }
@@ -94,7 +96,9 @@ struct MoveToSpaceMenu: View {
 
     private func buttons(_ spaces: [BrowserSpace]) -> some View {
         ForEach(spaces) { space in
-            Button { move(space) } label: { Text(verbatim: space.name) }
+            Button { move(space) } label: {
+                Label { Text(verbatim: space.name) } icon: { Image(systemName: "rectangle.stack") }
+            }
                 .disabled(isCurrent(space))
         }
     }

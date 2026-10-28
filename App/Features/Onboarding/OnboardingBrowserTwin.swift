@@ -107,7 +107,7 @@ struct OnboardingBrowserTwin: View {
                     ForEach(browser.session.spaces) { item in
                         let selected = item.id == space.id
                         HStack(spacing: SpaceBar.nameSpacing) {
-                            SpaceIcon(space: item, size: 12).grayscale(selected ? 0 : 1).opacity(selected ? 1 : SpaceBar.otherOpacity)
+                            SpaceIcon(space: item, size: SpaceBar.glyphSize).grayscale(selected ? 0 : 1).opacity(selected ? 1 : SpaceBar.otherOpacity)
                             if selected {
                                 Text(verbatim: item.name).font(SpaceBar.nameFont).lineLimit(1)
                                     .frame(maxWidth: SpaceBar.maximumNameWidth, alignment: .leading)
@@ -117,7 +117,7 @@ struct OnboardingBrowserTwin: View {
                         .padding(.horizontal, selected ? SpaceBar.capsulePadding : 0)
                         .frame(minWidth: SpaceBar.iconSize)
                         .frame(height: SpaceBar.height)
-                        .background { if selected { Color.clear.browserGlass(.control, radius: SpaceBar.height / 2) } }
+                        .background { if selected { Capsule().fill(palette.fill) } }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -142,7 +142,7 @@ struct OnboardingBrowserTwin: View {
             }
             ForEach(tabs.groups, id: \.group.id) { group, _ in
                 HStack(spacing: BrowserDesign.rowInset) {
-                    FolderIcon(isOpen: false, tint: palette.secondary)
+                    FolderIcon(isOpen: false, tint: palette.secondary, symbol: group.icon)
                         .frame(width: BrowserDesign.rowIconWidth)
                     Text(verbatim: group.name).lineLimit(1)
                     Spacer(minLength: 0)

@@ -1156,6 +1156,16 @@
         }
       }
     },
+    "Back to %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenir à %@"
+          }
+        }
+      }
+    },
     "Background" : {
       "localizations" : {
         "fr" : {
@@ -1522,6 +1532,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Changer de profil de navigation ?"
+          }
+        }
+      }
+    },
+    "Change Icon…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer l’icône…"
           }
         }
       }
@@ -2794,6 +2814,26 @@
         }
       }
     },
+    "Edit Pinned Page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier la page épinglée"
+          }
+        }
+      }
+    },
+    "Edit…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier…"
+          }
+        }
+      }
+    },
     "Expand Groups" : {
       "localizations" : {
         "fr" : {
@@ -3082,6 +3122,16 @@
         }
       }
     },
+    "Move Pane" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer le panneau"
+          }
+        }
+      }
+    },
     "Move Tabs" : {
       "localizations" : {
         "fr" : {
@@ -3294,6 +3344,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Épingler les onglets"
+          }
+        }
+      }
+    },
+    "Pinned Page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page épinglée"
           }
         }
       }
@@ -3558,6 +3618,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rouvrir %@"
+          }
+        }
+      }
+    },
+    "Replace Pinned URL with Current" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacer l’URL épinglée par l’actuelle"
           }
         }
       }
@@ -10772,6 +10842,176 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fermer l’aperçu"
+          }
+        }
+      }
+    },
+    "Shell ended — Start Again" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shell terminé — Relancer"
+          }
+        }
+      }
+    },
+    "Terminal" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        }
+      }
+    },
+    "Move Out of Split View" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sortir de la vue partagée"
+          }
+        }
+      }
+    },
+    "Close Split View" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer la vue partagée"
+          }
+        }
+      }
+    },
+    "Separate Split View" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séparer la vue partagée"
+          }
+        }
+      }
+    },
+    "Open Beside Current Tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir à côté de l’onglet actuel"
+          }
+        }
+      }
+    },
+    "Open in Split View" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir en vue partagée"
+          }
+        }
+      }
+    },
+    "Split View" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vue partagée"
+          }
+        }
+      }
+    },
+    "Next Pane" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volet suivant"
+          }
+        }
+      }
+    },
+    "Previous Pane" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volet précédent"
+          }
+        }
+      }
+    },
+    "Show the panes of this split view as separate tabs again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher de nouveau les volets de cette vue partagée comme des onglets séparés."
+          }
+        }
+      }
+    },
+    "Move the focus between the panes of the split view." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer d’un volet à l’autre de la vue partagée."
+          }
+        }
+      }
+    },
+    "New Tab Beside" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvel onglet à côté"
+          }
+        }
+      }
+    },
+    "New Terminal" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau terminal"
+          }
+        }
+      }
+    },
+    "Show a New Tab page on the right of the current tab, in a split view." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher une page Nouvel onglet à droite de l’onglet actuel, en vue partagée."
+          }
+        }
+      }
+    },
+    "Open a shell on the right of the current tab, or in a tab from the New Tab page." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir un shell à droite de l’onglet actuel, ou dans un onglet depuis la page Nouvel onglet."
+          }
+        }
+      }
+    },
+    "Close Pane" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer le volet"
           }
         }
       }

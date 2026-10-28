@@ -4,6 +4,8 @@ import Foundation
 /// Websites can never navigate to these addresses; only the browser opens them.
 public enum InternalPage: String, Sendable {
     case history
+    /// A shell in a pseudo-terminal (docs/TERMINAL.md). Its address keeps the folder it was last in.
+    case terminal
 
     package static let scheme = "aero"
 

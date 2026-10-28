@@ -94,3 +94,17 @@ private func waitUntilLoaded(_ page: BrowserPage) async throws {
     }
     #expect(value == "kept")
 }
+
+// docs/SPLIT_VIEW.md: the panes shown beside the active tab are as visible as it is.
+@Test @MainActor func panesShownBesideTheActiveTabNeverHibernate() async throws {
+    let registry = makeRegistry()
+    let first = try makeTab()
+    let second = try makeTab()
+    let third = try makeTab()
+    registry.activate(first, profileID: UUID(), alongside: [first, second])
+    await registry.hibernateDuePages()
+    #expect(registry.livePage(second.id) != nil, "A pane beside the active tab stays loaded")
+    activate(third, in: registry)
+    await registry.hibernateDuePages()
+    #expect(registry.livePage(first.id) == nil && registry.livePage(second.id) == nil, "Once the split is left, its panes hibernate as tabs do")
+}

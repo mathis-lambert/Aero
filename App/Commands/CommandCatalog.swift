@@ -59,6 +59,11 @@ extension BrowserCommand {
         case .findPrevious: String(localized: "Find Previous")
         case .copyLink: String(localized: "Copy Link")
         case .openPeekInTab: String(localized: "Open Peek in Tab")
+        case .newPane: String(localized: "New Tab Beside")
+        case .separateSplit: String(localized: "Separate Split View")
+        case .nextPane: String(localized: "Next Pane")
+        case .previousPane: String(localized: "Previous Pane")
+        case .newTerminal: String(localized: "New Terminal")
         case .controlCenter: String(localized: "Site Controls")
         case .clearCookies: String(localized: "Clear Cookies")
         case .clearCache: String(localized: "Clear Cache")
@@ -117,6 +122,10 @@ extension BrowserCommand {
         case .moveToSpace: String(localized: "Move the current tab to another space.")
         case .nextSpace, .previousSpace: String(localized: "Switch spaces in their listed order.")
         case .openPeekInTab: String(localized: "Open the link previewed over the page in a tab of its own.")
+        case .newPane: String(localized: "Show a New Tab page on the right of the current tab, in a split view.")
+        case .separateSplit: String(localized: "Show the panes of this split view as separate tabs again.")
+        case .nextPane, .previousPane: String(localized: "Move the focus between the panes of the split view.")
+        case .newTerminal: String(localized: "Open a shell on the right of the current tab, or in a tab from the New Tab page.")
         }
     }
 
@@ -177,6 +186,11 @@ extension BrowserCommand {
         case .findPrevious: "chevron.up"
         case .copyLink: "link"
         case .openPeekInTab: "arrow.up.left.and.arrow.down.right"
+        case .newPane: "rectangle.split.2x1"
+        case .separateSplit: "rectangle.split.2x1.slash"
+        case .nextPane: "rectangle.trailinghalf.inset.filled.arrow.trailing"
+        case .previousPane: "inset.filled.leadinghalf.rectangle"
+        case .newTerminal: "apple.terminal"
         case .controlCenter: "switch.2"
         case .clearCookies: "trash"
         case .clearCache: "externaldrive.badge.xmark"
@@ -209,7 +223,7 @@ extension BrowserCommand {
         case .newTab, .closeTab, .reopenTab, .nextTab, .previousTab, .recentTab, .previousRecentTab,
              .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab,
              .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace,
-             .openPeekInTab: .tabs
+             .openPeekInTab, .newPane, .separateSplit, .nextPane, .previousPane, .newTerminal: .tabs
         case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
@@ -275,6 +289,11 @@ extension BrowserCommand {
         case .lastTab: return [.init("9")]
         case .toggleFavorite: return [.init("d")]
         case .openPeekInTab: return [.init("o")]
+        case .newPane: return [.init("=", .control)]
+        case .separateSplit: return [.init("-", .control)]
+        case .nextPane: return [.init(String(KeyEquivalent.rightArrow.character), [.control, .option])]
+        case .previousPane: return [.init(String(KeyEquivalent.leftArrow.character), [.control, .option])]
+        case .newTerminal: return [.init("`", .control)]
         default: return []
         }
     }

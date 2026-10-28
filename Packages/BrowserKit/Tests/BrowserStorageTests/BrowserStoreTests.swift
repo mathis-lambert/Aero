@@ -226,3 +226,57 @@ private func location() -> URL { FileManager.default.temporaryDirectory.appendin
     await store.close()
     #expect(try await BrowserStore(directory: folder).load() == session)
 }
+
+// Failure modes: a split's layout or ratios read back different, or a split whose pane closed comes back.
+@Test func splitsKeepTheirLayoutAcrossSaves() async throws {
+    let folder = location()
+    defer { try? FileManager.default.removeItem(at: folder) }
+    var session = BrowserSession(profileName: "Personal")
+    let space = session.spaces[0].id
+    let tabs = (0..<3).compactMap { session.open(URL(string: "https://example.test/\($0)")!, in: space) }.map(\.id)
+    session.split(tabs[1], beside: tabs[0], at: .trailing)
+    session.split(tabs[2], beside: tabs[1], at: .bottom)
+    let split = try #require(session.splits.first)
+    session.resizeSplit(id: split.id, divider: SplitDivider.Place(path: [], index: 0), to: 0.35)
+    let store = BrowserStore(directory: folder)
+    try await store.save(session, revision: 1)
+    #expect(try await store.load() == session)
+
+    session.close(id: tabs[0])
+    session.close(id: tabs[1])
+    #expect(session.splits.isEmpty)
+    try await store.save(session, revision: 2)
+    await store.close()
+    #expect(try await BrowserStore(directory: folder).load()?.splits.isEmpty == true)
+}
+
+@Test func aFavoriteKeepsItsPinnedPageAcrossSaves() async throws {
+    let folder = location()
+    defer { try? FileManager.default.removeItem(at: folder) }
+    var session = BrowserSession(profileName: "Personal")
+    let opened = session.open(URL(string: "https://example.test/home")!, in: session.spaces[0].id)
+    let tab = try #require(opened)
+    _ = session.move(id: tab.id, to: .grid, before: nil)
+    session.updateTab(id: tab.id, url: URL(string: "https://example.test/elsewhere")!, title: "Elsewhere")
+    let store = BrowserStore(directory: folder)
+    try await store.save(session, revision: 1)
+    await store.close()
+    let loaded = try await BrowserStore(directory: folder).load()
+    #expect(loaded?.tabs.first?.pinnedURL == URL(string: "https://example.test/home"))
+    #expect(loaded?.tabs.first?.hasLeftPinnedPage == true)
+}
+
+@Test func aFolderKeepsItsIconAcrossSaves() async throws {
+    let folder = location()
+    defer { try? FileManager.default.removeItem(at: folder) }
+    var session = BrowserSession(profileName: "Personal")
+    let added = session.addGroup(named: "Work", in: session.spaces[0].id)
+    let group = try #require(added)
+    session.setGroupIcon(id: group.id, to: "briefcase")
+    let store = BrowserStore(directory: folder)
+    try await store.save(session, revision: 1)
+    await store.close()
+    #expect(try await BrowserStore(directory: folder).load()?.spaces[0].groups.first?.icon == "briefcase")
+    session.setGroupIcon(id: group.id, to: " ")
+    #expect(session.spaces[0].groups.first?.icon == nil, "A blank icon gives the folder back")
+}

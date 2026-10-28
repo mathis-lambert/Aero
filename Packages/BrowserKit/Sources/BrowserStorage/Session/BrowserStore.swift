@@ -167,11 +167,11 @@ public actor BrowserStore {
             return try BrowserSpace(id: row.uuid(0), profileID: row.uuid(1), name: row.text(2), color: color, emoji: row.optionalText(4))
         }
         for index in spaces.indices {
-            spaces[index].groups = try db.query("SELECT id, name, collapsed, slot FROM tab_groups WHERE space_id = ? ORDER BY position", [.text(spaces[index].id.uuidString)]) {
-                try TabGroup(id: $0.uuid(0), name: $0.text(1), isCollapsed: $0.integer(2) != 0, slot: Int($0.integer(3)))
+            spaces[index].groups = try db.query("SELECT id, name, collapsed, slot, icon FROM tab_groups WHERE space_id = ? ORDER BY position", [.text(spaces[index].id.uuidString)]) {
+                try TabGroup(id: $0.uuid(0), name: $0.text(1), isCollapsed: $0.integer(2) != 0, slot: Int($0.integer(3)), icon: $0.optionalText(4))
             }
         }
-        let tabs = try db.query("SELECT id, space_id, url, title, custom_name, placement, group_id FROM tabs ORDER BY position") { row -> BrowserTab in
+        let tabs = try db.query("SELECT id, space_id, url, title, custom_name, placement, group_id, pinned_url FROM tabs ORDER BY position") { row -> BrowserTab in
             guard let url = URL(string: row.text(2)) else { throw StorageError.invalidData }
             let place: TabPlace
             switch row.text(5) {
@@ -180,9 +180,20 @@ public actor BrowserStore {
             case "list": place = .list(group: row.optionalText(6) == nil ? nil : try row.uuid(6))
             default: throw StorageError.invalidData
             }
-            return try BrowserTab(id: row.uuid(0), spaceID: row.uuid(1), url: url, title: row.text(3), name: row.optionalText(4), place: place)
+            let pinnedText = try row.optionalText(7)
+            let pinnedURL = pinnedText.flatMap(URL.init(string:))
+            guard (pinnedText == nil) == (pinnedURL == nil) else { throw StorageError.invalidData }
+            var tab = try BrowserTab(id: row.uuid(0), spaceID: row.uuid(1), url: url, title: row.text(3), name: row.optionalText(4), place: place)
+            // As stored: a favorite without its own page fails the session's validation.
+            tab.pinnedURL = pinnedURL
+            return tab
         }
-        let session = BrowserSession(profiles: profiles, spaces: spaces, tabs: tabs)
+        // A split's layout names its tabs; the session's validation checks they are open tabs of its space.
+        let splits = try db.query("SELECT id, space_id, layout FROM splits ORDER BY position") { row -> TabSplit in
+            guard let root = try? JSONDecoder().decode(SplitNode.self, from: Data(row.text(2).utf8)) else { throw StorageError.invalidData }
+            return try TabSplit(id: row.uuid(0), spaceID: row.uuid(1), root: root)
+        }
+        let session = BrowserSession(profiles: profiles, spaces: spaces, tabs: tabs, splits: splits)
         try session.validate()
         return session
     }
@@ -236,8 +247,8 @@ public actor BrowserStore {
             if oldSpaces[space.id] != space || previous?.spaces.indices.contains(position) != true || previous?.spaces[position].id != space.id {
                 try db.run("INSERT INTO spaces (id,profile_id,name,color,emoji,position) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET profile_id=excluded.profile_id,name=excluded.name,color=excluded.color,emoji=excluded.emoji,position=excluded.position", [.text(space.id.uuidString), .text(space.profileID.uuidString), .text(space.name), .text(space.color.hex), text(space.emoji), .integer(Int64(position))])
                 for (index, group) in space.groups.enumerated() {
-                    try db.run("INSERT INTO tab_groups (id,space_id,name,collapsed,position,slot) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET space_id=excluded.space_id,name=excluded.name,collapsed=excluded.collapsed,position=excluded.position,slot=excluded.slot",
-                               [.text(group.id.uuidString), .text(space.id.uuidString), .text(group.name), .integer(group.isCollapsed ? 1 : 0), .integer(Int64(index)), .integer(Int64(group.slot))])
+                    try db.run("INSERT INTO tab_groups (id,space_id,name,collapsed,position,slot,icon) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET space_id=excluded.space_id,name=excluded.name,collapsed=excluded.collapsed,position=excluded.position,slot=excluded.slot,icon=excluded.icon",
+                               [.text(group.id.uuidString), .text(space.id.uuidString), .text(group.name), .integer(group.isCollapsed ? 1 : 0), .integer(Int64(index)), .integer(Int64(group.slot)), text(group.icon)])
                 }
             }
         }
@@ -251,8 +262,17 @@ public actor BrowserStore {
             case .grid: place = "grid"; group = nil
             case .list(let id): place = "list"; group = id?.uuidString
             }
-            try db.run("INSERT INTO tabs (id,space_id,url,title,custom_name,placement,group_id,position) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET space_id=excluded.space_id,url=excluded.url,title=excluded.title,custom_name=excluded.custom_name,placement=excluded.placement,group_id=excluded.group_id,position=excluded.position",
-                       [.text(tab.id.uuidString), .text(tab.spaceID.uuidString), .text(tab.url.absoluteString), .text(tab.title), text(tab.name), .text(place), text(group), .integer(Int64(position))])
+            try db.run("INSERT INTO tabs (id,space_id,url,title,custom_name,placement,group_id,position,pinned_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET space_id=excluded.space_id,url=excluded.url,title=excluded.title,custom_name=excluded.custom_name,placement=excluded.placement,group_id=excluded.group_id,position=excluded.position,pinned_url=excluded.pinned_url",
+                       [.text(tab.id.uuidString), .text(tab.spaceID.uuidString), .text(tab.url.absoluteString), .text(tab.title), text(tab.name), .text(place), text(group), .integer(Int64(position)), text(tab.pinnedURL?.absoluteString)])
+        }
+        // Few and small: rewritten whole when any changes.
+        if previous?.splits != session.splits {
+            try db.run("DELETE FROM splits")
+            for (position, split) in session.splits.enumerated() {
+                guard let layout = String(data: try JSONEncoder().encode(split.root), encoding: .utf8) else { throw StorageError.invalidData }
+                try db.run("INSERT INTO splits (id,space_id,layout,position) VALUES (?, ?, ?, ?)",
+                           [.text(split.id.uuidString), .text(split.spaceID.uuidString), .text(layout), .integer(Int64(position))])
+            }
         }
     }
 

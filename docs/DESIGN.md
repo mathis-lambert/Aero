@@ -16,12 +16,13 @@ Use semantic surfaces, one consistent hairline border, and visible hover/pressed
 The chrome's surfaces are Liquid Glass through one modifier, `browserGlass(_:tint:radius:)` (`App/Design/BrowserGlass.swift`), whose role sets the intensity: the more a surface matters, the more glass it is. No surface applies glass directly.
 
 - **Selection**: the selected tab, the active favorite and the control bar's chosen result are a full lens, responsive to the pointer. The favorite's is tinted with its favicon's color, which also glows behind it (`glassGlow`), so the glass bends that light.
-- **Control**: full glass that answers the pointer: the address, a capsule whose buttons light up as circles; the space shown in the footer; the tiles and switches of the site's control center; the history search; the New Tab page's website tiles, tinted with their favicon's color, and its open tabs. A switch that is on is glass colored through with the space's color (**accent**).
-- **Hover**: a tab or folder picked with ⌘ or ⇧ is faint clear glass. A favorite under the pointer only brightens: glass coming and going at each pass would flicker over its icon.
+- **Control**: full glass that answers the pointer: the address, a capsule whose buttons light up as circles; the tiles and switches of the site's control center; the history search; the New Tab page's website tiles, tinted with their favicon's color, and its open tabs. A switch that is on is glass colored through with the space's color (**accent**).
+- **Tile**: a favorite at rest is clear glass at half strength, still, the window showing through; under the pointer it only brightens, glass coming and going at each pass would flicker over its icon.
+- **Hover**: a tab or folder picked with ⌘ or ⇧ is faint clear glass.
 - **Container**: an open folder holds its tabs on a pane at a fraction of the glass, so the selected tab stands out on it; a margin keeps two open folders apart.
 - **Panel**: what floats over the page is full glass, untinted, so its content reads over any page: the control bar, prompts, the find bar, tooltips, a folder's preview, the password picker and offers, the portrait studio, the page zoom indicator, and the onboarding's cards. The sidebar revealed over the page is glass too (**sidebar**).
 
-Favorites at rest stay recessed and opaque, and a dragged item leaves a plain gap. Settings keeps the system's own forms. With Reduce Transparency every glass surface is opaque with the hairline border, and no glow shows.
+The window itself is a little translucent (`WindowBackdrop`): the desktop shows through blurred under the chrome's color at 70 %, tinted by the space's color, which follows a switch of space. A dragged favorite leaves a plain gap; no container groups the tiles, whose glass would then bend their own icons. Settings keeps the system's own forms. With Reduce Transparency every glass surface is opaque with the hairline border, and no glow shows.
 
 ## Layout
 

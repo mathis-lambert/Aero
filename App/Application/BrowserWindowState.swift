@@ -10,6 +10,11 @@ final class BrowserWindowState {
     var zoomFeedback: PageZoomFeedback?
     /// The control bar over the selected tab; the New Tab page shows its own.
     var controlBar: ControlBarPresentation?
+    /// A New Tab page asked for in a pane beside the selected tab, until it opens something (docs/SPLIT_VIEW.md).
+    var newPane: NewPane?
+    /// Changes when the page shows tabs none of which it showed before, so they show at once; while it keeps one of
+    /// them, panes come, go and resize with a spring (`SplitPageView`).
+    var paneGroup = UUID()
     /// The link previewed over the selected tab (docs/BROWSING.md › Peek).
     var peek: Peek?
     /// How far the press on the previewed link has gone toward a force click, from 0 to 1. Apart from `peek`, so its
@@ -73,6 +78,8 @@ final class BrowserWindowState {
 enum RenameTarget: Equatable {
     case tab(UUID)
     case group(UUID)
+    /// A favorite's pinned page, edited as an address.
+    case pinnedPage(UUID)
 }
 
 /// Everything the browser asks the person, each shown by one `Prompt` over the window.

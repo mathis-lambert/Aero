@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// A dedicated native window owns the traffic lights, navigation toolbar and resizing.
+/// Its own window, with the unified toolbar: Back and Forward and the page's title leading, as in System Settings.
 struct SettingsView: View {
+    static let windowID = "settings"
     private static let historyLimit = 32
     let browser: BrowserModel
     @State private var history: [SettingsRoute] = [.section(.general)]
@@ -53,13 +54,15 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle(title)
             .toolbar {
-                ToolbarItemGroup(placement: .navigation) {
-                    Button("Previous settings page", systemImage: "chevron.backward") { historyIndex -= 1 }
-                        .disabled(historyIndex == 0)
-                        .accessibilityIdentifier("settings.back")
-                    Button("Next settings page", systemImage: "chevron.forward") { historyIndex += 1 }
-                        .disabled(historyIndex == history.count - 1)
-                        .accessibilityIdentifier("settings.forward")
+                ToolbarItem(placement: .navigation) {
+                    ControlGroup {
+                        Button("Previous settings page", systemImage: "chevron.backward") { historyIndex -= 1 }
+                            .disabled(historyIndex == 0)
+                            .accessibilityIdentifier("settings.back")
+                        Button("Next settings page", systemImage: "chevron.forward") { historyIndex += 1 }
+                            .disabled(historyIndex == history.count - 1)
+                            .accessibilityIdentifier("settings.forward")
+                    }
                 }
             }
         }

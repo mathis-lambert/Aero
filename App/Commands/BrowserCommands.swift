@@ -2,7 +2,7 @@ import AppKit
 import BrowserCore
 import SwiftUI
 
-/// The menu bar, arranged like Safari's: see docs/SHORTCUTS.md › Menus. Actions only reachable from the keyboard,
+/// The menu bar, arranged like Safari's, every item with its symbol (`menuIcons`): see docs/SHORTCUTS.md › Menus. Actions only reachable from the keyboard,
 /// such as numbered tabs, and those Settings already covers, such as profiles, stay out of it.
 struct BrowserMenuCommands: Commands {
     let application: BrowserModel
@@ -13,15 +13,20 @@ struct BrowserMenuCommands: Commands {
 
     var body: some Commands {
         CommandGroup(after: .appInfo) {
-            Button(BrowserCommand.checkForUpdates.title) { application.perform(.checkForUpdates) }
+            Button(BrowserCommand.checkForUpdates.title, systemImage: BrowserCommand.checkForUpdates.symbol) { application.perform(.checkForUpdates) }
                 .keyboardShortcut(application.shortcuts.shortcut(for: .checkForUpdates))
                 .disabled(!application.isEnabled(.checkForUpdates))
+                .menuIcons()
+        }
+        CommandGroup(replacing: .appSettings) {
+            Button("Settings…", systemImage: "gearshape") { openWindow(id: SettingsView.windowID) }.keyboardShortcut(",").menuIcons()
         }
         CommandGroup(replacing: .appTermination) {
-            Button("Quit Aero", action: quit).keyboardShortcut("q")
+            Button("Quit Aero", systemImage: "power", action: quit).keyboardShortcut("q").menuIcons()
         }
         CommandGroup(replacing: .newItem) {
             command(.newTab)
+            command(.newTerminal)
             command(.openLocation)
             command(.openFile)
             command(.commandPalette)
@@ -31,6 +36,7 @@ struct BrowserMenuCommands: Commands {
             closeTab
             Button("Close Window", systemImage: "macwindow") { NSApp.keyWindow?.performClose(nil) }
                 .keyboardShortcut("w", modifiers: [.command, .shift])
+                .menuIcons()
             Divider()
             command(.savePage)
             command(.exportAsPDF)
@@ -47,6 +53,7 @@ struct BrowserMenuCommands: Commands {
                 command(.findNext)
                 command(.findPrevious)
             }
+            .menuIcons()
         }
         CommandGroup(after: .toolbar) {
             let pinned = browser?.window.sidebarPinned ?? true
@@ -84,14 +91,24 @@ struct BrowserMenuCommands: Commands {
             command(.renameTab)
             command(.openPeekInTab)
             Divider()
+            Menu("Split View", systemImage: BrowserCommand.newPane.symbol) {
+                command(.newPane)
+                Divider()
+                command(.nextPane)
+                command(.previousPane)
+                Divider()
+                command(.separateSplit)
+            }
+            .menuIcons()
+            Divider()
             command(.newGroup)
             if let browser, browser.selectedTab != nil {
                 let tabs = browser.tabs(browser.commandTabs)
-                MoveToGroupMenu(browser: browser, tabs: tabs).disabled(!browser.isEnabled(.moveToGroup))
-                MoveToSpaceMenu(browser: browser, tabs: tabs).disabled(!browser.isEnabled(.moveToSpace))
+                MoveToGroupMenu(browser: browser, tabs: tabs).disabled(!browser.isEnabled(.moveToGroup)).menuIcons()
+                MoveToSpaceMenu(browser: browser, tabs: tabs).disabled(!browser.isEnabled(.moveToSpace)).menuIcons()
             } else {
-                Menu("Move to Group", systemImage: BrowserCommand.moveToGroup.symbol) {}.disabled(true)
-                Menu("Move to Space", systemImage: BrowserCommand.moveToSpace.symbol) {}.disabled(true)
+                Menu("Move to Group", systemImage: BrowserCommand.moveToGroup.symbol) {}.disabled(true).menuIcons()
+                Menu("Move to Space", systemImage: BrowserCommand.moveToSpace.symbol) {}.disabled(true).menuIcons()
             }
             Divider()
             command(.closeOtherTabs)
@@ -136,12 +153,14 @@ struct BrowserMenuCommands: Commands {
         }
         .keyboardShortcut(browser?.shortcuts.shortcut(for: .closeTab) ?? (browser == nil ? KeyboardShortcut("w") : nil))
         .disabled(browser.map { !$0.isEnabled(.closeTab) } ?? false)
+        .menuIcons()
     }
 
     private func command(_ command: BrowserCommand, title: String? = nil, symbol: String? = nil) -> some View {
         Button(title ?? command.title, systemImage: symbol ?? command.symbol) { browser?.perform(command) }
             .keyboardShortcut(browser?.shortcuts.shortcut(for: command))
             .disabled(browser?.isEnabled(command) != true)
+            .menuIcons()
     }
 }
 

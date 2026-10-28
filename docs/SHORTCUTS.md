@@ -30,6 +30,9 @@ pinned tabs and open tabs; Command-9 selects the last one.
 | Next / previous space | Control-Command-Right / Control-Command-Left |
 | Recent / reverse recent | Control-Tab / Shift-Control-Tab |
 | Tabs 1–8 / last | Command-1…8 / Command-9 |
+| New tab beside / separate split view | Control-equals / Control-minus ([Split view](SPLIT_VIEW.md)) |
+| Next / previous pane | Control-Option-Right / Control-Option-Left |
+| New terminal | Control-` ([Terminal](TERMINAL.md)) |
 | Open peek in tab / close peek | Command-O / Escape, while a link is previewed ([Browsing](BROWSING.md) › Peek) |
 
 Other catalog actions can be assigned without a default binding. Zoom is live-page state, not a persistent site setting.
@@ -79,11 +82,11 @@ item. Titles that toggle say what they will do (Show/Hide Sidebar, Add to/Remove
 | Menu | Contents |
 | --- | --- |
 | Aero | Settings…, Quit |
-| File | New Tab, Open Location…, Open File…, Command Bar · Close Tab, Close Window · Save As…, Export as PDF…, Capture in Portrait Mode · Import from Another Browser… · Print… |
+| File | New Tab, New Terminal, Open Location…, Open File…, Command Bar · Close Tab, Close Window · Save As…, Export as PDF…, Capture in Portrait Mode · Import from Another Browser… · Print… |
 | Edit | Native editing, Copy Link, Find › Find…, Find Next, Find Previous |
 | View | Show/Hide Sidebar · Reload Page, Reload Without Cache, Stop Loading · Zoom In, Zoom Out, Actual Size · Show Downloads, Site Controls, Site Settings… |
 | History | Back, Forward · Reopen Closed Tab · Show All History |
-| Tabs | Next Tab, Previous Tab · Add to Favorites, Duplicate Tab, Rename Tab…, Open Peek in Tab · New Group with Tab, Move to Group ›, Move to Space › · Close Other Tabs, Close Tabs Below |
+| Tabs | Next Tab, Previous Tab · Add to Favorites, Duplicate Tab, Rename Tab…, Open Peek in Tab · Split View › New Tab Beside, Next Pane, Previous Pane, Separate Split View · New Group with Tab, Move to Group ›, Move to Space › · Close Other Tabs, Close Tabs Below |
 | Spaces | New Space… · every space, checked when shown, under its profile's name once there are several · Next Space, Previous Space |
 
 Move to Group and Move to Space list their choices as submenus, the same ones as the tab's context menu. From the
@@ -95,14 +98,16 @@ shortcuts always go to Aero, since a page could not pass one on to a menu item.
 ## Context menus
 
 Context menus follow the same rules: sections go from the item itself, to where it is kept, to how it is organized,
-then closing or removing it, which comes last and is marked destructive when it deletes something.
+then closing or removing it, which comes last and is marked destructive when it deletes something. Every item shows its
+symbol before its title, in the menu's own ink rather than the space's color (`menuIcons`), as the menu bar's items do.
 
 | Item | Contents |
 | --- | --- |
-| Tab or favorite | Copy Link · Duplicate Tab, Rename Tab… · Add to Favorites and Pin Tab for an open tab; Move to Pinned Tabs or Move to Favorites Grid, and Remove from Favorites, for a favorite · New Group with Tab, Move to Group ›, Move to Space › · Close Tab, while its page is open |
-| Group | Rename Group…, Collapse or Expand Group, Move to Space › · Ungroup, which keeps its tabs pinned |
+| Tab or favorite | Copy Link · Duplicate Tab, Rename Tab…, Open Beside Current Tab · Add to Favorites and Pin Tab for an open tab; Edit Pinned Page ›, Move to Pinned Tabs or Move to Favorites Grid, and Remove from Favorites, for a favorite · New Group with Tab, Move to Group ›, Move to Space › · Close Tab, while its page is open |
+| Group | Rename Group…, Change Icon…, Collapse or Expand Group, Move to Space › · Ungroup, which keeps its tabs pinned |
 | Groups picked with ⌘ or ⇧, with or without tabs | Copy Links · Collapse or Expand Groups, Move to Space › · Ungroup |
-| Several tabs picked with ⌘ or ⇧ | Copy Links · Duplicate *n* Tabs · Add to Favorites, Pin Tabs · New Group with *n* Tabs, Move to Group ›, Move to Space › · Close *n* Tabs ([Browsing](BROWSING.md) › Several tabs at once) |
+| Several tabs picked with ⌘ or ⇧ | Copy Links · Duplicate *n* Tabs, Open in Split View · Add to Favorites, Pin Tabs · New Group with *n* Tabs, Move to Group ›, Move to Space › · Close *n* Tabs ([Browsing](BROWSING.md) › Several tabs at once) |
+| Split view | Separate Split View · Close Split View |
 | Space | Edit Space… · Move Left, Move Right · Delete Space… |
 | Reload button | Reload Without Cache · Clear Cookies, Clear Cache · Site Settings… |
 | Extension | The extension's own items · Pin or Unpin Extension, Open Extension Options · Extension Settings…, Manage Extensions… · Remove Extension… |

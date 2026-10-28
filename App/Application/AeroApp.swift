@@ -33,13 +33,20 @@ struct AeroApp: App {
         .onChange(of: browser.mainWindowRequests) { openWindow(id: BrowserWindowView.windowID) }
         .commands { BrowserMenuCommands(application: browser, quit: browser.requestQuit) }
 
-        Settings {
+        // A window of its own rather than the Settings scene, whose preferences toolbar centers the title and the
+        // navigation in rows of their own: this one has the unified toolbar, navigation and title leading, as System
+        // Settings does. Settings… in the application menu opens it (`BrowserMenuCommands`).
+        Window("Settings", id: SettingsView.windowID) {
             SettingsView(browser: browser)
                 .browserMotionPreferences()
                 .autocorrectionDisabled()
         }
         .windowResizability(.contentSize)
-        .windowToolbarStyle(.unifiedCompact)
+        .windowToolbarStyle(.unified)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
+        // The Window menu has no item for it: Settings… is in the application menu.
+        .commandsRemoved()
     }
 }
 

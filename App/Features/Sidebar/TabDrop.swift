@@ -120,7 +120,8 @@ final class TabDropLayout {
     /// The tab or group under `point`. A dragged tab's own frame is a gap already shown, so it
     /// keeps `current`: the tiles moving aside never retarget a still pointer. In the pinned list a drop can land
     /// before or after a group as well as a tab; a group's header takes it in, except at its top quarter, which
-    /// drops before the group, and a closed group's bottom quarter, which drops after it.
+    /// drops before the group, and a closed group's bottom quarter, which drops after it. A split is one tab, never
+    /// entered: `dragged` holds every pane of a dragged split.
     func destination(at point: CGPoint, for dragged: [UUID], in tabs: SidebarTabs, current: TabDestination?) -> TabDestination? {
         // Resolve grid slots from geometry, not the tiles animating through them. Removing the
         // dragged item leaves a stable order, so a stationary pointer cannot oscillate slots.
@@ -131,7 +132,7 @@ final class TabDropLayout {
             let x = rightToLeft ? frame.maxX - point.x : point.x - frame.minX
             let column = min(columns, max(0, Int((x + width / 2 + spacing) / (width + spacing))))
             let row = max(0, Int((point.y - frame.minY) / (FavoritesGrid.tileHeight + spacing)))
-            let others = tabs.grid.filter { !dragged.contains($0.id) }
+            let others = tabs.entries(of: tabs.grid).filter { !dragged.contains($0.id) }
             let index = min(row * columns + column, others.count)
             return TabDestination(place: .grid, before: index < others.count ? others[index].id : nil)
         }
@@ -141,12 +142,12 @@ final class TabDropLayout {
         for (index, item) in pinned.enumerated() {
             let next = pinned.indices.contains(index + 1) ? pinned[index + 1].id : nil
             switch item {
-            case .tab(let tab):
-                if let row = rowFrame(of: tab.id), row.contains(point) {
-                    return TabDestination(place: .list(group: nil), before: point.y > row.midY ? next : tab.id)
+            case .entry(let entry):
+                if let row = rowFrame(of: entry.id), row.contains(point) {
+                    return TabDestination(place: .list(group: nil), before: point.y > row.midY ? next : entry.id)
                 }
             case .group(let group, let members):
-                let members = members.filter { !dragged.contains($0.id) }
+                let members = tabs.entries(of: members).filter { !dragged.contains($0.id) }
                 if let header = frames[.groupHeader(group.id)], header.contains(point) {
                     let edge = header.height * Self.headerEdge
                     if point.y < header.minY + edge { return TabDestination(place: .list(group: nil), before: group.id) }
@@ -157,7 +158,9 @@ final class TabDropLayout {
                 if let destination = rowDestination(at: point, among: members, in: .list(group: group.id)) { return destination }
             }
         }
-        if let destination = rowDestination(at: point, among: tabs.open.filter { !dragged.contains($0.id) }, in: .open) { return destination }
+        if let destination = rowDestination(at: point, among: tabs.entries(of: tabs.open).filter { !dragged.contains($0.id) }, in: .open) {
+            return destination
+        }
         for group in tabs.groups where frames[.section(.list(group: group.group.id))]?.contains(point) == true {
             return TabDestination(place: .list(group: group.group.id), before: nil)
         }
@@ -178,18 +181,18 @@ final class TabDropLayout {
     }
 
     /// Before the row under `point`, or after it in its lower half.
-    private func rowDestination(at point: CGPoint, among rows: [BrowserTab], in place: TabPlace) -> TabDestination? {
-        for (index, tab) in rows.enumerated() {
-            guard let frame = rowFrame(of: tab.id), frame.contains(point) else { continue }
+    private func rowDestination(at point: CGPoint, among rows: [SidebarTabs.Entry], in place: TabPlace) -> TabDestination? {
+        for (index, row) in rows.enumerated() {
+            guard let frame = rowFrame(of: row.id), frame.contains(point) else { continue }
             let next = rows.indices.contains(index + 1) ? rows[index + 1].id : nil
-            return TabDestination(place: place, before: point.y > frame.midY ? next : tab.id)
+            return TabDestination(place: place, before: point.y > frame.midY ? next : row.id)
         }
         return nil
     }
 
     private func frame(of item: SidebarTabs.Pinned) -> CGRect? {
         switch item {
-        case .tab(let tab): frames[.tab(tab.id)]
+        case .entry(let entry): frames[.tab(entry.id)]
         case .group(let group, _): frames[.section(.list(group: group.id))]
         }
     }

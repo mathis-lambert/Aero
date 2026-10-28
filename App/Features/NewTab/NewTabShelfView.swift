@@ -21,7 +21,7 @@ struct NewTabShelfView: View {
         let sites = shelf.sites
         VStack(spacing: Self.rowSpacing) {
             if !sites.isEmpty {
-                HStack(spacing: Self.tileSpacing) {
+                CenteredFlow(spacing: Self.tileSpacing, lineSpacing: Self.tileSpacing * 2) {
                     ForEach(Array(sites.enumerated()), id: \.element.key) { index, site in
                         SiteTile(browser: browser, shelf: shelf, site: site, focused: shelf.focus == .site(index))
                             .modifier(Rise(revealed: revealed, delay: Double(index) * Self.stagger))
@@ -32,7 +32,7 @@ struct NewTabShelfView: View {
                 .accessibilityLabel("Frequent sites")
             }
             if !shelf.closed.isEmpty {
-                HStack(spacing: Self.pillSpacing) {
+                CenteredFlow(spacing: Self.pillSpacing, lineSpacing: Self.pillSpacing) {
                     Image(systemName: "arrow.uturn.backward")
                         .font(BrowserDesign.Typography.caption.weight(.semibold))
                         .foregroundStyle(.tertiary)
@@ -50,6 +50,55 @@ struct NewTabShelfView: View {
         .animation(reduceMotion ? nil : BrowserDesign.motion, value: sites.map(\.key))
         .frame(maxWidth: ControlBarView.width)
         .padding(.horizontal, ControlBarView.margin)
+    }
+
+    /// Its views in rows as wide as it is, each row centered: in a narrow page or pane, the rest goes to the next row
+    /// rather than widening the page.
+    private struct CenteredFlow: Layout {
+        let spacing: CGFloat
+        let lineSpacing: CGFloat
+
+        func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+            let rows = rows(of: subviews, width: proposal.width ?? .infinity)
+            let height = rows.reduce(0) { $0 + $1.height } + lineSpacing * CGFloat(max(0, rows.count - 1))
+            return CGSize(width: rows.map(\.width).max() ?? 0, height: height)
+        }
+
+        func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
+            var y = bounds.minY
+            for row in rows(of: subviews, width: bounds.width) {
+                var x = bounds.minX + (bounds.width - row.width) / 2
+                for (index, size) in row.items {
+                    subviews[index].place(at: CGPoint(x: x, y: y + (row.height - size.height) / 2), proposal: ProposedViewSize(size))
+                    x += size.width + spacing
+                }
+                y += row.height + lineSpacing
+            }
+        }
+
+        private struct Row {
+            var items: [(index: Int, size: CGSize)] = []
+            var width: CGFloat = 0
+            var height: CGFloat = 0
+        }
+
+        /// Each view at its own size, no wider than a row, on the row it fits.
+        private func rows(of subviews: Subviews, width: CGFloat) -> [Row] {
+            var rows: [Row] = [], row = Row()
+            for index in subviews.indices {
+                var size = subviews[index].sizeThatFits(.unspecified)
+                if size.width > width { size = subviews[index].sizeThatFits(ProposedViewSize(width: width, height: nil)) }
+                if !row.items.isEmpty, row.width + spacing + size.width > width {
+                    rows.append(row)
+                    row = Row()
+                }
+                row.width += (row.items.isEmpty ? 0 : spacing) + size.width
+                row.height = max(row.height, size.height)
+                row.items.append((index, size))
+            }
+            if !row.items.isEmpty { rows.append(row) }
+            return rows
+        }
     }
 
     private struct Rise: ViewModifier {
@@ -88,7 +137,7 @@ private struct SiteTile: View {
             .buttonStyle(TileStyle(browser: browser, site: site, name: name, focused: focused))
             .frame(minWidth: Self.minimumWidth, idealWidth: Self.width, maxWidth: Self.width)
             .tooltip(site.title.isEmpty ? name : site.title)
-            .contextMenu {
+            .iconContextMenu {
                 Button("Hide from New Tab", systemImage: "eye.slash") { shelf.hide(site) }
             }
             .accessibilityLabel(Text(verbatim: name))
