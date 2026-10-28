@@ -84,7 +84,7 @@ item. Titles that toggle say what they will do (Show/Hide Sidebar, Add to/Remove
 | Aero | Settings…, Quit |
 | File | New Tab, New Terminal, Open Location…, Open File…, Command Bar · Close Tab, Close Window · Save As…, Export as PDF…, Capture in Portrait Mode · Import from Another Browser… · Print… |
 | Edit | Native editing, Copy Link, Find › Find…, Find Next, Find Previous |
-| View | Show/Hide Sidebar · Reload Page, Reload Without Cache, Stop Loading · Zoom In, Zoom Out, Actual Size · Show Downloads, Site Controls, Site Settings… |
+| View | Show/Hide Sidebar · Reload Page, Reload Without Cache, Stop Loading · Zoom In, Zoom Out, Actual Size · Show Downloads, Site Controls, Site Settings… · Play or Pause, Previous Track, Next Track |
 | History | Back, Forward · Reopen Closed Tab · Show All History |
 | Tabs | Next Tab, Previous Tab · Add to Favorites, Duplicate Tab, Rename Tab…, Open Peek in Tab · Split View › New Tab Beside, Next Pane, Previous Pane, Separate Split View · New Group with Tab, Move to Group ›, Move to Space › · Close Other Tabs, Close Tabs Below |
 | Spaces | New Space… · every space, checked when shown, under its profile's name once there are several · Next Space, Previous Space |

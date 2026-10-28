@@ -1156,6 +1156,16 @@
         }
       }
     },
+    "Back 10 Seconds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reculer de 10 secondes"
+          }
+        }
+      }
+    },
     "Back to %@" : {
       "localizations" : {
         "fr" : {
@@ -1904,6 +1914,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fermer la recherche"
+          }
+        }
+      }
+    },
+    "Close Player" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer le lecteur"
           }
         }
       }
@@ -2950,6 +2970,16 @@
         }
       }
     },
+    "Forward 10 Seconds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancer de 10 secondes"
+          }
+        }
+      }
+    },
     "Frame" : {
       "localizations" : {
         "fr" : {
@@ -2986,6 +3016,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Page entière"
+          }
+        }
+      }
+    },
+    "Go to another track of what the sidebar's player shows, else the current tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer à une autre piste de ce que montre le lecteur de la barre latérale, sinon de l’onglet actuel."
           }
         }
       }
@@ -3142,12 +3182,32 @@
         }
       }
     },
+    "Mute Microphone" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couper le micro"
+          }
+        }
+      }
+    },
     "New Group with %lld Tabs" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nouveau groupe avec %lld onglets"
+          }
+        }
+      }
+    },
+    "Next Track" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piste suivante"
           }
         }
       }
@@ -3212,6 +3272,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non disponible dans Aero : %@"
+          }
+        }
+      }
+    },
+    "Now playing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cours de lecture"
           }
         }
       }
@@ -3358,6 +3428,46 @@
         }
       }
     },
+    "Play" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture"
+          }
+        }
+      }
+    },
+    "Play or Pause" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture ou pause"
+          }
+        }
+      }
+    },
+    "Play or pause what the sidebar's player shows, else the current tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer ou mettre en pause ce que montre le lecteur de la barre latérale, sinon l’onglet actuel."
+          }
+        }
+      }
+    },
+    "Playing sound, pause" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son en cours, mettre en pause"
+          }
+        }
+      }
+    },
     "Portrait (4:5)" : {
       "localizations" : {
         "fr" : {
@@ -3390,6 +3500,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aperçu"
+          }
+        }
+      }
+    },
+    "Previous Track" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piste précédente"
           }
         }
       }
@@ -7929,6 +8049,16 @@
         }
       }
     },
+    "Shows the tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche l’onglet"
+          }
+        }
+      }
+    },
     "Side panel" : {
       "localizations" : {
         "en" : {
@@ -9107,6 +9237,26 @@
         }
       }
     },
+    "Turn Camera Off" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couper la caméra"
+          }
+        }
+      }
+    },
+    "Turn Camera On" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer la caméra"
+          }
+        }
+      }
+    },
     "Turn Off" : {
       "localizations" : {
         "en" : {
@@ -9231,6 +9381,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dégrouper"
+          }
+        }
+      }
+    },
+    "Unmute Microphone" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réactiver le micro"
           }
         }
       }
@@ -9375,6 +9535,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilise EasyList et EasyPrivacy, © les auteurs d’EasyList, sous licence CC BY-SA 3.0. Un site peut être autorisé depuis ses contrôles."
+          }
+        }
+      }
+    },
+    "Using the camera" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise la caméra"
+          }
+        }
+      }
+    },
+    "Using the microphone" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise le micro"
           }
         }
       }

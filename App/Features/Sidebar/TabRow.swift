@@ -50,6 +50,7 @@ struct TabRow: View {
                     PinnedPageReturn(browser: browser, tab: tab, style: .inline).transition(.opacity)
                 }
             }
+            ActivityIndicators(browser: browser, tabID: tab.id)
             Button {
                 if removesFavorite { browser.removeFavorite(tab.id) }
                 else { browser.closeTab(tab.id) }

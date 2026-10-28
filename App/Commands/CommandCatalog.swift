@@ -64,6 +64,9 @@ extension BrowserCommand {
         case .nextPane: String(localized: "Next Pane")
         case .previousPane: String(localized: "Previous Pane")
         case .newTerminal: String(localized: "New Terminal")
+        case .playPauseMedia: String(localized: "Play or Pause")
+        case .previousTrack: String(localized: "Previous Track")
+        case .nextTrack: String(localized: "Next Track")
         case .controlCenter: String(localized: "Site Controls")
         case .clearCookies: String(localized: "Clear Cookies")
         case .clearCache: String(localized: "Clear Cache")
@@ -126,6 +129,8 @@ extension BrowserCommand {
         case .separateSplit: String(localized: "Show the panes of this split view as separate tabs again.")
         case .nextPane, .previousPane: String(localized: "Move the focus between the panes of the split view.")
         case .newTerminal: String(localized: "Open a shell on the right of the current tab, or in a tab from the New Tab page.")
+        case .playPauseMedia: String(localized: "Play or pause what the sidebar's player shows, else the current tab.")
+        case .previousTrack, .nextTrack: String(localized: "Go to another track of what the sidebar's player shows, else the current tab.")
         }
     }
 
@@ -191,6 +196,9 @@ extension BrowserCommand {
         case .nextPane: "rectangle.trailinghalf.inset.filled.arrow.trailing"
         case .previousPane: "inset.filled.leadinghalf.rectangle"
         case .newTerminal: "apple.terminal"
+        case .playPauseMedia: "playpause.fill"
+        case .previousTrack: "backward.fill"
+        case .nextTrack: "forward.fill"
         case .controlCenter: "switch.2"
         case .clearCookies: "trash"
         case .clearCache: "externaldrive.badge.xmark"
@@ -227,7 +235,8 @@ extension BrowserCommand {
         case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces
         case .reload, .reloadFromOrigin, .stopLoading, .zoomIn, .zoomOut, .resetZoom, .printPage,
-             .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings, .savePage, .exportAsPDF, .capturePortrait: .page
+             .findInPage, .findNext, .findPrevious, .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings, .savePage, .exportAsPDF, .capturePortrait,
+             .playPauseMedia, .previousTrack, .nextTrack: .page
         default: .navigation
         }
     }

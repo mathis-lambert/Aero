@@ -71,6 +71,10 @@ struct BrowserMenuCommands: Commands {
             command(.controlCenter)
             command(.siteSettings)
             Divider()
+            command(.playPauseMedia)
+            command(.previousTrack)
+            command(.nextTrack)
+            Divider()
         }
         CommandMenu("History") {
             command(.back)

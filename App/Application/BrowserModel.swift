@@ -47,6 +47,9 @@ final class BrowserModel {
     let pages: WebPageRegistry
     /// The shells of terminal tabs (docs/TERMINAL.md).
     let terminals = TerminalSessions()
+    let activities = PageActivities()
+    /// Made the first time a page plays (docs/MEDIA.md › The system's Now Playing).
+    @ObservationIgnored var nowPlayingCenter: NowPlayingCenter?
     /// Every profile's extensions (docs/EXTENSIONS.md).
     let extensions: ExtensionRegistry
     let extensionNotifications: ExtensionNotifications
