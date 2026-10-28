@@ -59,7 +59,18 @@ A favorite keeps the page it was pinned on (`BrowserTab.pinnedURL`), set as it b
 
 History (`aero://history`, ⌘Y) is a native tab, reused within its space. Internal pages create no WebKit page and cannot be opened by websites. Web navigation commands are unavailable on them.
 
+The page is a search over the days, newest first, each a card of the pages visited that day, its title staying on top while its pages scroll. A click picks a page, a double click or Return opens it in the History tab, ⌘-click in a tab of its own; Delete, or the row's button under the pointer, forgets it, and a day's header offers Clear Day. ↑ and ↓ move the pick, ↓ from the search enters the list and Return there opens the first page. The list follows visits, titles and deletions while it shows (`BrowserHistory.changes`), keeping as many pages as were loaded.
+
 Visits are recorded on document commits and address changes, excluding reloads and hibernation restores. Relaunching and loading a restored URL counts as a visit. Titles update existing entries. Search matches title/address words and prefixes without case or diacritics. Clear and delete apply only to the current profile. Storage, retry and retention rules are in [Storage](STORAGE.md).
+
+## Swiping through history
+
+Two fingers across the trackpad go back and forward (`PageSwipe`); WebKit's own swipe is off. Fingers moving right go back, as the content follows them, whichever way scrolling goes on this Mac.
+
+- An arrow on glass comes in from the side the fingers move from, following them; at 130 points it fills with the space's color, with a tick of the trackpad, and letting go there goes. Let go short, nothing happens.
+- Held a moment past the threshold, the arrow gives way to a small wheel of the pages that way, growing out of where it was, nearest first, ten at most, with a second tick; the picked page, a little brighter, sits at the arrow's height, the others fading away from it. The fingers do it all, never a click: moving them up turns the wheel up and brings older pages under the arrow, down brings it back, with a tick at each page and another against either end; the panel itself floats with them, stretching past an end and following a little sideways, and the page under it no longer scrolls. Lifting them goes to the page picked. Bringing them back toward the edge the arrow came from, or Escape, closes the wheel and goes nowhere.
+- Only a trackpad's fingers swipe, never a mouse wheel or the momentum after the fingers left, and only clearly sideways. Content that can still scroll that way under the fingers, such as a carousel, keeps them: the page is asked once, as the swipe turns out horizontal, in Aero's world.
+- Each page of a split swipes its own history.
 
 ## Favicons
 

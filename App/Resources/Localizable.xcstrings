@@ -1778,6 +1778,16 @@
         }
       }
     },
+    "Clear Day" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer ce jour"
+          }
+        }
+      }
+    },
     "Clear history" : {
       "localizations" : {
         "en" : {
@@ -1822,6 +1832,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Effacer l’historique…"
+          }
+        }
+      }
+    },
+    "Clear search" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer la recherche"
           }
         }
       }

@@ -17,7 +17,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public private(set) var progress = 0.0
     public private(set) var canGoBack = false
     public private(set) var canGoForward = false
-    public private(set) var failure: PageFailure?
+    public internal(set) var failure: PageFailure?
     /// The page and everything it loaded came over HTTPS with a certificate WebKit trusts.
     public private(set) var isSecure = false
     /// False until the first document has rendered a frame; later navigations keep it true.
@@ -26,6 +26,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public private(set) var url: URL?
     /// What it plays and records (docs/MEDIA.md).
     public internal(set) var activity = PageActivity()
+    /// A two-finger swipe toward its history, while it shows (`PageSwipe`).
+    public internal(set) var swipe: PageSwipe?
+    @ObservationIgnored var swipeTracking: SwipeTracking?
 
     public enum PageFailure { case loadFailed, processTerminated, unsupportedNavigation }
 
@@ -123,7 +126,11 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         super.init()
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.allowsBackForwardNavigationGestures = true
+        // Aero draws the swipe through history itself (`PageSwipe`), which WebKit's own would take.
+        webView.allowsBackForwardNavigationGestures = false
+        pageView.onScroll = { [weak self] event in self?.track(event) ?? false }
+        pageView.onKey = { [weak self] event in self?.handleSwipeKey(event) ?? false }
+
         // Aero previews links itself (docs/BROWSING.md › Peek): WebKit's own preview would open beside it.
         webView.allowsLinkPreview = false
         pageView.onForcePress = { [weak self] press, point in self?.handle(press, at: point) }
@@ -234,6 +241,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         onMetadata = nil
         onLoadingChange = nil
         onActivity = nil
+        dismissSwipe()
+        pageView.onScroll = nil
+        pageView.onKey = nil
         onVisit = nil
         onDownload = nil
         onIcons = nil
@@ -525,6 +535,12 @@ final class PageWebView: WKWebView {
     var extensionMenuItems: (() -> [NSMenuItem])?
     var peekMenuTitle: String?
     var onForcePress: ((ForcePress, CGPoint) -> Void)?
+    /// Every scroll event, for the swipe through history, before WebKit: answering true keeps it from the page.
+    var onScroll: ((NSEvent) -> Bool)?
+    /// A key the swipe's list takes before the page, answering whether it took it.
+    var onKey: ((NSEvent) -> Bool)?
+    /// Changes as each scroll gesture begins: the page's late answers about an earlier one are stale.
+    private(set) var scrollGeneration = 0
     /// The press under way went deep, or became a force click.
     private var pressWentDeep = false
     private var pressForced = false
@@ -567,6 +583,17 @@ final class PageWebView: WKWebView {
     func takePeekRequest() -> Bool {
         defer { peekRequested = nil }
         return peekRequested.map { .now - $0 < Self.peekRequestLifetime } ?? false
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        if event.phase.contains(.began) { scrollGeneration += 1 }
+        if onScroll?(event) == true { return }
+        super.scrollWheel(with: event)
+    }
+
+    override func keyDown(with event: NSEvent) {
+        if onKey?(event) == true { return }
+        super.keyDown(with: event)
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -614,7 +641,7 @@ final class PageWebView: WKWebView {
     }
 
     /// The event's place from the view's top left, as the page measures it.
-    private func pagePoint(of event: NSEvent) -> CGPoint {
+    func pagePoint(of event: NSEvent) -> CGPoint {
         let point = convert(event.locationInWindow, from: nil)
         return CGPoint(x: point.x, y: isFlipped ? point.y : bounds.height - point.y)
     }
