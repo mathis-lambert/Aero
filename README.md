@@ -23,9 +23,10 @@ See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, c
 
 - Spaces with independent tabs and favorites, switched from the sidebar or with a two-finger swipe. Spaces share cookies, history and extensions when assigned to the same profile.
 - One control bar for addresses, searches and commands, on the New Tab page and over tabs (⌘L, ⌘K), with the chosen engine's suggestions; New Tab also offers your frequent sites for this time of day and the tabs you just closed.
-- Favorites that stay when closed, as tiles or in groups; tabs and groups dragged anywhere in the sidebar, several tabs at once with ⌘ or ⇧, into a closed group that opens under them, and into another space by resting on a side or a space's icon, a full tab context menu, reopen closed tabs, recent-tab switching (⌃Tab).
+- Favorites that stay when closed and keep their pinned page, back in a click when browsed away from, as tiles or in groups; tabs and groups dragged anywhere in the sidebar, several tabs at once with ⌘ or ⇧, into a closed group that opens under them, and into another space by resting on a side or a space's icon, a full tab context menu, reopen closed tabs, recent-tab switching (⌃Tab).
 - Transactional SQLite state, versioned schema migrations and explicit recovery ([Storage](docs/STORAGE.md)), session restoration without loading pages, and tab hibernation ([Performance](docs/PERFORMANCE.md)).
 - History in a browser tab (`aero://history`, ⌘Y) with full-text search.
+- Split view: up to four tabs side by side in one sidebar entry, made by dragging a tab onto the page ([Split view](docs/SPLIT_VIEW.md)); terminal tabs running your login shell, alone or in a split ([Terminal](docs/TERMINAL.md)).
 - Find in page, downloads with progress in the Finder, popups in tabs or in windows of their own, page dialogs, file inputs, opening files of the Mac, saving pages as web archives or PDF, favicons, and a developer mode with Web Inspector ([Browsing](docs/BROWSING.md)).
 - A default browser for the Mac: links from other apps open in a tab, pages ask before handing a link to another app, and apps sign in through Aero with `ASWebAuthenticationSession` ([Other apps](docs/OTHER_APPS.md)).
 - Portrait mode: the page, visible or whole, framed on a gradient, aurora, solid, desktop or site-colored backdrop, sized for where it goes, then copied, saved, shared or dragged out ([Portrait mode](docs/PORTRAIT.md)).
@@ -41,6 +42,7 @@ Not implemented yet: Aero's password filling in website popup windows.
 ## Documentation
 
 - [Browsing](docs/BROWSING.md): navigation behavior and limits.
+- [Split view](docs/SPLIT_VIEW.md) and [Terminal](docs/TERMINAL.md): panes side by side, and shells in tabs.
 - [Other apps](docs/OTHER_APPS.md): links from and to other apps, and their sign-ins.
 - [Testing](docs/TESTING.md): unit tests, journeys, plans and fixtures.
 - [Profiles and spaces](docs/SPACES.md): ownership, settings and identity transitions.

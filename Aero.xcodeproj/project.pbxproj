@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A01100000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A01100000000000000000002 /* Sparkle */; };
+		A01100000000000000000011 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = A01100000000000000000012 /* SwiftTerm */; };
 		0CA62092B7B5C7DF45A3093A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B9281A3E96A7A56412327CC /* BrowserCore */; };
 		858C612D9FA8879AA3BD6372 /* BrowserStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA8807172498D9D5F0353C2 /* BrowserStorage */; };
 		31D0AFBA808695A6E73F502A /* BrowserCore in Frameworks */ = {isa = PBXBuildFile; productRef = 69764682C66036DC0CE36654 /* BrowserCore */; };
@@ -90,6 +91,7 @@
 				D28CCF4409F96F1D4979BFB8 /* BrowserWebKit in Frameworks */,
 				E7A1C0DE5A1E4B0F8C2D3E41 /* BrowserExtensions in Frameworks */,
 				A01100000000000000000001 /* Sparkle in Frameworks */,
+				A01100000000000000000011 /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,6 +210,7 @@
 				B0D44CFDC92407AEB22CB7FC /* BrowserWebKit */,
 				E7A1C0DE5A1E4B0F8C2D3E42 /* BrowserExtensions */,
 				A01100000000000000000002 /* Sparkle */,
+				A01100000000000000000012 /* SwiftTerm */,
 			);
 			productName = Aero;
 			productReference = C2B6AF95E5FB6AF04547C8EA /* Aero.app */;
@@ -247,6 +250,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A01100000000000000000003 /* Sparkle */,
+				A01100000000000000000013 /* SwiftTerm */,
 				AE20C115207FF2DD10A0AA8E /* XCLocalSwiftPackageReference "Packages/BrowserKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -546,6 +550,11 @@
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
 			requirement = {kind = exactVersion; version = 2.10.0; };
 		};
+		A01100000000000000000013 /* SwiftTerm */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm";
+			requirement = {kind = exactVersion; version = 1.10.1; };
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -560,6 +569,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A01100000000000000000003 /* Sparkle */;
 			productName = Sparkle;
+		};
+		A01100000000000000000012 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A01100000000000000000013 /* SwiftTerm */;
+			productName = SwiftTerm;
 		};
 		0B9281A3E96A7A56412327CC /* BrowserCore */ = {
 			isa = XCSwiftPackageProductDependency;

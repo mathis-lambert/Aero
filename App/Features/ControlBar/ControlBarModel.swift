@@ -7,6 +7,8 @@ enum ControlBarTarget {
     /// Replaces the page of the selected tab, or opens a tab from the New Tab page.
     case currentTab
     case newTab
+    /// Opens beside the selected tab, in its split; an open tab chosen joins it (docs/SPLIT_VIEW.md).
+    case newPane
 }
 
 /// The control bar shown over the selected tab. The New Tab page hosts its own bar instead.
@@ -61,9 +63,10 @@ final class ControlBarModel {
     private(set) var history: [HistoryEntry] = []
     @ObservationIgnored private let browser: BrowserModel
 
-    init(browser: BrowserModel, presentation: ControlBarPresentation?) {
+    /// `target` overrides the presentation's, for a New Tab page in a pane.
+    init(browser: BrowserModel, presentation: ControlBarPresentation?, target: ControlBarTarget? = nil) {
         self.browser = browser
-        target = presentation?.target ?? .currentTab
+        self.target = target ?? presentation?.target ?? .currentTab
         isOverlay = presentation != nil
         text = presentation?.initialText ?? ""
     }
@@ -104,7 +107,7 @@ final class ControlBarModel {
             if let url = browser.webSearch.searchURL(for: query) { browser.load(url, in: target) }
         case .tab(let tab):
             browser.window.controlBar = nil
-            browser.selectTab(tab.id)
+            if target == .newPane { browser.openInNewPane(tab.id) } else { browser.selectTab(tab.id) }
         case .history(let entry): browser.load(entry.url, in: target)
         case .command(let command):
             browser.window.controlBar = nil

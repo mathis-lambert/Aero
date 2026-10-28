@@ -22,9 +22,17 @@ extension URL {
 }
 
 extension BrowserTab {
-    var displayTitle: String {
-        if let name { return name }
-        if let page = InternalPage(url: url) { return page.title }
+    var displayTitle: String { name ?? pageTitle }
+
+    /// The page it shows, whatever its name: a favorite away from its pinned page goes by it.
+    var shownTitle: String { hasLeftPinnedPage ? pageTitle : displayTitle }
+
+    /// What names a favorite's pinned page while it shows another: its name, or its site.
+    var pinnedName: String { name ?? (pinnedURL ?? url).siteName }
+
+    private var pageTitle: String {
+        // A terminal is named by what its shell says it runs.
+        if let page = InternalPage(url: url) { return page == .terminal && !title.isEmpty ? title : page.title }
         return title.isEmpty ? url.siteName : title
     }
 }

@@ -94,7 +94,10 @@ struct ControlBarView: View {
                 .onKeyPress(.rightArrow) { shelfKey(layoutDirection == .rightToLeft ? .previous : .next, onlyInside: true) ?? .ignored }
                 .onExitCommand {
                     if let shelf, shelf.focus != nil { shelf.clearFocus() }
-                    else if model.isOverlay { browser.window.controlBar = nil } else { model.text = "" }
+                    else if model.isOverlay { browser.window.controlBar = nil }
+                    // An empty New Tab pane goes away, as an overlay does.
+                    else if model.target == .newPane, model.text.isEmpty { browser.cancelNewPane() }
+                    else { model.text = "" }
                 }
                 .accessibilityIdentifier("controlBar.input")
             if model.isOverlay { Keycaps(.cancelAction) }

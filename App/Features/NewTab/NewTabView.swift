@@ -25,10 +25,11 @@ struct NewTabView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.layoutDirection) private var layoutDirection
 
-    init(browser: BrowserModel) {
+    /// `target` is `.newPane` for a New Tab page in a pane beside the selected tab (docs/SPLIT_VIEW.md).
+    init(browser: BrowserModel, target: ControlBarTarget = .currentTab) {
         self.browser = browser
-        _controlBar = State(initialValue: ControlBarModel(browser: browser, presentation: nil))
-        _shelf = State(initialValue: NewTabShelf(browser: browser))
+        _controlBar = State(initialValue: ControlBarModel(browser: browser, presentation: nil, target: target))
+        _shelf = State(initialValue: NewTabShelf(browser: browser, target: target == .newPane ? .newPane : .newTab))
     }
 
     var body: some View {

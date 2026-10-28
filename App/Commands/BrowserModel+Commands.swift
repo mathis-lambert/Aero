@@ -31,6 +31,9 @@ extension BrowserModel {
         case .reopenTab: return canReopen
         case .copyLink, .controlCenter, .clearCookies, .clearCache, .siteSettings: return currentSite != nil
         case .openPeekInTab: return window.peek?.phase == .open
+        case .newPane: return canAddPane && window.newPane == nil
+        case .separateSplit, .nextPane, .previousPane: return currentSplit != nil
+        case .newTerminal: return space != nil
         default: return true
         }
     }
@@ -122,6 +125,10 @@ extension BrowserModel {
         case .clearCache: Task { await clearSiteData(.cache) }
         case .siteSettings: window.siteSettingsPresented = true
         case .openPeekInTab: openPeekInTab()
+        case .newPane: beginNewPane()
+        case .separateSplit: if let split = currentSplit { separateSplit(split.id) }
+        case .nextPane, .previousPane: focusAdjacentPane(backwards: command == .previousPane)
+        case .newTerminal: openTerminal()
         }
     }
 

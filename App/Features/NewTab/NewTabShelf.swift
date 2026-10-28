@@ -58,9 +58,12 @@ final class NewTabShelf {
     private var ranked: [FrequentSites.Site] = []
     @ObservationIgnored private let browser: BrowserModel
     @ObservationIgnored private let profileID: UUID?
+    /// Where what it opens goes: the New Tab page's tab, or a pane beside the selected tab.
+    @ObservationIgnored private let target: ControlBarTarget
 
-    init(browser: BrowserModel) {
+    init(browser: BrowserModel, target: ControlBarTarget = .newTab) {
         self.browser = browser
+        self.target = target
         profileID = browser.profile?.id
     }
 
@@ -107,11 +110,23 @@ final class NewTabShelf {
 
     /// A site already open in the space is switched to rather than opened again.
     func open(_ site: FrequentSites.Site) {
-        if let tab = browser.tabs.first(where: { $0.url == site.url }) { browser.showTab(tab) }
-        else { browser.load(site.url, in: .newTab) }
+        if let tab = browser.tabs.first(where: { $0.url == site.url }) { show(tab.id) }
+        else { browser.load(site.url, in: target) }
     }
 
-    func reopen(_ tab: BrowserTab) { browser.reopenTab(tab.id) }
+    func reopen(_ tab: BrowserTab) {
+        browser.reopenTab(tab.id)
+        if target == .newPane { show(tab.id) }
+    }
+
+    /// An open tab: shown, or in the New Tab pane's place.
+    private func show(_ tabID: UUID) {
+        guard target == .newPane, browser.window.newPane != nil else {
+            if let tab = browser.tabs.first(where: { $0.id == tabID }) { browser.showTab(tab) }
+            return
+        }
+        browser.openInNewPane(tabID)
+    }
 
     func hide(_ site: FrequentSites.Site) {
         guard let profileID else { return }
