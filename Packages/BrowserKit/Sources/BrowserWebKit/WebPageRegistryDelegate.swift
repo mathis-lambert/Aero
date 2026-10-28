@@ -9,6 +9,8 @@ public protocol WebPageRegistryDelegate: AnyObject {
     func page(_ tabID: UUID, didUpdateURL url: URL, title: String)
     /// The page started or finished loading.
     func pageDidChangeLoading(_ tabID: UUID)
+    /// What the page plays or records changed; a page closed or hibernated reports an idle activity.
+    func page(_ tabID: UUID, didChangeActivity activity: PageActivity)
     /// The page crossed the website/extension configuration boundary.
     func pageDidReplace(_ tabID: UUID)
     /// A native main-frame commit or a change of address within the document. Hibernation restores are excluded.
