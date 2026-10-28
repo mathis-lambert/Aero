@@ -48,5 +48,16 @@ extension DatabaseSchema {
         ALTER TABLE profiles ADD COLUMN password_extension TEXT;
         """, """
         ALTER TABLE tab_groups ADD COLUMN slot INTEGER NOT NULL DEFAULT 0 CHECK(slot >= 0);
+        """, """
+        CREATE TABLE splits (
+            id TEXT PRIMARY KEY NOT NULL, space_id TEXT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
+            layout TEXT NOT NULL, position INTEGER NOT NULL CHECK(position >= 0)
+        ) STRICT;
+        CREATE INDEX splits_space ON splits(space_id, position);
+        """, """
+        ALTER TABLE tabs ADD COLUMN pinned_url TEXT;
+        UPDATE tabs SET pinned_url = url WHERE placement != 'open';
+        """, """
+        ALTER TABLE tab_groups ADD COLUMN icon TEXT;
         """])
 }

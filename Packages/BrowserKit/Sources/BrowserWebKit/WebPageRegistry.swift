@@ -37,6 +37,11 @@ public final class WebPageRegistry {
 
     var livePages: [UUID: LivePage] = [:]
     var activeTabID: UUID?
+    /// The other panes of the active tab's split, shown with it (docs/SPLIT_VIEW.md): never hibernated, and their videos
+    /// stay in place as focus moves between them.
+    var companionTabIDs: Set<UUID> = []
+
+    func isShown(_ tabID: UUID) -> Bool { tabID == activeTabID || companionTabIDs.contains(tabID) }
     var policy: HibernationPolicy
     var evaluation: Task<Void, Never>?
     private static let maximumStateBytes = 16 * 1024 * 1024
@@ -84,39 +89,50 @@ public final class WebPageRegistry {
     public func livePage(_ tabID: UUID) -> BrowserPage? { livePages[tabID]?.page }
 
 
-    /// Makes the tab's page visible, creating or restoring it when needed.
-    public func activate(_ tab: BrowserTab, profileID: UUID) -> BrowserPage {
-        leave(activeTabID, for: tab.id)
+    /// Makes the tab's page visible, creating or restoring it when needed, with the pages of the panes shown beside it.
+    public func activate(_ tab: BrowserTab, profileID: UUID, alongside companions: [BrowserTab] = []) -> BrowserPage {
+        let shown = Set(companions.map(\.id)).subtracting([tab.id])
+        // Panes no longer shown are left behind, as a tab is.
+        for previous in [activeTabID].compactMap(\.self) + companionTabIDs where !shown.contains(previous) { leave(previous, for: tab.id) }
         markPreviousActiveAsIdle()
         activeTabID = tab.id
-        let page: BrowserPage
-        if let live = livePages[tab.id] {
-            page = live.page
-            livePages[tab.id]?.lastActive = .now
-        } else {
-            page = makePage(for: tab, profileID: profileID)
-            livePages[tab.id] = LivePage(page: page, profileID: profileID, lastActive: .now)
+        companionTabIDs = shown
+        for companion in companions where companion.id != tab.id {
+            livePage(for: companion, profileID: profileID).returnVideoFromPictureInPicture()
         }
+        let page = livePage(for: tab, profileID: profileID)
         page.returnVideoFromPictureInPicture()
         refreshHibernationSchedule()
         return page
     }
 
+    private func livePage(for tab: BrowserTab, profileID: UUID) -> BrowserPage {
+        if let live = livePages[tab.id] {
+            livePages[tab.id]?.lastActive = .now
+            return live.page
+        }
+        let page = makePage(for: tab, profileID: profileID)
+        livePages[tab.id] = LivePage(page: page, profileID: profileID, lastActive: .now)
+        return page
+    }
+
     public func deactivate() {
-        leave(activeTabID, for: nil)
+        for previous in [activeTabID].compactMap(\.self) + companionTabIDs { leave(previous, for: nil) }
         markPreviousActiveAsIdle()
         activeTabID = nil
+        companionTabIDs = []
         refreshHibernationSchedule()
     }
 
     public func close(tabID: UUID) {
         if activeTabID == tabID { activeTabID = nil }
+        companionTabIDs.remove(tabID)
         discardState(tabID)
         livePages.removeValue(forKey: tabID)?.page.dispose()
     }
 
     func hibernate(_ tabID: UUID, sessionStorage: Data? = nil) {
-        guard tabID != activeTabID, let live = livePages.removeValue(forKey: tabID) else { return }
+        guard !isShown(tabID), let live = livePages.removeValue(forKey: tabID) else { return }
         discardState(tabID)
         if let interaction = live.page.webView.interactionState as? Data {
             let state = HibernatedState(interaction: interaction, sessionStorage: sessionStorage)
@@ -152,7 +168,7 @@ public final class WebPageRegistry {
               delegate?.page(tabID, decisionFor: .automaticPictureInPicture, at: origin) == .allow else { return }
         Task { [weak self] in
             await page.moveVideoToPictureInPicture()
-            if self?.activeTabID == tabID { page.returnVideoFromPictureInPicture() }
+            if self?.isShown(tabID) == true { page.returnVideoFromPictureInPicture() }
         }
     }
 

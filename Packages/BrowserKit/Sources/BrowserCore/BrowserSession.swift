@@ -10,6 +10,8 @@ public struct BrowserSession: Equatable, Sendable {
     public private(set) var profiles: [BrowserProfile]
     public private(set) var spaces: [BrowserSpace]
     public private(set) var tabs: [BrowserTab]
+    /// Open tabs shown side by side (docs/SPLIT_VIEW.md); a tab is in one at most.
+    public private(set) var splits: [TabSplit] = []
 
     public init(profileName: String, spaceName: String = "Main") {
         let profile = BrowserProfile(name: profileName)
@@ -45,10 +47,13 @@ public struct BrowserSession: Equatable, Sendable {
         spaces[index].name = name; spaces[index].color = color; spaces[index].emoji = emoji
         if spaces[index].profileID != profileID {
             // Old extension handles and page callbacks must never address the new identity.
+            var renewed: [UUID: UUID] = [:]
             for tabIndex in tabs.indices where tabs[tabIndex].spaceID == id {
                 let tab = tabs[tabIndex]
-                tabs[tabIndex] = BrowserTab(spaceID: id, url: tab.url, title: tab.title, name: tab.name, place: tab.place)
+                tabs[tabIndex] = BrowserTab(spaceID: id, url: tab.url, title: tab.title, name: tab.name, place: tab.place, pinnedURL: tab.pinnedURL)
+                renewed[tab.id] = tabs[tabIndex].id
             }
+            carrySplits(renewed, to: id)
         }
         spaces[index].profileID = profileID
     }
@@ -58,6 +63,7 @@ public struct BrowserSession: Equatable, Sendable {
         guard spaces.count > 1 else { throw SessionError.lastSpace }
         spaces.removeAll { $0.id == id }
         tabs.removeAll { $0.spaceID == id }
+        splits.removeAll { $0.spaceID == id }
     }
 
     /// Destination is an insertion boundary in the original order, as used by native lists.
@@ -84,10 +90,11 @@ public struct BrowserSession: Equatable, Sendable {
         profiles.removeAll { $0.id == id }
     }
 
-    package init(profiles: [BrowserProfile], spaces: [BrowserSpace], tabs: [BrowserTab]) {
+    package init(profiles: [BrowserProfile], spaces: [BrowserSpace], tabs: [BrowserTab], splits: [TabSplit] = []) {
         self.profiles = profiles
         self.spaces = spaces
         self.tabs = tabs
+        self.splits = splits
     }
 
     /// Saves `decision` for the profile, or forgets the saved one when it is `nil`.
@@ -137,8 +144,19 @@ public struct BrowserSession: Equatable, Sendable {
 
     /// Moves a tab into `place` of its own space, before `targetID` or at the end. Among the pinned favorites the
     /// target may be a group as well as a tab: groups and loose favorites keep any order. Tabs never change space
-    /// this way, and only enter a group of their own space.
+    /// this way, and only enter a group of their own space. A pane of a split moves its split, which keeps its order.
+    @discardableResult
     public mutating func move(id: UUID, to place: TabPlace, before targetID: UUID?) -> Bool {
+        let members = split(containing: id).map(orderedPanes) ?? [id]
+        if let targetID, members.contains(targetID) { return false }
+        // Each before the target, or last, in turn: the panes stay together and in order.
+        var moved = false
+        for member in members { moved = moveTab(member, to: place, before: targetID) || moved }
+        pruneSplits()
+        return moved
+    }
+
+    private mutating func moveTab(_ id: UUID, to place: TabPlace, before targetID: UUID?) -> Bool {
         guard id != targetID, let index = tabs.firstIndex(where: { $0.id == id }) else { return false }
         let spaceID = tabs[index].spaceID
         guard isValid(place, in: spaceID) else { return false }
@@ -161,6 +179,21 @@ public struct BrowserSession: Equatable, Sendable {
         return true
     }
 
+    /// The favorite's own page becomes `url`; an open tab has none, and an address no tab shows is refused.
+    @discardableResult
+    public mutating func setPinnedURL(id: UUID, to url: URL) -> Bool {
+        guard let index = tabs.firstIndex(where: { $0.id == id }), tabs[index].isFavorite, NavigationInput.isTabURL(url) else { return false }
+        tabs[index].pinnedURL = url
+        return true
+    }
+
+    /// The favorite's record goes back to its own page, as it shows when loaded again; its title comes with the page.
+    public mutating func returnToPinnedPage(id: UUID) {
+        guard let index = tabs.firstIndex(where: { $0.id == id }), let pinnedURL = tabs[index].pinnedURL, tabs[index].hasLeftPinnedPage else { return }
+        tabs[index].url = pinnedURL
+        tabs[index].title = ""
+    }
+
     /// A blank name gives back the page's title.
     public mutating func rename(id: UUID, to name: String) {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return }
@@ -178,8 +211,17 @@ public struct BrowserSession: Equatable, Sendable {
     }
 
     /// Same-profile transfers keep the tab identity and its live page. Crossing profiles gives
-    /// the tab a new identity. A favorite stays one, outside any group.
-    public mutating func transfer(id: UUID, to spaceID: UUID) -> BrowserTab? {
+    /// the tab a new identity. A favorite stays one, outside any group. A pane of a split takes its split along.
+    /// Returns the identity of each tab that moved, by its old one.
+    @discardableResult
+    public mutating func transfer(id: UUID, to spaceID: UUID) -> [UUID: UUID] {
+        var moved: [UUID: UUID] = [:]
+        for member in split(containing: id).map(orderedPanes) ?? [id] { moved[member] = transferTab(member, to: spaceID)?.id }
+        carrySplits(moved, to: spaceID)
+        return moved
+    }
+
+    private mutating func transferTab(_ id: UUID, to spaceID: UUID) -> BrowserTab? {
         guard spaces.contains(where: { $0.id == spaceID }), let original = tabs.first(where: { $0.id == id }),
               original.spaceID != spaceID else { return nil }
         let place: TabPlace = switch original.place {
@@ -209,6 +251,7 @@ public struct BrowserSession: Equatable, Sendable {
         destination.insert(.group(id), at: at)
         arrange(remaining, in: spaces[source].id)
         arrange(destination, in: spaceID)
+        carrySplits(moved, to: spaceID)
         return moved
     }
 
@@ -217,7 +260,8 @@ public struct BrowserSession: Equatable, Sendable {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return nil }
         let original = tabs.remove(at: index)
         let sameProfile = spaces.first { $0.id == original.spaceID }?.profileID == spaces.first { $0.id == spaceID }?.profileID
-        let tab = BrowserTab(id: sameProfile ? original.id : UUID(), spaceID: spaceID, url: original.url, title: original.title, name: original.name, place: place)
+        let tab = BrowserTab(id: sameProfile ? original.id : UUID(), spaceID: spaceID, url: original.url, title: original.title, name: original.name,
+                             place: place, pinnedURL: original.pinnedURL)
         tabs.append(tab)
         return tab
     }
@@ -302,6 +346,11 @@ public struct BrowserSession: Equatable, Sendable {
         updateGroup(id) { $0.name = name }
     }
 
+    /// A blank icon gives the folder back.
+    public mutating func setGroupIcon(id: UUID, to icon: String?) {
+        updateGroup(id) { $0.icon = icon.flatMap(Self.trimmed) }
+    }
+
     public mutating func setGroupCollapsed(id: UUID, _ collapsed: Bool) {
         updateGroup(id) { $0.isCollapsed = collapsed }
     }
@@ -330,11 +379,121 @@ public struct BrowserSession: Equatable, Sendable {
     @discardableResult
     public mutating func close(id: UUID) -> BrowserTab? {
         guard let index = tabs.firstIndex(where: { $0.id == id }) else { return nil }
-        return keepingPinnedOrder(of: [tabs[index].spaceID]) { $0.tabs.remove(at: index) }
+        let closed = keepingPinnedOrder(of: [tabs[index].spaceID]) { $0.tabs.remove(at: index) }
+        pruneSplits()
+        return closed
     }
 
+    // MARK: Splits
+
+    public func split(containing tabID: UUID) -> TabSplit? {
+        splits.first { $0.root.tabIDs.contains(tabID) }
+    }
+
+    /// Shows `tabID` beside `targetID`, in the split of `targetID`, or a new one with both. Both must be tabs of one
+    /// space, and the split may hold no more than four; a tab leaves the split it was in. All the panes are kept in one
+    /// place: the split's, unless open tabs meet a favorite, which keeps its own, so that no favorite is lost. They
+    /// follow one another in reading order where the split was, or the favorite, so a split's first pane is where it
+    /// shows in the sidebar.
+    @discardableResult
+    public mutating func split(_ tabID: UUID, beside targetID: UUID, at edge: SplitEdge) -> Bool {
+        join(tabID, with: targetID) { $0.inserting(tabID, beside: targetID, at: edge) }
+    }
+
+    /// Shows `tabID` along `edge` of the whole split of `targetID`, or of `targetID` alone, as `split(_:beside:at:)` does.
+    @discardableResult
+    public mutating func split(_ tabID: UUID, alongside targetID: UUID, at edge: SplitEdge) -> Bool {
+        join(tabID, with: targetID) { $0.inserting(tabID, at: edge) }
+    }
+
+    /// Puts `tabID` where `placing` says in the layout of `targetID`'s split, or of `targetID` alone.
+    private mutating func join(_ tabID: UUID, with targetID: UUID, placing: (SplitNode) -> SplitNode?) -> Bool {
+        guard tabID != targetID, let tab = tabs.first(where: { $0.id == tabID }), let target = tabs.first(where: { $0.id == targetID }),
+              tab.spaceID == target.spaceID else { return false }
+        let existing = split(containing: targetID)
+        let alreadyIn = existing?.root.tabIDs.contains(tabID) == true
+        guard alreadyIn || (existing?.tabIDs.count ?? 1) < TabSplit.maximumPanes else { return false }
+        if !alreadyIn { removeFromSplit(tabID) }
+        let base = alreadyIn ? existing.flatMap { $0.root.removing(tabID) } : (existing?.root ?? .pane(targetID))
+        guard let root = base.flatMap(placing) else { return false }
+        let place = target.place == .open ? tab.place : target.place
+        let anchor = place == target.place ? Set(root.tabIDs).subtracting([tabID]) : [tabID]
+        let following = entry(after: anchor, skipping: Set(root.tabIDs), in: place, spaceID: target.spaceID)
+        for pane in root.tabIDs { _ = moveTab(pane, to: place, before: following) }
+        if let index = splits.firstIndex(where: { $0.id == existing?.id }) { splits[index].root = root }
+        else { splits.append(TabSplit(spaceID: target.spaceID, root: root)) }
+        return true
+    }
+
+    /// The panes of the split in the sidebar's order.
+    private func orderedPanes(of split: TabSplit) -> [UUID] {
+        let panes = Set(split.tabIDs)
+        return tabs.filter { panes.contains($0.id) }.map(\.id)
+    }
+
+    /// What follows the last of `tabIDs` in `place`, other than `skipped`: a tab or, among the pinned favorites, a group;
+    /// `nil` when nothing does.
+    private func entry(after tabIDs: Set<UUID>, skipping skipped: Set<UUID>, in place: TabPlace, spaceID: UUID) -> UUID? {
+        let order: [UUID] = place == .list(group: nil)
+            ? pinned(in: spaceID).map(\.id)
+            : tabs.filter { $0.spaceID == spaceID && $0.place == place }.map(\.id)
+        guard let last = order.lastIndex(where: tabIDs.contains) else { return nil }
+        return order[(last + 1)...].first { !skipped.contains($0) }
+    }
+
+    /// Splits whose every pane moved to `spaceID`, under the identities `moved` gives them, follow them there.
+    private mutating func carrySplits(_ moved: [UUID: UUID], to spaceID: UUID) {
+        for index in splits.indices where splits[index].tabIDs.allSatisfy({ moved[$0] != nil }) {
+            splits[index].root = splits[index].root.mapping { moved[$0] ?? $0 }
+            splits[index].spaceID = spaceID
+        }
+        pruneSplits()
+    }
+
+    /// The tab leaves its split, which ends when one pane is left.
+    public mutating func removeFromSplit(_ tabID: UUID) {
+        guard let index = splits.firstIndex(where: { $0.root.tabIDs.contains(tabID) }) else { return }
+        if let root = splits[index].root.removing(tabID), root.tabIDs.count > 1 { splits[index].root = root }
+        else { splits.remove(at: index) }
+    }
+
+    /// Ends the split; its tabs stay open, one after the other.
+    public mutating func separate(splitID: UUID) {
+        splits.removeAll { $0.id == splitID }
+    }
+
+    public mutating func resizeSplit(id: UUID, divider: SplitDivider.Place, to boundary: Double) {
+        guard let index = splits.firstIndex(where: { $0.id == id }) else { return }
+        splits[index].root = splits[index].root.resizing(divider, to: boundary)
+    }
+
+    public mutating func equalizeSplit(id: UUID) {
+        guard let index = splits.firstIndex(where: { $0.id == id }) else { return }
+        splits[index].root = splits[index].root.equalized
+    }
+
+    /// A pane whose tab closed, or went to another space or place than its split's first pane, leaves its split; a split
+    /// of one pane ends.
+    private mutating func pruneSplits() {
+        let records = Dictionary(uniqueKeysWithValues: tabs.map { ($0.id, $0) })
+        splits = splits.compactMap { split in
+            let place = orderedPanes(of: split).first.flatMap { records[$0]?.place }
+            var root: SplitNode? = split.root
+            for id in split.root.tabIDs where records[id]?.spaceID != split.spaceID || records[id]?.place != place {
+                root = root?.removing(id)
+            }
+            guard let root, root.tabIDs.count > 1 else { return nil }
+            var kept = split
+            kept.root = root
+            return kept
+        }
+    }
+
+    /// A favorite whose group has gone since comes back among the loose favorites.
     public mutating func restore(_ tab: BrowserTab) {
         guard spaces.contains(where: { $0.id == tab.spaceID }), !tabs.contains(where: { $0.id == tab.id }) else { return }
+        var tab = tab
+        if !isValid(tab.place, in: tab.spaceID) { tab.place = .list(group: nil) }
         keepingPinnedOrder(of: [tab.spaceID]) { $0.tabs.append(tab) }
     }
 
@@ -361,10 +520,24 @@ public struct BrowserSession: Equatable, Sendable {
               profiles.filter(\.isRemoving).allSatisfy({ profile in !spaces.contains { $0.profileID == profile.id } }),
               spaces.allSatisfy({ profileIDs.contains($0.profileID) }),
               Set(spaces.flatMap(\.groups).map(\.id)).count == spaces.flatMap(\.groups).count,
-              spaces.allSatisfy({ $0.groups.allSatisfy { Self.trimmed($0.name) == $0.name } }),
+              spaces.allSatisfy({ $0.groups.allSatisfy { Self.trimmed($0.name) == $0.name && ($0.icon.map { Self.trimmed($0) == $0 } ?? true) } }),
               tabs.allSatisfy({ spaceIDs.contains($0.spaceID) && NavigationInput.isTabURL($0.url) && isValid($0.place, in: $0.spaceID) }),
-              tabs.allSatisfy({ $0.name.map { Self.trimmed($0) == $0 } ?? true })
+              tabs.allSatisfy({ $0.name.map { Self.trimmed($0) == $0 } ?? true }),
+              tabs.allSatisfy({ ($0.pinnedURL != nil) == $0.isFavorite && ($0.pinnedURL.map(NavigationInput.isTabURL) ?? true) }),
+              splitsAreValid
         else { throw SessionError.inconsistentData }
+    }
+
+    /// Each split holds two to four distinct tabs of its space, all in one place, and a tab is in one at most.
+    private var splitsAreValid: Bool {
+        let records = Dictionary(uniqueKeysWithValues: tabs.map { ($0.id, $0) })
+        let panes = splits.flatMap(\.tabIDs)
+        return Set(splits.map(\.id)).count == splits.count && Set(panes).count == panes.count
+            && splits.allSatisfy { split in
+                let places = Set(split.tabIDs.compactMap { records[$0]?.place })
+                return (2...TabSplit.maximumPanes).contains(split.tabIDs.count) && split.root.isValid && places.count == 1
+                    && split.tabIDs.allSatisfy { records[$0]?.spaceID == split.spaceID }
+            }
     }
 
     private static func trimmed(_ value: String) -> String? {
