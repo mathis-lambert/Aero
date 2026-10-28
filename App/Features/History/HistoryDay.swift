@@ -13,7 +13,9 @@ struct HistoryDay: Identifiable {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
             formatter.doesRelativeDateFormatting = true
-            return Text(verbatim: formatter.string(from: id))
+            // French writes them in lower case; as a title, they start with a capital.
+            let title = formatter.string(from: id)
+            return Text(verbatim: title.prefix(1).localizedUppercase + title.dropFirst())
         }
         let includesYear = !Calendar.current.isDate(id, equalTo: .now, toGranularity: .year)
         let style = Date.FormatStyle.dateTime.weekday(.wide).day().month(.wide)

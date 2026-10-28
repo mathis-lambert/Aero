@@ -13,6 +13,8 @@ final class BrowserHistory {
     @ObservationIgnored private var pendingTitles: [UUID: [URL: String]] = [:]
     @ObservationIgnored private var pendingWrites: [@Sendable (HistoryStore) async throws -> Void] = []
     private(set) var writeFailed = false
+    /// Counts visits recorded, titles written and entries removed, so a list showing history follows them.
+    private(set) var changes = 0
     @ObservationIgnored var onVisited: ((UUID, HistoryEntry) -> Void)?
     @ObservationIgnored var onRemoved: ((UUID, [URL], Bool) -> Void)?
 
@@ -123,8 +125,15 @@ final class BrowserHistory {
         }.value
     }
 
-    private func didRecord(_ entry: HistoryEntry, profileID: UUID) { onVisited?(profileID, entry) }
+    private func didRecord(_ entry: HistoryEntry, profileID: UUID) {
+        changes += 1
+        onVisited?(profileID, entry)
+    }
+
+    private func didUpdateTitles() { changes += 1 }
+
     private func didRemove(_ urls: [URL], profileID: UUID, all: Bool) {
+        changes += 1
         if all || !urls.isEmpty { onRemoved?(profileID, urls, all) }
     }
 
@@ -133,8 +142,9 @@ final class BrowserHistory {
         guard !pendingTitles.isEmpty else { return }
         let titles = pendingTitles
         pendingTitles = [:]
-        _ = enqueue { store in
+        _ = enqueue { [weak self] store in
             for (profileID, values) in titles { try await store.updateTitles(values, profileID: profileID) }
+            await self?.didUpdateTitles()
         }
     }
 
