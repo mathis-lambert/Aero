@@ -34,6 +34,9 @@ extension BrowserModel {
         case .newPane: return canAddPane && window.newPane == nil
         case .separateSplit, .nextPane, .previousPane: return currentSplit != nil
         case .newTerminal: return space != nil
+        case .playPauseMedia: return mediaTarget != nil
+        case .previousTrack: return mediaTarget?.media.actions.contains(.previousTrack) == true
+        case .nextTrack: return mediaTarget?.media.actions.contains(.nextTrack) == true
         default: return true
         }
     }
@@ -129,6 +132,9 @@ extension BrowserModel {
         case .separateSplit: if let split = currentSplit { separateSplit(split.id) }
         case .nextPane, .previousPane: focusAdjacentPane(backwards: command == .previousPane)
         case .newTerminal: openTerminal()
+        case .playPauseMedia: if let target = mediaTarget { toggleMedia(on: target.tab.id) }
+        case .previousTrack: if let target = mediaTarget { performMedia(.previousTrack, on: target.tab.id) }
+        case .nextTrack: if let target = mediaTarget { performMedia(.nextTrack, on: target.tab.id) }
         }
     }
 

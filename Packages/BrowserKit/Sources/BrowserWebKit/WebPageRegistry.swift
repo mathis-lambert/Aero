@@ -128,7 +128,7 @@ public final class WebPageRegistry {
         if activeTabID == tabID { activeTabID = nil }
         companionTabIDs.remove(tabID)
         discardState(tabID)
-        livePages.removeValue(forKey: tabID)?.page.dispose()
+        if let page = livePages.removeValue(forKey: tabID)?.page { release(page, of: tabID) }
     }
 
     func hibernate(_ tabID: UUID, sessionStorage: Data? = nil) {
@@ -146,7 +146,7 @@ public final class WebPageRegistry {
                 }
             }
         }
-        live.page.dispose()
+        release(live.page, of: tabID)
         Self.signposter.emitEvent(Diagnostics.Signpost.pageHibernated)
     }
 
@@ -202,6 +202,7 @@ public final class WebPageRegistry {
         page.webView.isInspectable = pagesAreInspectable
         page.onMetadata = { [weak self] url, title in self?.delegate?.page(tabID, didUpdateURL: url, title: title) }
         page.onLoadingChange = { [weak self] in self?.delegate?.pageDidChangeLoading(tabID) }
+        page.onActivity = { [weak self] activity in self?.delegate?.page(tabID, didChangeActivity: activity) }
         page.onVisit = { [weak self] visit in self?.delegate?.page(tabID, didVisit: visit) }
         page.onDownload = { [weak self] download in self?.downloads.track(download, from: tabID) }
         page.onIcons = { [weak self] links, url in self?.delegate?.page(tabID, didDeclareIcons: links, at: url) }
@@ -284,13 +285,20 @@ public final class WebPageRegistry {
         replacePage(tabID, with: configuration, request: URLRequest(url: url))
     }
 
+    /// Disposes of the page; what it played or recorded ends with it.
+    private func release(_ page: BrowserPage, of tabID: UUID) {
+        let wasActive = !page.activity.isIdle
+        page.dispose()
+        if wasActive { delegate?.page(tabID, didChangeActivity: PageActivity()) }
+    }
+
     private func replacePage(_ tabID: UUID, with configuration: WKWebViewConfiguration, request: URLRequest,
                              transition: HistoryTransition = .typed, referrer: URL? = nil) {
         guard let live = livePages[tabID], let url = request.url else { return }
         let replacement = BrowserPage(configuration: configuration)
         replacement.extensionOrigin = NavigationInput.isExtensionURL(url) ? url : nil
         connect(replacement, to: tabID, profileID: live.profileID)
-        live.page.dispose()
+        release(live.page, of: tabID)
         livePages[tabID] = LivePage(page: replacement, profileID: live.profileID, lastActive: .now, openerTabID: live.openerTabID)
         delegate?.page(tabID, didUpdateURL: url, title: "")
         delegate?.pageDidReplace(tabID)

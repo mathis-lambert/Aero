@@ -17,6 +17,12 @@ extension BrowserModel: WebPageRegistryDelegate {
         if let tab = session.tabs.first(where: { $0.id == tabID }) { extensionsDidChange(tab, .loading) }
     }
 
+    func page(_ tabID: UUID, didChangeActivity activity: PageActivity) {
+        guard session.tabs.contains(where: { $0.id == tabID }) || activity.isIdle else { return }
+        activities.update(tabID, activity)
+        if activity.media != nil, nowPlayingCenter == nil { nowPlayingCenter = NowPlayingCenter(browser: self) }
+    }
+
     func pageDidReplace(_ tabID: UUID) {
         passwords.pageNavigated(tabID: tabID)
         if window.selectedTabID == tabID { currentPage = pages.livePage(tabID) }

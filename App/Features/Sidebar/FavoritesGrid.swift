@@ -97,6 +97,22 @@ private struct FavoriteTile: View {
                     .transition(.opacity)
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            // The tile is too small for the row's indicators: one sign says what it records, else that it plays.
+            let activities = entry.tabs.compactMap { browser.activity(of: $0.id) }
+            let sign: (symbol: String, color: Color)? = if activities.contains(where: { $0.microphone != .off }) { ("mic.fill", .orange) }
+                else if activities.contains(where: { $0.camera != .off }) { ("video.fill", .green) }
+                else if activities.contains(where: { $0.media?.isPlaying == true && $0.media?.isAudible == true }) { ("speaker.wave.2.fill", .secondary) }
+                else { nil }
+            if !isLifted, let sign {
+                Image(systemName: sign.symbol)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(sign.color)
+                    .padding(4)
+                    .transition(.scale.combined(with: .opacity))
+                    .accessibilityHidden(true)
+            }
+        }
         .simultaneousGesture(TapGesture(count: 2).onEnded {
             if case .tab(let tab) = entry { browser.returnToPinnedPage(tab.id) }
         })

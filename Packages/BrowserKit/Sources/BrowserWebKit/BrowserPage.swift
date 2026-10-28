@@ -24,6 +24,8 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     public private(set) var hasRenderedFirstFrame = false
     /// The address shown, once the page has one.
     public private(set) var url: URL?
+    /// What it plays and records (docs/MEDIA.md).
+    public internal(set) var activity = PageActivity()
 
     public enum PageFailure { case loadFailed, processTerminated, unsupportedNavigation }
 
@@ -31,6 +33,12 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onMetadata: ((URL, String) -> Void)?
     /// The page started or finished loading.
     @ObservationIgnored var onLoadingChange: (() -> Void)?
+    @ObservationIgnored var onActivity: ((PageActivity) -> Void)?
+    /// Each frame's last media report, by the token its script drew (`MediaScripts`), and the frame the page's media is
+    /// in, which the player's actions go to.
+    @ObservationIgnored var mediaFrames: [String: MediaFrame] = [:]
+    @ObservationIgnored var mediaFrameUpdates = 0
+    @ObservationIgnored var mediaFrame: WKFrameInfo?
     @ObservationIgnored var onVisit: ((HistoryNavigation) -> Void)?
     @ObservationIgnored var onDownload: ((WKDownload) -> Void)?
     @ObservationIgnored var onIcons: (([FaviconLink], URL) -> Void)?
@@ -104,6 +112,9 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         configuration.userContentController.addUserScript(PasswordScripts.forms)
         configuration.userContentController.add(PasswordFormBridge(), contentWorld: PageScripts.world, name: PasswordScripts.handlerName)
         configuration.userContentController.addUserScript(PeekScripts.linkFinder)
+        configuration.userContentController.addUserScript(MediaScripts.session)
+        configuration.userContentController.addUserScript(MediaScripts.elements)
+        configuration.userContentController.add(MediaBridge(), contentWorld: PageScripts.world, name: MediaScripts.handlerName)
         return configuration
     }
 
@@ -128,7 +139,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
             webView.observe(\.title, changeHandler: refresh),
             webView.observe(\.url, changeHandler: refresh),
             webView.observe(\.hasOnlySecureContent, changeHandler: refresh)
-        ]
+        ] + observeCapture()
     }
 
     /// `headers` are sent with this request only, such as those a sign-in asks for.
@@ -222,6 +233,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
         documentGeneration += 1
         onMetadata = nil
         onLoadingChange = nil
+        onActivity = nil
         onVisit = nil
         onDownload = nil
         onIcons = nil
@@ -320,6 +332,7 @@ public final class BrowserPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         awaitFirstFrame()
+        resetMedia()
         resetDialogs()
         if restoresHistory { restoresHistory = false; return }
         if let url = webView.url, NavigationInput.isWebURL(url) {

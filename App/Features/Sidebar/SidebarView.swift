@@ -22,6 +22,7 @@ struct SidebarView: View {
                 .padding(.bottom, 4)
 
             SpacePager(browser: browser)
+            MediaDock(browser: browser)
             footer
         }
         .disabled(browser.isChangingStructure)
