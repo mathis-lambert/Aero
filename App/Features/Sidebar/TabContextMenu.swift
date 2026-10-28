@@ -23,31 +23,68 @@ struct TabContextMenu: View {
         Divider()
         Button("Duplicate Tab", systemImage: BrowserCommand.duplicateTab.symbol) { browser.duplicateTab(tab.id) }
         Button("Rename Tab…", systemImage: BrowserCommand.renameTab.symbol) { browser.window.renaming = .tab(tab.id) }
+        if let shown = browser.window.selectedTabID, shown != tab.id {
+            Button("Open Beside Current Tab", systemImage: BrowserCommand.newPane.symbol) { browser.splitTab(tab.id, beside: shown) }
+                .disabled(!browser.isEnabled(.newPane))
+        }
         Divider()
-        // Favorites show in the grid or, pinned, in the list under it, among the groups.
+        if tab.isFavorite { editPinnedPage }
+        TabPlaceMenu(browser: browser, tab: tab) { browser.removeFavorite(tab.id) }
+        Divider()
+        Button("New Group with Tab", systemImage: BrowserCommand.newGroup.symbol) { browser.newGroup(with: [tab.id]) }
+        TabMoveMenus(browser: browser, tab: tab)
+        // A closed favorite has nothing to close.
+        if browser.isTabOpen(tab) {
+            Divider()
+            Button("Close Tab", systemImage: BrowserCommand.closeTab.symbol) { browser.closeTab(tab.id) }
+        }
+    }
+}
+
+/// Where a tab is kept: favorites show in the grid or, pinned, in the list under it, among the groups. A split's first
+/// pane stands for the split, which moves with it.
+struct TabPlaceMenu: View {
+    let browser: BrowserModel
+    let tab: BrowserTab
+    let removeFavorite: () -> Void
+
+    var body: some View {
         switch tab.place {
         case .open:
             Button("Add to Favorites", systemImage: "star") { browser.moveTab(tab.id, to: .grid, before: nil) }
             Button("Pin Tab", systemImage: "pin") { browser.moveTab(tab.id, to: .list(group: nil), before: nil) }
         case .grid:
             Button("Move to Pinned Tabs", systemImage: "pin") { browser.moveTab(tab.id, to: .list(group: nil), before: nil) }
-            Button("Remove from Favorites", systemImage: "star.slash") { browser.removeFavorite(tab.id) }
+            Button("Remove from Favorites", systemImage: "star.slash", action: removeFavorite)
         case .list:
             Button("Move to Favorites Grid", systemImage: "square.grid.2x2") { browser.moveTab(tab.id, to: .grid, before: nil) }
-            Button("Remove from Favorites", systemImage: "star.slash") { browser.removeFavorite(tab.id) }
+            Button("Remove from Favorites", systemImage: "star.slash", action: removeFavorite)
         }
-        Divider()
-        Button("New Group with Tab", systemImage: BrowserCommand.newGroup.symbol) { browser.newGroup(with: [tab.id]) }
+    }
+}
+
+/// Into a group of its space, or to another space, when there is one.
+struct TabMoveMenus: View {
+    let browser: BrowserModel
+    let tab: BrowserTab
+
+    var body: some View {
         if !(browser.session.spaces.first { $0.id == tab.spaceID }?.groups.isEmpty ?? true) {
             MoveToGroupMenu(browser: browser, tabs: [tab])
         }
         if browser.session.spaces.count > 1 {
             MoveToSpaceMenu(browser: browser, tabs: [tab])
         }
-        // A closed favorite has nothing to close.
-        if browser.isTabOpen(tab) {
-            Divider()
-            Button("Close Tab", systemImage: BrowserCommand.closeTab.symbol) { browser.closeTab(tab.id) }
+    }
+}
+
+extension TabContextMenu {
+    /// A favorite's pinned page: the page shown in its place, or another address (docs/BROWSING.md › Pinned pages).
+    private var editPinnedPage: some View {
+        Menu("Edit Pinned Page", systemImage: "pin.circle") {
+            Button("Replace Pinned URL with Current", systemImage: "arrow.triangle.2.circlepath") { browser.pinCurrentPage(tab.id) }
+                .disabled(!tab.hasLeftPinnedPage)
+            Button("Edit…", systemImage: "pencil") { browser.window.renaming = .pinnedPage(tab.id) }
         }
     }
 }
@@ -62,6 +99,8 @@ private struct SelectedTabsMenu: View {
         Button("Copy Links", systemImage: BrowserCommand.copyLink.symbol) { browser.copyLinks(of: ids) }
         Divider()
         Button("Duplicate \(tabs.count) Tabs", systemImage: BrowserCommand.duplicateTab.symbol) { browser.duplicateTabs(ids) }
+        Button("Open in Split View", systemImage: BrowserCommand.newPane.symbol) { browser.openInSplit(ids) }
+            .disabled(tabs.count > TabSplit.maximumPanes)
         Divider()
         Button("Add to Favorites", systemImage: "star") { place(.grid) }
             .disabled(tabs.allSatisfy { $0.place == .grid })

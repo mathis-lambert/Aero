@@ -11,14 +11,30 @@ struct SidebarTabs {
         let tabs: [BrowserTab]
     }
 
-    /// An entry of the pinned list: a loose favorite, or a group with its tabs.
-    enum Pinned: Identifiable {
+    /// What the sidebar shows as one tab: a tab, or a split with its panes' tabs in reading order, which is also their
+    /// order in the sidebar (docs/SPLIT_VIEW.md). It stands where its first tab is, and goes by that tab's identity.
+    enum Entry: Identifiable {
         case tab(BrowserTab)
+        case split(TabSplit, [BrowserTab])
+
+        var id: UUID { tabs[0].id }
+
+        var tabs: [BrowserTab] {
+            switch self {
+            case .tab(let tab): [tab]
+            case .split(_, let panes): panes
+            }
+        }
+    }
+
+    /// An entry of the pinned list: a loose favorite or split, or a group with its tabs.
+    enum Pinned: Identifiable {
+        case entry(Entry)
         case group(TabGroup, [BrowserTab])
 
         var id: UUID {
             switch self {
-            case .tab(let tab): tab.id
+            case .entry(let entry): entry.id
             case .group(let group, _): group.id
             }
         }
@@ -28,6 +44,7 @@ struct SidebarTabs {
     /// Groups and loose favorites, in any order.
     let pinned: [Pinned]
     let open: [BrowserTab]
+    private let splits: [UUID: TabSplit]
 
     init(session: BrowserSession, space: BrowserSpace, drop: TabDrop?, pinnedDrop: PinnedDrop? = nil) {
         var session = session
@@ -54,16 +71,41 @@ struct SidebarTabs {
         }
         let own = session.tabs.filter { $0.spaceID == space.id }
         let tabs = Dictionary(grouping: own, by: \.place)
-        let records = Dictionary(uniqueKeysWithValues: own.map { ($0.id, $0) })
         let groups = Dictionary(uniqueKeysWithValues: (session.spaces.first { $0.id == space.id }?.groups ?? []).map { ($0.id, $0) })
+        var splits: [UUID: TabSplit] = [:]
+        for split in session.splits where split.spaceID == space.id {
+            for id in split.tabIDs { splits[id] = split }
+        }
+        self.splits = splits
         grid = tabs[.grid, default: []]
+        let loose = Self.entries(of: tabs[.list(group: nil), default: []], splits: splits)
+        let entries = Dictionary(uniqueKeysWithValues: loose.map { ($0.id, $0) })
         pinned = session.pinned(in: space.id).compactMap { item in
             switch item {
-            case .tab(let id): records[id].map(Pinned.tab)
+            case .tab(let id): entries[id].map(Pinned.entry)
             case .group(let id): groups[id].map { .group($0, tabs[.list(group: id), default: []]) }
             }
         }
         open = tabs[.open, default: []]
+    }
+
+    /// The entries that show `tabs`, a run of one place: a split's tabs as one.
+    func entries(of tabs: [BrowserTab]) -> [Entry] { Self.entries(of: tabs, splits: splits) }
+
+    private static func entries(of tabs: [BrowserTab], splits: [UUID: TabSplit]) -> [Entry] {
+        let records = Dictionary(uniqueKeysWithValues: tabs.map { ($0.id, $0) })
+        var listed: Set<UUID> = []
+        return tabs.compactMap { tab in
+            guard let split = splits[tab.id] else { return .tab(tab) }
+            guard listed.insert(split.id).inserted else { return nil }
+            return .split(split, split.tabIDs.compactMap { records[$0] })
+        }
+    }
+
+    /// The tabs, and every pane of a split among them: what goes when they are dragged.
+    func carried(_ tabIDs: [UUID]) -> [UUID] {
+        var seen: Set<UUID> = []
+        return tabIDs.flatMap { splits[$0]?.tabIDs ?? [$0] }.filter { seen.insert($0).inserted }
     }
 
     var groups: [(group: TabGroup, tabs: [BrowserTab])] {
@@ -71,7 +113,7 @@ struct SidebarTabs {
     }
 
     var loose: [BrowserTab] {
-        pinned.compactMap { if case .tab(let tab) = $0 { tab } else { nil } }
+        pinned.flatMap { item -> [BrowserTab] in if case .entry(let entry) = item { entry.tabs } else { [] } }
     }
 
     /// The runs a drop can land in; a closed group's rows are not on screen.
@@ -89,7 +131,7 @@ struct SidebarTabs {
     var visibleOrder: [UUID] {
         let shown = pinned.flatMap { item -> [UUID] in
             switch item {
-            case .tab(let tab): [tab.id]
+            case .entry(let entry): entry.tabs.map(\.id)
             case .group(let group, let tabs): [group.id] + (group.isCollapsed ? [] : tabs.map(\.id))
             }
         }
@@ -102,7 +144,10 @@ struct SidebarTabs {
         guard !groups.isEmpty else { return nil }
         let carried = Set(self.groups.filter { groups.contains($0.group.id) }.flatMap { $0.tabs.map(\.id) })
         let order = grid.map(\.id) + pinned.flatMap { item -> [UUID] in
-            if case .group(let group, let members) = item { [group.id] + members.map(\.id) } else { [item.id] }
+            switch item {
+            case .entry(let entry): entry.tabs.map(\.id)
+            case .group(let group, let members): [group.id] + members.map(\.id)
+            }
         } + open.map(\.id)
         return order.filter { ids.contains($0) && !carried.contains($0) }.map { groups.contains($0) ? .group($0) : .tab($0) }
     }
@@ -116,16 +161,21 @@ struct SidebarTabs {
     /// Changes whenever a tab or a group moves, so the move can animate.
     var order: [[UUID]] { [pinned.map(\.id)] + sections.map { $0.tabs.map(\.id) } }
 
-    /// A tab from another space shows here as it will arrive, under its own identity for the preview.
+    /// A tab from another space shows here as it will arrive, under its own identity for the preview, with the other
+    /// panes of its split, as one.
     private static func arrive(_ id: UUID, in space: BrowserSpace, session: inout BrowserSession) {
-        guard let tab = session.tabs.first(where: { $0.id == id }), tab.spaceID != space.id else { return }
-        session.close(id: id)
-        session.restore(BrowserTab(id: id, spaceID: space.id, url: tab.url, title: tab.title, name: tab.name, place: .open))
+        let panes = session.split(containing: id)?.tabIDs ?? [id]
+        for pane in panes {
+            guard let tab = session.tabs.first(where: { $0.id == pane }), tab.spaceID != space.id else { return }
+            session.close(id: pane)
+            session.restore(BrowserTab(id: pane, spaceID: space.id, url: tab.url, title: tab.title, name: tab.name, place: .open))
+        }
+        for (previous, pane) in zip(panes, panes.dropFirst()) { session.split(pane, beside: previous, at: .trailing) }
     }
 
     private static func tabs(_ item: Pinned) -> [BrowserTab] {
         switch item {
-        case .tab(let tab): [tab]
+        case .entry(let entry): entry.tabs
         case .group(_, let tabs): tabs
         }
     }

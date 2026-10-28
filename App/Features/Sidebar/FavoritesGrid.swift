@@ -2,9 +2,9 @@ import AppKit
 import BrowserCore
 import SwiftUI
 
-/// Favorites as tiles of their favicon. A dragged tab takes a slot as a gap, and the tiles after it
-/// move aside; an empty grid exposes a tinted target only during a drag. The tile metrics here also draw the drag
-/// image and the onboarding's sidebar.
+/// Favorites as tiles of their favicon, a split's as its panes' icons stacked. A dragged tab takes a slot as a gap, and
+/// the tiles after it move aside; an empty grid exposes a tinted target only during a drag. The tile metrics here also
+/// draw the drag image and the onboarding's sidebar.
 struct FavoritesGrid: View {
     static let spacing: CGFloat = 6
     static let tileHeight: CGFloat = 38
@@ -26,7 +26,7 @@ struct FavoritesGrid: View {
     static let initialFont = Font.system(size: placeholderSize, weight: .medium, design: .rounded)
 
     let browser: BrowserModel
-    let tabs: [BrowserTab]
+    let entries: [SidebarTabs.Entry]
     let selectedTabID: UUID?
     let marked: Set<UUID>
     let lifted: Set<UUID>
@@ -35,7 +35,7 @@ struct FavoritesGrid: View {
     let layout: TabDropLayout
 
     var body: some View {
-        if tabs.isEmpty {
+        if entries.isEmpty {
             if dragging {
                 RoundedRectangle(cornerRadius: Self.radius)
                     .strokeBorder(Color.accentColor.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
@@ -48,35 +48,39 @@ struct FavoritesGrid: View {
             }
         } else {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.minimumTileWidth), spacing: Self.spacing)], spacing: Self.spacing) {
-                ForEach(tabs) { tile($0) }
+                ForEach(entries) { tile($0) }
             }
             .padding(.bottom, Self.spacing)
         }
     }
 
-    private func tile(_ tab: BrowserTab) -> some View {
-        FavoriteTile(browser: browser, tab: tab, selected: selectedTabID == tab.id || marked.contains(tab.id),
-                     isLifted: lifted.contains(tab.id))
-            .dropFrame(.tab(tab.id), in: layout)
+    private func tile(_ entry: SidebarTabs.Entry) -> some View {
+        FavoriteTile(browser: browser, entry: entry, selected: entry.tabs.contains { selectedTabID == $0.id || marked.contains($0.id) },
+                     isLifted: lifted.contains(entry.id))
+            .dropFrame(.tab(entry.id), in: layout)
     }
 }
 
-/// One favorite. It owns its hover, so the pointer crossing the grid redraws only the tiles it enters and leaves.
+/// One favorite, or a split of favorites. It owns its hover, so the pointer crossing the grid redraws only the tiles it
+/// enters and leaves. A favorite away from its pinned page wears a badge on its corner that takes it back, as a double
+/// click does.
 private struct FavoriteTile: View {
     let browser: BrowserModel
-    let tab: BrowserTab
+    let entry: SidebarTabs.Entry
     let selected: Bool
     let isLifted: Bool
     @State private var hovered = false
     @Environment(\.browserReduceMotion) private var reduceMotion
 
+    /// The tab that stands for the tile: the favorite, or the split's first pane.
+    private var tab: BrowserTab { entry.tabs[0] }
+
     var body: some View {
         Button { browser.click(tab, modifiers: NSEvent.modifierFlags) } label: {
-            FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: FavoritesGrid.iconSize, fetchingMissing: tab.url) {
-                if let page = InternalPage(url: tab.url) {
-                    Image(systemName: page.symbol).font(.system(size: FavoritesGrid.placeholderSize)).foregroundStyle(.secondary)
-                } else {
-                    Text(verbatim: String(tab.url.siteName.prefix(1)).uppercased()).font(FavoritesGrid.initialFont)
+            Group {
+                switch entry {
+                case .tab(let tab): FavoriteIcon(browser: browser, tab: tab)
+                case .split(_, let panes): SplitStack(browser: browser, panes: panes)
                 }
             }
             .opacity(isLifted ? 0 : 1)
@@ -86,19 +90,41 @@ private struct FavoriteTile: View {
             .contentShape(RoundedRectangle(cornerRadius: FavoritesGrid.radius))
         }
         .buttonStyle(.plain)
+        .overlay(alignment: .topTrailing) {
+            if !isLifted, case .tab(let tab) = entry, tab.hasLeftPinnedPage {
+                PinnedPageReturn(browser: browser, tab: tab, style: .badge)
+                    .padding(3)
+                    .transition(.opacity)
+            }
+        }
+        .simultaneousGesture(TapGesture(count: 2).onEnded {
+            if case .tab(let tab) = entry { browser.returnToPinnedPage(tab.id) }
+        })
         .onHover { hovered = $0 }
         .animation(reduceMotion ? nil : BrowserDesign.hover, value: hovered)
-        .tooltip(tab.displayTitle)
-        .accessibilityLabel(tab.displayTitle)
+        .tooltip(title)
+        .accessibilityLabel(title)
         .accessibilityAddTraits(selected ? .isSelected : [])
-        .contextMenu { TabContextMenu(browser: browser, tab: tab) }
+        .iconContextMenu {
+            switch entry {
+            case .tab(let tab): TabContextMenu(browser: browser, tab: tab)
+            case .split(let split, let panes): SplitContextMenu(browser: browser, split: split, panes: panes)
+            }
+        }
         .popover(isPresented: renaming, arrowEdge: .bottom) {
-            RenameField(name: tab.displayTitle) { browser.renameTab(tab.id, to: $0) } end: { browser.window.endRenaming(.tab(tab.id)) }
-                .frame(width: 200)
-                .padding(10)
+            Group {
+                if browser.window.renaming == .pinnedPage(tab.id) { PinnedPageField(browser: browser, tab: tab) }
+                else { RenameField(name: tab.displayTitle) { browser.renameTab(tab.id, to: $0) } end: { browser.window.endRenaming(.tab(tab.id)) } }
+            }
+            .frame(width: 240)
+            .padding(10)
         }
         .tabDraggable(tab, browser: browser)
-        .accessibilityIdentifier("sidebar.tile")
+        .accessibilityIdentifier(entry.tabs.count > 1 ? "sidebar.splitTile" : "sidebar.tile")
+    }
+
+    private var title: String {
+        entry.tabs.map(\.shownTitle).formatted(.list(type: .and))
     }
 
     /// The favicon's color, or the space's, made vivid enough to glow: a dull or dark icon still lights its glass.
@@ -111,15 +137,59 @@ private struct FavoriteTile: View {
         return Color(hue: Double(hue), saturation: min(Double(saturation), 0.85), brightness: max(Double(brightness), 0.75))
     }
 
-    /// A tile has no title to edit in place, so its name is edited in a popover.
+    /// A tile has no title to edit in place, so its name, or its pinned page, is edited in a popover.
     private var renaming: Binding<Bool> {
-        Binding { browser.window.renaming == .tab(tab.id) } set: { if !$0 { browser.window.endRenaming(.tab(tab.id)) } }
+        Binding { [.tab(tab.id), .pinnedPage(tab.id)].contains(browser.window.renaming) } set: { shown in
+            if !shown, let target = browser.window.renaming { browser.window.endRenaming(target) }
+        }
     }
 }
 
-/// A tile's surface: recessed at rest, brighter under the pointer, and a tinted lens when active, its icon's color
-/// glowing through it. Hovering adds no glass, which would come and go over the icon at each pass of the pointer. A
-/// dragged tile leaves a plain gap.
+/// A favorite's icon, its site's initial or a browser page's symbol until it has one.
+private struct FavoriteIcon: View {
+    let browser: BrowserModel
+    let tab: BrowserTab
+    var size = FavoritesGrid.iconSize
+
+    var body: some View {
+        let placeholder = size * FavoritesGrid.placeholderSize / FavoritesGrid.iconSize
+        FaviconView(cache: browser.favicons, key: browser.faviconKey(for: tab), size: size, fetchingMissing: tab.url) {
+            if let page = InternalPage(url: tab.url) {
+                Image(systemName: page.symbol).font(.system(size: placeholder)).foregroundStyle(.secondary)
+            } else {
+                Text(verbatim: String(tab.url.siteName.prefix(1)).uppercased()).font(.system(size: placeholder, weight: .medium, design: .rounded))
+            }
+        }
+    }
+}
+
+/// A split's panes as small squares stacked one over the next, in reading order, the first on top.
+struct SplitStack: View {
+    static let side: CGFloat = 22
+    static let overlap: CGFloat = 9
+    static let radius: CGFloat = 6
+    static let iconSize: CGFloat = 13
+
+    let browser: BrowserModel
+    let panes: [BrowserTab]
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        HStack(spacing: -Self.overlap) {
+            ForEach(Array(panes.enumerated()), id: \.element.id) { index, tab in
+                FavoriteIcon(browser: browser, tab: tab, size: Self.iconSize)
+                    .frame(width: Self.side, height: Self.side)
+                    .background(palette.raised, in: RoundedRectangle(cornerRadius: Self.radius, style: .continuous))
+                    .overlay { RoundedRectangle(cornerRadius: Self.radius, style: .continuous).strokeBorder(palette.line) }
+                    .shadow(color: .black.opacity(0.12), radius: 1.5, x: 1)
+                    .zIndex(Double(panes.count - index))
+            }
+        }
+    }
+}
+
+/// A tile's surface: clear glass at rest, brighter under the pointer, and a tinted lens when active, its icon's color
+/// glowing through it. A dragged tile leaves a plain gap.
 private struct TileSurface: ViewModifier {
     enum State {
         case resting, hovered, active(glow: Color), lifted
@@ -130,8 +200,12 @@ private struct TileSurface: ViewModifier {
 
     func body(content: Content) -> some View {
         switch state {
-        case .resting: content.browserSurface(fill: palette.favoriteTile, border: palette.line, radius: FavoritesGrid.radius)
-        case .hovered: content.browserSurface(fill: palette.favoriteTileHover, border: palette.line, radius: FavoritesGrid.radius)
+        // Under the pointer, the same glass with a veil under it: glass coming and going at each pass would flicker.
+        case .resting, .hovered:
+            let veil = if case .hovered = state { palette.scheme == .dark ? 0.07 : 0.35 } else { 0.0 }
+            content
+                .background(Color.white.opacity(veil), in: RoundedRectangle(cornerRadius: FavoritesGrid.radius, style: .continuous))
+                .browserGlass(.tile, radius: FavoritesGrid.radius)
         case .active(let glow):
             content
                 .browserGlass(.selection, tint: glow, radius: FavoritesGrid.radius)

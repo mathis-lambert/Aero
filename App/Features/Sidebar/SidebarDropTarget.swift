@@ -30,42 +30,48 @@ struct SidebarDropTarget: NSViewRepresentable {
             let palette = BrowserPalette(scheme: colorScheme)
             let width = layout.frames[.section(.open)]?.width ?? (BrowserDesign.sidebarWidth - 2 * BrowserDesign.sidebarInset)
             let rightToLeft = layoutDirection == .rightToLeft
-            let count = drag.items.count
+            // A split's picked panes are one entry.
+            let count = Set(drag.items.map { browser.session.split(containing: $0.id)?.id ?? $0.id }).count
             // A group shows as its header: the folder and its name, never as a tile.
             if case .group(let groupID) = drag.picked {
                 guard let group = browser.session.spaces.lazy.flatMap(\.groups).first(where: { $0.id == groupID }) else { return nil }
-                let image = Self.preview(title: group.name, icon: nil, symbol: "folder", initial: nil, count: count, grid: false,
-                                         width: width, palette: palette, rightToLeft: rightToLeft)
+                let folder = PreviewItem(title: group.name, icon: nil, symbol: "folder", initial: nil)
+                let image = Self.preview([folder], count: count, grid: false, width: width, palette: palette, rightToLeft: rightToLeft)
                 return (image, image)
             }
-            guard let tab = browser.session.tabs.first(where: { $0.id == drag.picked.id }) else { return nil }
-            let icon = browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).image }
-            let page = InternalPage(url: tab.url)
-            let initial = page == nil ? String(tab.url.siteName.prefix(1)).uppercased() : nil
-            let symbol = page?.symbol ?? "globe"
-            return (Self.preview(title: tab.displayTitle, icon: icon, symbol: symbol, initial: initial, count: count, grid: false,
-                                 width: width, palette: palette, rightToLeft: rightToLeft),
-                    Self.preview(title: tab.displayTitle, icon: icon, symbol: symbol, initial: initial, count: count, grid: true,
-                                 width: width, palette: palette, rightToLeft: rightToLeft))
+            // A split shows whole, as its row or its tile does.
+            let panes = browser.session.split(containing: drag.picked.id)?.tabIDs ?? [drag.picked.id]
+            let items = browser.tabs(panes).map { tab in
+                let page = InternalPage(url: tab.url)
+                return PreviewItem(title: tab.displayTitle, icon: browser.faviconKey(for: tab).flatMap { browser.favicons.favicon(for: $0).image },
+                                   symbol: page?.symbol ?? "globe", initial: page == nil ? String(tab.url.siteName.prefix(1)).uppercased() : nil)
+            }
+            guard !items.isEmpty else { return nil }
+            return (Self.preview(items, count: count, grid: false, width: width, palette: palette, rightToLeft: rightToLeft),
+                    Self.preview(items, count: count, grid: true, width: width, palette: palette, rightToLeft: rightToLeft))
         }
     }
 
-    /// Native drawing avoids starting a SwiftUI render inside AppKit's mouse tracking loop. A tile without a favicon
-    /// shows `initial` when there is one, else `symbol`; several items show their count on the trailing top corner.
-    private static func preview(title: String, icon: NSImage?, symbol: String, initial: String?, count: Int, grid: Bool, width: CGFloat,
-                                palette: BrowserPalette, rightToLeft: Bool) -> NSImage {
+    /// A tab, a pane of a split or a group, as its preview draws it. Without a favicon a tile shows `initial` when there
+    /// is one, else `symbol`.
+    private struct PreviewItem {
+        let title: String
+        let icon: NSImage?
+        let symbol: String
+        let initial: String?
+    }
+
+    /// Native drawing avoids starting a SwiftUI render inside AppKit's mouse tracking loop. A split's panes show as the
+    /// segments of its row or the stacked squares of its tile; several dragged entries show their count on the trailing
+    /// top corner.
+    private static func preview(_ items: [PreviewItem], count: Int, grid: Bool, width: CGFloat, palette: BrowserPalette,
+                                rightToLeft: Bool) -> NSImage {
         let size = NSSize(width: grid ? FavoritesGrid.tileWidth(in: width) : width,
                           height: grid ? FavoritesGrid.tileHeight : BrowserDesign.tabRowHeight)
         let fill = NSColor(grid ? palette.favoriteTileHover : palette.raised)
         let border = NSColor(palette.line)
+        let canvas = NSColor(palette.canvas)
         let ink = NSColor(palette.ink)
-        let iconSize = grid ? FavoritesGrid.iconSize : BrowserDesign.tabIconSize
-        let inset = BrowserDesign.rowInset
-        let textInset = inset * 2 + BrowserDesign.rowIconWidth
-        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
-        let textHeight = ceil(font.ascender - font.descender)
-        let symbol = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)?
-            .withSymbolConfiguration(.init(paletteColors: [ink]))
         return NSImage(size: size, flipped: false) { bounds in
             let radius = grid ? FavoritesGrid.radius : BrowserDesign.Radius.control
             let shape = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: radius, yRadius: radius)
@@ -73,30 +79,74 @@ struct SidebarDropTarget: NSViewRepresentable {
             shape.fill()
             border.setStroke()
             shape.stroke()
-            let x = grid ? (size.width - iconSize) / 2 : rightToLeft ? size.width - inset - iconSize : inset
-            let iconRect = CGRect(x: x, y: (size.height - iconSize) / 2, width: iconSize, height: iconSize)
-            if grid, icon == nil, let initial {
-                let text = initial as NSString
-                let plain = NSFont.systemFont(ofSize: FavoritesGrid.placeholderSize, weight: .medium)
-                // The tile's rounded initial (`FavoritesGrid.initialFont`).
-                let rounded = plain.fontDescriptor.withDesign(.rounded).flatMap { NSFont(descriptor: $0, size: FavoritesGrid.placeholderSize) } ?? plain
-                let attributes: [NSAttributedString.Key: Any] = [.font: rounded, .foregroundColor: ink]
-                let textSize = text.size(withAttributes: attributes)
-                text.draw(at: CGPoint(x: (size.width - textSize.width) / 2, y: (size.height - textSize.height) / 2), withAttributes: attributes)
-            } else if let image = icon ?? symbol {
-                image.draw(in: iconRect)
-            }
-            if !grid {
-                let paragraph = NSMutableParagraphStyle()
-                paragraph.lineBreakMode = .byTruncatingTail
-                paragraph.alignment = rightToLeft ? .right : .left
-                let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink, .paragraphStyle: paragraph]
-                let rect = CGRect(x: rightToLeft ? inset : textInset, y: (size.height - textHeight) / 2, width: max(0, size.width - textInset - inset), height: textHeight)
-                (title as NSString).draw(in: rect, withAttributes: attributes)
+            if grid, items.count > 1 {
+                // Drawn last to first, so the first pane's square is on top.
+                let side = SplitStack.side, step = side - SplitStack.overlap
+                let total = side + step * CGFloat(items.count - 1)
+                for (index, item) in items.enumerated().reversed() {
+                    let offset = (size.width - total) / 2 + step * CGFloat(index)
+                    let square = CGRect(x: rightToLeft ? size.width - offset - side : offset, y: (size.height - side) / 2, width: side, height: side)
+                    let path = NSBezierPath(roundedRect: square.insetBy(dx: 0.5, dy: 0.5), xRadius: SplitStack.radius, yRadius: SplitStack.radius)
+                    canvas.setFill()
+                    path.fill()
+                    border.setStroke()
+                    path.stroke()
+                    drawIcon(item, size: SplitStack.iconSize, centeredIn: square, ink: ink)
+                }
+            } else if grid {
+                drawIcon(items[0], size: FavoritesGrid.iconSize, centeredIn: bounds, ink: ink)
+            } else {
+                // One segment per pane, as wide as the others, as the split's row shows them.
+                let padding: CGFloat = items.count > 1 ? 4 : 0, spacing: CGFloat = 4
+                let segment = (size.width - 2 * padding - spacing * CGFloat(items.count - 1)) / CGFloat(items.count)
+                for (index, item) in items.enumerated() {
+                    let offset = padding + (segment + spacing) * CGFloat(index)
+                    let rect = CGRect(x: rightToLeft ? size.width - offset - segment : offset, y: 0, width: segment, height: size.height)
+                    drawRow(item, in: rect, inset: items.count > 1 ? 6 : BrowserDesign.rowInset, ink: ink, rightToLeft: rightToLeft)
+                }
             }
             if count > 1 { drawBadge(count, in: bounds, rightToLeft: rightToLeft) }
             return true
         }
+    }
+
+    private static func drawIcon(_ item: PreviewItem, size: CGFloat, centeredIn rect: CGRect, ink: NSColor) {
+        let iconRect = CGRect(x: rect.midX - size / 2, y: rect.midY - size / 2, width: size, height: size)
+        if item.icon == nil, let initial = item.initial {
+            let fontSize = size * FavoritesGrid.placeholderSize / FavoritesGrid.iconSize
+            let plain = NSFont.systemFont(ofSize: fontSize, weight: .medium)
+            // The tile's rounded initial (`FavoritesGrid.initialFont`).
+            let rounded = plain.fontDescriptor.withDesign(.rounded).flatMap { NSFont(descriptor: $0, size: fontSize) } ?? plain
+            let attributes: [NSAttributedString.Key: Any] = [.font: rounded, .foregroundColor: ink]
+            let text = initial as NSString
+            let textSize = text.size(withAttributes: attributes)
+            text.draw(at: CGPoint(x: rect.midX - textSize.width / 2, y: rect.midY - textSize.height / 2), withAttributes: attributes)
+        } else if let image = item.icon ?? symbolImage(item.symbol, ink: ink) {
+            image.draw(in: iconRect)
+        }
+    }
+
+    /// A row's icon and title, the title cut short at the end of `rect`.
+    private static func drawRow(_ item: PreviewItem, in rect: CGRect, inset: CGFloat, ink: NSColor, rightToLeft: Bool) {
+        let iconSize = BrowserDesign.tabIconSize
+        let iconX = rightToLeft ? rect.maxX - inset - iconSize : rect.minX + inset
+        if let image = item.icon ?? symbolImage(item.symbol, ink: ink) {
+            image.draw(in: CGRect(x: iconX, y: rect.midY - iconSize / 2, width: iconSize, height: iconSize))
+        }
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let textHeight = ceil(font.ascender - font.descender)
+        let textInset = inset * 2 + BrowserDesign.rowIconWidth
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byTruncatingTail
+        paragraph.alignment = rightToLeft ? .right : .left
+        let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink, .paragraphStyle: paragraph]
+        let textWidth = max(0, rect.width - textInset - inset)
+        let textRect = CGRect(x: rightToLeft ? rect.minX + inset : rect.minX + textInset, y: rect.midY - textHeight / 2, width: textWidth, height: textHeight)
+        (item.title as NSString).draw(in: textRect, withAttributes: attributes)
+    }
+
+    private static func symbolImage(_ name: String, ink: NSColor) -> NSImage? {
+        NSImage(systemSymbolName: name, accessibilityDescription: nil)?.withSymbolConfiguration(.init(paletteColors: [ink]))
     }
 
     private static func drawBadge(_ count: Int, in bounds: CGRect, rightToLeft: Bool) {

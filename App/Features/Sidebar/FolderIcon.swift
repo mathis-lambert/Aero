@@ -4,7 +4,7 @@ import SwiftUI
 /// whose top edge drops and widens as the group opens, as a flap swinging toward the viewer, then closes back over the
 /// back. Under the pointer a closed folder peeks: its flap opens a little, as its preview is about to show. The flap
 /// is a vector shape whose openness animates, so it stays crisp at every step. With Reduce Motion it changes without
-/// moving.
+/// moving. A folder given an icon shows that symbol instead, filled while open.
 struct FolderIcon: View {
     private static let size = CGSize(width: 16, height: 13)
     private static let motion = Animation.spring(duration: 0.32, bounce: 0.12)
@@ -18,13 +18,30 @@ struct FolderIcon: View {
     let isOpen: Bool
     var isPeeking = false
     var tint: Color = .secondary
+    /// A symbol chosen for the folder (`FolderSymbols`).
+    var symbol: String? = nil
     @Environment(\.browserReduceMotion) private var reduceMotion
 
     var body: some View {
+        if let symbol {
+            Image(systemName: symbol)
+                .symbolVariant(isOpen ? .fill : .none)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(tint)
+                .scaleEffect(isPeeking && !isOpen ? 1.1 : 1)
+                .frame(width: Self.size.width, height: Self.size.height)
+                .animation(reduceMotion ? nil : Self.motion, value: isOpen || isPeeking)
+                .accessibilityHidden(true)
+        } else {
+            folder
+        }
+    }
+
+    private var folder: some View {
         let openness = isOpen ? 1 : isPeeking ? Self.peek : 0
         // One shape tinted once, so the strokes where the layers meet never darken. The tint spreads past the folder,
         // for its strokes and the opening flap, which widens past it.
-        tint.mask {
+        return tint.mask {
             ZStack {
                 FolderBack()
                     .stroke(style: StrokeStyle(lineWidth: Self.line, lineJoin: .round))

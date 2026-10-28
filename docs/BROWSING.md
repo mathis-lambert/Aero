@@ -17,7 +17,7 @@ Suggestions use an ephemeral session without profile cookies or credentials. Add
 
 ## New Tab
 
-While its field is empty, New Tab shows up to six frequent sites and the last three tabs closed in its space, under the bar. The page opens with a gust rising from below its center, quick at first then slowing: the dots of the crescent pop in and are lit for a moment as its ragged front reaches them, and the bar lights up as it arrives. The shelf rises in at that moment and steps aside as soon as you type; each keystroke sends a ring from the caret that pushes the dots aside and swells them as it passes. The page reads them once as it appears; nothing polls while it stays open.
+While its field is empty, New Tab shows up to six frequent sites and the last three tabs closed in its space, under the bar. The page opens with a gust rising from below its center, quick at first then slowing: the dots of the crescent pop in and are lit for a moment as its ragged front reaches them, and the bar lights up as it arrives. The shelf rises in at that moment and steps aside as soon as you type; each keystroke sends a ring from the caret that pushes the dots aside and swells them as it passes. The page reads them once as it appears; nothing polls while it stays open. In a narrow page or pane, sites and closed tabs wrap to further rows, each centered, rather than widen it.
 
 - Sites come from the profile's last 28 days of history, grouped by host without `www.`. A visit weighs less with age (a week's half-life), more when the address was typed, more near this time of day and on the same kind of day, weekday or weekend. Reloads and one-off visits do not count; the space's favorites are left out, being in the sidebar already. A site opens its dominant page, or its home page when no page dominates; one already open in the space is switched to. The rules are `FrequentSites` in BrowserCore.
 - Hide from New Tab, in a site's context menu, is kept per profile in the preferences and forgotten with the profile.
@@ -27,14 +27,22 @@ While its field is empty, New Tab shows up to six frequent sites and the last th
 
 Each space has a favorites grid, a pinned list of favorites and groups in any order, and ordinary tabs. New Tab is a permanent selectable row.
 
-- Closing a favorite releases its page but retains its record. Favorites start closed after relaunch. Removing an open favorite turns it into an ordinary tab; removing a closed favorite deletes it.
+- Closing a favorite releases its page but retains its record, back on its pinned page. A favorite's pane in a split closes as a view of the split does: it is removed, and Reopen Closed Tab restores it; Close Split View only releases the panes. Favorites start closed after relaunch. Removing an open favorite turns it into an ordinary tab; removing a closed favorite deletes it.
 - Closing an ordinary tab removes it; Reopen Closed Tab restores it.
 - Dragging reorganizes tabs. The insertion marker is the committed destination; canceling leaves the order unchanged. External drags export URLs; incoming files and text are rejected. A drag can take tabs to another space: see Several tabs at once.
 - Move to Space preserves a live page within the same profile. Crossing profiles requires confirmation and a new page identity; see [Spaces](SPACES.md).
-- A group's folder opens with it: its front flap's top edge drops and widens as the group opens, then closes back over it (`FolderIcon`); under the pointer a closed folder opens a little, and a dragged tab about to go in lifts it. Reduce Motion changes it without moving.
+- A group's folder opens with it: its front flap's top edge drops and widens as the group opens, then closes back over it (`FolderIcon`); under the pointer a closed folder opens a little, and a dragged tab about to go in lifts it. Reduce Motion changes it without moving. Change Icon… in a group's menu gives it a symbol instead, chosen among forty in a few families (`FolderSymbols`), filled while the group is open; the folder itself comes first in the choices.
 - Resting the pointer on a closed group's header for 0.6 s lists its tabs beside it (`folderPreview`), with the sidebar's own rows and without the group's name, on its trailing side, or its leading side without room, never off screen. A click opens a tab; a row's button closes it, or takes it out of the favorites, and the rows close up as in the sidebar. The list stays while the pointer goes from the header to it and ends a moment after it leaves both, once its last tab is gone, when Aero is no longer active, or at a click elsewhere, a key or a scroll. A click on the header, a right click included, keeps it away until the pointer leaves the header. It grows a little out of the header as it comes and shrinks back toward it as it goes, only fading with Reduce Motion. It is a panel that never takes the keyboard from the page; it does not show during a drag or for an empty group.
 - Ungroup leaves the group's favorites pinned where it was. Custom names persist independently of website titles.
 - A group's place among the loose favorites is its slot, the number of loose favorites above it (`BrowserSession.pinned(in:)`); closing, unpinning or moving away a favorite above it never moves it past another entry.
+
+## Pinned pages
+
+A favorite keeps the page it was pinned on (`BrowserTab.pinnedURL`), set as it becomes a favorite, kept as it moves, changes space or profile, and dropped when it goes back to the open tabs. Browsing in it never replaces that page. A browser page is one page whatever its query: a terminal's folder never takes it away. A pinned address that redirects stays away from its page; replace it with the current one.
+
+- Away from its pinned page, ignoring the fragment and a path's trailing slash, a favorite shows the title of the page it is on and, quietly in the sidebar's secondary ink, offers to go back: a return arrow on a faint circle at the end of its row or a split's segment, or a small return badge on its tile's corner, brightening under the pointer. Its tooltip names the pinned page: its name, or its site.
+- Those, or a double click on the row, the tile or the segment, go back to the pinned page, as does closing the favorite. A loaded page goes there whether shown or not.
+- **Edit Pinned Page** in its menu: Replace Pinned URL with Current, and Edit…, which edits the address in place of the row's title, or in a popover for a tile, read as the address field reads one.
 
 ## Several tabs at once
 

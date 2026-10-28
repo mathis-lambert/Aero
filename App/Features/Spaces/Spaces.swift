@@ -144,9 +144,10 @@ extension BrowserModel {
                 case .group(let id):
                     moved.merge(session.transferGroup(id: id, to: transfer.spaceID, before: transfer.before) ?? [:]) { $1 }
                 case .tab(let id):
-                    guard let tab = session.transfer(id: id, to: transfer.spaceID) else { continue }
-                    moved[id] = tab.id
-                    if transfer.pinned { _ = session.move(id: tab.id, to: .list(group: nil), before: transfer.before) }
+                    // A pane brings its split along.
+                    let arrived = session.transfer(id: id, to: transfer.spaceID)
+                    moved.merge(arrived) { $1 }
+                    if transfer.pinned, let tab = arrived[id] { _ = session.move(id: tab, to: .list(group: nil), before: transfer.before) }
                 }
             }
             return moved
@@ -169,7 +170,7 @@ extension BrowserModel {
     func tabIDs(of items: [PinnedItem]) -> [UUID] {
         items.flatMap { item -> [UUID] in
             switch item {
-            case .tab(let id): [id]
+            case .tab(let id): session.split(containing: id)?.tabIDs ?? [id]
             case .group(let id): session.tabs.filter { $0.place == .list(group: id) }.map(\.id)
             }
         }
@@ -180,7 +181,7 @@ extension BrowserModel {
     private func relocate(_ ids: [UUID], _ move: () -> [UUID: UUID]) -> [UUID: UUID] {
         let originals = tabs(ids)
         let shown = originals.first { $0.id == window.selectedTabID }
-        let next = shown.flatMap(tabShown(afterRemoving:))
+        let next = shown.flatMap { tabShown(afterRemoving: $0, along: Set(ids)) }
         let moved = move()
         for tab in originals {
             guard let id = moved[tab.id] else { continue }
@@ -196,7 +197,7 @@ extension BrowserModel {
             lastSelection[tab.spaceID] = nil
         }
         persist()
-        if shown != nil { selectTab(next.flatMap { id in ids.contains(id) ? nil : id }) }
+        if shown != nil { selectTab(next) }
         return moved
     }
 }

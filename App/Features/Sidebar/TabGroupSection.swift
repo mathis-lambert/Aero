@@ -13,7 +13,7 @@ struct TabGroupSection: View {
 
     let browser: BrowserModel
     let group: TabGroup
-    let tabs: [BrowserTab]
+    let entries: [SidebarTabs.Entry]
     let selectedTabID: UUID?
     let marked: Set<UUID>
     let lifted: Set<UUID>
@@ -26,6 +26,7 @@ struct TabGroupSection: View {
     @Environment(\.palette) private var palette
     @Environment(\.browserReduceMotion) private var reduceMotion
     @State private var hovered = false
+    @State private var choosingIcon = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: SidebarTabs.rowSpacing) {
@@ -38,9 +39,9 @@ struct TabGroupSection: View {
                 }
                 .dropFrame(.groupHeader(group.id), in: layout)
             if !group.isCollapsed, !isLifted {
-                ForEach(tabs) { tab in
-                    TabRow(browser: browser, tab: tab, selected: selectedTabID == tab.id, marked: marked.contains(tab.id),
-                           lifted: lifted.contains(tab.id), selection: selection, layout: layout)
+                ForEach(entries) { entry in
+                    EntryRow(browser: browser, entry: entry, selectedTabID: selectedTabID, marked: marked, lifted: lifted,
+                             selection: selection, layout: layout)
                         .padding(.leading, Self.indent)
                 }
             }
@@ -59,7 +60,7 @@ struct TabGroupSection: View {
         }
     }
 
-    private var hasPane: Bool { !group.isCollapsed && !isLifted && !tabs.isEmpty }
+    private var hasPane: Bool { !group.isCollapsed && !isLifted && !entries.isEmpty }
 
     @ViewBuilder private var header: some View {
         if browser.window.renaming == .group(group.id) {
@@ -80,12 +81,18 @@ struct TabGroupSection: View {
             }
             .buttonStyle(QuietButtonStyle())
             .groupDraggable(group, browser: browser)
-            .folderPreview(browser: browser, groupID: group.id, enabled: group.isCollapsed && !tabs.isEmpty && browser.window.tabDrag == nil)
+            .folderPreview(browser: browser, groupID: group.id, enabled: group.isCollapsed && !entries.isEmpty && browser.window.tabDrag == nil)
             .onHover { hovered = $0 }
             .accessibilityLabel(Text(verbatim: group.name))
             .accessibilityAddTraits(isMarked ? .isSelected : [])
             .accessibilityIdentifier("sidebar.group")
-            .contextMenu {
+            .popover(isPresented: $choosingIcon, arrowEdge: .trailing) {
+                FolderIconPicker(selected: group.icon) { icon in
+                    choosingIcon = false
+                    browser.setGroupIcon(group.id, to: icon)
+                }
+            }
+            .iconContextMenu {
                 if let entries = browser.selectedEntries(for: group.id) {
                     SelectedEntriesMenu(browser: browser, entries: entries)
                 } else { menu }
@@ -95,6 +102,7 @@ struct TabGroupSection: View {
 
     @ViewBuilder private var menu: some View {
         Button("Rename Group…", systemImage: "pencil") { browser.window.renaming = .group(group.id) }
+        Button("Change Icon…", systemImage: "photo") { choosingIcon = true }
         Button(group.isCollapsed ? "Expand Group" : "Collapse Group", systemImage: group.isCollapsed ? "chevron.down" : "chevron.up") {
             browser.setGroupCollapsed(group.id, !group.isCollapsed)
         }
@@ -110,7 +118,7 @@ struct TabGroupSection: View {
 
     private func label(@ViewBuilder _ content: () -> some View) -> some View {
         HStack(spacing: BrowserDesign.rowInset) {
-            FolderIcon(isOpen: !group.isCollapsed, isPeeking: hovered, tint: isTargeted ? Color.accentColor : .secondary)
+            FolderIcon(isOpen: !group.isCollapsed, isPeeking: hovered, tint: isTargeted ? Color.accentColor : .secondary, symbol: group.icon)
                 // A dragged tab about to go in lifts it a little.
                 .scaleEffect(isTargeted ? 1.15 : 1)
                 .animation(reduceMotion ? nil : BrowserDesign.motion, value: isTargeted)

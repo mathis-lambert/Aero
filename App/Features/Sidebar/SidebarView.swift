@@ -55,7 +55,7 @@ struct SidebarView: View {
                 browser.perform(browser.currentPage?.isLoading == true ? .stopLoading : .reload)
             }
             .disabled(browser.currentPage == nil)
-            .contextMenu {
+            .iconContextMenu {
                 ForEach([[BrowserCommand.reloadFromOrigin], [.clearCookies, .clearCache], [.siteSettings]], id: \.self) { section in
                     Section {
                         ForEach(section, id: \.self) { command in

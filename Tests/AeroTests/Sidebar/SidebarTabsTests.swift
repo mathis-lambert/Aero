@@ -24,6 +24,9 @@ import Testing
 //     and open tabs dragged with a group do not land in the pinned list beside it.
 // 11. A dragged group lands at the wrong place among the groups, its gap retargets it, or one from another space
 //     does not show; a tab resting on an open group, or a group on any, opens it.
+// docs/SPLIT_VIEW.md › Sidebar:
+// 14. A split takes several grid slots or rows, a drop lands between its panes, or dragging one pane, from this space or
+//     another, leaves the others.
 
 @MainActor
 struct SidebarTabsTests {
@@ -182,6 +185,41 @@ struct SidebarTabsTests {
         let preview = SidebarTabs(session: ids.session, space: ids.space, drop: drop)
         #expect(preview.open.map(\.id) == [ids.open[0], visiting.id, ids.open[1]])
         #expect(SidebarTabs(session: ids.session, space: work, drop: nil).open.map(\.id) == [visiting.id], "The preview never changes the session")
+    }
+
+    @Test func aSplitIsOneEntryThatMovesWhole() {
+        var ids = Arrangement()
+        ids.session.split(ids.tiles[1], beside: ids.tiles[0], at: .trailing)
+        ids.session.split(ids.open[1], beside: ids.open[0], at: .bottom)
+        let tabs = ids.tabs
+        #expect(tabs.entries(of: tabs.grid).map(\.id) == [ids.tiles[0]], "Two favorites in a split are one tile")
+        #expect(tabs.carried([ids.open[1]]) == ids.open, "Dragging one pane takes the split")
+
+        let layout = TabDropLayout()
+        layout.frames[.section(.grid)] = CGRect(x: 0, y: 0, width: 192, height: FavoritesGrid.tileHeight)
+        let past = FavoritesGrid.tileWidth(in: 192) * 0.75
+        #expect(layout.destination(at: CGPoint(x: past, y: 10), for: [ids.pinned], in: tabs, current: nil) == TabDestination(place: .grid, before: nil),
+                "Past the middle of the split's tile, after the whole split")
+        layout.frames[.tab(ids.open[0])] = CGRect(x: 0, y: 200, width: 200, height: 34)
+        layout.frames[.section(.open)] = CGRect(x: 0, y: 200, width: 200, height: 34)
+        #expect(layout.destination(at: CGPoint(x: 50, y: 230), for: [ids.pinned], in: tabs, current: nil) == TabDestination(place: .open, before: nil),
+                "The lower half of a split's row drops after it, never between its panes")
+
+        let drop = TabDrop(tabIDs: [ids.open[1]], destination: TabDestination(place: .grid, before: ids.tiles[0]))
+        let preview = SidebarTabs(session: ids.session, space: ids.space, drop: drop)
+        #expect(preview.grid.map(\.id) == ids.open + ids.tiles, "The split lands whole, in its order")
+        #expect(preview.entries(of: preview.grid).count == 2)
+    }
+
+    @Test func aSplitFromAnotherSpaceShowsWholeWhereItLands() throws {
+        var ids = Arrangement()
+        let work = try ids.session.addSpace(name: "Work", profileID: ids.session.profiles[0].id, color: SpaceColor(0x2E9D5B))
+        let panes = (0..<2).compactMap { ids.session.open(URL(string: "https://example.test/work/\($0)")!, in: work.id)?.id }
+        ids.session.split(panes[1], beside: panes[0], at: .trailing)
+        let drop = TabDrop(tabIDs: [panes[1]], destination: TabDestination(place: .open, before: nil))
+        let preview = SidebarTabs(session: ids.session, space: ids.space, drop: drop)
+        let arrived = preview.entries(of: preview.open).last
+        #expect(arrived?.tabs.map(\.id) == panes, "Both panes arrive, as one split")
     }
 
     @Test(arguments: [false, true])
