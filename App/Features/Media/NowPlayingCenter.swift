@@ -18,6 +18,7 @@ final class NowPlayingCenter {
         let artworkLoaded: Bool
         let isPlaying: Bool
         let actions: Set<PageMediaAction>
+        let canSeek: Bool
         let position: PlaybackPosition?
     }
 
@@ -49,7 +50,7 @@ final class NowPlayingCenter {
         let media = latest.media
         return Item(tabID: latest.tab.id, title: media.title ?? latest.tab.displayTitle, artist: media.artist ?? latest.tab.url.siteName,
                     album: media.album, artwork: media.artwork, artworkLoaded: media.artwork.map { browser.activities.artworks[$0] != nil } ?? false,
-                    isPlaying: media.isPlaying, actions: media.actions, position: media.position)
+                    isPlaying: media.isPlaying, actions: media.actions, canSeek: media.canSeek, position: media.position)
     }
 
     private func show(_ item: Item?) {
@@ -79,12 +80,24 @@ final class NowPlayingCenter {
         commands.previousTrackCommand.isEnabled = item.actions.contains(.previousTrack)
         commands.skipForwardCommand.isEnabled = !item.actions.contains(.nextTrack)
         commands.skipBackwardCommand.isEnabled = !item.actions.contains(.previousTrack)
+        // Scrubbing needs a length to scrub through, and something to move.
+        commands.changePlaybackPositionCommand.isEnabled = item.position != nil && item.canSeek
     }
 
     /// The system promises no thread for a command: the handler runs anywhere and hands the action to the main actor.
     nonisolated private static func handler(_ action: @escaping @MainActor @Sendable () -> Void) -> (MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         { _ in
             Task { @MainActor in action() }
+            return .success
+        }
+    }
+
+    /// Control Center's playback position, scrubbed, gives a time; the handler hands it to the main actor likewise.
+    nonisolated private static func positionHandler(_ action: @escaping @MainActor @Sendable (Double) -> Void)
+        -> (MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        { event in
+            guard let time = (event as? MPChangePlaybackPositionCommandEvent)?.positionTime else { return .commandFailed }
+            Task { @MainActor in action(time) }
             return .success
         }
     }
@@ -98,7 +111,11 @@ final class NowPlayingCenter {
     private func register() {
         commands.skipForwardCommand.preferredIntervals = [10]
         commands.skipBackwardCommand.preferredIntervals = [10]
-        commands.changePlaybackPositionCommand.isEnabled = false
+        let position = commands.changePlaybackPositionCommand.addTarget(handler: Self.positionHandler { [weak self] time in
+            guard let self, let browser = self.browser, let item = self.item else { return }
+            browser.seekMedia(to: time, on: item.tabID)
+        })
+        targets.append((commands.changePlaybackPositionCommand, position))
         let actions: [(MPRemoteCommand, (BrowserModel, UUID) -> Void)] = [
             (commands.togglePlayPauseCommand, { $0.toggleMedia(on: $1) }),
             (commands.playCommand, { $0.performMedia(.play, on: $1) }),

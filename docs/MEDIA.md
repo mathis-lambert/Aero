@@ -52,7 +52,7 @@ shows, else on the current tab.
 `NowPlayingCenter` gives Control Center's Now Playing and the media keys the media that began playing last in any tab,
 on screen or not: title, artist, album, artwork, duration and position, and whether it plays (MediaPlayer's
 `MPNowPlayingInfoCenter`). Play, Pause, Next and Previous come back through `MPRemoteCommandCenter` and act as the
-player's buttons do; without a previous or next track the keys skip ten seconds. It is made the first time a page plays,
+player's buttons do; without a previous or next track the keys skip ten seconds. Scrubbing Control Center's playback position goes to that time, through the site's own `seekto` handler when it gives one, else the media element. It is made the first time a page plays,
 and with nothing left to play it clears Now Playing, so the keys go back to the other apps. WebKit publishes nothing of
 its own for Aero's pages, so the keys are never taken twice.
 
@@ -65,5 +65,4 @@ favorite's tile shows one sign: the microphone, else the camera, else the sound.
 
 ## Limits
 
-WebKit gives no public way to mute a page without pausing it, so there is no mute. Scrubbing from Control Center is
-off.
+WebKit gives no public way to mute a page without pausing it, so there is no mute.
