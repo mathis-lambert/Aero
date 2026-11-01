@@ -32,12 +32,14 @@ public struct PageMedia: Equatable, Sendable {
     public var artwork: URL?
     /// The actions the site's Media Session handles; play, pause and seeking always work on the media element.
     public var actions: Set<PageMediaAction>
+    /// It can go to a time: the site handles `seekto`, or its media element is in the document.
+    public var canSeek: Bool
     public var position: PlaybackPosition?
     /// When it last began playing to be heard: the most recent is the one the player shows.
     public var startedAt: Date?
 
     public init(isPlaying: Bool, isAudible: Bool = true, title: String? = nil, artist: String? = nil, album: String? = nil, artwork: URL? = nil,
-                actions: Set<PageMediaAction> = [], position: PlaybackPosition? = nil, startedAt: Date? = nil) {
+                actions: Set<PageMediaAction> = [], canSeek: Bool = false, position: PlaybackPosition? = nil, startedAt: Date? = nil) {
         self.isPlaying = isPlaying
         self.isAudible = isAudible
         self.title = title
@@ -45,6 +47,7 @@ public struct PageMedia: Equatable, Sendable {
         self.album = album
         self.artwork = artwork
         self.actions = actions
+        self.canSeek = canSeek
         self.position = position
         self.startedAt = startedAt
     }
@@ -67,6 +70,8 @@ public enum PageMediaAction: String, Sendable, CaseIterable {
     case play, pause
     case previousTrack = "previoustrack", nextTrack = "nexttrack"
     case seekBackward = "seekbackward", seekForward = "seekforward"
+    /// To a time, given with the action.
+    case seekTo = "seekto"
 }
 
 /// Two scripts tell what a page plays, in every frame, so a player embedded in an article counts. In the page's world, one keeps the handlers the site gives its Media Session and
@@ -113,8 +118,11 @@ enum MediaScripts {
                 Object.defineProperty(proto, name, { ...property, set(value) { property.set.call(this, value); queueMicrotask(announce); } });
             }
             document.addEventListener("aero:media-action", (event) => {
-                const handler = handlers.get(event.detail);
-                if (handler) try { handler({ action: event.detail }); } catch {}
+                let request = null;
+                try { request = JSON.parse(event.detail); } catch { return; }
+                const handler = handlers.get(request?.action);
+                const details = request?.action === "seekto" ? { action: "seekto", seekTime: request.seekTime } : { action: request?.action };
+                if (handler) try { handler(details); } catch {}
             });
         })();
         """, injectionTime: .atDocumentStart, forMainFrameOnly: false, in: .page)
@@ -156,9 +164,9 @@ enum MediaScripts {
                     schedule();
                 }, true);
             }
-            globalThis.aeroMediaAction = (action) => {
+            globalThis.aeroMediaAction = (action, time) => {
                 if (session?.actions?.includes(action)) {
-                    document.dispatchEvent(new CustomEvent("aero:media-action", { detail: action }));
+                    document.dispatchEvent(new CustomEvent("aero:media-action", { detail: JSON.stringify({ action, seekTime: time }) }));
                     return true;
                 }
                 const element = media();
@@ -168,6 +176,10 @@ enum MediaScripts {
                 case "pause": element.pause(); return true;
                 case "seekbackward": element.currentTime = Math.max(0, element.currentTime - 10); return true;
                 case "seekforward": element.currentTime = Math.min(element.duration || Infinity, element.currentTime + 10); return true;
+                case "seekto":
+                    if (!Number.isFinite(time)) return false;
+                    element.currentTime = Math.max(0, Math.min(element.duration || Infinity, time));
+                    return true;
                 default: return false;
                 }
             };
@@ -178,7 +190,7 @@ enum MediaScripts {
     nonisolated static let maximumFrames = 32
     nonisolated static let maximumFrameTokenLength = 64
 
-    static let perform = "return globalThis.aeroMediaAction?.(action) ?? false;"
+    static let perform = "return globalThis.aeroMediaAction?.(action, time) ?? false;"
 }
 
 final class MediaBridge: NSObject, WKScriptMessageHandler {
@@ -217,12 +229,14 @@ extension BrowserPage {
         }
     }
 
-    /// Asks the page to play, pause or skip: the site's own handler when it gives one, else its media element. Without
-    /// either, WebKit pauses the page's media itself.
-    public func perform(_ action: PageMediaAction) {
+    /// Asks the page to play, pause, skip or go to `time`, in seconds, for `seekTo`: the site's own handler when it gives
+    /// one, else its media element. Without either, WebKit pauses the page's media itself.
+    public func perform(_ action: PageMediaAction, to time: Double? = nil) {
+        if action == .seekTo { guard let time, time.isFinite, time >= 0 else { return } }
         Task { [weak self] in
             guard let self else { return }
-            let handled = try? await webView.callAsyncJavaScript(MediaScripts.perform, arguments: ["action": action.rawValue], in: mediaFrame,
+            let arguments: [String: Any] = ["action": action.rawValue, "time": time ?? NSNull()]
+            let handled = try? await webView.callAsyncJavaScript(MediaScripts.perform, arguments: arguments, in: mediaFrame,
                                                                  contentWorld: PageScripts.world)
             if handled as? Bool != true, action == .pause { await webView.pauseAllMediaPlayback() }
         }
@@ -332,6 +346,7 @@ struct MediaReport {
         let wasHeard = previous.map { $0.isPlaying && $0.isAudible } ?? false
         let startedAt = isPlaying && isAudible ? (wasHeard ? previous?.startedAt : now) : previous?.startedAt
         return PageMedia(isPlaying: isPlaying, isAudible: isAudible, title: title, artist: artist, album: album, artwork: artwork, actions: actions,
+                         canSeek: actions.contains(.seekTo) || hasElement,
                          position: position.map { PlaybackPosition(elapsed: $0.elapsed, duration: $0.duration, rate: isPlaying ? $0.rate : 0, date: now) },
                          startedAt: startedAt)
     }

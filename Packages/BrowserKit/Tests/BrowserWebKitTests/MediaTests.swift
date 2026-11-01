@@ -12,6 +12,7 @@ import WebKit
 // 5. Playing again resets when it began, so the player switches between two tabs that both play.
 // 6. A muted video playing behind a page counts as begun, and takes the player and the system's Now Playing.
 // 7. A player embedded in a frame of an article goes unseen, or the player's actions go to the article instead.
+// 8. Control Center's playback position goes nowhere: neither to the site's own handler nor, without one, to the element.
 
 @Test func aMediaReportIsBounded() throws {
     let body: [String: Any] = [
@@ -51,6 +52,9 @@ import WebKit
     #expect(muted?.isPlaying == true && muted?.isAudible == false && muted?.startedAt == nil, "A muted video behind the page never begins")
     let named = try #require(MediaReport(["playing": true, "hasElement": true, "audible": false, "session": ["title": "Song"]]))
     #expect(named.media(isPlaying: true, previous: nil, now: began)?.startedAt == began, "Named by its site, it is meant to be heard")
+    #expect(named.media(isPlaying: true, previous: nil, now: began)?.canSeek == true, "An element in the document can go to a time")
+    let detached = try #require(MediaReport(["playing": true, "hasElement": false, "session": ["title": "Song", "actions": ["play"]]]))
+    #expect(detached.media(isPlaying: true, previous: nil, now: began)?.canSeek == false, "Neither seekto nor an element: nothing to scrub")
 }
 
 /// A page whose Media Session names its track and handles the next one, and whose silent audio plays muted, as a page
@@ -64,11 +68,12 @@ import WebKit
         navigator.mediaSession.metadata = new MediaMetadata({ title: "Song", artist: "Band",
             artwork: [{ src: "https://cdn.example/art.png", sizes: "300x300" }] });
         navigator.mediaSession.setActionHandler("nexttrack", () => { document.title = "Next"; });
+        navigator.mediaSession.setActionHandler("seekto", (details) => { document.title = "At " + details.seekTime; });
         </script>
         """, baseURL: URL(string: "https://player.example/"))
     try await until { !page.webView.isLoading && page.webView.url != nil }
     try await until { page.activity.media?.title == "Song" }
-    #expect(page.activity.media?.artist == "Band" && page.activity.media?.actions == [.nextTrack])
+    #expect(page.activity.media?.artist == "Band" && page.activity.media?.actions == [.nextTrack, .seekTo])
     #expect(page.activity.media?.artwork == URL(string: "https://cdn.example/art.png"))
 
     _ = try await page.webView.callAsyncJavaScript("""
@@ -88,6 +93,8 @@ import WebKit
 
     page.perform(.nextTrack)
     try await until { page.webView.title == "Next" }
+    page.perform(.seekTo, to: 42)
+    try await until { page.webView.title == "At 42" }
     page.perform(.pause)
     try await until { page.activity.media?.isPlaying == false }
 
@@ -126,13 +133,18 @@ import WebKit
     #expect(page.activity.media?.title == "Embedded" && page.activity.media?.artist == "Channel")
     page.perform(.pause)
     try await until { page.activity.media?.isPlaying == false }
+    page.perform(.seekTo, to: 2)
+    try await until {
+        let time = try? await page.webView.callAsyncJavaScript("return document.querySelector('audio').currentTime", in: page.mediaFrame, contentWorld: .page)
+        return abs((time as? Double ?? 0) - 2) < 0.1
+    }
     page.dispose()
 }
 
 @MainActor
-private func until(_ condition: () -> Bool) async throws {
+private func until(_ condition: () async -> Bool) async throws {
     let deadline = ContinuousClock.now + .seconds(10)
-    while !condition() {
+    while await !condition() {
         guard ContinuousClock.now < deadline else { Issue.record("Timed out"); throw CancellationError() }
         try await Task.sleep(for: .milliseconds(20))
     }

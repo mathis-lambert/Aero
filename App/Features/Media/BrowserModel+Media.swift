@@ -110,6 +110,11 @@ extension BrowserModel {
         pages.livePage(tabID)?.perform(action)
     }
 
+    /// To `time`, in seconds, as Control Center's playback position asks.
+    func seekMedia(to time: Double, on tabID: UUID) {
+        pages.livePage(tabID)?.perform(.seekTo, to: time)
+    }
+
     func toggleMedia(on tabID: UUID) {
         performMedia(activities.byTab[tabID]?.media?.isPlaying == true ? .pause : .play, on: tabID)
     }
