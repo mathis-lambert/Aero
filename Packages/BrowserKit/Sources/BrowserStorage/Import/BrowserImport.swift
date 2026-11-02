@@ -16,7 +16,7 @@ public struct ImportSource: Identifiable, Hashable, Sendable {
         case spaces
         /// Bookmarks: one space per profile.
         case bookmarks
-        /// The browser keeps them encrypted, which no other app can read: none come, and the onboarding says so (Dia).
+        /// No favorites from files (Dia). The app can separately request a supported automation snapshot.
         case unreadable
     }
 

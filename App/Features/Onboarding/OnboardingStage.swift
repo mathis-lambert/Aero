@@ -19,12 +19,12 @@ struct OnboardingStage: View {
             case .source:
                 StageFit(available: region.size) {
                     if onboarding.needsFullDiskAccess { fullDiskAccess } else {
-                        SourceCovers(spaces: coverSpaces, fresh: onboarding.selectedSourceID == nil, countsFavorites: onboarding.source?.favorites != .unreadable)
+                        SourceCovers(spaces: coverSpaces, fresh: onboarding.selectedSourceID == nil, countsFavorites: onboarding.importsFavorites)
                             .id(onboarding.selectedSourceID ?? "fresh")
                     }
                 }
             case .choice:
-                StageFit(available: region.size) { MappingCard(profiles: onboarding.preview ?? [], source: onboarding.source, choice: onboarding.choice) }
+                StageFit(available: region.size) { MappingCard(profiles: onboarding.preview ?? [], source: onboarding.source, choice: onboarding.effectiveChoice) }
             case .importing, .gettingAround, .ready:
                 let trying = onboarding.step == .gettingAround
                 StageFit(available: region.size) {

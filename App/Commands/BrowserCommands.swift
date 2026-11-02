@@ -115,6 +115,7 @@ struct BrowserMenuCommands: Commands {
                 Menu("Move to Space", systemImage: BrowserCommand.moveToSpace.symbol) {}.disabled(true).menuIcons()
             }
             Divider()
+            command(.closeAllTabs)
             command(.closeOtherTabs)
             command(.closeFollowingTabs)
         }

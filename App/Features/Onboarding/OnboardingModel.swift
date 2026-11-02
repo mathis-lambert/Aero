@@ -35,6 +35,7 @@ final class OnboardingModel {
     var choice = ImportChoice()
     /// What each source holds, read once in the background when it is selected.
     private(set) var previews: [String: [ImportedProfile]] = [:]
+    private(set) var diaPreviews: [String: [ImportedProfile]] = [:]
     private(set) var readingSourceID: String?
     private(set) var readFailure: String?
     private(set) var outcome: ImportOutcome?
@@ -66,7 +67,13 @@ final class OnboardingModel {
     }
 
     var source: ImportSource? { sources.first { $0.id == selectedSourceID } }
-    var preview: [ImportedProfile]? { selectedSourceID.flatMap { previews[$0] } }
+    var preview: [ImportedProfile]? { selectedSourceID.flatMap { diaPreviews[$0] ?? previews[$0] } }
+    var isDia: Bool { source?.bundleIdentifier == "company.thebrowser.dia" }
+    var hasDiaSpaces: Bool { selectedSourceID.flatMap { diaPreviews[$0] } != nil }
+    var importsFavorites: Bool { hasDiaSpaces || source?.favorites != .unreadable }
+    var effectiveChoice: ImportChoice {
+        hasDiaSpaces ? ImportChoice(favorites: choice.favorites, history: false, passwords: false) : choice
+    }
     var needsFullDiskAccess: Bool { source.map { $0.kind == .safari && !$0.isReadable } ?? false }
     var steps: [OnboardingStep] { mode == .importOnly ? [.source, .choice, .importing] : OnboardingStep.allCases }
     var isLastStep: Bool { step == steps.last }
@@ -80,6 +87,8 @@ final class OnboardingModel {
 
     func select(_ sourceID: String?) {
         guard selectedSourceID != sourceID else { return }
+        readTask?.cancel()
+        readingSourceID = nil
         selectedSourceID = sourceID
         readFailure = nil
         if let source { read(source) }
@@ -113,11 +122,45 @@ final class OnboardingModel {
         }
     }
 
+    /// An explicit click, after the limitations are shown, is the only path that can ask for Automation access.
+    func readDiaSpaces() {
+        guard isDia, let source, readingSourceID == nil else { return }
+        readTask?.cancel()
+        readFailure = nil
+        readingSourceID = source.id
+        readTask = Task { [weak self, browser] in
+            do {
+                let profiles = try await browser.readDiaSpaces()
+                guard !Task.isCancelled else { return }
+                self?.diaPreviews[source.id] = profiles
+            } catch {
+                guard !Task.isCancelled else { return }
+                if self?.selectedSourceID == source.id {
+                    switch error {
+                    case DiaAutomation.Failure.denied:
+                        self?.readFailure = String(localized: "Allow Aero to read Dia in System Settings → Privacy & Security → Automation, then try again. You can still import history and passwords from files.")
+                    case DiaAutomation.Failure.notRunning:
+                        self?.readFailure = String(localized: "Open Dia with a browser window, then try again.")
+                    default:
+                        self?.readFailure = String(localized: "Dia’s spaces could not be read. Keep Dia open and try again. This version of Dia may not support the export. You can still import history and passwords from files.")
+                    }
+                }
+            }
+            if self?.readingSourceID == source.id { self?.readingSourceID = nil }
+        }
+    }
+
+    func useDiaFiles() {
+        guard let id = selectedSourceID, readingSourceID == nil else { return }
+        diaPreviews[id] = nil
+        readFailure = nil
+    }
+
     // MARK: - Navigation
 
     var canContinue: Bool {
         switch step {
-        case .source: selectedSourceID == nil || (!needsFullDiskAccess && preview != nil)
+        case .source: selectedSourceID == nil || (!needsFullDiskAccess && preview != nil && readingSourceID != selectedSourceID)
         case .importing: !isImporting
         default: true
         }
@@ -170,7 +213,7 @@ final class OnboardingModel {
         guard let source, let profiles = preview, !isImporting else { return }
         isImporting = true
         outcome = ImportOutcome()
-        let choice = self.choice
+        let choice = effectiveChoice
         importTask = Task { [weak self, browser] in
             let result = await browser.applyImport(profiles, from: source, choice: choice) { progress in
                 self?.outcome = progress

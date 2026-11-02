@@ -15,6 +15,58 @@ final class SidebarJourneys: E2ETestCase {
     private static let leadingHalf = CGVector(dx: 0.25, dy: 0.5)
     private static let trailingHalf = CGVector(dx: 0.75, dy: 0.5)
 
+    /// Closing all uses the ordinary close path: favorites and another space survive, and Reopen restores tabs.
+    /// Opening the resulting New Tab also exercises the recently-closed shelf that previously crashed.
+    func testCloseAllLeavesFavoritesAndOtherSpacesAlone() throws {
+        try launch { seed in
+            seed.addTab("solid.html", title: "Solid fixture", place: .grid)
+            let group = try XCTUnwrap(seed.addGroup("Saved"))
+            seed.addTab("favicon.html", title: "Favicon fixture", place: .list(group: group.id))
+            seed.addTab("keys.html", title: "Keys fixture")
+            seed.addTab("find.html", title: "Find fixture")
+            seed.addTab("history-city.html", title: "Été à Lyon")
+            let work = try seed.addSpace("Work")
+            seed.addTab("site.html", title: "Site fixture", in: work)
+        }
+        tabRows["Find fixture"].click()
+        XCTAssertTrue(page("Nothing selected").waitForExistence(timeout: Self.pageTimeout))
+        let closeAll = app.buttons["sidebar.closeAllTabs"]
+        XCTAssertFalse(closeAll.exists, "Close All stays quiet until its separator is hovered")
+        pinnedDropZone.hover()
+        XCTAssertTrue(closeAll.waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertTrue(closeAll.isHittable)
+        app.webViews.firstMatch.hover()
+        XCTAssertTrue(closeAll.waitForNonExistence(timeout: Self.renderTimeout))
+        pinnedDropZone.hover()
+        XCTAssertTrue(closeAll.waitForExistence(timeout: Self.renderTimeout))
+        XCTAssertGreaterThanOrEqual(closeAll.frame.height, 24)
+        attachScreenshot("Close All on the favorites separator")
+        closeAll.click()
+        XCTAssertTrue(poll { self.tabRows.count == 0 && self.app.buttons["sidebar.newTab"].isSelected })
+        XCTAssertFalse(closeAll.exists)
+        XCTAssertEqual(labels(of: "sidebar.tile"), ["Solid fixture"])
+        XCTAssertEqual(labels(of: "sidebar.favorite"), ["Favicon fixture"])
+        XCTAssertEqual(labels(of: "sidebar.group"), ["Saved"])
+        app.typeKey("t", modifierFlags: [.command, .shift])
+        XCTAssertTrue(poll { self.tabRows.count == 1 }, "A closed tab can be reopened")
+        app.buttons.matching(identifier: "sidebar.tile").firstMatch.click()
+        XCTAssertTrue(page("Solid fixture").waitForExistence(timeout: Self.pageTimeout))
+        pinnedDropZone.hover()
+        XCTAssertTrue(closeAll.waitForExistence(timeout: Self.renderTimeout))
+        closeAll.click()
+        XCTAssertTrue(poll { self.tabRows.count == 0 && self.page("Solid fixture").exists }, "An active favorite stays selected")
+        space("Work").click()
+        XCTAssertEqual(labels(of: "sidebar.tab"), ["Site fixture"])
+        pinnedDropZone.hover()
+        XCTAssertTrue(closeAll.waitForExistence(timeout: Self.renderTimeout))
+        space("Main").click()
+        relaunch()
+        XCTAssertTrue(poll { self.tabRows.count == 0 && !closeAll.exists })
+        XCTAssertEqual(labels(of: "sidebar.tile"), ["Solid fixture"])
+        XCTAssertEqual(labels(of: "sidebar.favorite"), ["Favicon fixture"])
+        attachScreenshot("Favorites remain after Close All and relaunch")
+    }
+
     private var pinnedDropZone: XCUIElement { element("sidebar.pinnedDropZone") }
     private var resizeHandle: XCUIElement { element("sidebar.resize") }
     private var sidebarWidth: CGFloat { resizeHandle.frame.maxX - app.windows.firstMatch.frame.minX }
@@ -252,6 +304,8 @@ final class SidebarJourneys: E2ETestCase {
         XCTAssertTrue(poll(tabAboveGroup), "A header's top drops a tab above its group, not in it")
         attachScreenshot("tab above group")
         quitAndRelaunch()
+        // A pointer left on the collapsed header opens its preview, which has favorite rows of its own.
+        app.buttons["sidebar.newTab"].hover()
         XCTAssertTrue(poll(tabAboveGroup), "The order survives a relaunch")
 
         // ⌘ picks groups too; they move with the tabs picked along.

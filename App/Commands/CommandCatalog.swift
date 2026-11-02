@@ -28,6 +28,7 @@ extension BrowserCommand {
         case .toggleFavorite: String(localized: "Toggle Favorite")
         case .duplicateTab: String(localized: "Duplicate Tab")
         case .renameTab: String(localized: "Rename Tab…")
+        case .closeAllTabs: String(localized: "Close All Tabs")
         case .closeOtherTabs: String(localized: "Close Other Tabs")
         case .closeFollowingTabs: String(localized: "Close Tabs Below")
         case .newGroup: String(localized: "New Group with Tab")
@@ -118,6 +119,7 @@ extension BrowserCommand {
         case .toggleFavorite: String(localized: "Add the current tab to favorites or return it to open tabs.")
         case .duplicateTab: String(localized: "Open a copy of the current tab in this space.")
         case .renameTab: String(localized: "Give the current tab a custom name.")
+        case .closeAllTabs: String(localized: "Close all open tabs in this space. Favorites stay as they are.")
         case .closeOtherTabs: String(localized: "Close the other tabs in this space. Favorite records are kept.")
         case .closeFollowingTabs: String(localized: "Close the tabs below the current tab in sidebar order. Favorite records are kept.")
         case .newGroup: String(localized: "Create a group containing the current tab and choose its name.")
@@ -160,6 +162,7 @@ extension BrowserCommand {
         case .toggleFavorite: "star"
         case .duplicateTab: "plus.square.on.square"
         case .renameTab: "pencil"
+        case .closeAllTabs: "xmark.square"
         case .closeOtherTabs: "xmark.square"
         case .closeFollowingTabs: "arrow.down.to.line"
         case .newGroup: "folder.badge.plus"
@@ -230,7 +233,7 @@ extension BrowserCommand {
         switch self {
         case .newTab, .closeTab, .reopenTab, .nextTab, .previousTab, .recentTab, .previousRecentTab,
              .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab,
-             .toggleFavorite, .duplicateTab, .renameTab, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace,
+             .toggleFavorite, .duplicateTab, .renameTab, .closeAllTabs, .closeOtherTabs, .closeFollowingTabs, .newGroup, .moveToGroup, .moveToSpace,
              .openPeekInTab, .newPane, .separateSplit, .nextPane, .previousPane, .newTerminal: .tabs
         case .profiles, .newProfile, .passwords, .importBrowserData: .profiles
         case .newSpace, .nextSpace, .previousSpace: .spaces

@@ -60,6 +60,7 @@
         <key>UTTypeConformsTo</key><array><string>public.data</string></array>
     </dict></array>
     <!-- Localized in InfoPlist.xcstrings. -->
+    <key>NSAppleEventsUsageDescription</key><string>Aero reads spaces and favorite tiles from Dia when you choose to import them.</string>
     <key>NSCameraUsageDescription</key><string>Websites you allow can use the camera.</string>
     <key>NSMicrophoneUsageDescription</key><string>Websites you allow can use the microphone.</string>
     <key>NSLocationUsageDescription</key><string>Websites you allow can use your location.</string>
