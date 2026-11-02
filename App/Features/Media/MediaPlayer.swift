@@ -19,13 +19,12 @@ struct MediaDock: View {
             }
             if let nowPlaying {
                 MediaPlayer(browser: browser, nowPlaying: nowPlaying)
-                    .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .scale(scale: 0.9, anchor: .bottom)).combined(with: .opacity),
-                                            removal: .scale(scale: 0.9, anchor: .bottom).combined(with: .opacity)))
+                    .transition(.sidebarCard)
             }
         }
         .padding(.horizontal, BrowserDesign.sidebarInset)
         .padding(.top, capturing.isEmpty && nowPlaying == nil ? 0 : 6)
-        .animation(reduceMotion ? nil : .spring(duration: 0.45, bounce: 0.28), value: nowPlaying?.tab.id)
+        .animation(reduceMotion ? nil : BrowserDesign.cardSpring, value: nowPlaying?.tab.id)
         .animation(reduceMotion ? nil : BrowserDesign.motion, value: capturing.map(\.tab.id))
     }
 }
@@ -56,10 +55,10 @@ struct MediaPlayer: View {
                 artworkView(artwork, tab: tab, playing: media.isPlaying)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(verbatim: media.title ?? tab.displayTitle)
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(BrowserDesign.Typography.cardTitle)
                         .foregroundStyle(palette.ink)
                     Text(verbatim: media.artist ?? tab.url.siteName)
-                        .font(.system(size: 10.5, weight: .medium))
+                        .font(BrowserDesign.Typography.cardSubtitle)
                         .foregroundStyle(palette.secondary)
                 }
                 .lineLimit(1)
@@ -78,15 +77,7 @@ struct MediaPlayer: View {
         .glassGlow(media.isPlaying ? tint : .clear, radius: Self.radius)
         .overlay(alignment: .topTrailing) {
             if hovered {
-                Button { browser.dismissPlayer() } label: {
-                    Image(systemName: "xmark").font(.system(size: 8, weight: .bold)).frame(width: 18, height: 18)
-                        .background(.regularMaterial, in: Circle())
-                }
-                .buttonStyle(.plain)
-                .offset(x: 5, y: -5)
-                .transition(.scale.combined(with: .opacity))
-                .accessibilityLabel(Text("Close Player"))
-                .accessibilityIdentifier("media.close")
+                CardCloseButton(label: "Close Player", identifier: "media.close") { browser.dismissPlayer() }
             }
         }
         .onHover { hovered = $0 }

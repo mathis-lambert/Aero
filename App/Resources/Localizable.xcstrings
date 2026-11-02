@@ -537,6 +537,23 @@
         }
       }
     },
+    "A downloaded update installs when you quit Aero, or at once from the sidebar. Save your work on websites before restarting." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A downloaded update installs when you quit Aero, or at once from the sidebar. Save your work on websites before restarting."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une mise à jour téléchargée s'installe quand vous quittez Aero, ou tout de suite depuis la barre latérale. Enregistrez votre travail sur les sites web avant de redémarrer."
+          }
+        }
+      }
+    },
     "A playing video moves to a floating window when you switch tabs, and comes back with its tab." : {
       "localizations" : {
         "en" : {
@@ -777,6 +794,57 @@
     },
     "Aero" : {
       "shouldTranslate" : false
+    },
+    "Aero %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero %@"
+          }
+        }
+      }
+    },
+    "Aero %@ is available." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero %@ is available."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero %@ est disponible."
+          }
+        }
+      }
+    },
+    "Aero %@ is ready to install." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero %@ is ready to install."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero %@ est prêt à être installé."
+          }
+        }
+      }
     },
     "Aero Passwords.csv" : {
       "localizations" : {
@@ -1140,6 +1208,23 @@
         }
       }
     },
+    "Automatic updates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic updates"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mises à jour automatiques"
+          }
+        }
+      }
+    },
     "Back" : {
       "localizations" : {
         "en" : {
@@ -1182,6 +1267,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fond"
+          }
+        }
+      }
+    },
+    "Beta" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bêta"
           }
         }
       }
@@ -1632,6 +1734,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vérifiez l’adresse ou votre connexion, puis réessayez."
+          }
+        }
+      }
+    },
+    "Checking for updates…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for updates…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche de mises à jour…"
           }
         }
       }
@@ -2828,6 +2947,23 @@
         }
       }
     },
+    "Download updates automatically" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download updates automatically"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger automatiquement les mises à jour"
+          }
+        }
+      }
+    },
     "Downloads" : {
       "localizations" : {
         "en" : {
@@ -2870,6 +3006,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modifier…"
+          }
+        }
+      }
+    },
+    "Every change as soon as it lands. Expect rough edges." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every change as soon as it lands. Expect rough edges."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque changement dès qu'il arrive. Attendez-vous à quelques aspérités."
+          }
+        }
+      }
+    },
+    "Every channel is this same Aero, with your tabs, history and settings. Moving to a steadier channel takes effect with its next release newer than this one." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every channel is this same Aero, with your tabs, history and settings. Moving to a steadier channel takes effect with its next release newer than this one."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque canal est ce même Aero, avec vos onglets, votre historique et vos réglages. Passer à un canal plus stable prend effet avec sa prochaine version plus récente que celle-ci."
           }
         }
       }
@@ -3086,6 +3256,23 @@
         }
       }
     },
+    "Install…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer…"
+          }
+        }
+      }
+    },
     "Its data in this profile will be deleted." : {
       "localizations" : {
         "en" : {
@@ -3130,6 +3317,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connaître votre position"
+          }
+        }
+      }
+    },
+    "Later" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
           }
         }
       }
@@ -3232,6 +3436,23 @@
         }
       }
     },
+    "Nightly" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nightly"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nightly"
+          }
+        }
+      }
+    },
     "No extensions in this profile yet." : {
       "localizations" : {
         "en" : {
@@ -3292,6 +3513,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non disponible dans Aero : %@"
+          }
+        }
+      }
+    },
+    "Not checked yet." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore vérifié."
           }
         }
       }
@@ -3524,6 +3762,23 @@
         }
       }
     },
+    "Previews of the next version, and every stable release." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previews of the next version, and every stable release."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les préversions de la prochaine version, et chaque version stable."
+          }
+        }
+      }
+    },
     "Previous Track" : {
       "localizations" : {
         "fr" : {
@@ -3642,6 +3897,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lire votre historique de navigation"
+          }
+        }
+      }
+    },
+    "Ready to install" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to install"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prêt à installer"
           }
         }
       }
@@ -3816,6 +4088,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erreurs signalées (%lld)"
+          }
+        }
+      }
+    },
+    "Restart to Update" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart to Update"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redémarrer pour mettre à jour"
           }
         }
       }
@@ -8371,6 +8660,23 @@
         }
       }
     },
+    "Stable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stable"
+          }
+        }
+      }
+    },
     "Standard (4:3)" : {
       "localizations" : {
         "fr" : {
@@ -8745,6 +9051,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terre cuite"
+          }
+        }
+      }
+    },
+    "Tested releases. The right choice for most people." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tested releases. The right choice for most people."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les versions éprouvées. Le bon choix pour la plupart des gens."
           }
         }
       }
@@ -9415,6 +9738,23 @@
         }
       }
     },
+    "Up to date. Checked %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to date. Checked %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À jour. Vérifié %@."
+          }
+        }
+      }
+    },
     "Update" : {
       "localizations" : {
         "en" : {
@@ -9427,6 +9767,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettre à jour"
+          }
+        }
+      }
+    },
+    "Update available" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update available"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour disponible"
+          }
+        }
+      }
+    },
+    "Update channel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update channel"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canal de mise à jour"
           }
         }
       }
@@ -9459,6 +9833,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettre à jour « %@ » ?"
+          }
+        }
+      }
+    },
+    "Updates are off in development and test builds." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates are off in development and test builds."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les mises à jour sont désactivées dans les versions de développement et de test."
           }
         }
       }
@@ -9575,6 +9966,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilise le micro"
+          }
+        }
+      }
+    },
+    "Version %@ (%@)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@ (%2$@)"
           }
         }
       }
@@ -10563,23 +10971,6 @@
         }
       }
     },
-    "Build" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Build"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Build"
-          }
-        }
-      }
-    },
     "Check for Updates…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10631,23 +11022,6 @@
         }
       }
     },
-    "Download and install updates automatically" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Download and install updates automatically"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Télécharger et installer automatiquement les mises à jour"
-          }
-        }
-      }
-    },
     "Downloads are still running. Restarting will cancel them. Save any work on websites before continuing." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10661,23 +11035,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Des téléchargements sont en cours. Le redémarrage les annulera. Enregistrez votre travail sur les sites avant de continuer."
-          }
-        }
-      }
-    },
-    "Last checked" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last checked"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dernière vérification"
           }
         }
       }
@@ -10746,57 +11103,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette copie d’Aero n’est pas configurée pour les mises à jour. Téléchargez une nouvelle copie sur getaero.app."
-          }
-        }
-      }
-    },
-    "Updates are disabled in development and test builds." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updates are disabled in development and test builds."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les mises à jour sont désactivées dans les versions de développement et de test."
-          }
-        }
-      }
-    },
-    "Updates install when you quit Aero. You can also choose to restart from the update window. Save your work on websites before restarting." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updates install when you quit Aero. You can also choose to restart from the update window. Save your work on websites before restarting."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les mises à jour s’installent à la fermeture d’Aero. Vous pouvez aussi redémarrer depuis la fenêtre de mise à jour. Enregistrez votre travail sur les sites avant de redémarrer."
-          }
-        }
-      }
-    },
-    "Version" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
           }
         }
       }

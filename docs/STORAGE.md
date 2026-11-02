@@ -4,7 +4,7 @@ Browser state and history use SQLite; preferences use UserDefaults; caches are d
 
 ## Ownership and layout
 
-`StorageLocation` assembles locations once. The build channel selects `~/Library/Application Support/<channel directory>/Storage`: stable uses `Aero`, dev uses `Aero Development` in both Debug and Release, nightly uses `Aero Nightly`, beta uses `Aero Beta`. See `BUILD_AND_RELEASE.md`. Tests use `Storage` inside the temporary directory supplied by `AERO_TEST_DATA`. The test runner owns this directory so it can inject startup faults while the app is stopped. App preferences remain in the bundle's UserDefaults domain (a unique suite for each test). Regenerable assets use `~/Library/Caches/<bundle identifier>`; tests get their own Caches directory.
+`StorageLocation` assembles locations once. The build selects `~/Library/Application Support/<directory>/Storage`: the published Aero uses `Aero`, whatever update channel it follows, and source builds use `Aero Development` in both Debug and Release. See `BUILD_AND_RELEASE.md`. Tests use `Storage` inside the temporary directory supplied by `AERO_TEST_DATA`. The test runner owns this directory so it can inject startup faults while the app is stopped. App preferences remain in the bundle's UserDefaults domain (a unique suite for each test). Regenerable assets use `~/Library/Caches/<bundle identifier>`; tests get their own Caches directory.
 
 The baseline starts with fresh profiles. There is no import, compatibility alias, dual write or old-format decoder. Obsolete pre-release files outside `Storage` are disposable after stopping the old app; cleanup is an explicit development operation, not an application startup fallback. Unknown or corrupt current databases still use recovery rather than silent data deletion.
 
@@ -80,7 +80,7 @@ WebKit sizes are read-only estimates from the stores' folders under `~/Library/W
 
 ## Reset
 
-Reset Aero erases every browsing record of the channel: profiles, spaces, tabs and favorites, history, passwords, website data, extensions, icons, caches and preferences. The next launch is a fresh store, which starts the onboarding.
+Reset Aero erases every browsing record of the app: profiles, spaces, tabs and favorites, history, passwords, website data, extensions, icons, caches and preferences. The next launch is a fresh store, which starts the onboarding.
 
 After confirmation, the keychain items of every profile are deleted while Aero runs (a failure stops the reset and says so). Aero then records a pending reset in its preferences and quits; a helper process waits for it to exit and opens it again, so two instances never share the store. At launch, before any store or page exists, Aero deletes its `Storage` and `Caches` folders, removes every WebKit website data store it owns, and clears its preferences domain, the pending mark last. Test runs erase only their own directory, preferences suite and keychain namespace, and quit without reopening.
 

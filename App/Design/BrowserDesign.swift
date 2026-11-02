@@ -212,18 +212,21 @@ struct QuietButtonStyle: ButtonStyle {
 /// The buttons of panels and prompts; the prominent one, filled with the accent, is the default.
 struct PanelButtonStyle: ButtonStyle {
     var prominent = false
+    /// A sidebar card's action: smaller, across the card.
+    var card = false
     @Environment(\.palette) private var palette
 
     func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: BrowserDesign.Radius.control)
         PointerFeedback(isPressed: configuration.isPressed, radius: BrowserDesign.Radius.control) {
             configuration.label
-                .font(BrowserDesign.Typography.chrome.weight(.medium))
+                .font(card ? BrowserDesign.Typography.label : BrowserDesign.Typography.chrome.weight(.medium))
                 .lineLimit(1)
                 .fixedSize()
+                .frame(maxWidth: card ? .infinity : nil)
                 .foregroundStyle(prominent ? AnyShapeStyle(.white) : AnyShapeStyle(palette.ink))
                 .padding(.horizontal, 14)
-                .frame(height: BrowserDesign.controlHeight)
+                .frame(height: card ? 26 : BrowserDesign.controlHeight)
                 .background(prominent ? AnyShapeStyle(.tint) : AnyShapeStyle(palette.fill), in: shape)
         }
     }

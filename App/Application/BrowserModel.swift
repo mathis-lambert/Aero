@@ -99,7 +99,7 @@ final class BrowserModel {
         appIcon = AppIcon(variant: preferences.appIcon)
         searchTestEndpoint = testing == nil ? nil : environment["AERO_TEST_SEARCH"].flatMap(URL.init(string:))
         isTestRun = testing != nil
-        updater = AppUpdater(isTestRun: testing != nil)
+        updater = AppUpdater(isTestRun: testing != nil, preferences: preferences)
         showsOnboarding = testing == nil || environment["AERO_TEST_ONBOARDING"] == "1"
         if let testDirectory {
             let root = environment["AERO_TEST_IMPORT_SOURCES"].map { URL(fileURLWithPath: $0, isDirectory: true) }

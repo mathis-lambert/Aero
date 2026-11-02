@@ -1,6 +1,7 @@
 import Foundation
 
-/// Source builds and tests never create Sparkle, even if their preferences enable updates.
+/// Source builds and tests never create Sparkle, even if their preferences enable updates. A distribution must be
+/// the one Aero app, with a valid public key.
 enum UpdateConfiguration: Equatable {
     case disabled, invalid, enabled
 
@@ -9,10 +10,7 @@ enum UpdateConfiguration: Equatable {
             self = .disabled
             return
         }
-        guard let channel = info["AeroChannel"] as? String,
-              ["stable", "beta", "nightly"].contains(channel),
-              info["CFBundleIdentifier"] as? String == "app.getaero.browser" + (channel == "stable" ? "" : "." + channel),
-              info["SUFeedURL"] as? String == "https://getaero.app/updates/\(channel).xml",
+        guard info["CFBundleIdentifier"] as? String == "app.getaero.browser",
               let key = info["SUPublicEDKey"] as? String, Data(base64Encoded: key)?.count == 32 else {
             self = .invalid
             return

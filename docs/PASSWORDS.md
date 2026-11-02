@@ -19,7 +19,7 @@ Each login is one keychain internet password item:
 | Server, protocol, port | The origin the login was saved from (`https` or `http`, host, port) |
 | Account | The username, possibly empty |
 | Value | The password, UTF-8, and nothing else |
-| Security domain | `<bundle identifier>/<profile UUID>`: part of the keychain's uniqueness, so one item exists per profile, origin and username, and release channels never mix |
+| Security domain | `<bundle identifier>/<profile UUID>`: part of the keychain's uniqueness, so one item exists per profile, origin and username, and source builds never mix with the published app |
 | Creator | `AERO`, or `AERT` for test runs |
 | Label | `host (username)`, what Keychain Access shows |
 | Comment | The time of last use, seconds since 1970 |
