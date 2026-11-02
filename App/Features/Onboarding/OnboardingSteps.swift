@@ -55,27 +55,51 @@ struct OnboardingStepView: View {
 
     private var source: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow("Bring your things")
-            Headline("Start where you left off.")
-            BodyText("Aero copies what you pick. The other browser stays as it is.")
-            FormSection("Found on this Mac") {
-                VStack(spacing: 2) {
-                    if onboarding.sources.isEmpty {
-                        Text("No other browser on this Mac.").font(BrowserDesign.Typography.chrome).foregroundStyle(palette.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, BrowserDesign.rowInset).padding(.vertical, 8)
-                    }
-                    ForEach(onboarding.sources) { source in
-                        SourceRow(source: source, detail: detail(for: source), selected: onboarding.selectedSourceID == source.id) {
-                            choose(source.id)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Eyebrow("Bring your things")
+                    Headline("Start where you left off.")
+                    BodyText("Aero copies what you pick. The other browser stays as it is.")
+                    FormSection("Found on this Mac") {
+                        VStack(spacing: 2) {
+                            if onboarding.sources.isEmpty {
+                                Text("No other browser on this Mac.").font(BrowserDesign.Typography.chrome).foregroundStyle(palette.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, BrowserDesign.rowInset).padding(.vertical, 8)
+                            }
+                            ForEach(onboarding.sources) { source in
+                                SourceRow(source: source, detail: detail(for: source), selected: onboarding.selectedSourceID == source.id) {
+                                    choose(source.id)
+                                }
+                                .onboardingFrame("source.\(source.id)", in: onboarding)
+                            }
+                            SourceRow(source: nil, detail: Text("You can import later from the File menu."), selected: onboarding.selectedSourceID == nil) {
+                                choose(nil)
+                            }
+                            .onboardingFrame("source.fresh", in: onboarding)
                         }
-                        .onboardingFrame("source.\(source.id)", in: onboarding)
+                        .padding(.horizontal, -BrowserDesign.rowInset)
                     }
-                    SourceRow(source: nil, detail: Text("You can import later from the File menu."), selected: onboarding.selectedSourceID == nil) {
-                        choose(nil)
-                    }
-                    .onboardingFrame("source.fresh", in: onboarding)
                 }
-                .padding(.horizontal, -BrowserDesign.rowInset)
+            }
+            if onboarding.isDia {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Imports spaces and favorite tiles using their current page addresses and titles. Folders, open tabs and colors stay behind. Each space gets a separate Aero profile.")
+                        .font(BrowserDesign.Typography.caption).foregroundStyle(palette.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if onboarding.hasDiaSpaces {
+                        Button("Use file import instead") { onboarding.useDiaFiles() }
+                            .accessibilityIdentifier("onboarding.dia.files")
+                    } else {
+                        Text("Keep Dia open. macOS will ask you to allow Aero to read it.")
+                            .font(BrowserDesign.Typography.caption).foregroundStyle(palette.secondary)
+                        Button("Read spaces from Dia") { onboarding.readDiaSpaces() }
+                            .accessibilityIdentifier("onboarding.dia.read")
+                    }
+                }
+                .disabled(onboarding.readingSourceID != nil)
+                .padding(.top, 12)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("onboarding.dia.limits")
             }
             if let failure = onboarding.readFailure { Failure(text: failure) }
         }
@@ -89,12 +113,14 @@ struct OnboardingStepView: View {
 
     private func detail(for source: ImportSource) -> Text {
         if source.kind == .safari, !source.isReadable { return Text("\(Image(systemName: "lock.fill")) Needs Full Disk Access") }
-        guard let profiles = onboarding.previews[source.id] else {
-            return onboarding.readingSourceID == source.id ? Text("Looking…") : source.kind == .safari ? Text("Favorites and history") : Text("\(source.profiles.count) profiles")
+        if onboarding.readingSourceID == source.id { return Text("Looking…") }
+        guard let profiles = onboarding.diaPreviews[source.id] ?? onboarding.previews[source.id] else {
+            return source.kind == .safari ? Text("Favorites and history") : Text("\(source.profiles.count) profiles")
         }
         let spaces = profiles.reduce(0) { $0 + $1.spaces.count }
         let favorites = profiles.reduce(0) { total, profile in total + profile.spaces.reduce(0) { $0 + $1.allLinks.count } }
         let pages = profiles.reduce(0) { $0 + $1.history.pages.count }
+        if onboarding.diaPreviews[source.id] != nil { return Self.joined([Text("\(spaces) spaces"), Text("\(favorites) favorites")]) }
         guard source.favorites != .unreadable else { return Self.joined([Text("\(profiles.count) profiles"), Text("\(pages) pages")]) }
         return Self.joined([Text("\(spaces) spaces"), Text("\(favorites) favorites"), Text("\(pages) pages")])
     }
@@ -112,17 +138,21 @@ struct OnboardingStepView: View {
             Headline("Choose what to bring.")
             FormSection("From \(onboarding.source?.shortName ?? "")", footer: "Open tabs stay behind, and sites will ask you to sign in again.") {
                 VStack(spacing: 2) {
-                    switch source?.favorites {
-                    case .spaces:
-                        ChoiceRow(symbol: "star", title: "Spaces and favorites", detail: "Pinned tabs and folders, in their spaces.", isOn: binding(\.favorites))
-                    case .bookmarks, nil:
-                        ChoiceRow(symbol: "star", title: "Favorites", detail: "Bookmarks become favorites; each folder becomes a group.", isOn: binding(\.favorites))
-                    case .unreadable:
-                        EncryptedRow(browser: source?.shortName ?? "")
-                    }
-                    ChoiceRow(symbol: "clock", title: "History", detail: "The control bar knows where you go.", isOn: binding(\.history))
-                    if source?.importsPasswords == true {
-                        ChoiceRow(symbol: "key", title: "Passwords", detail: "macOS asks you once to allow it.", isOn: binding(\.passwords))
+                    if onboarding.hasDiaSpaces {
+                        ChoiceRow(symbol: "star", title: "Spaces and favorite tiles", detail: "Uses current page addresses and titles. Folders and open tabs stay in Dia. Each space gets a separate profile.", isOn: binding(\.favorites))
+                    } else {
+                        switch source?.favorites {
+                        case .spaces:
+                            ChoiceRow(symbol: "star", title: "Spaces and favorites", detail: "Pinned tabs and folders, in their spaces.", isOn: binding(\.favorites))
+                        case .bookmarks, nil:
+                            ChoiceRow(symbol: "star", title: "Favorites", detail: "Bookmarks become favorites; each folder becomes a group.", isOn: binding(\.favorites))
+                        case .unreadable:
+                            EncryptedRow(browser: source?.shortName ?? "")
+                        }
+                        ChoiceRow(symbol: "clock", title: "History", detail: "The control bar knows where you go.", isOn: binding(\.history))
+                        if source?.importsPasswords == true {
+                            ChoiceRow(symbol: "key", title: "Passwords", detail: "macOS asks you once to allow it.", isOn: binding(\.passwords))
+                        }
                     }
                 }
                 .padding(.horizontal, -BrowserDesign.rowInset)
@@ -137,6 +167,7 @@ struct OnboardingStepView: View {
     private var importing: some View {
         let outcome = onboarding.outcome ?? ImportOutcome()
         let done = !onboarding.isImporting
+        let choice = onboarding.effectiveChoice
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
                 if let source = onboarding.source {
@@ -151,17 +182,17 @@ struct OnboardingStepView: View {
             Headline(done ? "Everything is here." : "Bringing it over.")
                 .id(done)
             VStack(spacing: 2) {
-                if onboarding.source?.favorites == .unreadable {
+                if !onboarding.importsFavorites {
                     ResultRow(symbol: "square.stack", text: Text("\(outcome.spaces) spaces"), state: done || outcome.spaces > 0 ? .done : .busy)
-                } else if onboarding.choice.favorites {
+                } else if choice.favorites {
                     ResultRow(symbol: "star", text: Self.joined([Text("\(outcome.spaces) spaces"), Text("\(outcome.favorites) favorites")]),
                               state: done || outcome.favorites > 0 ? .done : .busy)
                 }
-                if onboarding.choice.history {
+                if choice.history {
                     ResultRow(symbol: "clock", text: Text("\(outcome.historyPages) pages of history"), state: done ? .done : .busy)
                 }
                 // Shown while passwords are being read and once they are; hidden when none were read.
-                if onboarding.choice.passwords, onboarding.source?.importsPasswords == true, !(done && outcome.passwords == nil) {
+                if choice.passwords, onboarding.source?.importsPasswords == true, !(done && outcome.passwords == nil) {
                     let passwords = outcome.passwords
                     ResultRow(symbol: "key", text: passwords.map { Text("\($0.added + $0.present) passwords") } ?? Text("Passwords"),
                               state: passwords?.failure != nil ? .failed : passwords != nil ? .done : .busy)
@@ -403,7 +434,7 @@ private struct EncryptedRow: View {
     var body: some View {
         OnboardingRow(icon: AnyView(Image(systemName: "lock").font(.system(size: 14)).foregroundStyle(palette.secondary)),
                       title: Text("Spaces and favorites stay in \(browser)"),
-                      detail: Text("\(browser) encrypts them so no other app can read them. Each of its profiles becomes a space.")) { EmptyView() }
+                      detail: Text("The file import brings history and passwords. Go back to read spaces and favorite tiles from the running app.")) { EmptyView() }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("onboarding.encrypted")
     }

@@ -174,6 +174,61 @@ final class OnboardingJourneys: E2ETestCase {
         attachScreenshot("after the second import")
     }
 
+    /// Explicit opt-in, file fallback, accurate limitations, and repeated import without real Apple events.
+    func testDiaSpacesImportIsOptionalAndRepeatable() throws {
+        try launch()
+        for attempt in 0..<2 {
+            chooseInMenuBar("File", "Import from Another Browser…")
+            let dia = app.buttons["onboarding.source.Dia"]
+            XCTAssertTrue(dia.waitForExistence(timeout: Self.renderTimeout))
+            dia.click()
+            let read = app.buttons["onboarding.dia.read"]
+            XCTAssertTrue(poll { read.isEnabled })
+            XCTAssertTrue(element("onboarding.dia.limits").exists)
+            attachScreenshot("Dia limits before explicit read")
+            read.click()
+            let files = app.buttons["onboarding.dia.files"]
+            XCTAssertTrue(files.waitForExistence(timeout: Self.pageTimeout))
+            if attempt == 0 {
+                files.click()
+                XCTAssertTrue(read.waitForExistence(timeout: Self.renderTimeout), "File import remains available")
+                read.click()
+                XCTAssertTrue(files.waitForExistence(timeout: Self.pageTimeout))
+            }
+            continueButton.click()
+            waitForTitle("Choose what to bring.")
+            XCTAssertFalse(app.switches["History"].exists)
+            XCTAssertFalse(app.switches["Passwords"].exists)
+            attachScreenshot("Dia live import choice")
+            continueButton.click()
+            waitForTitle("Everything is here.")
+            continueButton.click()
+            XCTAssertTrue(poll { !self.app.groups["onboarding"].exists })
+            XCTAssertEqual(labels(of: "sidebar.space").filter { $0.hasPrefix("Dia ") }, ["Dia Personal", "Dia Work"])
+            let personal = app.buttons.matching(identifier: "sidebar.space").matching(NSPredicate(format: "label == %@", "Dia Personal")).firstMatch
+            personal.click()
+            XCTAssertEqual(labels(of: "sidebar.tile"), ["Dia Mail"])
+            XCTAssertFalse(labels(of: "sidebar.tab").contains("Not exposed as pinned"))
+        }
+    }
+
+    func testDiaLimitsFitInFrenchDarkAppearance() throws {
+        try launch(Launch(french: true, dark: true, screen: .onboarding))
+        app.buttons["onboarding.start"].click()
+        let dia = app.buttons["onboarding.source.Dia"]
+        XCTAssertTrue(dia.waitForExistence(timeout: Self.renderTimeout))
+        dia.click()
+        let read = app.buttons["onboarding.dia.read"]
+        XCTAssertTrue(poll { read.isEnabled && read.isHittable && self.continueButton.isHittable })
+        attachScreenshot("Dia source and limits in French")
+        read.click()
+        XCTAssertTrue(app.buttons["onboarding.dia.files"].waitForExistence(timeout: Self.pageTimeout))
+        continueButton.click()
+        attachScreenshot("Dia choices in French")
+        XCTAssertTrue(continueButton.isHittable)
+        app.buttons["onboarding.skip"].click()
+    }
+
     private func importChrome() {
         chooseInMenuBar("File", "Import from Another Browser…")
         let chrome = app.buttons["onboarding.source.Google Chrome"]

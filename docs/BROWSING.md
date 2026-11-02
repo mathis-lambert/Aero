@@ -36,6 +36,8 @@ Each space has a favorites grid, a pinned list of favorites and groups in any or
 - Ungroup leaves the group's favorites pinned where it was. Custom names persist independently of website titles.
 - A group's place among the loose favorites is its slot, the number of loose favorites above it (`BrowserSession.pinned(in:)`); closing, unpinning or moving away a favorite above it never moves it past another entry.
 
+The separator between favorites and open tabs offers a small **Close All** action while its line is hovered and the current space has open tabs. It closes those tabs (including every pane of an open split), preserves favorites and tabs in other spaces, and records the closed tabs for Reopen Closed Tab. A selected favorite stays selected; closing the selected open tab returns to New Tab without loading the other pages on the way. The Tabs menu and control bar use the same command. With no open tabs the separator remains a drag target without the action.
+
 ## Pinned pages
 
 A favorite keeps the page it was pinned on (`BrowserTab.pinnedURL`), set as it becomes a favorite, kept as it moves, changes space or profile, and dropped when it goes back to the open tabs. Browsing in it never replaces that page. A browser page is one page whatever its query: a terminal's folder never takes it away. A pinned address that redirects stays away from its page; replace it with the current one.

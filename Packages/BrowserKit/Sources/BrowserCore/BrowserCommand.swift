@@ -7,7 +7,7 @@ public enum BrowserCommand: String, CaseIterable, Sendable {
     case openFile, savePage, exportAsPDF, capturePortrait
     case nextTab, previousTab, recentTab, previousRecentTab
     case tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, lastTab
-    case toggleFavorite, duplicateTab, renameTab, closeOtherTabs, closeFollowingTabs
+    case toggleFavorite, duplicateTab, renameTab, closeAllTabs, closeOtherTabs, closeFollowingTabs
     case newGroup, moveToGroup, moveToSpace, nextSpace, previousSpace
     case openPeekInTab
     case newPane, separateSplit, nextPane, previousPane, newTerminal

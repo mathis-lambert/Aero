@@ -1,6 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "NSAppleEventsUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero reads spaces and favorite tiles from Dia when you choose to import them."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aero lit les espaces et les favoris en tuiles de Dia lorsque vous choisissez de les importer."
+          }
+        }
+      }
+    },
     "Aero tab" : {
 
     },

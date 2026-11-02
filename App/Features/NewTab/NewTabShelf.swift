@@ -47,7 +47,7 @@ extension ShelfFocus {
 @MainActor @Observable
 final class NewTabShelf {
     private static let siteLimit = 6
-    private static let closedLimit = 3
+    nonisolated private static let closedLimit = 3
     /// Enough visits for a month of habits, few enough to rank in a few milliseconds.
     private static let visitLimit = 4000
     /// Ranked beyond what shows, so hiding a site brings the next one at once.
@@ -73,9 +73,7 @@ final class NewTabShelf {
     }
 
     func load() async {
-        let spaceID = browser.space?.id
-        var seen = Set<URL>()
-        closed = Array(browser.closedTabs.reversed().lazy.filter { $0.spaceID == spaceID && seen.insert($0.url).inserted }.prefix(Self.closedLimit))
+        closed = Self.recentlyClosed(browser.closedTabs, in: browser.space?.id)
         guard let profileID else { return }
         let now = Date.now
         // Best effort: without history, the page only leaves its sites out.
@@ -90,6 +88,18 @@ final class NewTabShelf {
         guard !Task.isCancelled else { return }
         self.ranked = ranked
         clampFocus()
+    }
+
+    /// A single pass: a lazy collection can re-evaluate a stateful filter while Array counts and copies it.
+    nonisolated static func recentlyClosed(_ tabs: [BrowserTab], in spaceID: UUID?) -> [BrowserTab] {
+        var seen = Set<URL>()
+        var result: [BrowserTab] = []
+        for tab in tabs.reversed() where tab.spaceID == spaceID {
+            guard seen.insert(tab.url).inserted else { continue }
+            result.append(tab)
+            if result.count == closedLimit { break }
+        }
+        return result
     }
 
     func move(_ move: ShelfMove) {

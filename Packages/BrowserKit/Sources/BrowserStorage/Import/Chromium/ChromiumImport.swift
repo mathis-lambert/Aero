@@ -7,7 +7,7 @@ enum ChromiumImport {
     static func read(_ profiles: [ChromiumProfile], limits: ImportLimits) -> [ImportedProfile] {
         profiles.enumerated().map { index, profile in
             var space = ImportedSpace()
-            // Dia's favorites are encrypted; its `Bookmarks` file holds leftovers it does not show.
+            // Dia's Bookmarks file does not describe its live spaces or favorite tiles.
             if profile.browser.favorites == .bookmarks,
                let bookmarks = try? ChromiumBookmarks.read(Data(contentsOf: profile.file("Bookmarks")), limits: limits) {
                 space = bookmarks

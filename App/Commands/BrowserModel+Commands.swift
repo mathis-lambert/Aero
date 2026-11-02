@@ -21,6 +21,7 @@ extension BrowserModel {
         case .duplicateTab, .renameTab, .toggleFavorite, .newGroup: return selectedTab != nil
         case .moveToSpace: return selectedTab != nil && session.spaces.count > 1
         case .moveToGroup: return selectedTab != nil && space?.groups.isEmpty == false
+        case .closeAllTabs: return tabs.contains { !$0.isFavorite }
         case .closeOtherTabs, .closeFollowingTabs: return selectedTab != nil && orderedTabs.count > 1
         case .nextTab, .previousTab, .recentTab, .previousRecentTab: return !tabs.isEmpty
         case .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab:
@@ -92,6 +93,14 @@ extension BrowserModel {
         case .duplicateTab: duplicateTabs(commandTabs)
         case .renameTab: if let id = window.selectedTabID { window.renaming = .tab(id) }
         case .newGroup: newGroup(with: commandTabs)
+        case .closeAllTabs:
+            let closing = orderedTabs.filter { !$0.isFavorite }.map(\.id)
+            // Do not activate each next page while it too is about to close; keep a selected favorite in place.
+            if selectedTab?.isFavorite == false {
+                selectTab(nil)
+                window.inputFocusRequest = UUID()
+            }
+            closeTabs(closing)
         case .closeOtherTabs, .closeFollowingTabs:
             let ordered = orderedTabs
             if let index = ordered.firstIndex(where: { $0.id == window.selectedTabID }) {

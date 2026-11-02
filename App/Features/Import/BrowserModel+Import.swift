@@ -1,3 +1,4 @@
+import AppKit
 import BrowserCore
 import BrowserStorage
 import Foundation
@@ -30,6 +31,23 @@ extension BrowserModel {
     /// Reads a source off the main actor.
     nonisolated func readImport(_ source: ImportSource) async throws -> [ImportedProfile] {
         try await Task.detached(priority: .userInitiated) { try BrowserImport.read(source, limits: .standard()) }.value
+    }
+
+    /// Dia cannot identify a space's underlying browser profile. This import intentionally brings only its
+    /// spaces and explicit favorites, into separate identities, without guessing where history/passwords belong.
+    func readDiaSpaces() async throws -> [ImportedProfile] {
+        if isTestRun {
+            let file = importSourceRoots.applicationSupport.appendingPathComponent("Dia/Spaces.json")
+            return try DiaImport.read(Data(contentsOf: file), limits: .standard())
+        }
+        guard let application = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "company.thebrowser.dia") else {
+            throw DiaAutomation.Failure.unavailable
+        }
+        guard !NSRunningApplication.runningApplications(withBundleIdentifier: "company.thebrowser.dia").isEmpty else {
+            throw DiaAutomation.Failure.notRunning
+        }
+        let data = try await DiaAutomation.read(application: application)
+        return try await Task.detached(priority: .userInitiated) { try DiaImport.read(data, limits: .standard()) }.value
     }
 
     /// Applies what was read: profiles, spaces, favorites and groups in one commit, then history in batches and

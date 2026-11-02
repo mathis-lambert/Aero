@@ -1,0 +1,31 @@
+{
+  "spaces": [
+    {
+      "name": "Dia Personal",
+      "index": 1,
+      "tabs": [
+        {
+          "title": "Dia Mail",
+          "url": "https://mail.test/",
+          "pinned": true
+        },
+        {
+          "title": "Not exposed as pinned",
+          "url": "https://open.test/",
+          "pinned": false
+        }
+      ]
+    },
+    {
+      "name": "Dia Work",
+      "index": 2,
+      "tabs": [
+        {
+          "title": "Dia Tasks",
+          "url": "https://tasks.test/",
+          "pinned": true
+        }
+      ]
+    }
+  ]
+}

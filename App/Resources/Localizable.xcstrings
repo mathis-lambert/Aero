@@ -1,6 +1,227 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Close All" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close All"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout fermer"
+          }
+        }
+      }
+    },
+    "Close All Tabs" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close All Tabs"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer tous les onglets"
+          }
+        }
+      }
+    },
+    "Close all open tabs in this space. Favorites stay as they are." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close all open tabs in this space. Favorites stay as they are."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer tous les onglets ouverts dans cet espace. Les favoris restent inchangés."
+          }
+        }
+      }
+    },
+    "Imports spaces and favorite tiles using their current page addresses and titles. Folders, open tabs and colors stay behind. Each space gets a separate Aero profile." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imports spaces and favorite tiles using their current page addresses and titles. Folders, open tabs and colors stay behind. Each space gets a separate Aero profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importe les espaces et favoris en tuiles avec les adresses et titres actuels de leurs pages. Les dossiers, onglets ouverts et couleurs restent dans Dia. Chaque espace reçoit un profil Aero séparé."
+          }
+        }
+      }
+    },
+    "Keep Dia open. macOS will ask you to allow Aero to read it." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Dia open. macOS will ask you to allow Aero to read it."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laissez Dia ouvert. macOS vous demandera d’autoriser Aero à le lire."
+          }
+        }
+      }
+    },
+    "Read spaces from Dia" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read spaces from Dia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire les espaces de Dia"
+          }
+        }
+      }
+    },
+    "Use file import instead" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use file import instead"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser l’import de fichiers"
+          }
+        }
+      }
+    },
+    "Spaces and favorite tiles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spaces and favorite tiles"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaces et favoris en tuiles"
+          }
+        }
+      }
+    },
+    "Uses current page addresses and titles. Folders and open tabs stay in Dia. Each space gets a separate profile." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uses current page addresses and titles. Folders and open tabs stay in Dia. Each space gets a separate profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise les adresses et titres actuels des pages. Les dossiers et onglets ouverts restent dans Dia. Chaque espace reçoit un profil séparé."
+          }
+        }
+      }
+    },
+    "The file import brings history and passwords. Go back to read spaces and favorite tiles from the running app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file import brings history and passwords. Go back to read spaces and favorite tiles from the running app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’import de fichiers récupère l’historique et les mots de passe. Revenez en arrière pour lire les espaces et les favoris en tuiles de l’application ouverte."
+          }
+        }
+      }
+    },
+    "Allow Aero to read Dia in System Settings → Privacy & Security → Automation, then try again. You can still import history and passwords from files." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Aero to read Dia in System Settings → Privacy & Security → Automation, then try again. You can still import history and passwords from files."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez Aero à lire Dia dans Réglages Système → Confidentialité et sécurité → Automatisation, puis réessayez. L’import de l’historique et des mots de passe depuis les fichiers reste disponible."
+          }
+        }
+      }
+    },
+    "Open Dia with a browser window, then try again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Dia with a browser window, then try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez une fenêtre de navigation dans Dia, puis réessayez."
+          }
+        }
+      }
+    },
+    "Dia’s spaces could not be read. Keep Dia open and try again. This version of Dia may not support the export. You can still import history and passwords from files." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dia’s spaces could not be read. Keep Dia open and try again. This version of Dia may not support the export. You can still import history and passwords from files."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les espaces de Dia n’ont pas pu être lus. Laissez Dia ouvert et réessayez. Cette version de Dia ne prend peut-être pas en charge l’export. L’import de l’historique et des mots de passe depuis les fichiers reste disponible."
+          }
+        }
+      }
+    },
     "%@ Needs Full Disk Access" : {
       "localizations" : {
         "fr" : {

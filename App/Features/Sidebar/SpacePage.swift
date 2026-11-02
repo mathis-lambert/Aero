@@ -19,6 +19,7 @@ struct SpacePage: View, @MainActor Equatable {
     @State private var springOpened: Set<UUID> = []
     @State private var layout = TabDropLayout()
     @State private var width: CGFloat = 0
+    @State private var separatorHovered = false
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -48,9 +49,29 @@ struct SpacePage: View, @MainActor Equatable {
                 }
 
                 // The line takes drops for the end of the pinned list, which may be empty.
-                Divider().padding(.vertical, 4)
-                    .frame(minHeight: tabs.pinned.isEmpty ? 30 : nil)
+                HStack(spacing: SidebarTabs.rowSpacing) {
+                    Rectangle().fill(palette.line).frame(height: 1).accessibilityHidden(true)
+                    if isCurrent, !tabs.open.isEmpty, separatorHovered, !dragging {
+                        Button { browser.perform(.closeAllTabs) } label: {
+                            Text("Close All")
+                                .font(BrowserDesign.Typography.caption)
+                                .foregroundStyle(palette.secondary)
+                                .fixedSize()
+                                .padding(.horizontal, 6)
+                                .frame(minHeight: 24)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(QuietButtonStyle())
+                        .disabled(!browser.isEnabled(.closeAllTabs))
+                        .tooltip("Close all open tabs in this space. Favorites stay as they are.")
+                        .accessibilityLabel(Text("Close All Tabs"))
+                        .accessibilityIdentifier("sidebar.closeAllTabs")
+                    }
+                }
+                    .frame(minHeight: tabs.pinned.isEmpty ? 30 : 24)
                     .contentShape(Rectangle())
+                    .onHover { separatorHovered = $0 }
+                    .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("sidebar.pinnedDropZone")
                     .dropFrame(.section(.list(group: nil)), in: layout)
 
