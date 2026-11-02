@@ -1,6 +1,13 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Recent Tabs" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent Tabs" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Onglets récents" } }
+      }
+    },
     "Close All" : {
       "extractionState" : "manual",
       "localizations" : {

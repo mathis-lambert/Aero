@@ -93,21 +93,8 @@ struct BrowserWindowView: View {
                             }
                             .transition(.move(edge: .leading).combined(with: .opacity))
                     }
-                    Group {
-                        // A tab alone is a layout of one pane, so a pane coming beside it, or going, moves the same page.
-                        if let layout = browser.paneLayout {
-                            SplitPageView(browser: browser, layout: layout)
-                                .id(browser.window.paneGroup)
-                        } else {
-                            NewTabView(browser: browser)
-                                .id([browser.window.selectedSpaceID, browser.profile?.id])
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
-                                .background {
-                                    RoundedRectangle(cornerRadius: BrowserDesign.Radius.page).fill(palette.canvas).pageShadow(palette.scheme)
-                                }
-                        }
-                    }
+                    // One stable native deck across tabs, spaces and New Tab. Switching never rebuilds its owner.
+                    SplitPageView(browser: browser, layout: browser.paneLayout)
                     .splitDropZones(browser)
                     .pageCornerActions(browser)
                     // The whole page, frame and shadow included, or the split's panes, step back in the window under a
@@ -153,6 +140,12 @@ struct BrowserWindowView: View {
                         .padding(.top, geometry.size.height * Self.controlBarPosition)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
+                }
+                if let cycle = browser.window.tabCycle {
+                    Color.clear.contentShape(Rectangle())
+                        .onTapGesture { browser.window.tabCycle = nil }
+                    TabCycleView(browser: browser, cycle: cycle)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
         }

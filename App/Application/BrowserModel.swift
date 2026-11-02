@@ -72,8 +72,6 @@ final class BrowserModel {
     @ObservationIgnored var closedTabs: [BrowserTab] = []
     @ObservationIgnored var lastSelection: [UUID: UUID] = [:]
     @ObservationIgnored var recentTabs: [UUID] = []
-    @ObservationIgnored private var cycleTabs: [UUID] = []
-    @ObservationIgnored private var cycleIndex = 0
     @ObservationIgnored private var launchInterval: OSSignpostIntervalState?
     /// Test runs only: the fixture server that stands in for every search engine.
     private let searchTestEndpoint: URL?
@@ -314,8 +312,7 @@ final class BrowserModel {
         guard !isChangingStructure, id != window.selectedSpaceID, session.spaces.contains(where: { $0.id == id }) else { return }
         if let spaceID = window.selectedSpaceID, session.spaces.contains(where: { $0.id == spaceID }) { lastSelection[spaceID] = window.selectedTabID }
         window.selectedSpaceID = id
-        cycleTabs = []
-        cycleIndex = 0
+        window.tabCycle = nil
         window.controlBar = nil
         window.siteSettingsPresented = false
         window.controlCenterPresented = false
@@ -325,9 +322,10 @@ final class BrowserModel {
         selectTab(lastSelection[id])
     }
 
-    func selectTab(_ id: UUID?, recordRecent: Bool = true) {
+    func selectTab(_ id: UUID?) {
+        window.tabCycle = nil
         let shownPanes = Set(paneLayout?.tabIDs ?? [])
-        defer { if Set(paneLayout?.tabIDs ?? []).isDisjoint(with: shownPanes) { window.paneGroup = UUID() } }
+        defer { window.animatesPaneChanges = !Set(paneLayout?.tabIDs ?? []).isDisjoint(with: shownPanes) }
         // A page's dialog belongs to its tab: leaving the tab dismisses it.
         if case .pageDialog(let request) = window.prompt, request.tabID != id { dismissPrompt() }
         guard let id, let tab = tabs.first(where: { $0.id == id }), let profileID = profile?.id else {
@@ -340,7 +338,10 @@ final class BrowserModel {
             return
         }
         // A favorite opens as it shows, with the other panes of its split, all favorites too.
-        if tab.isFavorite { openedFavorites.formUnion(session.split(containing: id)?.tabIDs ?? [id]) }
+        if tab.isFavorite {
+            let favorites = Set(session.split(containing: id)?.tabIDs ?? [id])
+            if !favorites.isSubset(of: openedFavorites) { openedFavorites.formUnion(favorites) }
+        }
         passwords.closePicker(unless: id)
         let previous = window.selectedTabID
         // A preview, or a New Tab pane, belongs to the tab it was opened from.
@@ -352,7 +353,7 @@ final class BrowserModel {
         if let previous, previous != id { recordTerminalDirectory(of: previous) }
         window.selectedTabID = id
         if previous != id { extensionsDidSelect(tab, previous: previous) }
-        if recordRecent { markRecent(id) }
+        markRecent(id)
         // The other panes of its split show with it (docs/SPLIT_VIEW.md).
         let webPanes = (session.split(containing: id)?.tabIDs ?? [id]).compactMap { pane in
             tabs.first { $0.id == pane && InternalPage(url: $0.url) == nil }
@@ -685,21 +686,20 @@ final class BrowserModel {
     }
 
     func cycleTab(backwards: Bool) {
-        if cycleTabs.isEmpty {
-            let allowed = Set(tabs.map(\.id))
-            cycleTabs = recentTabs.filter { allowed.contains($0) }
-            cycleTabs += tabs.map(\.id).filter { !cycleTabs.contains($0) }
-            cycleIndex = window.selectedTabID.flatMap { cycleTabs.firstIndex(of: $0) } ?? 0
+        guard !isChangingStructure else { return }
+        if window.tabCycle == nil {
+            let opened = orderedTabs.filter { !$0.isFavorite || openedFavorites.contains($0.id) }
+            window.tabCycle = RecentTabCycle(tabs: opened.map(\.id), recent: recentTabs, selected: window.selectedTabID)
         }
-        guard !cycleTabs.isEmpty else { return }
-        cycleIndex = (cycleIndex + (backwards ? -1 : 1) + cycleTabs.count) % cycleTabs.count
-        selectTab(cycleTabs[cycleIndex], recordRecent: false)
+        window.tabCycle?.step(backwards: backwards)
     }
 
     func commitTabCycle() {
-        guard !cycleTabs.isEmpty else { return }
-        cycleTabs = []
-        if let id = window.selectedTabID { markRecent(id) }
+        let target = window.tabCycle?.selected
+        window.tabCycle = nil
+        guard !isChangingStructure, window.prompt == nil, window.controlBar == nil, onboarding == nil,
+              let target, tabs.contains(where: { $0.id == target }) else { return }
+        selectTab(target)
     }
 
     private func markRecent(_ id: UUID) {

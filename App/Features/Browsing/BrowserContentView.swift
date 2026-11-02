@@ -4,14 +4,20 @@ import WebKit
 
 struct BrowserContentView: View {
     let page: BrowserPage
+    /// Main-window pages stay attached in the shared deck; previews host their own view.
+    var hostsPage = true
     @Environment(\.palette) private var palette
 
     var body: some View {
         ZStack(alignment: .top) {
             // The page surface shows through until the document has painted, instead of a white flash.
-            WebPageHost(page: page)
-                .opacity(page.hasRenderedFirstFrame ? 1 : 0)
-                .pageRevealAnimation(value: page.hasRenderedFirstFrame)
+            if hostsPage {
+                WebPageHost(page: page)
+                    .opacity(page.hasRenderedFirstFrame ? 1 : 0)
+                    .pageRevealAnimation(value: page.hasRenderedFirstFrame)
+            } else {
+                Color.clear.allowsHitTesting(false)
+            }
             if page.isLoading { PageProgress(page: page) }
             if let failure = page.failure {
                 ContentUnavailableView {
@@ -42,10 +48,6 @@ private struct PageProgress: View {
 
 /// Attaching a view never starts a navigation; the registry owns that lifecycle.
 private struct WebPageHost: NSViewRepresentable {
-    /// The container last given each page shows it. A page moves from a preview to its tab: the preview's container,
-    /// still fading out, must never take its web view back.
-    private static let owners = NSMapTable<BrowserPage, NSView>.weakToWeakObjects()
-
     let page: BrowserPage
 
     final class Coordinator {
@@ -53,19 +55,13 @@ private struct WebPageHost: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
-    func makeNSView(context: Context) -> NSView { NSView() }
+    func makeNSView(context: Context) -> WebPageSurface { WebPageSurface() }
 
-    func updateNSView(_ container: NSView, context: Context) {
+    func updateNSView(_ container: WebPageSurface, context: Context) {
         if context.coordinator.page !== page {
             context.coordinator.page = page
-            Self.owners.setObject(container, forKey: page)
+            container.claim(page)
         }
-        guard Self.owners.object(forKey: page) === container, page.webView.superview !== container else { return }
-        container.subviews.forEach { $0.removeFromSuperview() }
-        let webView = page.webView
-        webView.removeFromSuperview()
-        webView.frame = container.bounds
-        webView.autoresizingMask = [.width, .height]
-        container.addSubview(webView)
+        container.needsLayout = true
     }
 }

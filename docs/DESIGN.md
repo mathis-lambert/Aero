@@ -33,6 +33,16 @@ The favorites/open-tabs separator carries a quiet **Close All** action at its tr
 
 Settings uses native sidebar navigation and back/forward history. Profiles and Spaces are separate sections with list-to-detail navigation. Inline edits commit automatically; destructive actions and identity changes require explicit confirmation. See [Spaces](SPACES.md).
 
+## Recent tabs
+
+The recent-tab chooser is a compact list centered over the existing page, using the panel glass,
+system chrome/caption typography, favicons, the space accent for the highlighted row and semantic
+secondary text for the address. Rows retain a stable size with long titles and align to leading in
+RTL. Selection changes and scrolling are immediate; no webpage previews or selection animations
+run while cycling. It keeps page focus until commit, exposes the selected row to accessibility,
+and reuses the same treatment in light/dark and reduced-transparency appearances. Its native
+interaction and expanded/RTL appearance remain pending interactive verification.
+
 ## Prompts
 
 Every question uses the shared `Prompt` presentation, over the window where it was asked (the browser or Settings), with one card surface, a concise title, optional explanation and trailing actions; a confirmation before an irreversible action is a `Confirmation`. No system alert or confirmation dialog is used. Return confirms, Escape or clicking outside cancels. The underlying window must not receive input. Replacing a pending extension prompt must resolve its request rather than leave a caller waiting. System file, print and certificate panels remain native sheets.
