@@ -119,9 +119,10 @@ symbol before its title, in the menu's own ink rather than the space's color (`m
 Reserved browser shortcuts run only in the main browser window, outside modal sheets and marked
 text composition. Find, the command bar and copy URL default to page-first through native menu handling. Each command can override website precedence with Default, Aero first, or Website first. The optional `priorities` dictionary persists only explicit choices by command ID; restoring defaults clears both binding and priority overrides. Recent-tab gestures always remain with Aero because they require modifier-release handling.
 The MRU gesture commits when its configured non-Shift modifiers are released, not a hardcoded
-Control key. While held, a compact chooser highlights the current space's opened tabs in a frozen
+Control key. While held, a horizontal thumbnail strip highlights the current space's opened tabs in a frozen
 recent-use order, with remaining open tabs in sidebar order. Unopened favorites are omitted.
-Stepping through the chooser does not activate, resize or load intermediate pages. Shift reverses
+Cards show a small cached page picture, favicon and title; missing pictures use a favicon placeholder.
+The strip scrolls horizontally to keep the highlight visible. Stepping does not activate, resize or load intermediate pages. Shift reverses
 the order; the arrows also move the highlight, Return commits, and Escape cancels without leaving
 the original page. Clicking an item commits it; clicking outside cancels. Losing window/application
 focus cancels immediately. A closed or moved-away target is never reopened by modifier release.

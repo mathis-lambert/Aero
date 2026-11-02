@@ -25,6 +25,7 @@ final class BrowserModel {
     /// Other apps' sign-ins, each in its own window (docs/OTHER_APPS.md › Sign-in for other apps).
     let signIns = SignInSessions()
     let window = BrowserWindowState()
+    let tabPreviews = TabPreviews()
     private let appIcon: AppIcon
     let updater: AppUpdater
     let preferences: BrowserPreferences
@@ -268,6 +269,7 @@ final class BrowserModel {
         guard isReady else { return }
         // A shell ends with its tab, however the tab went: closed, its space removed, or given a new identity.
         terminals.keep(only: Set(session.tabs.map(\.id)))
+        tabPreviews.keep(only: Set(session.tabs.map(\.id)))
         revision += 1
         needsSave = true
         guard !isChangingStructure else { return }
@@ -324,6 +326,7 @@ final class BrowserModel {
 
     func selectTab(_ id: UUID?) {
         window.tabCycle = nil
+        if let previous = window.selectedTabID, previous != id { captureTabPreview(previous, refresh: true) }
         let shownPanes = Set(paneLayout?.tabIDs ?? [])
         defer { window.animatesPaneChanges = !Set(paneLayout?.tabIDs ?? []).isDisjoint(with: shownPanes) }
         // A page's dialog belongs to its tab: leaving the tab dismisses it.
@@ -446,6 +449,7 @@ final class BrowserModel {
     func closeTab(_ id: UUID, rememberForReopen: Bool = true, unloadingPanes: Bool = false) {
         guard !isChangingStructure else { return }
         guard let tab = session.tabs.first(where: { $0.id == id }) else { return }
+        tabPreviews.remove(id)
         let wasSelected = window.selectedTabID == id
         let next = wasSelected ? tabShown(afterRemoving: tab) : nil
         if case .pageDialog(let request) = window.prompt, request.tabID == id { dismissPrompt() }
@@ -688,6 +692,7 @@ final class BrowserModel {
     func cycleTab(backwards: Bool) {
         guard !isChangingStructure else { return }
         if window.tabCycle == nil {
+            if let selected = window.selectedTabID { captureTabPreview(selected, refresh: true) }
             let opened = orderedTabs.filter { !$0.isFavorite || openedFavorites.contains($0.id) }
             window.tabCycle = RecentTabCycle(tabs: opened.map(\.id), recent: recentTabs, selected: window.selectedTabID)
         }

@@ -64,7 +64,17 @@ The registry remains the page-lifetime owner. Cached surfaces weakly reference p
 or hibernating a page removes its web view from the surface. Evicting a surface detaches its view
 without unloading the registry's page. Real window/split size changes still resize the viewport;
 hibernated pages still need restoration and WebKit may terminate a content process independently.
-Control-Tab previews only titles and favicons and activates one page on commit.
+Control-Tab displays cached pictures, titles and favicons and activates one page on commit.
+
+`TabPreviews` takes a small asynchronous snapshot after a visible page paints/finishes loading,
+before leaving it, or when opening the chooser. It requests the already painted surface without
+waiting for another frame (`afterScreenUpdates = false`), never loads/attaches a hidden page to
+get a picture, and never blocks selection. One capture may be pending; a one-second deadline
+invalidates a late result. Closed tabs, replaced pages, changed URLs and removed identities cannot
+restore a pending preview. Snapshots are best effort; a favicon placeholder covers missing images.
+The cache stays in memory only, at most eight images and 8 MiB of raster data. Each picture is at
+most 200 points wide, cropped to the top of the viewport at a 16:10 ratio, and rejected above
+800 × 500 pixels. Cached pictures do not retain pages and are not real-time website previews.
 
 An invisible-window local diagnostic verified 40 switches between two live pinned pages with the
 same document token, viewport dimensions, resize-event counts and unsaved textarea values before

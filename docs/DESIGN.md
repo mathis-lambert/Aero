@@ -35,13 +35,14 @@ Settings uses native sidebar navigation and back/forward history. Profiles and S
 
 ## Recent tabs
 
-The recent-tab chooser is a compact list centered over the existing page, using the panel glass,
-system chrome/caption typography, favicons, the space accent for the highlighted row and semantic
-secondary text for the address. Rows retain a stable size with long titles and align to leading in
-RTL. Selection changes and scrolling are immediate; no webpage previews or selection animations
-run while cycling. It keeps page focus until commit, exposes the selected row to accessibility,
-and reuses the same treatment in light/dark and reduced-transparency appearances. Its native
-interaction and expanded/RTL appearance remain pending interactive verification.
+The recent-tab chooser is a horizontal strip centered over the existing page, following Dia's
+thumbnail chooser: one cached page picture per card, with its favicon and a single-line title below.
+It uses the panel glass, system chrome typography, neutral selected fill and a thin space-accent ring.
+Cards keep a fixed size, truncate long titles and scroll to the highlighted item; the strip fits the
+window and caps its width. Missing pictures show the site's icon on the canvas. Selection changes
+and scrolling are immediate. It keeps page focus until commit, exposes the selected card to
+accessibility, and uses the same light/dark and reduced-transparency tokens. Synthetic offscreen
+renders cover light and dark/RTL layouts; native interaction and actual glass still need checking.
 
 ## Prompts
 

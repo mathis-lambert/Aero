@@ -58,8 +58,10 @@ final class KeyboardRouter {
             switch event.keyCode {
             case 53: cancelCycle(browser); return true // Escape leaves the original page and its focus untouched.
             case 36, 76: endCycle(browser); return true
-            case 123, 126: browser.cycleTab(backwards: true); return true
-            case 124, 125: browser.cycleTab(backwards: false); return true
+            case 123: browser.cycleTab(backwards: NSApp.userInterfaceLayoutDirection != .rightToLeft); return true
+            case 124: browser.cycleTab(backwards: NSApp.userInterfaceLayoutDirection == .rightToLeft); return true
+            case 126: browser.cycleTab(backwards: true); return true
+            case 125: browser.cycleTab(backwards: false); return true
             default: break
             }
         }

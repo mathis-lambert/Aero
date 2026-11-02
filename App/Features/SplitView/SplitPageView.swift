@@ -240,6 +240,12 @@ private struct SplitPane: View {
                 .simultaneousGesture(TapGesture().onEnded { if !isFocused { browser.selectTab(tab.id) } })
         } else if let page = browser.pages.livePage(tab.id) {
             BrowserContentView(page: page, hostsPage: false).pageFloats(browser, page: page, isFocused: isFocused)
+                .onChange(of: page.hasRenderedFirstFrame, initial: true) { _, rendered in
+                    if rendered { browser.captureTabPreview(tab.id) }
+                }
+                .onChange(of: page.isLoading) { _, loading in
+                    if !loading { browser.captureTabPreview(tab.id) }
+                }
         } else {
             palette.canvas
         }
