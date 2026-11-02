@@ -4,7 +4,7 @@ A lightweight native macOS browser built with SwiftUI, AppKit and WebKit. For Ap
 
 ## Build from source
 
-Use Xcode 27.1 (27A9275), including its Metal Toolchain (`xcodebuild -downloadComponent MetalToolchain`), on an Apple Silicon Mac. No Apple developer account is required.
+Use Xcode 27.2 (27B52), including its Metal Toolchain (`xcodebuild -downloadComponent MetalToolchain`), on an Apple Silicon Mac. No Apple developer account is required.
 
 Open `Aero.xcodeproj`, select **Aero Dev**, then Run. Or:
 
@@ -15,7 +15,7 @@ Scripts/build.sh dmg                         # Local Release DMG
 Scripts/test.sh [unit|smoke|full|performance]  # See docs/TESTING.md
 ```
 
-Build products and logs go to `build/` (ignored by Git). UI tests require a logged-in GUI session; they use isolated data and ephemeral website stores. Dev, nightly, beta and stable each keep separate data. Cloning a release tag still builds Aero Dev by default.
+Build products and logs go to `build/` (ignored by Git). UI tests require a logged-in GUI session; they use isolated data and ephemeral website stores. Aero Dev keeps its own data, apart from the published Aero. Cloning a release tag still builds Aero Dev by default.
 
 See [Build and release](docs/BUILD_AND_RELEASE.md) for the complete toolchain, channel, signing, tag and GitHub Actions policy.
 
@@ -54,5 +54,5 @@ Not implemented yet: Aero's password filling in website popup windows.
 - [Site controls](docs/SITE_CONTROLS.md): permissions, blocking and picture in picture.
 - [Portrait mode](docs/PORTRAIT.md): page captures framed for sharing.
 - [Extensions](docs/EXTENSIONS.md): installation, compatibility, desktop integration and limits.
-- [Software updates](docs/UPDATES.md): channel isolation, signing and publication setup.
+- [Software updates](docs/UPDATES.md): channels, signing and publication setup.
 - [Design](docs/DESIGN.md) and [contributor rules](AGENTS.md).

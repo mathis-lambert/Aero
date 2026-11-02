@@ -1,0 +1,11 @@
+#include "Shared.xcconfig"
+#include "Optimized.xcconfig"
+// The one published app. Every release, stable, beta or nightly, is this app with these records; the update channel
+// is the person's choice in Settings (docs/UPDATES.md).
+PRODUCT_NAME = Aero
+PRODUCT_BUNDLE_IDENTIFIER = app.getaero.browser
+AERO_DATA_DIRECTORY = Aero
+// Apple approved passkeys for this identity; distribution installs the profile, under the name it has in Apple's
+// account (docs/BUILD_AND_RELEASE.md).
+CODE_SIGN_ENTITLEMENTS = Configuration/Distribution.entitlements
+PROVISIONING_PROFILE_SPECIFIER = Aero Stable Passkeys Developer ID

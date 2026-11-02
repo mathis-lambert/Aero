@@ -2,13 +2,13 @@ import Foundation
 import Testing
 @testable import Aero
 
-// Failure modes: tests or source builds contact production; an unknown channel or mismatched
-// identity switches applications; an invalid key/feed starts an updater that cannot verify updates.
+// docs/UPDATES.md. Failure modes: tests or source builds contact production; a distribution of another identity, or
+// with an invalid key, starts an updater that cannot verify updates; the chosen channel is lost, or an unreadable one
+// leaves no channel.
+@MainActor
 struct UpdateConfigurationTests {
-    private func info(channel: String = "stable") -> [String: Any] {
-        ["AeroUpdatesEnabled": "YES", "AeroChannel": channel,
-         "CFBundleIdentifier": "app.getaero.browser" + (channel == "stable" ? "" : "." + channel),
-         "SUFeedURL": "https://getaero.app/updates/\(channel).xml",
+    private func info() -> [String: Any] {
+        ["AeroUpdatesEnabled": "YES", "CFBundleIdentifier": "app.getaero.browser",
          "SUPublicEDKey": Data(repeating: 1, count: 32).base64EncodedString()]
     }
 
@@ -16,19 +16,25 @@ struct UpdateConfigurationTests {
         #expect(UpdateConfiguration(info: info(), isTestRun: true) == .disabled)
         var source = info(); source["AeroUpdatesEnabled"] = "NO"
         #expect(UpdateConfiguration(info: source, isTestRun: false) == .disabled)
-    }
-
-    @Test(arguments: ["stable", "beta", "nightly"])
-    func validChannels(channel: String) {
-        #expect(UpdateConfiguration(info: info(channel: channel), isTestRun: false) == .enabled)
+        #expect(UpdateConfiguration(info: info(), isTestRun: false) == .enabled)
     }
 
     @Test func rejectsInvalidDistribution() {
-        for (key, value) in [("AeroChannel", "dev"), ("CFBundleIdentifier", "app.getaero.browser.beta"),
-                             ("SUFeedURL", "http://getaero.app/updates/stable.xml"),
-                             ("SUFeedURL", "https://getaero.app/updates/beta.xml"), ("SUPublicEDKey", "missing")] {
+        for (key, value) in [("CFBundleIdentifier", "app.getaero.browser.debug"), ("SUPublicEDKey", "missing")] {
             var broken = info(); broken[key] = value
             #expect(UpdateConfiguration(info: broken, isTestRun: false) == .invalid)
         }
+    }
+
+    @Test func theChosenChannelIsKept() throws {
+        let namespace = "updates-\(UUID().uuidString)"
+        defer { UserDefaults().removePersistentDomain(forName: "app.getaero.browser.tests." + namespace) }
+        let preferences = BrowserPreferences(testNamespace: namespace)
+        #expect(preferences.updateChannel == .stable, "Stable until chosen otherwise")
+        preferences.updateChannel = .nightly
+        #expect(BrowserPreferences(testNamespace: namespace).updateChannel == .nightly)
+        let suite = try #require(UserDefaults(suiteName: "app.getaero.browser.tests." + namespace))
+        suite.set("canary", forKey: "browser.updates.channel")
+        #expect(BrowserPreferences(testNamespace: namespace).updateChannel == .stable, "An unreadable channel is the stable one")
     }
 }

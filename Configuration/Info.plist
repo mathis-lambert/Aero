@@ -9,7 +9,7 @@
     <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>AeroUpdatesEnabled</key><string>$(AERO_UPDATES_ENABLED)</string>
-    <key>SUFeedURL</key><string>$(AERO_UPDATE_FEED)</string>
+    <key>SUFeedURL</key><string>https://getaero.app/updates/stable.xml</string>
     <key>SUPublicEDKey</key><string>$(SPARKLE_PUBLIC_ED_KEY)</string>
     <key>SUEnableAutomaticChecks</key><true/>
     <key>SUAutomaticallyUpdate</key><true/>
@@ -17,7 +17,6 @@
     <key>SUVerifyUpdateBeforeExtraction</key><true/>
     <key>SURequireSignedFeed</key><true/>
     <key>SUSignedFeedFailureExpirationInterval</key><integer>0</integer>
-    <key>AeroChannel</key><string>$(AERO_CHANNEL)</string>
     <key>AeroDataDirectory</key><string>$(AERO_DATA_DIRECTORY)</string>
     <key>AeroRevision</key><string>$(AERO_REVISION)</string>
     <key>CFBundleDevelopmentRegion</key><string>en</string>

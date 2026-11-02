@@ -8,7 +8,7 @@ One Xcode project, one application target and the local BrowserKit package own t
 
 ## Toolchain
 
-`Configuration/Toolchain.env` pins Xcode 27.1 (27A9275), which supplies Swift 6.4. The Swift language mode is 6, the architecture arm64 and the deployment target macOS 26.0. Both the CLI and the Xcode application build phase check the selected Xcode version.
+`Configuration/Toolchain.env` pins Xcode 27.2 (27B52), which supplies Swift 6.4. The Swift language mode is 6, the architecture arm64 and the deployment target macOS 26.0. Both the CLI and the Xcode application build phase check the selected Xcode version.
 
 Install the Metal Toolchain once:
 
@@ -16,11 +16,11 @@ Install the Metal Toolchain once:
 xcodebuild -downloadComponent MetalToolchain
 ```
 
-Select the required Xcode with `DEVELOPER_DIR` or `xcode-select`. CI uses the standard ARM `xcode-27` runner and explicitly selects `/Applications/Xcode_27.1.0.app/Contents/Developer`; it fails if Apple tooling differs from the pin. This runner image is currently in public preview. Updating the toolchain is a reviewed configuration change, not a silent switch to latest.
+Select the required Xcode with `DEVELOPER_DIR` or `xcode-select`. CI uses the standard ARM `xcode-27` runner and explicitly selects `/Applications/Xcode_27.2.0.app/Contents/Developer`; it fails if Apple tooling differs from the pin. This runner image is currently in public preview. Updating the toolchain is a reviewed configuration change, not a silent switch to latest.
 
 ## Source builds
 
-Open `Aero.xcodeproj`, select **Aero Dev**, and Run. Local signing uses Xcode's **Sign to Run Locally** (ad hoc), with no team or provisioning profile. Other channel schemes are available for explicit inspection, also with local signing until distribution supplies the identity. Run E2E tests through the Aero Dev scheme, in Debug or Release.
+Open `Aero.xcodeproj`, select **Aero Dev**, and Run. Local signing uses Xcode's **Sign to Run Locally** (ad hoc), with no team or provisioning profile. The **Aero** scheme builds the published app's Distribution configuration for explicit inspection; it needs the passkey provisioning profile, which only distribution supplies. Run E2E tests through the Aero Dev scheme, in Debug or Release.
 
 ```sh
 Scripts/build.sh build
@@ -35,7 +35,7 @@ The local DMG contains Aero Dev and a shortcut to Applications. Packaging requir
 
 ## Installer window
 
-`Scripts/DMG/` owns the Finder layout. The same layout packages every channel:
+`Scripts/DMG/` owns the Finder layout. The same layout packages every release:
 a 640 × 360 window, two native draggable icons, a directional arrow, and the
 onboarding's paper/ink colors and Gilda Display mark. The static TIFF includes
 1× and 2× representations. Finder owns window controls, localized file labels
@@ -49,18 +49,16 @@ and inspect the mounted DMG after changes. The app is already signed when copied
 the DMG is signed and notarized after layout. Keep Finder metadata off the app bundle
 itself to preserve its signature.
 
-## Channels and data
+## Apps and data
 
-| Channel | Scheme | Configuration | Bundle identifier | Application Support directory |
+| App | Scheme | Configuration | Bundle identifier | Application Support directory |
 | --- | --- | --- | --- | --- |
-| Source | Aero Dev | Debug / Release | app.getaero.browser.debug | Aero Development |
-| Nightly | Aero Nightly | Nightly | app.getaero.browser.nightly | Aero Nightly |
-| Beta | Aero Beta | Beta | app.getaero.browser.beta | Aero Beta |
-| Stable | Aero | Stable | app.getaero.browser | Aero |
+| Aero Dev (source) | Aero Dev | Debug / Release | app.getaero.browser.debug | Aero Development |
+| Aero (published) | Aero | Distribution | app.getaero.browser | Aero |
 
-All publication configurations use the same optimized compiler settings. Each has a distinct app name and bundle identifier, so applications coexist. `AeroDataDirectory` in the built Info.plist selects browser records independently of `DEBUG`. Dev and stable retain their durable directory names and identifiers to preserve user data.
+Every release, stable, beta or nightly, is the same Aero app, with the same identity, records, preferences and website data; its tag only selects where its update is announced: betas in the stable feed's beta channel, nightlies in their own feed. The update channel is the person's setting, not a build (UPDATES.md › Channels). Aero Dev keeps its own identity and data, so a source build never touches the published app's records. `AeroDataDirectory` in the built Info.plist selects browser records independently of `DEBUG`.
 
-Preferences and caches are scoped to the bundle identifier. Profile records and their UUIDs live in each channel's database; BrowserWebKit owns the corresponding website stores through the public `WKWebsiteDataStore(forIdentifier:)` API. Never copy WebKit files or share a browser database between channels. E2E tests keep using `AERO_TEST_DATA`, unique preference suites and nonpersistent website stores.
+Preferences and caches are scoped to the bundle identifier. Profile records and their UUIDs live in each app's database; BrowserWebKit owns the corresponding website stores through the public `WKWebsiteDataStore(forIdentifier:)` API. Never copy WebKit files or share a browser database between the two apps. E2E tests keep using `AERO_TEST_DATA`, unique preference suites and nonpersistent website stores.
 
 ## Versioning and tags
 
@@ -105,7 +103,7 @@ The named tag must exist at HEAD and the checkout must be clean. A Developer ID 
 
 The pipeline archives with Xcode, exports with Developer ID and a secure timestamp, notarizes a ZIP of the app, staples the app, then creates a compressed DMG with `dmgbuild` and Apple’s disk-image tools, containing the app and Applications shortcut. It signs and notarizes the DMG and staples its ticket. Hardened runtime and the app's declared device entitlements are retained. Distribution must not contain `get-task-allow=true`.
 
-The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, the manifest and the signed channel appcast. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
+The app is checked with `codesign`, `stapler` and `syspolicy_check`; the DMG with `hdiutil`, `codesign`, `stapler` and `spctl`. The app dSYM must have the same UUID as the released binary. After validation, the script packages the stapled app and archive dSYMs as separate ZIPs. The `public/` directory contains the DMG, both ZIPs, SHA-256 checksums for all three, the manifest and the signed appcast of the release's feed. GitHub automatically adds source code ZIP and tar.gz archives for the release tag; these are source snapshots, not application installers. dSYMs map crash report addresses to function names and source locations; they are not needed to run Aero. The Xcode archive, export logs and notarization responses remain alongside the public files. Builds are traceable to source and tooling; signed and timestamped outputs are not promised to be byte-identical.
 
 Each notarization waits at most 30 minutes. Failure or timeout stops publication and retains the submission response. An Apple submission can continue after a timeout: use its retained ID with `notarytool info` or `log` to diagnose it. Rerunning creates a fresh output directory; it does not overwrite previous results. Keep archive backups for released versions beyond the CI retention period; the release asset retains the dSYMs.
 
@@ -115,7 +113,7 @@ Each notarization waits at most 30 minutes. Failure or timeout stops publication
 
 `distribution.yml` builds a nightly on every push to main, using the exact commit from the push event even if main advances before the runner starts. There is no scheduled build. Tags include the full commit SHA, so multiple pushes on the same day have distinct releases. Manual dispatch accepts an existing tag; leave it empty to build main. Retrying an already published release republishes its signed appcast without rebuilding; failed builds reuse their immutable tag.
 
-Preparation checks the tag and main ancestry before credentials are loaded. Automatically created nightly tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Concurrency is scoped to the ref and commit/tag: different main pushes can build independently without replacing each other in the pending queue.
+Preparation checks the tag and main ancestry before credentials are loaded. Automatically created nightly tags use `GITHUB_TOKEN`; the same workflow proceeds to distribution directly, without relying on a new tag-triggered run. Beta and nightly releases are marked prerelease and never latest. Stable releases become latest. A release is created as a draft, receives all artifacts, and is published only after upload succeeds. Existing GitHub Releases are never overwritten. If upload fails, inspect and delete the incomplete draft before retrying; its tag stays unchanged. Stable releases and betas, which share the stable feed, run one at a time. Other runs are scoped to the ref and commit: different main pushes can build independently without replacing each other in the pending queue.
 
 The `distribution` GitHub environment contains these Apple signing credentials, plus the Sparkle signing and SSH publication settings documented in [UPDATES.md](UPDATES.md#one-time-setup-before-mergingenabling-distribution):
 
@@ -135,17 +133,17 @@ Public repositories use free standard hosted runner compute; larger runners are 
 
 ## Validation and failure modes
 
-Before changing this pipeline, account for: missing toolchain/components; absent signing credentials; wrong PKCS#12 password or team; malformed/moved tags; dirty source; mismatched version; shallow history; missing channel metadata; shared user-data paths; failed or timed-out notarization; missing tickets; damaged signatures; partial uploads; retries replacing published assets; and secrets appearing in logs or artifacts.
+Before changing this pipeline, account for: missing toolchain/components; absent signing credentials or passkey profile; wrong PKCS#12 password or team; malformed/moved tags; dirty source; mismatched version; shallow history; missing app metadata; shared user-data paths; failed or timed-out notarization; missing tickets; damaged signatures; partial uploads; retries replacing published assets; and secrets appearing in logs or artifacts.
 
-Validate a source Debug build and Release DMG without a Developer ID identity, inspect channel metadata, and run `StorageJourneys` and `SettingsJourneys` with retained xcresult and reproduction manifests. Inspect the mounted DMG and copy its app to a temporary install directory before launch. Official acceptance also requires the signed pipeline and a real downloaded/quarantined install, ideally on another Mac, including an offline launch. Verify channel website-data isolation through browsing before claiming it as experimentally validated. Test the custom Finder icon after installation; Xcode removes its resource-fork metadata from reused build products before signing.
+Validate a source Debug build and Release DMG without a Developer ID identity, inspect the app's metadata, and run `StorageJourneys` and `SettingsJourneys` with retained xcresult and reproduction manifests. Inspect the mounted DMG and copy its app to a temporary install directory before launch. Official acceptance also requires the signed pipeline and a real downloaded/quarantined install, ideally on another Mac, including an offline launch. Verify that Aero Dev and the published app keep separate website data through browsing before claiming it as experimentally validated. Test the custom Finder icon after installation; Xcode removes its resource-fork metadata from reused build products before signing.
 
-### Stable passkey signing
+### Passkey signing
 
-Apple granted the `com.apple.developer.web-browser.public-key-credential` managed capability to `app.getaero.browser` only. `Stable.xcconfig` signs the stable app with `Stable.entitlements` and the Developer ID provisioning profile "Aero Stable Passkeys Developer ID"; the export options name the same profile. Dev, Beta and Nightly keep their entitlements and sign without a profile; their identities would each need Apple's approval. Only distribution builds the Stable configuration.
+Apple granted the `com.apple.developer.web-browser.public-key-credential` managed capability to `app.getaero.browser`. `Distribution.xcconfig` signs every release with `Distribution.entitlements` and the Developer ID provisioning profile "Aero Stable Passkeys Developer ID", the name it has in Apple's account; the export options name the same profile. Aero Dev keeps its entitlements and signs without a profile. Only distribution builds the Distribution configuration, and the workflow fails without the profile secret.
 
-The workflow installs the profile from `APPLE_PASSKEY_PROFILE_BASE64` into Xcode's `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` and removes it during cleanup. For a local stable distribution, copy the downloaded profile there under its UUID (`security cms -D -i <profile> | plutil -extract UUID raw -`). Xcode rejects an absent or expired profile, another team or bundle identifier, a profile without the passkey entitlement or one that does not include the signing certificate; `distribute.sh` then checks that the exported signature kept the entitlement. The profile lists the Developer ID certificate: after replacing the certificate, regenerate the profile under the same name and update the secret.
+The workflow installs the profile from `APPLE_PASSKEY_PROFILE_BASE64` into Xcode's `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` and removes it during cleanup. For a local distribution, copy the downloaded profile there under its UUID (`security cms -D -i <profile> | plutil -extract UUID raw -`). Xcode rejects an absent or expired profile, another team or bundle identifier, a profile without the passkey entitlement or one that does not include the signing certificate; `distribute.sh` then checks that the exported signature kept the entitlement. The profile lists the Developer ID certificate: after replacing the certificate, regenerate the profile under the same name and update the secret.
 
-A signature only proves the entitlement is present. macOS refuses to launch an app whose profile does not authorize it, so a stable release also requires launching the notarized app and the passkey scenarios in [PASSWORDS.md](PASSWORDS.md#passkeys).
+A signature only proves the entitlement is present. macOS refuses to launch an app whose profile does not authorize it, so a release also requires launching the notarized app and the passkey scenarios in [PASSWORDS.md](PASSWORDS.md#passkeys).
 
 ## References
 

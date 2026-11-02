@@ -12,7 +12,7 @@ struct StorageLocation {
         } else {
             guard let name = Bundle.main.object(forInfoDictionaryKey: "AeroDataDirectory") as? String,
                   !name.isEmpty, !name.contains("/"), !name.contains("$(") else {
-                preconditionFailure("Missing build channel storage configuration")
+                preconditionFailure("Missing storage configuration")
             }
             data = URL.applicationSupportDirectory.appendingPathComponent(name, isDirectory: true).appendingPathComponent("Storage", isDirectory: true)
             caches = URL.cachesDirectory.appendingPathComponent(Bundle.main.bundleIdentifier ?? name, isDirectory: true)

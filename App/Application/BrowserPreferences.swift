@@ -66,6 +66,7 @@ final class BrowserPreferences {
         static let resetPending = "browser.resetPending"
         static let hiddenNewTabSites = "browser.newTab.hiddenSites"
         static let portraitStyle = "browser.portrait.style"
+        static let updateChannel = "browser.updates.channel"
     }
 
     let shortcuts: ShortcutPreferences
@@ -125,6 +126,10 @@ final class BrowserPreferences {
     var portraitStyle: PortraitStyle {
         didSet { defaults.set(try? JSONEncoder().encode(portraitStyle), forKey: Key.portraitStyle) }
     }
+    /// Where updates come from; an unreadable value is the stable channel.
+    var updateChannel: UpdateChannel {
+        didSet { defaults.set(updateChannel.rawValue, forKey: Key.updateChannel) }
+    }
     var needsLanguageRestart: Bool { language != launchLanguage }
     /// The first launch's progress (docs/ONBOARDING.md › When it appears). `nil` when absent or unreadable:
     /// an unreadable value never brings the onboarding back.
@@ -171,6 +176,7 @@ final class BrowserPreferences {
         let hidden = defaults.dictionary(forKey: Key.hiddenNewTabSites) as? [String: [String]] ?? [:]
         hiddenNewTabSites = Dictionary(uniqueKeysWithValues: hidden.compactMap { id, sites in UUID(uuidString: id).map { ($0, Set(sites)) } })
         portraitStyle = defaults.data(forKey: Key.portraitStyle).flatMap { try? JSONDecoder().decode(PortraitStyle.self, from: $0) } ?? PortraitStyle()
+        updateChannel = defaults.string(forKey: Key.updateChannel).flatMap(UpdateChannel.init(rawValue:)) ?? .stable
     }
 
     func hideNewTabSite(_ key: String, in profileID: UUID) { hiddenNewTabSites[profileID, default: []].insert(key) }
@@ -197,7 +203,7 @@ final class BrowserPreferences {
         testNamespace.map { Key.testSuitePrefix + $0 } ?? Bundle.main.bundleIdentifier ?? ""
     }
 
-    /// Every preference of this channel or test run, the pending mark included.
+    /// Every preference of this app or test run, the pending mark included.
     static func erase(testNamespace: String?) {
         UserDefaults.standard.removePersistentDomain(forName: domain(testNamespace: testNamespace))
         defaults(testNamespace: testNamespace).synchronize()

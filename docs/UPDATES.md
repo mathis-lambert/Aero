@@ -7,36 +7,57 @@ It avoids maintaining a privileged installer, archive extractor or replacement p
 in Aero. The framework is embedded by Swift Package Manager. No extra daemon or polling
 loop is added by the application; automatic checks use Sparkle's daily schedule.
 
-## Application behavior
+## Channels
 
-`AppUpdater` is owned by `BrowserModel`, outside SwiftUI reconstruction. It starts after
-onboarding (or immediately on an existing installation). Settings > Software Updates,
-the application menu and the command catalog use the same check action. Settings adapts
-Sparkle's KVO properties into Observation; it does not persist a second set of preferences.
-Automatic checking and downloading default to enabled and can be disabled independently.
-System profiling is off.
+There is one published Aero app (`app.getaero.browser`, data in `Aero`), whatever the release. The update channel
+is the person's choice in Settings › Software Updates, kept in the preferences (`browser.updates.channel`); every
+channel is the same app, with the same tabs, history, passwords and website data.
 
-A downloaded update installs when the app quits. Sparkle can offer an immediate restart;
-Aero then asks the user to save website work and warns explicitly about active downloads.
-Cancel keeps the browser open. Every accepted termination, including Sparkle's request,
-passes through the existing asynchronous session/history flush. A failed save cancels
-termination. Tabs are restored as records, not as arbitrary website execution state:
-unsaved forms, active calls and session-only downloads cannot be promised to survive.
-Aero never initiates a forced restart or claims to detect all unsaved website state.
-
-Source builds (including local Beta/Stable scheme builds) and `AERO_TEST_DATA` runs do not
-create Sparkle. Only `Scripts/distribute.sh` enables it while supplying the public key.
-A configured distribution with an invalid channel, identity, key or feed is disabled
-with an explanatory Settings message. Sparkle startup errors are also shown there.
-
-| Application | Feed | Bundle ID |
+| Channel | Reads | Gets |
 | --- | --- | --- |
-| Aero | `https://getaero.app/updates/stable.xml` | `app.getaero.browser` |
-| Aero Beta | `https://getaero.app/updates/beta.xml` | `app.getaero.browser.beta` |
-| Aero Nightly | `https://getaero.app/updates/nightly.xml` | `app.getaero.browser.nightly` |
+| Stable (default) | `https://getaero.app/updates/stable.xml` | `vX.Y.Z` releases |
+| Beta | the same feed, with Sparkle's `beta` channel allowed | `vX.Y.Z-beta.N` and `vX.Y.Z` releases |
+| Nightly | `https://getaero.app/updates/nightly.xml` | `nightly-<sha>`, one per main commit |
 
-These are separate applications and databases. There is no in-app channel switch.
-No feed URL or key is taken from a runtime environment variable or downloaded settings.
+Betas are announced in the stable feed, in Sparkle's `beta` channel; stable releases are in no channel, so everyone
+gets them and Sparkle offers whichever allowed build is newest. `AppUpdater` allows that channel through
+`allowedChannels(for:)` when Beta is chosen. Stable releases and betas therefore distribute one at a time, so neither
+rebuilds `stable.xml` from a base the other is replacing. Nightlies come from every main commit: they have their own
+feed, named through `feedURLString(for:)`, so rebuilding it does not rewrite the feed every stable client reads, and it
+never lags a beta or stable release. Each feed is signed whole by CI.
+
+Stable and beta read Sparkle's default feed, from Info.plist. Changing the channel resets Sparkle's update cycle and
+checks in the background at once. Sparkle never installs an older build: moving to a steadier channel, from nightly to
+stable for example, takes effect with that channel's next release newer than the installed one; Settings says so. An
+update already downloaded still installs on quit and stays offered. No feed URL or key comes from a runtime environment
+variable or downloaded settings.
+
+## In Aero
+
+`AppUpdater` is owned by `BrowserModel`, outside SwiftUI reconstruction. It starts after onboarding (or immediately on
+an existing installation). Settings, the application menu and the command catalog use the same check action. It adapts
+Sparkle's KVO properties into Observation and follows Sparkle's delegate callbacks into one status: checking, up to date,
+an update available, an update downloaded and ready, or a failure. It does not persist a second set of preferences.
+Automatic checking and downloading default to enabled and can be disabled independently. System profiling is off.
+
+- **Settings › Software Updates**: the app icon, version, build and channel, the status with the one action that fits
+  (Check for Updates, Install…, Restart to Update), the channel choice with what each brings, and the two automatic
+  switches.
+- **The sidebar's reminder**: Sparkle's gentle scheduled update reminders. An update found on schedule never opens a
+  window over the page; a small card above the sidebar's footer names the version and offers Update, which opens it in
+  Sparkle's window with its notes, or Restart once it is downloaded. Closed, it stays away until a newer version or
+  the next launch. Checks the person asks for always use Sparkle's window.
+
+A downloaded update installs when the app quits. Restarting now, from the sidebar, Settings or Sparkle's window, asks
+the user to save website work and warns explicitly about active downloads. Cancel keeps the browser open. Every
+accepted termination, including Sparkle's request, passes through the existing asynchronous session/history flush. A
+failed save cancels termination. Tabs are restored as records, not as arbitrary website execution state: unsaved forms,
+active calls and session-only downloads cannot be promised to survive. Aero never initiates a forced restart or claims
+to detect all unsaved website state.
+
+Source builds (Aero Dev, Debug or Release) and `AERO_TEST_DATA` runs do not create Sparkle; Settings shows the channels
+disabled. Only `Scripts/distribute.sh` enables it while supplying the public key. A distribution of another identity
+or key is disabled with an explanatory Settings message. Sparkle startup errors are also shown there.
 
 ## Trust and packaging
 
@@ -68,13 +89,15 @@ commit may create a historical GitHub release, but cannot move the live feed bac
 ## Release and retry
 
 1. Build and notarize the application and create the final app ZIP.
-2. Retrieve the existing channel appcast. Only 404 means a first publication; other
-   HTTP failures stop distribution. Verify an existing feed before reusing it.
+2. Retrieve the existing appcast of the tag's feed: `nightly.xml` for nightlies, `stable.xml`
+   otherwise. Only 404 means a first publication; other HTTP failures stop distribution. Verify
+   an existing feed before reusing it.
 3. `generate_appcast` signs the archive and feed, infers OS/hardware requirements and
    embeds the same Markdown notes used by the GitHub release: the annotated tag's message
    for beta and stable (BUILD_AND_RELEASE.md › Versioning and tags). It keeps up to five
-   versions per compatibility branch. No extra release-notes hosting is needed.
-4. Publish the GitHub draft only after every asset, including `<channel>.xml`, uploads.
+   versions per compatibility branch, Sparkle channel included. A beta's item is in the
+   `beta` channel. No extra release-notes hosting is needed.
+4. Publish the GitHub draft only after every asset, including `<feed>.xml`, uploads.
 5. A separate Linux job downloads that immutable appcast, checks its archive URLs,
    sends it over SSH and verifies the public endpoint serves the same bytes.
 
@@ -87,8 +110,8 @@ old publication does not warrant rolling back the newer feed.
 
 ## One-time setup before merging/enabling distribution
 
-GetAero v0.2.3 already serves only `stable.xml`, `beta.xml` and `nightly.xml` from its
-persistent directory. Empty channels return 404; no placeholder should be installed.
+GetAero serves `stable.xml` and `nightly.xml` from its persistent directory.
+`beta.xml` is never written. A feed not yet published returns 404; no placeholder should be installed.
 
 1. Fetch the pinned tools with `Scripts/sparkle-tools.sh /tmp/aero-sparkle-tools`.
    Run `bin/generate_keys --account Aero` from that directory, then use `-p` to read
@@ -109,14 +132,18 @@ persistent directory. Empty channels return 404; no placeholder should be instal
 
    The account must have no Docker access. Keep the receiver and SSH configuration
    outside the writable updates directory. `SSH_ORIGINAL_COMMAND` must be exactly
-   `stable`, `beta` or `nightly`; arbitrary shell commands and paths are rejected.
+   `stable` or `nightly`; arbitrary shell commands and paths are rejected.
+   After a change to `receive-appcast.py`, copy the new file over the installed one before
+   the next release.
 4. In Aero's `distribution` environment add `UPDATE_HOST`, `UPDATE_USER`,
    `UPDATE_SSH_KEY`, `UPDATE_KNOWN_HOSTS` and optionally `UPDATE_PORT` (default 22).
    Obtain the host key over a trusted connection. Do not reuse the site's Docker
    deployment credential for this restricted publisher.
 
-The receiver bounds input, validates channel-specific GitHub archive URLs and numeric
-versions, holds a per-channel filesystem lock, compares against the current feed, and
+The receiver bounds input, validates each feed's GitHub archive URLs and their Sparkle
+channel (in the stable feed, betas only in `beta` and stable releases in none, so a beta never
+reaches everyone) and numeric versions, holds a per-feed filesystem lock, requires each
+channel's newest build to move forward against the current feed, and
 writes a mode-644 temporary file before fsync and atomic rename. It preserves the signed
 XML bytes exactly. It trusts the authorized CI signer; cryptographic verification is
 performed during generation and independently by every Sparkle client. Temporary files
@@ -124,18 +151,19 @@ and lock files are inaccessible through GetAero's Nginx configuration.
 
 ## Validation
 
-- `Scripts/test.sh unit`: update isolation/configuration and catalog coverage.
-- `python3 -m unittest discover -s Tests/Distribution -v`: malformed input, wrong channel,
+- `Scripts/test.sh unit`: update isolation/configuration, the chosen channel's persistence, and catalog coverage.
+- `python3 -m unittest discover -s Tests/Distribution -v`: malformed input, wrong feed or Sparkle channel,
   stale publication, same-build conflict, idempotent retry and file preservation.
 - `Scripts/test.sh full`: includes Settings' disabled updater in the isolated Dev app.
-- Before shipping the first enabled release, install two notarized nightlies in an
+- Before shipping the first enabled release, install two notarized releases of one channel in an
   isolated macOS account. Verify discovery, notes, download, cancel/retry, installation
   on quit, immediate restart, restoration and persistence failure. Test a broken archive
   signature and unavailable feed. Keep the commands, exact signed artifacts, appcast,
   OS version and resulting logs/screenshots with the release validation record.
-  In that disposable account only, Sparkle's existing `SUFeedURL` preference can point
-  the nightly app at a local HTTP fixture server (`defaults write
-  app.getaero.browser.nightly SUFeedURL -string http://127.0.0.1:<port>/nightly.xml`).
+  In that disposable account only, with the Stable or Beta channel chosen, Sparkle's existing
+  `SUFeedURL` preference can point Aero at a local HTTP fixture server (`defaults write
+  app.getaero.browser SUFeedURL -string http://127.0.0.1:<port>/stable.xml`); include a beta
+  item to check that only Beta offers it. Nightly names its feed itself.
   Sign that fixture appcast and its archives with the key embedded in the test builds;
   never disable signature verification or publish test builds to the live channel.
   Remove the override after the test. This does not require changing Aero's production

@@ -3,10 +3,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 tag="${1:?Usage: Scripts/publish-update.sh <release-tag>}"
+# Betas are in the stable feed's beta channel (docs/UPDATES.md).
 case "$tag" in
-    nightly-*) channel=nightly ;;
-    v*-beta.*) channel=beta ;;
-    v*) channel=stable ;;
+    nightly-*) feed=nightly ;;
+    v*) feed=stable ;;
     *) echo 'Invalid release tag.' >&2; exit 1 ;;
 esac
 : "${UPDATE_HOST:?Set UPDATE_HOST}"
@@ -18,9 +18,9 @@ trap 'rm -rf "$work"' EXIT
 umask 077
 printf '%s\n' "$UPDATE_SSH_KEY" > "$work/key"
 printf '%s\n' "$UPDATE_KNOWN_HOSTS" > "$work/known_hosts"
-gh release download "$tag" --repo mathis-lambert/Aero --pattern "$channel.xml" --dir "$work"
+gh release download "$tag" --repo mathis-lambert/Aero --pattern "$feed.xml" --dir "$work"
 # Verify all archive links resolve before advertising this release. No GitHub token reaches clients.
-python3 - "$work/$channel.xml" <<'PY'
+python3 - "$work/$feed.xml" <<'PY'
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -35,6 +35,6 @@ PY
 ssh -i "$work/key" -p "${UPDATE_PORT:-22}" -o BatchMode=yes -o IdentitiesOnly=yes \
     -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
     -o "UserKnownHostsFile=$work/known_hosts" \
-    "$UPDATE_USER@$UPDATE_HOST" "$channel" < "$work/$channel.xml"
-curl --fail --silent --show-error --retry 3 --connect-timeout 15 --max-time 60 --max-filesize 2097152 "https://getaero.app/updates/$channel.xml" -o "$work/live.xml"
-cmp "$work/$channel.xml" "$work/live.xml"
+    "$UPDATE_USER@$UPDATE_HOST" "$feed" < "$work/$feed.xml"
+curl --fail --silent --show-error --retry 3 --connect-timeout 15 --max-time 60 --max-filesize 2097152 "https://getaero.app/updates/$feed.xml" -o "$work/live.xml"
+cmp "$work/$feed.xml" "$work/live.xml"

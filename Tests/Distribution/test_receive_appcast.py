@@ -1,5 +1,6 @@
-"""Failure modes: malformed feeds, cross-channel archives, out-of-order publication,
-conflicting same-build artifacts, interrupted writes and exposure of partial XML.
+"""Failure modes: malformed feeds, archives in the wrong feed or Sparkle channel (a beta outside the beta channel would
+reach everyone), out-of-order publication within a channel, conflicting same-build artifacts, interrupted writes and
+exposure of partial XML.
 The receiver is tested in isolation because an app journey cannot exercise SSH publication.
 """
 import importlib.util
@@ -12,8 +13,14 @@ receiver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(receiver)
 
 
-def feed(build="12.0", tag="v0.1.0", extra=""):
-    return f'''<?xml version="1.0"?><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0"><channel><item><sparkle:version>{build}</sparkle:version><enclosure url="https://github.com/mathis-lambert/Aero/releases/download/{tag}/Aero-{tag}-arm64.zip" sparkle:edSignature="signature" length="1" type="application/octet-stream"/>{extra}</item></channel></rss>'''.encode()
+def item(build="12.0", tag="v0.1.0", channel=None):
+    marker = f"<sparkle:channel>{channel}</sparkle:channel>" if channel else ""
+    return f'''<item><sparkle:version>{build}</sparkle:version>{marker}<enclosure url="https://github.com/mathis-lambert/Aero/releases/download/{tag}/Aero-{tag}-arm64.zip" sparkle:edSignature="signature" length="1" type="application/octet-stream"/></item>'''
+
+
+def feed(build="12.0", tag="v0.1.0", items=None):
+    return ('<?xml version="1.0"?><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0"><channel>'
+            + (items if items is not None else item(build, tag)) + "</channel></rss>").encode()
 
 
 class PublicationTests(unittest.TestCase):
@@ -47,8 +54,23 @@ class PublicationTests(unittest.TestCase):
 
     def test_channels(self):
         with tempfile.TemporaryDirectory() as folder:
-            receiver.publish(Path(folder), "beta", feed("12.1", "v0.1.0-beta.1"))
-            receiver.publish(Path(folder), "nightly", feed("12.0", "nightly-" + "a" * 40))
+            root = Path(folder)
+            beta = item("12.2", "v0.1.0-beta.2", "beta")
+            receiver.publish(root, "stable", feed(items=beta))
+            # The stable release of the beta's commit is an older build than the beta, in another channel.
+            receiver.publish(root, "stable", feed(items=item() + beta))
+            receiver.publish(root, "stable", feed(items=item("13.0", "v0.1.1") + beta))
+            with self.assertRaises(ValueError, msg="dropping the beta channel"):
+                receiver.publish(root, "stable", feed("14.0", "v0.1.2"))
+            with self.assertRaises(ValueError, msg="an older beta"):
+                receiver.publish(root, "stable", feed(items=item("13.0", "v0.1.1") + item("12.1", "v0.1.0-beta.1", "beta")))
+            receiver.publish(root, "nightly", feed("12.0", "nightly-" + "a" * 40))
+            for name, bad in [("nightly", feed("14.0", "v0.1.0")), ("stable", feed("14.0", "nightly-" + "a" * 40)),
+                              ("stable", feed(items=item("14.0", "v0.2.0-beta.1") + beta)),
+                              ("stable", feed(items=item("14.0", "v0.2.0", "beta") + beta)),
+                              ("nightly", feed(items=item("14.0", "nightly-" + "b" * 40, "beta"))), ("beta", feed())]:
+                with self.assertRaises(ValueError, msg=f"{name} refuses {bad[-200:]}"):
+                    receiver.publish(root, name, bad)
 
 
 if __name__ == "__main__":

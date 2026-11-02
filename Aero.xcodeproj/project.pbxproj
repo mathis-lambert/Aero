@@ -37,15 +37,12 @@
 /* Begin PBXFileReference section */
 		06AC8D3C6FE8B3A3D6B6F100 /* AeroTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AeroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/UnitTests.xcconfig; sourceTree = "<group>"; };
-		0A999012FFB87B3EDAC99ADB /* Packages */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Packages; sourceTree = "<group>"; };
 		379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Debug.xcconfig; sourceTree = "<group>"; };
 		68A4194227BE4AB74BC3D323 /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
 		77EB3AD38D803EC3C3DF9309 /* AeroUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = AeroUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Release.xcconfig; sourceTree = "<group>"; };
 		C2B6AF95E5FB6AF04547C8EA /* Aero.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Aero.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7EC4E951146DD278F85F64B7 /* Configuration/Nightly.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Nightly.xcconfig; sourceTree = "<group>"; };
-		23308572369B06294EF05C8A /* Configuration/Beta.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Beta.xcconfig; sourceTree = "<group>"; };
-		069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Stable.xcconfig; sourceTree = "<group>"; };
+		069FA386D990189EAEB47E5A /* Configuration/Distribution.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Distribution.xcconfig; sourceTree = "<group>"; };
 		A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Platform.xcconfig; sourceTree = "<group>"; };
 		09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/UITests.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -111,15 +108,12 @@
 			isa = PBXGroup;
 			children = (
 				5DB0711C456FD5D72DF2498C /* App */,
-				0A999012FFB87B3EDAC99ADB /* Packages */,
 				CC42ED882770E5635F511C36 /* Tests/AeroTests */,
 				6F99D0E977B61988ED22843D /* Tests/AeroUITests */,
 				754164850F38C1ECDAF6B8ED /* Configuration */,
 				379FFAE098E1FE30EF2E6AF6 /* Configuration/Debug.xcconfig */,
 				77ED3959B0A4E0420C48D19C /* Configuration/Release.xcconfig */,
-				7EC4E951146DD278F85F64B7 /* Configuration/Nightly.xcconfig */,
-				23308572369B06294EF05C8A /* Configuration/Beta.xcconfig */,
-				069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */,
+				069FA386D990189EAEB47E5A /* Configuration/Distribution.xcconfig */,
 				A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */,
 				09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */,
 				761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */,
@@ -363,26 +357,12 @@
 			};
 			name = Release;
 		};
-		C9AF1115FA0C2790FDC9C542 /* Stable */ = {
+		C9AF1115FA0C2790FDC9C542 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
 			buildSettings = {
 			};
-			name = Stable;
-		};
-		CCEF1A06199115347CC6C400 /* Beta */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
-			buildSettings = {
-			};
-			name = Beta;
-		};
-		147C4878E63A7DC26FBE7CB9 /* Nightly */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 761F624C45A88CB246C96C50 /* Configuration/UnitTests.xcconfig */;
-			buildSettings = {
-			};
-			name = Nightly;
+			name = Distribution;
 		};
 		066776A1C212750E8BE506A2 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -428,68 +408,26 @@
 			};
 			name = Release;
 		};
-		5FC5D667D183010270AA8BD4 /* Nightly */ = {
+		444FD8C6406D4758FDFEFD5D /* Distribution */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7EC4E951146DD278F85F64B7 /* Configuration/Nightly.xcconfig */;
+			baseConfigurationReference = 069FA386D990189EAEB47E5A /* Configuration/Distribution.xcconfig */;
 			buildSettings = {
 			};
-			name = Nightly;
+			name = Distribution;
 		};
-		EE75006DB0F92A49877347D2 /* Nightly */ = {
+		0AC2C0C5598024004C6233B5 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
 			buildSettings = {
 			};
-			name = Nightly;
+			name = Distribution;
 		};
-		766AE0443EE837EB61FF3F86 /* Nightly */ = {
+		C062ABC1E43448F4F6D04317 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
 			buildSettings = {
 			};
-			name = Nightly;
-		};
-		C3F30ABE591AEA641DA1A090 /* Beta */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 23308572369B06294EF05C8A /* Configuration/Beta.xcconfig */;
-			buildSettings = {
-			};
-			name = Beta;
-		};
-		384F7AB81D2A73780203BAF9 /* Beta */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
-			buildSettings = {
-			};
-			name = Beta;
-		};
-		E27F79B50AC4B3BA7A8CFCC2 /* Beta */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
-			buildSettings = {
-			};
-			name = Beta;
-		};
-		444FD8C6406D4758FDFEFD5D /* Stable */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 069FA386D990189EAEB47E5A /* Configuration/Stable.xcconfig */;
-			buildSettings = {
-			};
-			name = Stable;
-		};
-		0AC2C0C5598024004C6233B5 /* Stable */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A48B5E32A8DAB1DB0CA7A852 /* Configuration/Platform.xcconfig */;
-			buildSettings = {
-			};
-			name = Stable;
-		};
-		C062ABC1E43448F4F6D04317 /* Stable */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 09682E284BD244517A5E0D76 /* Configuration/UITests.xcconfig */;
-			buildSettings = {
-			};
-			name = Stable;
+			name = Distribution;
 		};
 /* End XCBuildConfiguration section */
 
@@ -499,9 +437,7 @@
 			buildConfigurations = (
 				7D15A660CB53F677D9F47E05 /* Debug */,
 				B532F4873D98B5990D6DA704 /* Release */,
-				C9AF1115FA0C2790FDC9C542 /* Stable */,
-				CCEF1A06199115347CC6C400 /* Beta */,
-				147C4878E63A7DC26FBE7CB9 /* Nightly */,
+				C9AF1115FA0C2790FDC9C542 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -511,9 +447,7 @@
 			buildConfigurations = (
 				BFD315016DE16320F7E2120C /* Debug */,
 				1D8C0C6B1D22EA8C7669B263 /* Release */,
-				0AC2C0C5598024004C6233B5 /* Stable */,
-				384F7AB81D2A73780203BAF9 /* Beta */,
-				EE75006DB0F92A49877347D2 /* Nightly */,
+				0AC2C0C5598024004C6233B5 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -523,9 +457,7 @@
 			buildConfigurations = (
 				7BD7682982285BB9BBB9EA6A /* Debug */,
 				EE6A2E9A9B1D3B003A794EA3 /* Release */,
-				C062ABC1E43448F4F6D04317 /* Stable */,
-				E27F79B50AC4B3BA7A8CFCC2 /* Beta */,
-				766AE0443EE837EB61FF3F86 /* Nightly */,
+				C062ABC1E43448F4F6D04317 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -535,9 +467,7 @@
 			buildConfigurations = (
 				3A77CD648711364E9A877D62 /* Debug */,
 				066776A1C212750E8BE506A2 /* Release */,
-				444FD8C6406D4758FDFEFD5D /* Stable */,
-				C3F30ABE591AEA641DA1A090 /* Beta */,
-				5FC5D667D183010270AA8BD4 /* Nightly */,
+				444FD8C6406D4758FDFEFD5D /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
