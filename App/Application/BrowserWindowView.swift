@@ -10,6 +10,7 @@ struct BrowserWindowView: View {
     @State private var sidebarRevealed = false
     @State private var resizingSidebarWidth: CGFloat?
     @State private var windowControls = WindowControls()
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openWindow) private var openWindow
     @Environment(\.palette) private var palette
     @Environment(\.browserReduceMotion) private var reduceMotion
@@ -47,6 +48,13 @@ struct BrowserWindowView: View {
             .background(WindowConfiguration(controls: windowControls))
             // Menus reach the browser even while the onboarding covers it.
             .focusedSceneValue(\.browserModel, browser)
+            .task(id: canRequestPasskeyAccess) {
+                if canRequestPasskeyAccess { await browser.passkeyAccess.prepareForBrowsing() }
+            }
+    }
+
+    private var canRequestPasskeyAccess: Bool {
+        scenePhase == .active && browser.isReady && browser.onboarding == nil && prompt == nil
     }
 
     @ViewBuilder private var content: some View {

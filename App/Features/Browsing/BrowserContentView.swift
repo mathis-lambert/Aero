@@ -1,6 +1,5 @@
 import BrowserWebKit
 import SwiftUI
-import WebKit
 
 struct BrowserContentView: View {
     let page: BrowserPage
@@ -50,18 +49,10 @@ private struct PageProgress: View {
 private struct WebPageHost: NSViewRepresentable {
     let page: BrowserPage
 
-    final class Coordinator {
-        weak var page: BrowserPage?
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
     func makeNSView(context: Context) -> WebPageSurface { WebPageSurface() }
 
     func updateNSView(_ container: WebPageSurface, context: Context) {
-        if context.coordinator.page !== page {
-            context.coordinator.page = page
-            container.claim(page)
-        }
+        if container.page !== page { container.claim(page) }
         container.needsLayout = true
     }
 }

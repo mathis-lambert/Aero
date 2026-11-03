@@ -32,6 +32,7 @@ final class BrowserModel {
     let favicons: FaviconCache
     let history: BrowserHistory
     let passwords: Passwords
+    let passkeyAccess = PasskeyAccess()
     let suggestionFetcher = SuggestionFetcher()
     private let filterLists: FilterListUpdater?
     @ObservationIgnored var extensionsTask: Task<Void, Never>?
@@ -268,8 +269,9 @@ final class BrowserModel {
     func persist() {
         guard isReady else { return }
         // A shell ends with its tab, however the tab went: closed, its space removed, or given a new identity.
-        terminals.keep(only: Set(session.tabs.map(\.id)))
-        tabPreviews.keep(only: Set(session.tabs.map(\.id)))
+        let tabIDs = Set(session.tabs.map(\.id))
+        terminals.keep(only: tabIDs)
+        tabPreviews.keep(only: tabIDs)
         revision += 1
         needsSave = true
         guard !isChangingStructure else { return }

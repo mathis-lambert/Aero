@@ -70,7 +70,9 @@ Control-Tab displays cached pictures, titles and favicons and activates one page
 before leaving it, or when opening the chooser. It requests the already painted surface without
 waiting for another frame (`afterScreenUpdates = false`), never loads/attaches a hidden page to
 get a picture, and never blocks selection. One capture may be pending; a one-second deadline
-invalidates a late result. Closed tabs, replaced pages, changed URLs and removed identities cannot
+invalidates a late result. WebKit has no snapshot cancellation API, so the request keeps its slot
+until its callback returns; a stalled request uses existing pictures/placeholders rather than
+starting more captures. Closed tabs, replaced pages, changed URLs and removed identities cannot
 restore a pending preview. Snapshots are best effort; a favicon placeholder covers missing images.
 The cache stays in memory only, at most eight images and 8 MiB of raster data. Each picture is at
 most 200 points wide, cropped to the top of the viewport at a 16:10 ratio, and rejected above

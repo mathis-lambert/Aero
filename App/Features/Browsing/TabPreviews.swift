@@ -14,20 +14,20 @@ final class TabPreviews {
 
     private var previews: [UUID: Preview] = [:]
     @ObservationIgnored private var order: [UUID] = []
-    @ObservationIgnored private var pending: (token: UUID, tabID: UUID)?
+    @ObservationIgnored private var pending: (token: UUID, tabID: UUID, acceptsResult: Bool)?
     @ObservationIgnored private var timeout: Task<Void, Never>?
 
     isolated deinit { timeout?.cancel() }
 
     func image(for id: UUID, at url: URL) -> CGImage? {
-        guard previews[id]?.url == url else { return nil }
-        return previews[id]?.image
+        guard let preview = previews[id], preview.url == url else { return nil }
+        return preview.image
     }
 
     func remove(_ id: UUID) {
         previews[id] = nil
         order.removeAll { $0 == id }
-        if pending?.tabID == id { timeout?.cancel(); timeout = nil; pending = nil }
+        if pending?.tabID == id { invalidateCapture() }
     }
 
     func keep(only ids: Set<UUID>) {
@@ -42,13 +42,13 @@ final class TabPreviews {
               view.bounds.width > 0, view.bounds.height > 0,
               refresh || image(for: id, at: url) == nil else { return }
         let token = UUID()
-        pending = (token, id)
-        // A slow/failed snapshot never blocks another page's preview or the tab switch itself.
+        pending = (token, id, true)
+        // WebKit has no snapshot cancellation API. Expire the result, but keep its slot until the callback
+        // returns so a stalled capture cannot accumulate more requests. Switching uses cached images meanwhile.
         timeout = Task { [weak self] in
             do { try await Task.sleep(for: .seconds(1)) } catch { return }
             guard let self, pending?.token == token else { return }
-            pending = nil
-            timeout = nil
+            invalidateCapture()
         }
         let configuration = WKSnapshotConfiguration()
         configuration.afterScreenUpdates = false
@@ -57,9 +57,10 @@ final class TabPreviews {
                                     height: min(view.bounds.height, view.bounds.width / 1.6))
         view.takeSnapshot(with: configuration) { [weak self, weak page] snapshot, error in
             guard let self, pending?.token == token else { return }
+            let acceptsResult = pending?.acceptsResult == true
             timeout?.cancel(); timeout = nil; pending = nil
             // Snapshots are optional decoration. Failures keep the previous picture or the site's placeholder.
-            guard error == nil, let page, page.url == url, !page.isLoading, isCurrent(),
+            guard acceptsResult, error == nil, let page, page.url == url, !page.isLoading, isCurrent(),
                   let image = snapshot?.cgImage(forProposedRect: nil, context: nil, hints: nil),
                   image.width <= 800, image.height <= 500 else { return }
             previews[id] = Preview(url: url, image: image)
@@ -70,6 +71,12 @@ final class TabPreviews {
                 remove(oldest)
             }
         }
+    }
+
+    private func invalidateCapture() {
+        pending?.acceptsResult = false
+        timeout?.cancel()
+        timeout = nil
     }
 }
 

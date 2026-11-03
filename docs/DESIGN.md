@@ -65,3 +65,11 @@ swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>
 ```
 
 The font is not stored in the repository. Settings previews use bundled artwork, never the current custom bundle icon. Automatic removes the custom icon; the system draws the running Dock icon in every icon style, and Aero draws the artwork of its own appearance only when it differs from the system's. Alternate icons write to Aero's own bundle, requiring an unsandboxed app. The build removes the custom icon before signing. Missing artwork or an unwritable bundle must leave the system icon usable.
+
+## System passkey access
+
+Password settings use a native form row for system passkey access, with a textual authorization
+state and native buttons for consent or recovery in Privacy & Security. No custom permission
+sheet, colors or typography. Labels and footer wrap for longer translations and use semantic
+alignment; English and French are catalogued. Native light/dark, keyboard focus and accessibility
+remain owned by the form controls. Interactive layout and system consent need signed-build validation.

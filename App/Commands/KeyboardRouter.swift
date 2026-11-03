@@ -1,6 +1,5 @@
 import AppKit
 import BrowserCore
-import SwiftUI
 
 /// Reserved browser actions and the MRU gesture run before WebKit. Page-first actions stay in menus.
 @MainActor
@@ -21,6 +20,7 @@ final class KeyboardRouter {
         }
         for name in [NSWindow.didResignKeyNotification, NSApplication.didResignActiveNotification] {
             observers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                // Delivery is explicitly on the main queue; cancel before the next keyboard event.
                 MainActor.assumeIsolated {
                     if let browser = browser() { self?.cancelCycle(browser) }
                 }
@@ -80,7 +80,6 @@ final class KeyboardRouter {
             guard browser.window.controlBar == nil, browser.window.renaming == nil else { return false }
             cycleModifiers = binding.eventModifiers.subtracting(.shift)
             browser.cycleTab(backwards: command == .previousRecentTab)
-            if cycleModifiers.isEmpty { browser.commitTabCycle() }
         } else {
             cancelCycle(browser)
             browser.perform(command)

@@ -14,7 +14,7 @@ import SwiftUI
 struct SplitPageView: View {
     static let gap = BrowserDesign.pageInset
     /// The panes' coordinate space, which dragged dividers and grips report in.
-    static let space = "split"
+    nonisolated static let space = "split"
     /// A little longer than the shell's own motion: a page coming or going travels further.
     private static let motion = Animation.spring(duration: 0.42, bounce: 0.12)
 
@@ -211,11 +211,11 @@ private struct SplitPane: View {
                 hideChromeSoon()
             }
             .animation(reduceMotion ? nil : BrowserDesign.hover, value: isFocused && inSplit)
-            // Focused from the keyboard or the sidebar, the pane takes the keyboard too.
+            // Web pages take focus through the deck; terminals own their native view separately.
             .onChange(of: isFocused) { _, focused in
-                guard focused else { return }
-                let view: NSView? = browser.pages.livePage(tab.id)?.webView ?? browser.terminals.existing(tab.id)?.view
-                if let view, let window = view.window, !(window.firstResponder.map { ($0 as? NSView)?.isDescendant(of: view) == true } ?? false) {
+                guard focused, InternalPage(url: tab.url) == .terminal,
+                      let view = browser.terminals.existing(tab.id)?.view, let window = view.window else { return }
+                if !(window.firstResponder.map { ($0 as? NSView)?.isDescendant(of: view) == true } ?? false) {
                     window.makeFirstResponder(view)
                 }
             }
