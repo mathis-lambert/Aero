@@ -33,6 +33,17 @@ The favorites/open-tabs separator carries a quiet **Close All** action at its tr
 
 Settings uses native sidebar navigation and back/forward history. Profiles and Spaces are separate sections with list-to-detail navigation. Inline edits commit automatically; destructive actions and identity changes require explicit confirmation. See [Spaces](SPACES.md).
 
+## Recent tabs
+
+The recent-tab chooser is a horizontal strip centered over the existing page, following Dia's
+thumbnail chooser: one cached page picture per card, with its favicon and a single-line title below.
+It uses the panel glass, system chrome typography, neutral selected fill and a thin space-accent ring.
+Cards keep a fixed size, truncate long titles and scroll to the highlighted item; the strip fits the
+window and caps its width. Missing pictures show the site's icon on the canvas. Selection changes
+and scrolling are immediate. It keeps page focus until commit, exposes the selected card to
+accessibility, and uses the same light/dark and reduced-transparency tokens. Synthetic offscreen
+renders cover light and dark/RTL layouts; native interaction and actual glass still need checking.
+
 ## Prompts
 
 Every question uses the shared `Prompt` presentation, over the window where it was asked (the browser or Settings), with one card surface, a concise title, optional explanation and trailing actions; a confirmation before an irreversible action is a `Confirmation`. No system alert or confirmation dialog is used. Return confirms, Escape or clicking outside cancels. The underlying window must not receive input. Replacing a pending extension prompt must resolve its request rather than leave a caller waiting. System file, print and certificate panels remain native sheets.
@@ -54,3 +65,11 @@ swift Scripts/generate-app-icon.swift <GildaDisplay-Regular.ttf>
 ```
 
 The font is not stored in the repository. Settings previews use bundled artwork, never the current custom bundle icon. Automatic removes the custom icon; the system draws the running Dock icon in every icon style, and Aero draws the artwork of its own appearance only when it differs from the system's. Alternate icons write to Aero's own bundle, requiring an unsandboxed app. The build removes the custom icon before signing. Missing artwork or an unwritable bundle must leave the system icon usable.
+
+## System passkey access
+
+Password settings use a native form row for system passkey access, with a textual authorization
+state and native buttons for consent or recovery in Privacy & Security. No custom permission
+sheet, colors or typography. Labels and footer wrap for longer translations and use semantic
+alignment; English and French are catalogued. Native light/dark, keyboard focus and accessibility
+remain owned by the form controls. Interactive layout and system consent need signed-build validation.

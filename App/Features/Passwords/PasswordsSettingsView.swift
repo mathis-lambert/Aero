@@ -12,6 +12,7 @@ struct PasswordsSettingsView: View {
     var body: some View {
         let preferences = Bindable(browser.preferences)
         Form {
+            SystemPasskeysSection(access: browser.passkeyAccess)
             Section {
                 ForEach(browser.profiles) { profile in
                     SettingsRow(title: profile.name, open: { navigate(.passwordProfile(profile.id)) }) {

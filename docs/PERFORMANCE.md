@@ -51,6 +51,41 @@ and retains the metric and a screenshot; it does not measure physical frame pres
 
 ## Tab hibernation
 
+### Tab presentation
+
+The main window keeps one native `WebPageDeck` across tab, space and New Tab changes. Up to eight
+recently shown page surfaces remain attached at their last valid viewport size, hidden and excluded
+from accessibility when inactive. Returning to either of two live pages changes visibility without
+moving their web views between containers or resetting their viewport to zero. Surfaces are sized
+before a newly attached web view enters them; unchanged frames are not reassigned. There is no
+navigation, screenshot cache, preload or timer in this presentation layer.
+
+The registry remains the page-lifetime owner. Cached surfaces weakly reference pages, and closing
+or hibernating a page removes its web view from the surface. Evicting a surface detaches its view
+without unloading the registry's page. Real window/split size changes still resize the viewport;
+hibernated pages still need restoration and WebKit may terminate a content process independently.
+Control-Tab displays cached pictures, titles and favicons and activates one page on commit.
+
+`TabPreviews` takes a small asynchronous snapshot after a visible page paints/finishes loading,
+before leaving it, or when opening the chooser. It requests the already painted surface without
+waiting for another frame (`afterScreenUpdates = false`), never loads/attaches a hidden page to
+get a picture, and never blocks selection. One capture may be pending; a one-second deadline
+invalidates a late result. WebKit has no snapshot cancellation API, so the request keeps its slot
+until its callback returns; a stalled request uses existing pictures/placeholders rather than
+starting more captures. Closed tabs, replaced pages, changed URLs and removed identities cannot
+restore a pending preview. Snapshots are best effort; a favicon placeholder covers missing images.
+The cache stays in memory only, at most eight images and 8 MiB of raster data. Each picture is at
+most 200 points wide, cropped to the top of the viewport at a 16:10 ratio, and rejected above
+800 × 500 pixels. Cached pictures do not retain pages and are not real-time website previews.
+
+An invisible-window local diagnostic verified 40 switches between two live pinned pages with the
+same document token, viewport dimensions, resize-event counts and unsaved textarea values before
+and after. This checks resource/viewport stability, not visible compositor latency or real-site
+memory and energy use. Interactive switching, split/Peek layering and hardware keyboard behavior
+still need the native journeys; do not infer measured frame rates or general speedups from it.
+
+### Hibernation policy
+
 A tab is a durable record; its `WKWebView` is a live resource owned by `WebPageRegistry`. Hibernation releases the web view and its WebContent process while keeping the tab, its history and scroll position (`interactionState`) and its `sessionStorage` (WebKit's `fetchData(of:)`), kept in memory. Activating the tab restores that state; after a relaunch, tabs reload from their URL.
 
 `HibernationPolicy` (BrowserCore) decides, from pure inputs, which live pages are due:

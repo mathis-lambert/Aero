@@ -9,35 +9,59 @@ import SwiftUI
 /// view. In a split, the focused pane, the selected tab or the New Tab pane, is ringed in the space's color; the page's
 /// own controls act on it. A pane comes in from the trailing side and goes shrinking away; the others take their places
 /// with a spring as panes come, go and resize, except under the pointer, which they follow; showing other tabs
-/// altogether is immediate (`BrowserWindowState.paneGroup`). A pane taken by its grip moves to the side of another
+/// altogether is immediate. A pane taken by its grip moves to the side of another
 /// it is dropped on, a pane of glass showing where until then.
 struct SplitPageView: View {
     static let gap = BrowserDesign.pageInset
     /// The panes' coordinate space, which dragged dividers and grips report in.
-    static let space = "split"
+    nonisolated static let space = "split"
     /// A little longer than the shell's own motion: a page coming or going travels further.
     private static let motion = Animation.spring(duration: 0.42, bounce: 0.12)
 
     let browser: BrowserModel
     /// The panes as they show (`BrowserModel.paneLayout`).
-    let layout: SplitNode
+    let layout: SplitNode?
     /// A divider being dragged and where it is; the session takes the boundary when the drag ends.
     @State private var resizing: (divider: SplitDivider.Place, boundary: Double)?
     /// A pane taken by its grip, and where it would go.
     @State private var moving: (pane: UUID, destination: SplitDestination?)?
     @Environment(\.browserReduceMotion) private var reduceMotion
+    @Environment(\.palette) private var palette
 
     var body: some View {
         let newPane = browser.window.newPane
-        let inSplit = layout.tabIDs.count > 1
+        let ids = layout?.tabIDs ?? []
+        let inSplit = ids.count > 1
         // While a New Tab pane stands in the layout, its dividers are not the split's own.
         let split = newPane == nil ? browser.currentSplit : nil
         GeometryReader { area in
             let bounds = CGRect(origin: .zero, size: area.size)
-            let root = resizing.map { layout.resizing($0.divider, to: $0.boundary) } ?? layout
-            let frames = root.frames(in: bounds, gap: Self.gap)
+            let root = resizing.flatMap { layout?.resizing($0.divider, to: $0.boundary) } ?? layout
+            let frames = root?.frames(in: bounds, gap: Self.gap) ?? [:]
             ZStack(alignment: .topLeading) {
-                ForEach(layout.tabIDs, id: \.self) { id in
+                // Surfaces sit below the stable native web layer; controls and native panes sit above it.
+                ForEach(ids, id: \.self) { id in
+                    if let frame = frames[id] {
+                        RoundedRectangle(cornerRadius: BrowserDesign.Radius.page)
+                            .fill(palette.canvas).pageShadow(palette.scheme)
+                            .frame(width: frame.width, height: frame.height)
+                            .offset(x: frame.minX, y: frame.minY)
+                            .allowsHitTesting(false)
+                    }
+                }
+                WebPageDeck(panes: ids.compactMap { id in
+                    guard let frame = frames[id], let page = browser.pages.livePage(id) else { return nil }
+                    return WebPageDeck.Pane(id: id, page: page, frame: frame, rendered: page.hasRenderedFirstFrame, isMoving: moving?.pane == id)
+                }, selected: browser.window.controlBar == nil && browser.window.prompt == nil && browser.onboarding == nil ? browser.window.selectedTabID : nil)
+                .peekBackdrop(browser)
+                if layout == nil {
+                    NewTabView(browser: browser)
+                        .id([browser.window.selectedSpaceID, browser.profile?.id])
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
+                        .background { RoundedRectangle(cornerRadius: BrowserDesign.Radius.page).fill(palette.canvas).pageShadow(palette.scheme) }
+                }
+                ForEach(ids, id: \.self) { id in
                     if let frame = frames[id] {
                         Group {
                             if let newPane, newPane.id == id {
@@ -57,7 +81,7 @@ struct SplitPageView: View {
                                                 removal: .scale(scale: 0.9).combined(with: .opacity)))
                     }
                 }
-                if let split, moving == nil {
+                if let split, let root, moving == nil {
                     ForEach(root.dividers(in: bounds, gap: Self.gap), id: \.place) { divider in
                         SplitDividerHandle(divider: divider) { boundary in
                             resizing = (divider.place, boundary)
@@ -70,21 +94,22 @@ struct SplitPageView: View {
                     }
                 }
                 if let moving, let destination = moving.destination,
-                   let frame = layout.removing(moving.pane)?.inserting(moving.pane, beside: destination.pane, at: destination.edge)?
+                   let frame = layout?.removing(moving.pane)?.inserting(moving.pane, beside: destination.pane, at: destination.edge)?
                        .frames(in: bounds, gap: Self.gap)[moving.pane] {
                     PaneDropZone(browser: browser, frame: frame, symbol: "rectangle.2.swap")
                 }
             }
-            .animation(resizing == nil && !reduceMotion ? Self.motion : nil, value: root)
+            .animation(resizing == nil && !reduceMotion && browser.window.animatesPaneChanges ? Self.motion : nil, value: root)
             .animation(reduceMotion ? nil : BrowserDesign.motion, value: moving?.destination)
         }
         .coordinateSpace(.named(Self.space))
-        .background(PaneFocusTracker(browser: browser, panes: layout.tabIDs))
+        .background(PaneFocusTracker(browser: browser, panes: ids))
+        .onChange(of: ids) { _, _ in resizing = nil; moving = nil }
     }
 
     /// The side of another pane under `point`; over the moving pane itself, or a gap, nowhere.
     private func move(_ pane: UUID, to point: CGPoint, in bounds: CGRect) {
-        let destination = layout.destination(at: point, in: bounds, gap: Self.gap).flatMap { $0.pane == pane ? nil : $0 }
+        let destination = layout?.destination(at: point, in: bounds, gap: Self.gap).flatMap { $0.pane == pane ? nil : $0 }
         if destination != moving?.destination, destination != nil {
             NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
         }
@@ -154,9 +179,8 @@ private struct SplitPane: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // Under a link's preview, what every pane shows blurs, as a page does.
             .peekBackdrop(browser)
-            .browserSurface(fill: palette.canvas, border: palette.line, radius: BrowserDesign.Radius.page)
-            // On a shape of its own: a shadow on the web view would render it offscreen on every frame.
-            .background { shape.fill(palette.canvas).pageShadow(palette.scheme) }
+            .clipShape(shape)
+            .overlay { shape.strokeBorder(palette.line, lineWidth: 1).allowsHitTesting(false) }
             .scaleEffect(isMoving ? 0.97 : 1)
             .opacity(isMoving ? 0.55 : 1)
             .animation(reduceMotion ? nil : BrowserDesign.motion, value: isMoving)
@@ -187,11 +211,11 @@ private struct SplitPane: View {
                 hideChromeSoon()
             }
             .animation(reduceMotion ? nil : BrowserDesign.hover, value: isFocused && inSplit)
-            // Focused from the keyboard or the sidebar, the pane takes the keyboard too.
+            // Web pages take focus through the deck; terminals own their native view separately.
             .onChange(of: isFocused) { _, focused in
-                guard focused else { return }
-                let view: NSView? = browser.pages.livePage(tab.id)?.webView ?? browser.terminals.existing(tab.id)?.view
-                if let view, let window = view.window, !(window.firstResponder.map { ($0 as? NSView)?.isDescendant(of: view) == true } ?? false) {
+                guard focused, InternalPage(url: tab.url) == .terminal,
+                      let view = browser.terminals.existing(tab.id)?.view, let window = view.window else { return }
+                if !(window.firstResponder.map { ($0 as? NSView)?.isDescendant(of: view) == true } ?? false) {
                     window.makeFirstResponder(view)
                 }
             }
@@ -215,7 +239,13 @@ private struct SplitPane: View {
             InternalPageView(page: page, tab: tab, browser: browser)
                 .simultaneousGesture(TapGesture().onEnded { if !isFocused { browser.selectTab(tab.id) } })
         } else if let page = browser.pages.livePage(tab.id) {
-            BrowserContentView(page: page).pageFloats(browser, page: page, isFocused: isFocused)
+            BrowserContentView(page: page, hostsPage: false).pageFloats(browser, page: page, isFocused: isFocused)
+                .onChange(of: page.hasRenderedFirstFrame, initial: true) { _, rendered in
+                    if rendered { browser.captureTabPreview(tab.id) }
+                }
+                .onChange(of: page.isLoading) { _, loading in
+                    if !loading { browser.captureTabPreview(tab.id) }
+                }
         } else {
             palette.canvas
         }

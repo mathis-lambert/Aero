@@ -23,7 +23,8 @@ extension BrowserModel {
         case .moveToGroup: return selectedTab != nil && space?.groups.isEmpty == false
         case .closeAllTabs: return tabs.contains { !$0.isFavorite }
         case .closeOtherTabs, .closeFollowingTabs: return selectedTab != nil && orderedTabs.count > 1
-        case .nextTab, .previousTab, .recentTab, .previousRecentTab: return !tabs.isEmpty
+        case .nextTab, .previousTab: return !tabs.isEmpty
+        case .recentTab, .previousRecentTab: return tabs.contains { !$0.isFavorite || openedFavorites.contains($0.id) }
         case .tab1, .tab2, .tab3, .tab4, .tab5, .tab6, .tab7, .tab8, .lastTab:
             return command.tabIndex.map { orderedTabs.indices.contains($0) } ?? !orderedTabs.isEmpty
         case .nextSpace, .previousSpace: return session.spaces.count > 1

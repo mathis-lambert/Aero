@@ -76,12 +76,25 @@ An import never overwrites a different saved password for the same login; it rep
 
 ## Passkeys
 
-Aero does not take part in passkey requests: WebKit performs them with AuthenticationServices, and macOS shows its own sheet (iCloud Keychain, a password app, a nearby phone or a security key). WebKit does so only in a browser holding Apple's `com.apple.developer.web-browser.public-key-credential` entitlement, granted on request and usable only with a provisioning profile. Apple granted it to the stable identity, `app.getaero.browser`, which is signed with its profile ([BUILD_AND_RELEASE.md](BUILD_AND_RELEASE.md#stable-passkey-signing)); Dev, Beta, Nightly and source builds lack it, and pages see WebKit's own answer. Passkeys belong to macOS and the chosen credential provider, not to Aero's profiles or password vault.
+WebKit performs website WebAuthn challenges with AuthenticationServices and presents the native macOS credential sheet. Aero does not replace `navigator.credentials`, forward challenges through a JavaScript bridge or implement a second authorization controller. The website's request must work through that native path without a manual trip to Aero's settings.
+
+Every published channel uses the entitled identity `app.getaero.browser` and its provisioning profile ([BUILD_AND_RELEASE.md](BUILD_AND_RELEASE.md#passkey-signing)). Ad-hoc Aero Dev/source builds lack the managed `com.apple.developer.web-browser.public-key-credential` entitlement and cannot validate the published browser's passkey behavior. Passkeys belong to macOS and the chosen credential provider, not to Aero's profile password stores or their AutoFill extension choice.
+
+`PasskeyAccess` owns the app-wide browser permission through Apple's
+`ASAuthorizationWebBrowserPublicKeyCredentialManager`. Once the main browser is ready and active,
+after onboarding and outside Aero prompts, it checks the system state and requests access if it is
+not determined. The automatic attempt happens at most once per launch, with one outstanding system
+request. A refusal is respected; it never blocks or replaces WebKit's website credential requests.
+The runtime signing entitlement gates this integration, so Aero Dev does not request unsupported
+access. Password settings show the current state, allow an explicit request if still undetermined,
+and explain how to recover a denied grant in macOS Privacy & Security. Returning to Aero refreshes
+the system state; no grant is mirrored in user defaults.
+See Apple's [Passkey use in web browsers](https://developer.apple.com/documentation/authenticationservices/passkey-use-in-web-browsers). Chromium's [native passkey implementation](https://github.com/chromium/chromium/blob/main/device/fido/mac/icloud_keychain.mm) requests browser access in the create/get flow and continues the operation even when that permission is denied. This distinguishes browser access permission from the credential ceremony itself.
 
 Check on the notarized stable app before releasing a newly entitled build:
 
 1. Create a passkey on a test website, restart Aero and sign in with it; sign in with a passkey created in another browser.
-2. Note how macOS asks for access to passkeys on first use, then check denial and recovery in System Settings › Privacy & Security.
+2. Record the browser access status and whether macOS asks for consent during the website flow. Check denial and recovery in System Settings › Privacy & Security › Passkeys Access for Web Browsers without making a settings visit a prerequisite for normal sign-in.
 3. Cancel the system sheet and retry; close the requesting tab while the sheet is open.
 4. Leave a page with conditional passkey suggestions open, quit Aero, relaunch it and sign in again: an abandoned request must not block later ones.
 5. A security key, a nearby phone or a third-party provider when available.
@@ -113,5 +126,32 @@ With `AERO_TEST_DATA`, items use the creator `AERT` and a security domain under 
 15. Renaming a login to an existing username on the same origin replaces that account's password or removes either login.
 16. An import still writing while its destination profile is deleted recreates passwords for a profile that no longer exists.
 17. An IPv6 site's origin loses its brackets, so its saved login or site decision cannot be read back.
+18. A signed browser holds the passkey entitlement but WebKit fails to present a native credential sheet.
+19. A manual browser-settings step becomes a prerequisite for website passkeys, or the password-filling extension choice incorrectly disables the system flow.
 
 Verification: `PasswordsJourneys` covers saving, filling, Update, Never across relaunch, the strong password on sign-up, profile isolation, Settings listing and deletion, and two-step account capture without crossing tabs or origins (1–5, 8–10, 14). Isolated Swift tests cover site matching (2), CSV (11), Chromium decryption and a running browser's locked database (12), keychain scoping and deletion per profile (3, 5, 6, 7), rename collisions (15), writes after profile deletion (16), and IPv6 origin round trips (17), which UI tests cannot vary exhaustively or observe.
+
+`PasskeyAccessTests` covers unentitled builds, repeated foreground activation, denial and external
+permission changes, and overlapping requests including cancellation while the system owns the prompt.
+The tests use a simulated provider and never request real system consent.
+
+Signature/provisioning checks do not prove runtime passkey support. The native passkey scenarios above need a signed build and remain distinct from password tests; Aero Dev and mocked permission tests cannot establish that a system credential ceremony works.
+
+### Diagnosing a missing system sheet
+
+An absent entry in macOS's browser passkey access list establishes that no access grant is listed;
+it does not by itself identify why a WebAuthn operation failed. That list concerns discovering
+which sites have saved credentials. Keep browser consent and the native credential ceremony distinct.
+
+For an explicit request that fails before UI, collect the error domains/codes, request style and
+the service's browser-eligibility decision without logging the relying party, account, challenge
+or credential data. The combination `AuthenticationServices.AuthorizationError` 1004 and
+`AuthenticationServicesCore.AuthorizationError` 1 is generic. The service can log “Allowing request
+from web browser” and still refuse to present the sheet, even with a valid managed entitlement.
+Check the running process's identity as well as the installed bundle; do not infer the cause from
+these codes alone or add a manual Settings prerequisite as a speculative fix.
+
+DuckDuckGo's maintainers have [reported the same failure in AuthenticationServicesAgent](https://github.com/duckduckgo/apple-browsers/issues/4045).
+This is evidence of a similar platform failure, not proof that every matching Aero failure has
+that cause. Restarting the shared agent is a manual diagnostic that may interrupt another app's
+authentication; Aero must not restart system services automatically.

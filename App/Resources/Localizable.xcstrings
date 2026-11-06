@@ -1,6 +1,200 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "System passkeys": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System passkeys"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clés d’accès système"
+          }
+        }
+      }
+    },
+    "Requesting passkey access": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requesting passkey access"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demande d’accès aux clés d’accès"
+          }
+        }
+      }
+    },
+    "Allow passkey access": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow passkey access"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser l’accès aux clés d’accès"
+          }
+        }
+      }
+    },
+    "Open Privacy & Security": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Privacy & Security"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir Confidentialité et sécurité"
+          }
+        }
+      }
+    },
+    "In Privacy & Security, open Passkeys Access for Web Browsers and allow Aero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Privacy & Security, open Passkeys Access for Web Browsers and allow Aero."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dans Confidentialité et sécurité, ouvrez Accès aux clés d’accès pour les navigateurs et autorisez Aero."
+          }
+        }
+      }
+    },
+    "macOS and your credential provider manage passkeys. This permission lets Aero discover available passkeys; websites sign you in using the system window.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS and your credential provider manage passkeys. This permission lets Aero discover available passkeys; websites sign you in using the system window."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS et votre fournisseur d’identifiants gèrent les clés d’accès. Cette autorisation permet à Aero de découvrir les clés disponibles ; les sites vous connectent via la fenêtre système."
+          }
+        }
+      }
+    },
+    "Access allowed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access allowed"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès autorisé"
+          }
+        }
+      }
+    },
+    "Access denied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access denied"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès refusé"
+          }
+        }
+      }
+    },
+    "Access not requested": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access not requested"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès non demandé"
+          }
+        }
+      }
+    },
+    "Requires a signed Aero release": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requires a signed Aero release"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nécessite une version publiée et signée d’Aero"
+          }
+        }
+      }
+    },
+    "Access unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access unavailable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès indisponible"
+          }
+        }
+      }
+    },
+    "Recent Tabs" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent Tabs" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Onglets récents" } }
+      }
+    },
     "Close All" : {
       "extractionState" : "manual",
       "localizations" : {
